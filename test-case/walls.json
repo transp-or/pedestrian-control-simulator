@@ -1,0 +1,50 @@
+{
+  "location": "corridor",
+  "sublocation": "none",
+  "walls": [
+    {
+      "comment": "left",
+      "x1": 0,
+      "y1": 0,
+      "x2": 0,
+      "y2": 25
+    },
+    {
+      "comment": "right",
+      "x1": 5,
+      "y1": 0,
+      "x2": 5,
+      "y2": 25
+    },
+    {
+      "comment": "top",
+      "x1": 0,
+      "y1": 25,
+      "x2": 5,
+      "y2": 25
+    },
+    {
+      "comment": "bottom",
+      "x1": 0,
+      "y1": 0,
+      "x2": 5,
+      "y2": 0
+    }
+  ],
+  "doorways": [
+    {
+      "comment": "bottom",
+      "x1": 1,
+      "y1": 0,
+      "x2": 4,
+      "y2": 0
+    },
+    {
+      "comment": "top",
+      "x1": 1,
+      "y1": 25,
+      "x2": 4,
+      "y2": 25
+    }
+  ]
+}

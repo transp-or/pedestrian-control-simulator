@@ -1,0 +1,19 @@
+{
+  "location": "corridor",
+  "PTflows": [],
+  "flows": [ {
+      "origin": 1,
+      "destination": 2,
+      "start": "00:00:00",
+      "end": "00:05:00",
+      "flow": 600
+    },
+    {
+      "origin": 2,
+      "destination": 1,
+      "start": "00:00:00",
+      "end": "00:05:00",
+      "flow": 600
+    }]
+}
+

@@ -1,0 +1,19 @@
+*.class
+*.cache
+*.jar
+*.xml
+*~
+*.log
+
+// target folder from intellij
+*/target/*
+
+// project folder from intellij
+*/project/project/*
+
+// matlab files
+*.fig
+*.mat
+
+// intellij files
+*/.idea/*

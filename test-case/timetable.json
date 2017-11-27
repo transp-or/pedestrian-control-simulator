@@ -1,0 +1,62 @@
+{
+  "location": "corridor",
+  "track2nodes": [
+    {
+      "track": 1,
+      "nodes": [
+        11,
+        12
+      ]
+    },
+    {
+      "track": 3,
+      "nodes": [
+        9,
+        10
+      ]
+    },
+    {
+      "track": 4,
+      "nodes": [
+        9,
+        10
+      ]
+    },
+    {
+      "track": 5,
+      "nodes": [
+        7,
+        8
+      ]
+    },
+    {
+      "track": 6,
+      "nodes": [
+        7,
+        8
+      ]
+    },
+    {
+      "track": 7,
+      "nodes": [
+        5,
+        6
+      ]
+    },
+    {
+      "track": 8,
+      "nodes": [
+        5,
+        6
+      ]
+    },
+    {
+      "track": 9,
+      "nodes": [
+        2,
+        4
+      ]
+    }
+  ],
+  "trains": []
+}
