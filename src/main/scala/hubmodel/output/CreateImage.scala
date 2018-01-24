@@ -8,7 +8,7 @@ import javax.imageio.ImageIO
 
 import breeze.linalg.{max, min}
 import breeze.numerics.round
-import hubmodel.{Position, Vertex}
+import hubmodel.{Position, VertexCell}
 import hubmodel.input.infrastructure.{Wall}
 import hubmodel.route.MyCell
 import java.awt.Font
@@ -20,7 +20,7 @@ import java.awt.Font
 class DrawWalls(walls: Vector[Wall],
                 filename: String = "",
                 mapFun: Option[(Double => Int, Double => Int)] = None,
-                imHeight: Option[Int] = None,
+                private val imHeight: Option[Int] = None,
                 showNames: Boolean = false) {
 
   val mappingFunctions: (Double => Int, Double => Int) = mapFun match {
@@ -34,7 +34,7 @@ class DrawWalls(walls: Vector[Wall],
   val imageHeight: Int = imHeight match {
     case None => {
       val bounds = getBounds(walls)
-      computeImageHeight(bounds)
+      computeImageHeightPixels(bounds)
     }
     case s: Some[Int] => imHeight.get
   }
@@ -80,7 +80,7 @@ class DrawWalls(walls: Vector[Wall],
 }
 
 
-class DrawGraph(edges: Vector[(Vertex, Vertex)],
+class DrawGraph(edges: Vector[(VertexCell, VertexCell)],
                 filename: String = "",
                 mapFun: Option[(Double => Int, Double => Int)] = None,
                 imHeight: Option[Int] = None) {
@@ -96,7 +96,7 @@ class DrawGraph(edges: Vector[(Vertex, Vertex)],
   val imageHeight: Int = imHeight match {
     case None => {
       val bounds = getBounds(edges)
-      computeImageHeight(bounds)
+      computeImageHeightPixels(bounds)
     }
     case s: Some[Int] => imHeight.get
   }
@@ -132,7 +132,7 @@ class DrawGraph(edges: Vector[(Vertex, Vertex)],
     edges.flatMap(e => List(e._1, e._2)).distinct.foreach(v => gImage.drawString(v.name, mappingFunctions._1(v.center(0)), verticalMirrorTransformation(mappingFunctions._2(v.center(1)))))
   }
 
-  def getBounds(edges: Vector[(Vertex, Vertex)]): Vector[Double] = {
+  def getBounds(edges: Vector[(VertexCell, VertexCell)]): Vector[Double] = {
     val minX: Double = min(edges.map(e => min(min(e._1.A(0), e._1.B(0)), min(e._1.C(0), e._1.D(0)))))
     val minY: Double = min(edges.map(e => min(min(e._1.A(1), e._1.B(1)), min(e._1.C(1), e._1.D(1)))))
     val maxX: Double = max(edges.map(e => max(max(e._1.A(0), e._1.B(0)), max(e._1.C(0), e._1.D(0)))))
@@ -142,7 +142,7 @@ class DrawGraph(edges: Vector[(Vertex, Vertex)],
 }
 
 
-class DrawWallsAndGraph(walls: Vector[Wall], edges: Vector[(Vertex, Vertex)], filename: String) {
+class DrawWallsAndGraph(walls: Vector[Wall], edges: Vector[(VertexCell, VertexCell)], filename: String) {
   val wallImage = new DrawWalls(walls)
   val graphImage = new DrawGraph(edges, mapFun = Some(wallImage.mappingFunctions), imHeight = Some(wallImage.imageHeight))
 
@@ -168,16 +168,16 @@ class DrawCells(cells: IndexedSeq[MyCell],
   val cleanCanvas: BufferedImage = bkgdImage match {
     case Some(f) => ImageIO.read(new File(f))
     case None => {
-      val canv: BufferedImage = new BufferedImage(bkgdImageSizeMeters._1.round.toInt*30, bkgdImageSizeMeters._2.round.toInt*30, BufferedImage.TYPE_4BYTE_ABGR)
+      val canv: BufferedImage = new BufferedImage(bkgdImageSizeMeters._1.round.toInt * 30, bkgdImageSizeMeters._2.round.toInt * 30, BufferedImage.TYPE_4BYTE_ABGR)
       val gcanv: Graphics2D = canv.createGraphics()
       gcanv.setColor(Color.WHITE)
-      gcanv.fillRect(0, 0, bkgdImageSizeMeters._1.round.toInt*30, bkgdImageSizeMeters._2.round.toInt*30)
+      gcanv.fillRect(0, 0, bkgdImageSizeMeters._1.round.toInt * 30, bkgdImageSizeMeters._2.round.toInt * 30)
       canv
     }
   }
 
-  val canvasWidth: Int = if (cleanCanvas.getWidth % 2 == 0) cleanCanvas.getWidth else cleanCanvas.getWidth+1
-  val canvasHeight: Int = if (cleanCanvas.getHeight % 2 == 0) cleanCanvas.getHeight else cleanCanvas.getHeight+1
+  val canvasWidth: Int = if (cleanCanvas.getWidth % 2 == 0) cleanCanvas.getWidth else cleanCanvas.getWidth + 1
+  val canvasHeight: Int = if (cleanCanvas.getHeight % 2 == 0) cleanCanvas.getHeight else cleanCanvas.getHeight + 1
 
   /** Horizontal mapping of coordinates
     *
@@ -207,22 +207,22 @@ class DrawCells(cells: IndexedSeq[MyCell],
   // Draw the String
 
   cells.foreach(h => {
-    if (h.pedAcc/h.area >= 2.17) gcleanCanvas.setColor(new Color(153, 0, 0, 25))
-    else if (h.pedAcc/h.area > 1.08) gcleanCanvas.setColor(new Color(255, 0, 0, 25))
-    else if (h.pedAcc/h.area > 0.72) gcleanCanvas.setColor(new Color(255, 128, 0, 25))
-    else if (h.pedAcc/h.area > 0.43) gcleanCanvas.setColor(new Color(255, 255, 0, 25))
-    else if (h.pedAcc/h.area > 0.31) gcleanCanvas.setColor(new Color(0, 255, 0, 25))
-    else if (h.pedAcc/h.area <= 0.31) gcleanCanvas.setColor(new Color(0, 0, 255, 25))
+    if (h.pedAcc / h.area >= 2.17) gcleanCanvas.setColor(new Color(153, 0, 0, 25))
+    else if (h.pedAcc / h.area > 1.08) gcleanCanvas.setColor(new Color(255, 0, 0, 25))
+    else if (h.pedAcc / h.area > 0.72) gcleanCanvas.setColor(new Color(255, 128, 0, 25))
+    else if (h.pedAcc / h.area > 0.43) gcleanCanvas.setColor(new Color(255, 255, 0, 25))
+    else if (h.pedAcc / h.area > 0.31) gcleanCanvas.setColor(new Color(0, 255, 0, 25))
+    else if (h.pedAcc / h.area <= 0.31) gcleanCanvas.setColor(new Color(0, 0, 255, 25))
     gcleanCanvas.fillPolygon(h.xCoords.map(mapHcoord), h.yCoords.map(mapVcoord), 6)
     gcleanCanvas.setColor(Color.BLACK)
     gcleanCanvas.drawPolygon(h.xCoords.map(mapHcoord), h.yCoords.map(mapVcoord), 6)
-    val w: Int = gcleanCanvas.getFontMetrics.stringWidth(h.pedAcc.toString + " / " + "%1.2f".format(h.potential))/2
-    if (w.toDouble > 0.85*mapHcoord(h.edgeLength)) {
+    val w: Int = gcleanCanvas.getFontMetrics.stringWidth(h.pedAcc.toString + " / " + "%1.2f".format(h.potential)) / 2
+    if (w.toDouble > 0.85 * mapHcoord(h.edgeLength)) {
       val currentFont = gcleanCanvas.getFont
       val newFont = currentFont.deriveFont(currentFont.getSize * 0.94.toFloat)
       gcleanCanvas.setFont(newFont)
     }
-    gcleanCanvas.drawString(h.pedAcc.toString + " / " + "%1.2f".format(h.potential), mapHcoord(h.center(0))-w, mapVcoord(h.center(1)))
+    gcleanCanvas.drawString(h.pedAcc.toString + " / " + "%1.2f".format(h.potential), mapHcoord(h.center(0)) - w, mapVcoord(h.center(1)))
   })
 
 

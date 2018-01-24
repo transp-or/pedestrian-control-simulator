@@ -11,10 +11,10 @@ package object AggDisagg {
 
 
   def poissonProcess(duration: Long, numberPeople: Double, u: breeze.stats.distributions.Uniform, acc: List[Long]): List[Long] = {
-  val rate = numberPeople/duration
-    if (acc.isEmpty) poissonProcess(duration, numberPeople, u, List(0 - (math.log(u.draw())/rate).toLong) )
+    val rate = numberPeople / duration
+    if (acc.isEmpty) poissonProcess(duration, numberPeople, u, List(0 - (math.log(u.draw()) / rate).toLong))
     else if (acc.head > duration) acc.tail.reverse
-    else poissonProcess(duration, numberPeople, u, acc.head - (math.log(u.draw())/rate).toLong :: acc )
+    else poissonProcess(duration, numberPeople, u, acc.head - (math.log(u.draw()) / rate).toLong :: acc)
   }
 
   //case class Pedestrian(oZone: Int, dZone: Int, entryTime: Double, meanVelocity: Double, travelTime: Double = Double.NaN, exitTime: Double = Double.NaN, travelDistance: Double = Double.NaN)

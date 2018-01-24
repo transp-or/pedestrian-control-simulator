@@ -44,7 +44,6 @@ package hubmodel.input {
     }
 
 
-
     //type Flow = (Double, (Double, Double))
     //type NodalFlow = (NodeID, Flow)
     //type ODFlow = (NodeID, NodeID, Flow)
@@ -63,24 +62,22 @@ package hubmodel.input {
         (JsPath \ "arrival-time").readNullable[LocalTime] and
         (JsPath \ "departure-time").readNullable[LocalTime] and
         (JsPath \ "capacity").read[Int](min(0))
-      )(Train.apply _)
+      ) (Train.apply _)
 
     implicit val trainTimeTableReads: Reads[TrainTimeTable] = (
       (JsPath \ "location").read[String](minLength[String](1)) and
         (JsPath \ "trains").read[Vector[Train]]
-    )(TrainTimeTable.apply _)
+      ) (TrainTimeTable.apply _)
 
     implicit val Track2NodesReads: Reads[Track2Nodes] = (
       (JsPath \ "track").read[Int] and
         (JsPath \ "nodes").read[Vector[NodeID]]
-      )(Track2Nodes.apply _)
+      ) (Track2Nodes.apply _)
 
     implicit val track2nodeMappingReads: Reads[Track2NodeMapping] = (
       (JsPath \ "location").read[String] and
         (JsPath \ "track2nodes").read[Vector[Track2Nodes]]
-      )(Track2NodeMapping.apply _)
-
-
+      ) (Track2NodeMapping.apply _)
 
 
     /* ----------------------------------------------------------------------------------
@@ -91,7 +88,7 @@ package hubmodel.input {
       (JsPath \ "origin").read[String](minLength[String](1)) and
         (JsPath \ "destination").read[String](minLength[String](1)) and
         (JsPath \ "flow").read[Double](min(0.0))
-      )(PTFlow.apply _)
+      ) (PTFlow.apply _)
 
 
     implicit val ExternalFlowReads: Reads[PedestrianFlow] = (
@@ -100,14 +97,14 @@ package hubmodel.input {
         (JsPath \ "start").read[LocalTime] and
         (JsPath \ "end").read[LocalTime] and
         (JsPath \ "flow").read[Double](min(0.0))
-      )(PedestrianFlow.apply _)
+      ) (PedestrianFlow.apply _)
 
 
     implicit val ODFlowDataReads: Reads[ODFlowData] = (
       (JsPath \ "location").read[String] and
         (JsPath \ "PTflows").read[Vector[PTFlow]] and
         (JsPath \ "flows").read[Vector[PedestrianFlow]]
-      )(ODFlowData.apply _)
+      ) (ODFlowData.apply _)
 
     def readODFlowData(fileName: String): ODFlowData = {
       val source: BufferedSource = scala.io.Source.fromFile(fileName)
@@ -125,28 +122,29 @@ package hubmodel.input {
     implicit val TrackAccessReads: Reads[TrackAccess] = (
       (JsPath \ "track").read[String] and
         (JsPath \ "access").read[Vector[(String, Double)]]
-      )(TrackAccess.apply _)
+      ) (TrackAccess.apply _)
 
     case class TrainTypeSplitFractions(trainType: String, capacity: Int, influence: Vector[TrackAccess])
 
     implicit val TrainTypeSplitFractionsReads: Reads[TrainTypeSplitFractions] = (
       (JsPath \ "type").read[String] and
         (JsPath \ "capacity").read[Int] and
-    (JsPath \ "influence").read[Vector[TrackAccess]]
-      )(TrainTypeSplitFractions.apply _)
+        (JsPath \ "influence").read[Vector[TrackAccess]]
+      ) (TrainTypeSplitFractions.apply _)
 
     case class SplitFractions(fractions: Vector[TrainTypeSplitFractions])
 
-   implicit val SplitFractionsReads: Reads[SplitFractions] =
-     (__ \ "train-type-influence").read[Vector[TrainTypeSplitFractions]].map{i => SplitFractions(i)}
-
+    implicit val SplitFractionsReads: Reads[SplitFractions] =
+      (__ \ "train-type-influence").read[Vector[TrainTypeSplitFractions]].map { i => SplitFractions(i) }
 
 
     /* ----------------------------------------------------------------------------------
                                   TRAIN INDUCED FLOWS (TINF)
     -----------------------------------------------------------------------------------*/
     // assuming uniform access distribution
-    val splitFractions: Iterable[NodeID] => Vector[Double] = nodes => Vector.fill(nodes.size){1.0/nodes.size}
+    val splitFractions: Iterable[NodeID] => Vector[Double] = nodes => Vector.fill(nodes.size) {
+      1.0 / nodes.size
+    }
 
     // assumes passenger use infrastructure to capacity
 
@@ -182,5 +180,6 @@ package hubmodel.input {
 
     // closing Demand package
   }
+
   // closing HubModel.HubInput package
 }

@@ -9,7 +9,7 @@ import org.slf4j.LoggerFactory
 /** Creates a logger with the specified name. All variables are private as only accessing the logger is needed, the
   * other variables are not required to use the logger.
   *
-  * @param name name of the logger
+  * @param name  name of the logger
   * @param level level to use, default is set DEBUG
   */
 class Log(name: String, level: Level = Level.DEBUG) {
@@ -19,7 +19,7 @@ class Log(name: String, level: Level = Level.DEBUG) {
   ple.setContext(lc)
   ple.start()
   private val fileAppender = new FileAppender[ILoggingEvent]
-  fileAppender.setFile(name+".log")
+  fileAppender.setFile("logs/" + name + ".log")
   fileAppender.setEncoder(ple)
   fileAppender.setContext(lc)
   fileAppender.start()

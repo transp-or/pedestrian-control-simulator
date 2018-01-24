@@ -710,7 +710,8 @@
       "start_pos_x": 51.5,
       "start_pos_y": 9.55,
       "end_pos_x": 54.5,
-      "end_pos_y": 9.55
+      "end_pos_y": 9.55,
+      "controlled_area": "piw_bottom_pl34"
     },
     {
       "o": "10a",
@@ -718,7 +719,21 @@
       "start_pos_x": 51.5,
       "start_pos_y": 17.05,
       "end_pos_x": 54.5,
-      "end_pos_y": 17.05
+      "end_pos_y": 17.05,
+      "controlled_area": "piw_bottom_pl34"
+    }
+  ],
+  "controlled_areas": [
+    {
+      "id": "piw_bottom_pl34",
+      "x1": 50.0,
+      "y1": 10.72,
+      "x2": 56,
+      "y2": 10.72,
+      "x3": 56.0,
+      "y3": 16.80,
+      "x4": 50.0,
+      "y4": 16.80
     }
   ],
   "binary_gates": [

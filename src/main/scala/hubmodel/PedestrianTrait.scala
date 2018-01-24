@@ -16,6 +16,12 @@ trait PedestrianTrait {
   /** destination zone */
   def dZone: NodeID
 
+  /** current position */
+  def currentPositionNew: NewBetterPosition2D
+
+  /** old current position */
+  def currentPosition: Position
+
   /** total travel time */
   def travelTime: Time
 
@@ -69,5 +75,7 @@ trait PedestrianTrait {
     *
     * @return the UUID transformed into hash code
     */
-  override def hashCode: Int = { ID.hashCode }
+  override def hashCode: Int = {
+    ID.hashCode
+  }
 }

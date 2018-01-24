@@ -22,10 +22,10 @@ case class Track2Nodes(track: Int, nodes: Vector[NodeID])
 
 /** Container for the track to nodes mapping
   *
-  * @param loc location of this map
+  * @param loc                    location of this map
   * @param Track2NodeMappingInput raw data
   */
-case class Track2NodeMapping(loc: String, private val Track2NodeMappingInput: Vector[Track2Nodes]){
+case class Track2NodeMapping(loc: String, private val Track2NodeMappingInput: Vector[Track2Nodes]) {
   val track2Nodes: Map[Int, Vector[NodeID]] = Track2NodeMappingInput.map(t => t.track -> t.nodes).toMap
 }
 
@@ -35,10 +35,10 @@ case class Track2NodeMapping(loc: String, private val Track2NodeMappingInput: Ve
 
 /** Train object. CAPACITY SHOULD BE CHANGED FOR A TRAIN TYPE AT SOME POINT
   *
-  * @param ID unique identifier (String)
-  * @param track track on which the train arrives
-  * @param arr arrival time
-  * @param dep departure time
+  * @param ID       unique identifier (String)
+  * @param track    track on which the train arrives
+  * @param arr      arrival time
+  * @param dep      departure time
   * @param capacity max capacity of the train
   */
 case class Train(ID: String, trainType: String, track: Int, arr: Option[LocalTime], dep: Option[LocalTime], capacity: Int) {
@@ -64,10 +64,10 @@ case class Train(ID: String, trainType: String, track: Int, arr: Option[LocalTim
 
 /** Storage of the train time table
   *
-  * @param loc in which station does this time table belong to
+  * @param loc             in which station does this time table belong to
   * @param _timeTableInput raw content of the time table
   */
-case class TrainTimeTable(loc: String, private val _timeTableInput: Vector[Train]){
+case class TrainTimeTable(loc: String, private val _timeTableInput: Vector[Train]) {
   val train2Track: Map[String, TrackID] = _timeTableInput.map(t => t.ID -> t.track).toMap
   val timeTable: Map[String, Train] = _timeTableInput.map(t => t.ID -> t).toMap
 }
@@ -88,7 +88,7 @@ class TimeTable(file: String) {
   }
 
   // time table: a list of trains identified by their ID
-  val trains: Map[String, Train]  = _timeTable.timeTable
+  val trains: Map[String, Train] = _timeTable.timeTable
 
   // map from the train's ID to the track
   val train2TrackMap: Map[String, TrackID] = _timeTable.train2Track
@@ -107,13 +107,15 @@ class TimeTable(file: String) {
   val track2Nodes: Map[TrackID, Vector[NodeID]] = _track2Node.track2Nodes
 
   // mapping from train to nodes
-  val train2Nodes: TrainID => Option[Vector[NodeID]] = train => Try{track2Nodes(train2TrackMap(train))}.toOption
+  val train2Nodes: TrainID => Option[Vector[NodeID]] = train => Try {
+    track2Nodes(train2TrackMap(train))
+  }.toOption
 
   // check if vectors of nodeID are the same
   def isOnSamePlatform(t1: TrainID, t2: TrainID): Boolean = {
     train2Nodes(t1) match {
       case Some(x) => train2Nodes(t2) match {
-        case Some(y) => x.sorted.zip(y.sorted).forall(p => p._1==p._2)
+        case Some(y) => x.sorted.zip(y.sorted).forall(p => p._1 == p._2)
         case None => false
       }
       case None => false
@@ -130,10 +132,10 @@ class TimeTable(file: String) {
 /** Flow of pedestrians
   *
   * @param start time of the beginning of the flows
-  * @param end time of the end of the flow
-  * @param O origin [[NodeID]] of the flow
-  * @param D destination [[NodeID]]
-  * @param f number of people
+  * @param end   time of the end of the flow
+  * @param O     origin [[NodeID]] of the flow
+  * @param D     destination [[NodeID]]
+  * @param f     number of people
   */
 case class PedestrianFlow(O: NodeID, D: NodeID, start: LocalTime, end: LocalTime, f: Double)
 

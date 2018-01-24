@@ -15,6 +15,7 @@ import scala.util.Try
 class NodeNaming(file: String) {
 
   case class String2Int(string: String, int: Int)
+
   implicit val String2IntReads: Reads[String2Int] = (
     (JsPath \ "string").read[String](minLength[String](1)) and
       (JsPath \ "int").read[Int]
@@ -35,18 +36,20 @@ class NodeNaming(file: String) {
   }
 
 
-    /*val string2IntMap: Map[String, Int] = {
-      val bufferedSource = scala.io.Source.fromFile(file)
-      for (line <- bufferedSource.getLines()) yield {
-        val cols = line.split(',').map(_.trim)
-        cols(0) -> cols(1).toInt
-      }
-    }.toMap*/
+  /*val string2IntMap: Map[String, Int] = {
+    val bufferedSource = scala.io.Source.fromFile(file)
+    for (line <- bufferedSource.getLines()) yield {
+      val cols = line.split(',').map(_.trim)
+      cols(0) -> cols(1).toInt
+    }
+  }.toMap*/
 
   val string2IntMap: Map[String, NodeID] = _String2Int.map(p => p.string -> p.int).toMap
   val int2StringMap: Map[NodeID, String] = string2IntMap.map(_.swap)
 
-  val string2Int: String => Option[Vector[NodeID]] = str => Try{Vector(string2IntMap(str))}.toOption
+  val string2Int: String => Option[Vector[NodeID]] = str => Try {
+    Vector(string2IntMap(str))
+  }.toOption
 
 
   assert(string2IntMap.size == int2StringMap.size)

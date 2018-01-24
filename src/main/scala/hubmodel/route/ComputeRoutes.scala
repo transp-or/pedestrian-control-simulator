@@ -1,6 +1,6 @@
 package hubmodel.route
 
-import hubmodel.Vertex
+import hubmodel.VertexCell
 import hubmodel.{Action, PedestrianDES, PedestrianSim, SFGraphSimulator}
 
 
@@ -25,13 +25,13 @@ import hubmodel.{Action, PedestrianDES, PedestrianSim, SFGraphSimulator}
 class UpdateRoutes(sim: SFGraphSimulator) extends Action {
   override def execute(): Unit = {
     sim.population.filter(sim.intermediateDestinationReached).filterNot(_.isWaiting).foreach(p => {
-      val newRoute: List[Vertex] = sim.graph.getShortestPath(p.nextZone, sim.graph.vertexMap(p.dZone.toString)).tail
+      val newRoute: List[VertexCell] = sim.graph.getShortestPath(p.nextZone, sim.graph.vertexMap(p.dZone.toString)).tail
       if (sim.closedEdges.exists(ce => ce._1 == p.nextZone && ce._2 == newRoute.head)) {
-        p.currentDestination = sim.graph.generateInZone(p.nextZone.name)
+        p.setCurrentDestination(p.nextZone.uniformSamplePointInside)
       } else {
         p.route = newRoute
         p.nextZone = newRoute.head
-        p.currentDestination = sim.graph.generateInZone(p.nextZone.name)
+        p.setCurrentDestination(p.nextZone.uniformSamplePointInside)
       }
     })
     sim.insertEventWithDelay(sim.sf_dt)(new UpdateRoutes(sim))

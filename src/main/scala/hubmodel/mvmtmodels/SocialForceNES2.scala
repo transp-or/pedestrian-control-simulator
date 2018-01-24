@@ -20,12 +20,12 @@ class SocialForceNES2(sim: SFGraphSimulator) extends SocialForceLike(sim) with A
     */
   protected def pedestrian2WallForce(ped: PedestrianSim, pos: Position): Force = {
     // set of parameters used for calculating the repulsive effects
-    val A: Double = 10.0/0.2
+    val A: Double = 10.0 / 0.2
     val B: Double = 0.2
-    val dir: Direction = (ped.currentPosition - pos)/breeze.linalg.norm(pos-ped.currentPosition)
+    val dir: Direction = (ped.currentPosition - pos) / breeze.linalg.norm(pos - ped.currentPosition)
     val dirOrtho: Direction = DenseVector(-dir(1), dir(0))
     //dir*( A*exp((ped.r - breeze.linalg.norm(ped.currentPosition-pos))/B) )
-    DenseVector(0.0,0.0)
+    DenseVector(0.0, 0.0)
   }
 
   protected def pedestrian2PedestrianForce(p1: PedestrianSim, p2: PedestrianSim): Force = {
@@ -44,17 +44,17 @@ class SocialForceNES2(sim: SFGraphSimulator) extends SocialForceLike(sim) with A
     //val tau: Double = 1.78 // [s]
 
     // vector from pedestrian2 pointing to pedestrian 1
-    val dab: Direction = p1.currentPosition-p2.currentPosition
+    val dab: Direction = p1.currentPosition - p2.currentPosition
     val yab: Direction = dab - dt * (p2.currentVelocity - p1.currentVelocity)
-    val bab: Double = 0.5*sqrt((pow(norm(dab) + norm(dab - yab),2) - pow(norm(yab),2))/(1+dt*norm(p1.currentVelocity)))
+    val bab: Double = 0.5 * sqrt((pow(norm(dab) + norm(dab - yab), 2) - pow(norm(yab), 2)) / (1 + dt * norm(p1.currentVelocity)))
 
     // angle of sight reduction
     val desiredDirection: Direction = computeDirection(p1.currentPosition, p1.currentDestination)
-    val w: Double = lambda + (1.0-lambda)*0.5*(1.0+desiredDirection.dot(dab/norm(dab)))
+    val w: Double = lambda + (1.0 - lambda) * 0.5 * (1.0 + desiredDirection.dot(dab / norm(dab)))
     //println(dab, yab, bab, desiredDirection,desiredDirection.dot(dab/norm(dab)),  w, exp(-bab/B), ((norm(dab) + norm(dab-yab))/2.0*bab) * 0.5 * (dab/norm(dab) + (dab-yab)/norm(dab-yab)))
 
     // final force
-    w*A*exp(-bab/B)*dab/norm(dab)
+    w * A * exp(-bab / B) * dab / norm(dab)
 
     // used by the interpretation of the model in (Social force model with explicit collision prediction)
     //val y12: Position = d21 - (p2.currentVelocity-p1.currentVelocity)*tau
@@ -63,6 +63,6 @@ class SocialForceNES2(sim: SFGraphSimulator) extends SocialForceLike(sim) with A
   }
 
 
-  protected def insertNextEvent(): Unit = sim.insertEventWithDelay(sim.sf_dt) (new SocialForceNES2(sim))
+  protected def insertNextEvent(): Unit = sim.insertEventWithDelay(sim.sf_dt)(new SocialForceNES2(sim))
 }
 

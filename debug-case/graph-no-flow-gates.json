@@ -625,7 +625,8 @@
   ],
   "flow_gates": [],
   "binary_gates": [],
-  "moving_walkways": []
+  "moving_walkways": [],
+  "controlled_areas": []
 }
 
 

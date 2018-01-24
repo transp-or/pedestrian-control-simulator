@@ -35,7 +35,7 @@ class EvaluateState(sim: SFGraphSimulator) extends Action with Controller {
       try {
         val voronoi: PowerDiagram = new PowerDiagram()
         val stupidList: OpenList = new OpenList()
-        sim.population.map(p => new Site(p.currentPosition(0), p.currentPosition(1)) ).foreach(stupidList.add)
+        sim.population.map(p => new Site(p.currentPosition(0), p.currentPosition(1))).foreach(stupidList.add)
         voronoi.setSites(stupidList)
         val box: PolygonSimple = new PolygonSimple
         box.add(sim.criticalArea.head.A(0), sim.criticalArea.head.A(1)) //21.440, 10.720)
@@ -47,9 +47,9 @@ class EvaluateState(sim: SFGraphSimulator) extends Action with Controller {
           (sim.currentTime, voronoi.computeDiagram().filter(s => isInVertex(sim.criticalArea.head)(DenseVector(s.x, s.y))).foldLeft(0.0)((acc: Double, n: Site) => acc + 1.0 / (paxInZone * n.getPolygon.getArea)))
         )
       } catch {
-        case e : Exception => {
+        case e: Exception => {
           sim.errorLogger.warn("sim-time=" + sim.currentTime + "exception when computing voronoi diagram, using standard density! " + sim.population.size + " people in sim and " + sim.population.count(p => isInVertex(sim.criticalArea.head)(p.currentPosition)) + " in box")
-          sim.densityHistory.append( (sim.currentTime, sim.population.count(p => isInVertex(sim.criticalArea.head)(p.currentPosition)).toDouble/sim.criticalArea.head.area) )
+          sim.densityHistory.append((sim.currentTime, sim.population.count(p => isInVertex(sim.criticalArea.head)(p.currentPosition)).toDouble / sim.criticalArea.head.area))
         }
       }
     }
@@ -60,7 +60,7 @@ class EvaluateState(sim: SFGraphSimulator) extends Action with Controller {
     }
     sim.eventLogger.trace("sim-time=" + sim.currentTime + ": number people inside critical area: " + sim.densityHistory.last._2)
     //sim.insertEventWithDelay(0) (new MoveGates)
-    if (sim.useFlowGates) sim.insertEventWithDelay(0) ( new PIGateController(sim) )
-    sim.insertEventWithDelay(sim.evaluate_dt) ( new EvaluateState(sim) )
+    if (sim.useFlowGates) sim.insertEventWithDelay(0)(new PIGateController(sim))
+    sim.insertEventWithDelay(sim.evaluate_dt)(new EvaluateState(sim))
   }
 }

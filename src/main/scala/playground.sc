@@ -263,8 +263,6 @@ new DrawCells(hexagons, "celltest.png", None, (xMax, yMax))
 
 */
 
-val v = Vector(1,2,3)
-val vv = Vector(4,5,6)
-Vector.fill(10)("r")
-
-Vector("time") ++ Vector.fill(10)("r").zipWithIndex.map(t => t._1+t._2.toString) ++ Vector("mean")
+val v = DenseVector(1.0, 2.0, 3.0)
+val vv = DenseVector(1.0, 2.0, 3.1)
+v.equals(vv)

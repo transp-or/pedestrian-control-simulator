@@ -8,7 +8,9 @@ import java.util.concurrent.ThreadLocalRandom
 
 import ch.qos.logback.classic.Level
 import ch.qos.logback.classic.Logger
+import myscala.math.algo.MTree
 
+import scala.collection.immutable.HashMap
 import scala.util.Random
 
 /**
@@ -30,10 +32,10 @@ abstract class PedestrianDES[T <: PedestrianTrait](val startTime: Time,
   val str: String = Random.alphanumeric take 10 mkString ""
 
   /** Log for keeping track of events */
-  val eventLogger: Logger = new Log("log-DES-events"+ str, Level.TRACE).logger
+  val eventLogger: Logger = new Log("log-DES-events" + str, Level.TRACE).logger
 
   /** Log for storing errors */
-  val errorLogger: Logger = new Log("log-DES-errors"+ str, Level.TRACE).logger
+  val errorLogger: Logger = new Log("log-DES-errors" + str, Level.TRACE).logger
 
   /** current time of the simulation */
   private var _currentTime: Time = startTime
@@ -64,6 +66,19 @@ abstract class PedestrianDES[T <: PedestrianTrait](val startTime: Time,
     */
   val eventList: collection.mutable.PriorityQueue[Event] = collection.mutable.PriorityQueue()
 
+  /** Use the new version of this method which uses the [[NewTime]] class.
+    * Inserts an event into the eventList after a given delay. No need for sorting as the PriorityQueue is always
+    * kept in sorted order. Events are only inserted if the ([[currentTime]] + delay) is
+    * lower than the [[finalTime]] of the simulation.
+    *
+    * @param delay  time after the [[currentTime]] at which the event must take place
+    * @param action the [[Action]] which must take place
+    */
+  @deprecated
+  def insertEventWithDelay[U <: Action](delay: Time)(action: U): Unit = {
+    if (currentTime + delay <= finalTime) eventList += new Event(currentTime + delay, action)
+  }
+
   /** Inserts an event into the eventList after a given delay. No need for sorting as the PriorityQueue is always
     * kept in sorted order. Events are only inserted if the ([[currentTime]] + delay) is
     * lower than the [[finalTime]] of the simulation.
@@ -71,9 +86,11 @@ abstract class PedestrianDES[T <: PedestrianTrait](val startTime: Time,
     * @param delay  time after the [[currentTime]] at which the event must take place
     * @param action the [[Action]] which must take place
     */
-  def insertEventWithDelay[T <: Action](delay: Time)(action: T): Unit = {
-    if (currentTime + delay <= finalTime) eventList += new Event(currentTime + delay, action)
+  def insertEventWithDelayNew[U <: Action](delay: NewTime)(action: U): Unit = {
+    if (currentTime + delay.time <= finalTime) eventList += new Event(currentTime + delay.time, action)
   }
+
+
 
   /** Inserts an event into the eventList at a specific time. No need for sorting as the PriorityQueue is always
     * kept in sorted order. Events are only inserted if the ([[currentTime]] + delay) is
@@ -82,7 +99,7 @@ abstract class PedestrianDES[T <: PedestrianTrait](val startTime: Time,
     * @param t      time after the [[currentTime]] at which the event must take place
     * @param action the [[Action]] which must take place
     */
-  def insertEventAtAbsolute[T <: Action](t: Time)(action: T): Unit = {
+  def insertEventAtAbsolute[U <: Action](t: Time)(action: U): Unit = {
     if (startTime <= t && t <= finalTime) eventList += new Event(t, action)
   }
 
@@ -96,16 +113,50 @@ abstract class PedestrianDES[T <: PedestrianTrait](val startTime: Time,
 
   def append2Population(p: T): Unit = synchronized(_population :+= p)
 
-  def removeFromPopulation(condition: T => Boolean): Unit = synchronized(_population = _population.filterNot(condition))
+  def removeFromPopulation(condition: T => Boolean): Unit = {
+    synchronized(_population = _population.filterNot(condition))
+  }
 
   def population: Vector[T] = synchronized(_population)
+
+  /** New population structure using a map where keys are IDs
+    * This makes the usage of a tree for serching neigbors easier */
+  private val _populationNew: collection.mutable.Map[String, T] = collection.mutable.Map()
+
+  def append2PopulationNew(p: T): Unit = {
+    synchronized(_populationNew += (p.ID -> p))
+    this.populationMTree.insert(p.ID, p.currentPositionNew)
+    this.ID2Position = this.ID2Position + (p.ID -> p.currentPositionNew)
+  }
+
+  def removeFromPopulationNew(condition: T => Boolean): Unit = synchronized(_populationNew.retain((k,v) => !condition(v)))
+
+  private var populationMTree: MTree[Vector2D] = new MTree(distance: (Vector2D, Vector2D) => Double)
+  private var ID2Position: Map[String, Vector2D] = HashMap()
+
+  def rebuildMTree(): Unit = {
+    this.populationMTree = new MTree[Vector2D](distance: (Vector2D, Vector2D) => Double)
+    ID2Position = this._populationNew.mapValues(p => (p.ID, p.currentPositionNew)).values.toMap
+    this.populationMTree.insertAll(ID2Position)
+  }
+
+  def findNeighbours(id: String, r: Double): Iterable[T] = {
+    this.populationMTree.findInRange(id, this.ID2Position(id), r).map(id => this._populationNew.getOrElse(id, throw new IndexOutOfBoundsException))
+  }
+
+  def populationNew: Iterable[T] = this._populationNew.values
+
+
+
 
   /** Immutable structure for storing the pedestrians who have left the system.
     * The only operation which is allowed is to append another population.
     */
   private var _populationCompleted: Vector[T] = Vector()
 
-  def concatenate2PopulationCompleted(pop: Vector[T]): Unit = synchronized(_populationCompleted ++= pop)
+  def concatenate2PopulationCompleted(pop: Iterable[T]): Unit = {
+    synchronized(_populationCompleted ++= pop)
+  }
 
   def populationCompleted: Vector[T] = synchronized(_populationCompleted)
 
@@ -182,7 +233,9 @@ abstract class PedestrianDES[T <: PedestrianTrait](val startTime: Time,
     * until the list is empty.
     */
   def genericRun(startEvent: GenericStartSim): Unit = {
-    insertEventWithDelay(0) { startEvent }
+    insertEventWithDelay(0) {
+      startEvent
+    }
     while (this.eventList.nonEmpty) {
       val event = eventList.dequeue()
       this._currentTime = event.t

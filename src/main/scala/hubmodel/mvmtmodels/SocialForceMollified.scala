@@ -12,9 +12,9 @@ import scala.math.pow
   */
 class SocialForceMollified(sim: SFGraphSimulator) extends SocialForceLike(sim) with Action {
 
-// set epsilon to 0.1
+  // set epsilon to 0.1
   override protected def computeDirection(pos: Position, goal: Position): Direction = {
-      (goal - pos) / sqrt(pow(goal(0)-pos(0),2) + pow(goal(1) - pos(1),2) + 0.1*0.1)
+    (goal - pos) / sqrt(pow(goal(0) - pos(0), 2) + pow(goal(1) - pos(1), 2) + 0.1 * 0.1)
   }
 
   /** Compute the force affecting the pedestrian. No need to pass pedestrian as argument as the function gets
@@ -33,7 +33,7 @@ class SocialForceMollified(sim: SFGraphSimulator) extends SocialForceLike(sim) w
     val dir: Direction = (ped.currentPosition - pos) / breeze.linalg.norm(pos - ped.currentPosition)
     val dirOrtho: Direction = DenseVector(-dir(1), dir(0))
     dir * (
-      A * exp(-norm(ped.currentPosition - pos)/B))/* +
+      A * exp(-norm(ped.currentPosition - pos) / B)) /* +
         k1 * max(0.0, ped.r - breeze.linalg.norm(ped.currentPosition - pos))
       ) +
       k2 * max(0.0, ped.r - breeze.linalg.norm(ped.currentPosition - pos)) * ped.currentVelocity.dot(dirOrtho) * dirOrtho*/
@@ -46,7 +46,7 @@ class SocialForceMollified(sim: SFGraphSimulator) extends SocialForceLike(sim) w
     * @return force acting on p1 created by p2
     */
   protected def pedestrian2PedestrianForce(p1: PedestrianSim, p2: PedestrianSim): Force = {
-    val A: Double = 2.1/0.3
+    val A: Double = 2.1 / 0.3
     val B: Double = 0.3
     val lambda: Double = 1.0
     val tau: Double = 1.0
@@ -55,16 +55,16 @@ class SocialForceMollified(sim: SFGraphSimulator) extends SocialForceLike(sim) w
     //f * angleSightCoefficient(computeDirection(p1.currentPosition, p1.currentDestination), f)
     // angle of sight reduction
 
-    val dab: Direction = p1.currentPosition-p2.currentPosition
+    val dab: Direction = p1.currentPosition - p2.currentPosition
     val yab: Direction = dt * p2.currentVelocity
-    val bab: Double = 0.5*sqrt(pow(norm(dab) + norm(dab - yab),2) - pow(norm(yab),2))
+    val bab: Double = 0.5 * sqrt(pow(norm(dab) + norm(dab - yab), 2) - pow(norm(yab), 2))
 
     val desiredDirection: Direction = computeDirection(p1.currentPosition, p1.currentDestination)
-    val w: Double = lambda + (1.0-lambda)*0.5*(1.0+desiredDirection.dot(dab/norm(dab)))
-    println(dab, yab, bab, desiredDirection,desiredDirection.dot(dab/norm(dab)), exp(-bab/B), ((norm(dab) + norm(dab-yab))/2.0*bab) * 0.5 * (dab/norm(dab) + (dab-yab)/norm(dab-yab)))
+    val w: Double = lambda + (1.0 - lambda) * 0.5 * (1.0 + desiredDirection.dot(dab / norm(dab)))
+    println(dab, yab, bab, desiredDirection, desiredDirection.dot(dab / norm(dab)), exp(-bab / B), ((norm(dab) + norm(dab - yab)) / 2.0 * bab) * 0.5 * (dab / norm(dab) + (dab - yab) / norm(dab - yab)))
 
     // final force
-    A*exp(-bab/B) * ((norm(dab) + norm(dab-yab))/2.0*bab) * 0.5 * (dab/norm(dab) + (dab-yab)/norm(dab-yab))
+    A * exp(-bab / B) * ((norm(dab) + norm(dab - yab)) / 2.0 * bab) * 0.5 * (dab / norm(dab) + (dab - yab) / norm(dab - yab))
 
     /*
     val d21: Direction = p1.currentPosition-p2.currentPosition

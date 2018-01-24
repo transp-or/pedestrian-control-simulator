@@ -13,9 +13,20 @@ package hubmodel.input {
     *
     */
   package object infrastructure {
+
+    type WallType = Int
+
+    final val OUTERSHELL: WallType = 0
+    final val SINGLELINE: WallType = 1
+    final val INNERSHELL: WallType = 2
+
+
     abstract class NodeParent
+
     case class NodeID_New(ID: Int, humanID: String) extends NodeParent
+
     case class TrackID_New(ID: Int, humanID: String) extends NodeParent
+
     case class TrainID_New(ID: String, humanID: String) extends NodeParent
 
     type NodeID = Int
@@ -40,7 +51,7 @@ package hubmodel.input {
                           JSON parser for social force infrastructure
     -----------------------------------------------------------------------------------*/
 
-    case class Doorway(comment: String, x1: Double, y1: Double, x2: Double, y2: Double){
+    case class Doorway(comment: String, x1: Double, y1: Double, x2: Double, y2: Double) {
       val startPoint: Position = breeze.linalg.DenseVector(x1, y1)
       val endPoint: Position = breeze.linalg.DenseVector(x2, y2)
     }
@@ -74,7 +85,7 @@ package hubmodel.input {
       * @param x2 x coord of second point
       * @param y2 y coord of second point
       */
-    case class Wall(comment: String, x1: Double, y1: Double, x2: Double, y2: Double){
+    case class Wall(comment: String, x1: Double, y1: Double, x2: Double, y2: Double, wallType: Int) {
       val startPoint: Position = breeze.linalg.DenseVector(x1, y1)
       val endPoint: Position = breeze.linalg.DenseVector(x2, y2)
     }
@@ -84,10 +95,11 @@ package hubmodel.input {
       */
     implicit val WallReads: Reads[Wall] = (
       (JsPath \ "comment").read[String] and
-      (JsPath \ "x1").read[Double] and
+        (JsPath \ "x1").read[Double] and
         (JsPath \ "y1").read[Double] and
         (JsPath \ "x2").read[Double] and
-        (JsPath \ "y2").read[Double]
+        (JsPath \ "y2").read[Double] and
+        (JsPath \ "type").read[Int]
       ) (Wall.apply _)
 
     /** Writer for a single Wall
@@ -95,19 +107,21 @@ package hubmodel.input {
       */
     implicit val WallWrites: Writes[Wall] = (
       (JsPath \ "comment").write[String] and
-      (JsPath \ "x1").write[Double] and
+        (JsPath \ "x1").write[Double] and
         (JsPath \ "y1").write[Double] and
         (JsPath \ "x2").write[Double] and
-        (JsPath \ "y2").write[Double]
+        (JsPath \ "y2").write[Double] and
+        (JsPath \ "type").write[Int]
       ) (unlift(Wall.unapply))
 
     /** For reading JSON files storing the specs
       *
-      * @param location main location
+      * @param location    main location
       * @param subLocation subarea
-      * @param walls vector storing the walls
+      * @param walls       vector storing the walls
       */
     case class InfraSFParser(location: String, subLocation: String, walls: Vector[Wall]) extends Infrastructure
+
     implicit val InfraSFParserWrites: Writes[InfraSFParser] = (
       (JsPath \ "location").write[String] and
         (JsPath \ "sublocation").write[String] and
@@ -125,11 +139,12 @@ package hubmodel.input {
 
     /** For reading JSON files storing the specs
       *
-      * @param location main location
+      * @param location    main location
       * @param subLocation subarea
-      * @param walls vector storing the walls
+      * @param walls       vector storing the walls
       */
     case class InfraSFParserWithDoor(location: String, subLocation: String, walls: Vector[Wall], doors: Vector[Doorway]) extends Infrastructure
+
     implicit val InfraSFParserWithDoorWrites: Writes[InfraSFParserWithDoor] = (
       (JsPath \ "location").write[String] and
         (JsPath \ "sublocation").write[String] and
@@ -186,8 +201,8 @@ package hubmodel.input {
       ) (NodeRouteGraph_JSON.apply _)
 
 
-
     case class Connectivity_JSON(node: String, conn: List[String])
+
     implicit val Connectivity_JSONWrites: Writes[Connectivity_JSON] = (
       (JsPath \ "node").write[String] and
         (JsPath \ "connected_to").write[List[String]]
@@ -198,7 +213,7 @@ package hubmodel.input {
         (JsPath \ "connected_to").read[List[String]]
       ) (Connectivity_JSON.apply _)
 
-    case class FlowGates_JSON(o: String, d: String, start_pos_x: Double, start_pos_y: Double, end_pos_x: Double, end_pos_y: Double)
+    case class FlowGates_JSON(o: String, d: String, start_pos_x: Double, start_pos_y: Double, end_pos_x: Double, end_pos_y: Double, area: String)
 
     implicit val FlowGates_JSONWrites: Writes[FlowGates_JSON] = (
       (JsPath \ "o").write[String] and
@@ -206,7 +221,8 @@ package hubmodel.input {
         (JsPath \ "start_pos_x").write[Double] and
         (JsPath \ "start_pos_y").write[Double] and
         (JsPath \ "end_pos_x").write[Double] and
-        (JsPath \ "end_pos_y").write[Double]
+        (JsPath \ "end_pos_y").write[Double] and
+        (JsPath \ "monitored_area").write[String]
       ) (unlift(FlowGates_JSON.unapply))
 
     implicit val FlowGates_JSONReads: Reads[FlowGates_JSON] = (
@@ -215,7 +231,8 @@ package hubmodel.input {
         (JsPath \ "start_pos_x").read[Double] and
         (JsPath \ "start_pos_y").read[Double] and
         (JsPath \ "end_pos_x").read[Double] and
-        (JsPath \ "end_pos_y").read[Double]
+        (JsPath \ "end_pos_y").read[Double] and
+        (JsPath \ "monitored_area").read[String]
       ) (FlowGates_JSON.apply _)
 
     case class MovingWalkways_JSON(o: String, d: String)
@@ -230,27 +247,76 @@ package hubmodel.input {
         (JsPath \ "d").read[String]
       ) (MovingWalkways_JSON.apply _)
 
-    case class BinaryGates_JSON(o: String, d: String, inflow_to: String, s_x: Double, s_y: Double, e_x: Double, e_y: Double)
+    case class BinaryGates_JSON(o: String, d: String, s_x: Double, s_y: Double, e_x: Double, e_y: Double, area: String)
 
     implicit val BinaryGates_JSONWrites: Writes[BinaryGates_JSON] = (
       (JsPath \ "o").write[String] and
         (JsPath \ "d").write[String] and
-        (JsPath \ "inflow_to").write[String] and
         (JsPath \ "startPos_x").write[Double] and
         (JsPath \ "startPos_y").write[Double] and
         (JsPath \ "endPos_x").write[Double] and
-        (JsPath \ "endPos_y").write[Double]
+        (JsPath \ "endPos_y").write[Double] and
+        (JsPath \ "monitored_area").write[String]
       ) (unlift(BinaryGates_JSON.unapply))
 
     implicit val BinaryGates_JSONReads: Reads[BinaryGates_JSON] = (
       (JsPath \ "o").read[String] and
         (JsPath \ "d").read[String] and
-        (JsPath \ "inflow_to").read[String] and
         (JsPath \ "startPos_x").read[Double] and
         (JsPath \ "startPos_y").read[Double] and
         (JsPath \ "endPos_x").read[Double] and
-        (JsPath \ "endPos_y").read[Double]
+        (JsPath \ "endPos_y").read[Double] and
+        (JsPath \ "monitored_area").read[String]
       ) (BinaryGates_JSON.apply _)
+
+    case class ControlAreas_JSON(name: String, x1: Double, y1: Double, x2: Double, y2: Double, x3: Double, y3: Double, x4: Double, y4: Double)
+
+    implicit val ControlAreas_JSONWrites: Writes[ControlAreas_JSON] = (
+      (JsPath \ "name").write[String] and
+        (JsPath \ "x1").write[Double] and
+        (JsPath \ "y1").write[Double] and
+        (JsPath \ "x2").write[Double] and
+        (JsPath \ "y2").write[Double] and
+        (JsPath \ "x3").write[Double] and
+        (JsPath \ "y3").write[Double] and
+        (JsPath \ "x4").write[Double] and
+        (JsPath \ "y4").write[Double]
+      ) (unlift(ControlAreas_JSON.unapply))
+
+    implicit val ControlAreas_JSONReads: Reads[ControlAreas_JSON] = (
+      (JsPath \ "name").read[String] and
+        (JsPath \ "x1").read[Double] and
+        (JsPath \ "y1").read[Double] and
+        (JsPath \ "x2").read[Double] and
+        (JsPath \ "y2").read[Double] and
+        (JsPath \ "x3").read[Double] and
+        (JsPath \ "y3").read[Double] and
+        (JsPath \ "x4").read[Double] and
+        (JsPath \ "y4").read[Double]
+      ) (ControlAreas_JSON.apply _)
+
+    case class ControlElementsParser(criticalZones: Vector[ControlAreas_JSON],
+                                     amws: Vector[MovingWalkways_JSON],
+                                     flowGates: Vector[FlowGates_JSON],
+                                     binaryGates: Vector[BinaryGates_JSON]
+    )
+
+    implicit val ControlElementsParserWrites: Writes[ControlElementsParser] = (
+      (JsPath \ "controlled_areas").write[Vector[ControlAreas_JSON]] and
+        (JsPath \ "moving_walkways").write[Vector[MovingWalkways_JSON]] and
+        (JsPath \ "flow_gates").write[Vector[FlowGates_JSON]] and
+        (JsPath \ "binary_gates").write[Vector[BinaryGates_JSON]]
+      ) (unlift(ControlElementsParser.unapply))
+
+    /** Writer for SF infrastructure specifications
+      *
+      */
+    implicit val ControlElementsParserReads: Reads[ControlElementsParser] = (
+      (JsPath \ "controlled_areas").read[Vector[ControlAreas_JSON]] and
+        (JsPath \ "moving_walkways").read[Vector[MovingWalkways_JSON]] and
+        (JsPath \ "flow_gates").read[Vector[FlowGates_JSON]] and
+        (JsPath \ "binary_gates").read[Vector[BinaryGates_JSON]]
+      ) (ControlElementsParser.apply _)
 
 
     case class InfraGraphParser(location: String,
@@ -258,6 +324,7 @@ package hubmodel.input {
                                 nodes: Vector[NodeRouteGraph_JSON],
                                 standardConnections: Vector[Connectivity_JSON],
                                 flowGates: Vector[FlowGates_JSON],
+                                controlledAreas: Vector[ControlAreas_JSON],
                                 binaryGates: Vector[BinaryGates_JSON],
                                 movingWalkways: Vector[MovingWalkways_JSON]) extends Infrastructure
 
@@ -270,6 +337,7 @@ package hubmodel.input {
         (JsPath \ "nodes").write[Vector[NodeRouteGraph_JSON]] and
         (JsPath \ "connectivity").write[Vector[Connectivity_JSON]] and
         (JsPath \ "flow_gates").write[Vector[FlowGates_JSON]] and
+        (JsPath \ "controlled_areas").write[Vector[ControlAreas_JSON]] and
         (JsPath \ "binary_gates").write[Vector[BinaryGates_JSON]] and
         (JsPath \ "moving_walkways").write[Vector[MovingWalkways_JSON]]
       ) (unlift(InfraGraphParser.unapply))
@@ -283,6 +351,7 @@ package hubmodel.input {
         (JsPath \ "nodes").read[Vector[NodeRouteGraph_JSON]] and
         (JsPath \ "connectivity").read[Vector[Connectivity_JSON]] and
         (JsPath \ "flow_gates").read[Vector[FlowGates_JSON]] and
+        (JsPath \ "controlled_areas").read[Vector[ControlAreas_JSON]] and
         (JsPath \ "binary_gates").read[Vector[BinaryGates_JSON]] and
         (JsPath \ "moving_walkways").read[Vector[MovingWalkways_JSON]]
       ) (InfraGraphParser.apply _)
@@ -295,6 +364,7 @@ package hubmodel.input {
 
     // ------------ Node to platform mapping -----------------//
     case class Node2PlatMapping(node: String, plat: String)
+
     implicit val MappingNodePlatReads: Reads[Node2PlatMapping] = (
       (JsPath \ "node").read[String] and
         (JsPath \ "platform").read[String]
@@ -305,6 +375,7 @@ package hubmodel.input {
       ) (unlift(Node2PlatMapping.unapply))
 
     case class Platform2TrackMapping(platform: String, tracks: Vector[Int])
+
     implicit val MappingPlatTrackReads: Reads[Platform2TrackMapping] = (
       (JsPath \ "platform").read[String] and
         (JsPath \ "tracks").read[Vector[Int]]
@@ -316,37 +387,37 @@ package hubmodel.input {
 
 
     //object InfraODParser {
-      implicit val InfraODWrites: Writes[InfraODParser] = (
-        (JsPath \ "location").write[String] and
-          (JsPath \ "sublocation").write[String] and
-          (JsPath \ "od").write[Vector[ODPairWithoutCapacity]] and
-          (JsPath \ "nodethroughput").write[Vector[NodeThroughput]] and
-          (JsPath \ "nodeplatform").write[Vector[Node2PlatMapping]] and
-          (JsPath \ "platformtrack").write[Vector[Platform2TrackMapping]]
-        ) (unlift(InfraODParser.unapply))
+    implicit val InfraODWrites: Writes[InfraODParser] = (
+      (JsPath \ "location").write[String] and
+        (JsPath \ "sublocation").write[String] and
+        (JsPath \ "od").write[Vector[ODPairWithoutCapacity]] and
+        (JsPath \ "nodethroughput").write[Vector[NodeThroughput]] and
+        (JsPath \ "nodeplatform").write[Vector[Node2PlatMapping]] and
+        (JsPath \ "platformtrack").write[Vector[Platform2TrackMapping]]
+      ) (unlift(InfraODParser.unapply))
 
-      // reads the InfraOD object from JSON. This is the full network as an OD matrix
-      implicit val InfraODReads: Reads[InfraODParser] = (
-        (JsPath \ "location").read[String](minLength[String](2)) and
-          (JsPath \ "sublocation").read[String](minLength[String](2)) and
-          (JsPath \ "od").read[Vector[ODPairWithoutCapacity]] and
-          (JsPath \ "nodethroughput").read[Vector[NodeThroughput]] and
-          (JsPath \ "nodeplatform").read[Vector[Node2PlatMapping]] and
-          (JsPath \ "platformtrack").read[Vector[Platform2TrackMapping]]
-        ) (InfraODParser.apply _)
+    // reads the InfraOD object from JSON. This is the full network as an OD matrix
+    implicit val InfraODReads: Reads[InfraODParser] = (
+      (JsPath \ "location").read[String](minLength[String](2)) and
+        (JsPath \ "sublocation").read[String](minLength[String](2)) and
+        (JsPath \ "od").read[Vector[ODPairWithoutCapacity]] and
+        (JsPath \ "nodethroughput").read[Vector[NodeThroughput]] and
+        (JsPath \ "nodeplatform").read[Vector[Node2PlatMapping]] and
+        (JsPath \ "platformtrack").read[Vector[Platform2TrackMapping]]
+      ) (InfraODParser.apply _)
 
-      // form https://gist.github.com/alexanderjarvis/4595298
-      /*implicit def tuple2Writes[A, B](implicit a: Writes[A], b: Writes[B]): Writes[Tuple2[A, B]] = new Writes[Tuple2[A, B]] {
-        def writes(tuple: Tuple2[A, B]) = JsArray(Seq(a.writes(tuple._1), b.writes(tuple._2)))
-      }
+    // form https://gist.github.com/alexanderjarvis/4595298
+    /*implicit def tuple2Writes[A, B](implicit a: Writes[A], b: Writes[B]): Writes[Tuple2[A, B]] = new Writes[Tuple2[A, B]] {
+      def writes(tuple: Tuple2[A, B]) = JsArray(Seq(a.writes(tuple._1), b.writes(tuple._2)))
+    }
 
-      implicit def tuple2Reads[A, B](implicit aReads: Reads[A], bReads: Reads[B]): Reads[Tuple2[A, B]] = Reads[Tuple2[A, B]] {
-        case JsArray(arr) if arr.size == 2 => for {
-          a <- aReads.reads(arr(0))
-          b <- bReads.reads(arr(1))
-        } yield (a, b)
-        case _ => JsError(Seq(JsPath() -> Seq(ValidationError("Expected array of two elements"))))
-      }*/
+    implicit def tuple2Reads[A, B](implicit aReads: Reads[A], bReads: Reads[B]): Reads[Tuple2[A, B]] = Reads[Tuple2[A, B]] {
+      case JsArray(arr) if arr.size == 2 => for {
+        a <- aReads.reads(arr(0))
+        b <- bReads.reads(arr(1))
+      } yield (a, b)
+      case _ => JsError(Seq(JsPath() -> Seq(ValidationError("Expected array of two elements"))))
+    }*/
     //}
 
     /* ----------------------------------------------------------------------------------

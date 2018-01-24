@@ -29,6 +29,7 @@ object JSON {
   }
 
   case class TTbyODQuantiles(location: String, od_tt_quantiles: Iterable[ODQuantiles])
+
   implicit val TTbyODQuantilesWrites: Writes[TTbyODQuantiles] = Json.writes[TTbyODQuantiles]
 
 }

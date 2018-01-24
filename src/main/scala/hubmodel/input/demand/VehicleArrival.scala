@@ -19,7 +19,9 @@ class InsertVehicleArrivals(sim: SFGraphSimulator) extends Action {
     */
   override def execute(): Unit = {
     sim.eventLogger.trace("time=" + sim.currentTime + ": inserting vehicles")
-    sim.timeTable.trains.filter(t => t._2.arr.isDefined).foreach(t => sim.insertEventAtAbsolute(t._2.arr.get.toSecondOfDay){new VehicleArrival(t._2, sim) } )
+    sim.timeTable.trains.filter(t => t._2.arr.isDefined).foreach(t => sim.insertEventAtAbsolute(t._2.arr.get.toSecondOfDay) {
+      new VehicleArrival(t._2, sim)
+    })
   }
 }
 
@@ -30,12 +32,14 @@ class InsertVehicleArrivals(sim: SFGraphSimulator) extends Action {
   * Need to adapt it to more generic situations then trains (metros, buses, trams).
   *
   * @param train Train instance to insert
-  * @param sim simulation environment
+  * @param sim   simulation environment
   */
 class VehicleArrival(train: Train, sim: SFGraphSimulator) extends Action {
   override def execute(): Unit = {
     sim.eventLogger.trace("time=" + sim.currentTime + ": vehicle arrival")
-    trainInducedFlow(train).foreach(flow => sim.insertEventWithDelay(0){new PedestrianGeneration(flow.O, flow.D, flow.start.toSecondOfDay, flow.end.toSecondOfDay, flow.f, sim)})
+    trainInducedFlow(train).foreach(flow => sim.insertEventWithDelay(0) {
+      new PedestrianGeneration(flow.O, flow.D, flow.start.toSecondOfDay, flow.end.toSecondOfDay, flow.f, sim)
+    })
 
 
     // start and end must be relative to train arrival !!!!
@@ -56,7 +60,7 @@ class VehicleArrival(train: Train, sim: SFGraphSimulator) extends Action {
       /** Vector of required connections extracted from the passenger flows */
       val requiredLinks: Vector[(ODID, ODID)] = departingFlows.map(p => (p.origin, p.destination))
 
-      /** Union of both mapping functions, trains to NodeID and strings to NodeID*/
+      /** Union of both mapping functions, trains to NodeID and strings to NodeID */
       val OD2Nodes: String => Vector[NodeID] = str => {
         sim.timeTable.train2Nodes(str) match {
           case Some(x) => x
@@ -77,15 +81,17 @@ class VehicleArrival(train: Train, sim: SFGraphSimulator) extends Action {
         linksAsNodesMap.map(c => c._1 -> connectionsToSplitFractionsHelper(c._2._1, c._2._2))
 
       departingFlows
-        .filter(PTFlow => {!sim.timeTable.isOnSamePlatform(PTFlow.origin, PTFlow.destination)})
+        .filter(PTFlow => {
+          !sim.timeTable.isOnSamePlatform(PTFlow.origin, PTFlow.destination)
+        })
         .flatMap(p => {
           connectionsToSplitFractions(p.origin, p.destination).map(c =>
             PedestrianFlow(c._1, c._2, string2LocalTime("00:00:00"), string2LocalTime("00:00:00").plusSeconds(120), math.round(p.f * c._3))
           ) // very strong assumption: alighting happens in 2 minutes. Need to relax this later on
         })
     }
-    }
+  }
 
-    //sim.insertEvent(1)( new PedestrianGeneration(sim.currentTime, sim.currentTime + 15, 15) )
+  //sim.insertEvent(1)( new PedestrianGeneration(sim.currentTime, sim.currentTime + 15, 15) )
 
 }

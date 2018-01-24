@@ -6,6 +6,7 @@ import hubmodel.{Acceleration, Direction, Force, PedestrianDES, PedestrianSim, P
 
 import scala.collection.mutable.ArrayBuffer
 import scala.math.pow
+
 /*
 class HeadedSocialForce(sim: SFGraphSimulator) extends SocialForce(sim) {
 

@@ -62,7 +62,7 @@
     {
       "id": "12217",
       "type": "S21",
-      "track": 6,
+      "track": 3,
       "arrival-time": "07:25:00",
       "departure-time": "07:30:00",
       "capacity": 515
@@ -71,7 +71,7 @@
       "id": "12218",
       "type": "S2",
       "track": 4,
-      "arrival-time": "07:30:00",
+      "arrival-time": "07:27:00",
       "departure-time": "07:32:00",
       "capacity": 517
     },
@@ -86,9 +86,9 @@
     {
       "id": "12318",
       "type": "S3",
-      "track": 8,
+      "track": 4,
       "arrival-time": "07:24:00",
-      "departure-time": "07:26:00",
+      "departure-time": "07:28:00",
       "capacity": 514
     }
   ]

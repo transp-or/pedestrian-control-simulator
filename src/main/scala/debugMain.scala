@@ -5,6 +5,7 @@ import hubmodel.{Position, generateUUID}
 import hubmodel.output.DrawCells
 import hubmodel.route.MyCell
 import hubmodel.timeBlock
+
 /*
   val qInterval1 = computeQuantiles(0.0 to 100.0 by 1.0)_
   val qInterval10 = computeQuantiles(0.0 to 100.0 by 10.0)_
@@ -19,7 +20,6 @@ import hubmodel.timeBlock
 */
 
 object debugMain extends App {
-
 
 
   import scala.collection.SortedSet
@@ -167,27 +167,27 @@ object debugMain extends App {
     val yMin2 = 7.0
     val yMax2 = 13.0
 
-    (p(0) >= xMin1 && p(0) <=xMax1 && p(1) >= yMin1 && p(1) <= yMax1) || (p(0) >= xMin2 && p(0) <=xMax2 && p(1) >= yMin2 && p(1) <= yMax2)
+    (p(0) >= xMin1 && p(0) <= xMax1 && p(1) >= yMin1 && p(1) <= yMax1) || (p(0) >= xMin2 && p(0) <= xMax2 && p(1) >= yMin2 && p(1) <= yMax2)
   }
 
 
   val hexagons: IndexedSeq[MyCell] = (for (
-    x <- xMin to xMax by 2*radius*cos(30.0*math.Pi/180.0);
-    y <- yMin to yMax by 3*radius)
+    x <- xMin to xMax by 2 * radius * cos(30.0 * math.Pi / 180.0);
+    y <- yMin to yMax by 3 * radius)
     yield {
-      MyCell(DenseVector(x,y), radius)
+      MyCell(DenseVector(x, y), radius)
     }).filter(h => h.angles.exists(insideSpace)) ++ (for (
-    x <- (xMin+radius*cos(30.0*math.Pi/180.0)) to xMax by 2*radius*cos(30.0*math.Pi/180.0);
-    y <- yMin+1.5*radius to yMax by 3*radius)
+    x <- (xMin + radius * cos(30.0 * math.Pi / 180.0)) to xMax by 2 * radius * cos(30.0 * math.Pi / 180.0);
+    y <- yMin + 1.5 * radius to yMax by 3 * radius)
     yield {
-      MyCell(DenseVector(x,y), radius)
+      MyCell(DenseVector(x, y), radius)
     }).filter(h => h.angles.exists(insideSpace))
 
 
-  val connections2: Map[MyCell, List[MyCell]] = hexagons.map(h => h -> hexagons.filter(hin => breeze.linalg.norm(h.center - hin.center) < 1.01*2*radius*cos(30.0*math.Pi/180.0)).filterNot(h == _).toList).toMap
+  val connections2: Map[MyCell, List[MyCell]] = hexagons.map(h => h -> hexagons.filter(hin => breeze.linalg.norm(h.center - hin.center) < 1.01 * 2 * radius * cos(30.0 * math.Pi / 180.0)).filterNot(h == _).toList).toMap
 
 
-  val doorwayPoints = (9.0 to 11.0 by 0.25).map(y => DenseVector(0.0,y))
+  val doorwayPoints = (9.0 to 11.0 by 0.25).map(y => DenseVector(0.0, y))
 
   val finalCells: IndexedSeq[MyCell] = hexagons.filter(h => doorwayPoints.exists(h.isInside))
 
@@ -229,13 +229,15 @@ object debugMain extends App {
   val theta: Double = 0.9
   var mCounter = finalCells.length
   //var l = 1
-  finalCells.foreach(v => {v.updateState = 1; v.potential = 1})
+  finalCells.foreach(v => {
+    v.updateState = 1; v.potential = 1
+  })
   var lCounter: Int = 1
   while (mCounter != 0) {
     val V = connections2.filter(v => v._1.updateState == 1 && v._1.potential <= lCounter)
     V.foreach(_._1.updateState = 2)
     mCounter = mCounter - V.size
-    V.foreach( conn => {
+    V.foreach(conn => {
       conn._2.filter(_.updateState == 0).foreach(j => {
         j.updateState = 1
         mCounter = mCounter + 1
@@ -244,7 +246,7 @@ object debugMain extends App {
           j.potential = conn._1.potential + 1 + tau * j.pedAcc
         }
         else {
-          j.potential = connections2(j).filter(_.updateState==2).map(_.potential).sum / psi + theta + tau * j.pedAcc
+          j.potential = connections2(j).filter(_.updateState == 2).map(_.potential).sum / psi + theta + tau * j.pedAcc
         }
       })
       lCounter = lCounter + 1
@@ -255,7 +257,7 @@ object debugMain extends App {
   //println(u.potential,v.potential,w.potential,x.potential,e.potential,b.potential,a.potential)
   //println(u.potential,t.potential,s.potential,r.potential,f.potential,c.potential,a.potential)
 
-  val destination = MyCell(DenseVector(0.0,0.0), radius)
+  val destination = MyCell(DenseVector(0.0, 0.0), radius)
   val conn3: Map[MyCell, List[MyCell]] = connections2 + (destination -> finalCells.toList)
 
   def buildGraph(conn: (MyCell, List[MyCell]), connections: Map[MyCell, List[MyCell]], acc: List[(MyCell, MyCell)]): List[(MyCell, MyCell)] = {

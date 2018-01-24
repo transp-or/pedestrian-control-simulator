@@ -23,9 +23,9 @@ class SocialForceESII(sim: SFGraphSimulator) extends SocialForceLike(sim) with A
     val A: Double = 5.5
     val B: Double = 0.5
 
-    val dir: Direction = (ped.currentPosition - pos)/breeze.linalg.norm(pos-ped.currentPosition)
+    val dir: Direction = (ped.currentPosition - pos) / breeze.linalg.norm(pos - ped.currentPosition)
     val dirOrtho: Direction = DenseVector(-dir(1), dir(0))
-    dir*( A*exp((-norm(ped.currentPosition-pos))/B) )
+    dir * (A * exp((-norm(ped.currentPosition - pos)) / B))
     //DenseVector(0.0,0.0)
   }
 
@@ -45,17 +45,17 @@ class SocialForceESII(sim: SFGraphSimulator) extends SocialForceLike(sim) with A
     //val tau: Double = 1.78 // [s]
 
     // vector from pedestrian2 pointing to pedestrian 1
-    val dab: Direction = p1.currentPosition-p2.currentPosition
+    val dab: Direction = p1.currentPosition - p2.currentPosition
     val yab: Direction = dt * (p2.currentVelocity - p1.currentVelocity)
-    val bab: Double = 0.5*sqrt(pow(norm(dab) + norm(dab - yab),2) - pow(norm(yab),2))
+    val bab: Double = 0.5 * sqrt(pow(norm(dab) + norm(dab - yab), 2) - pow(norm(yab), 2))
 
     // angle of sight reduction
     val desiredDirection: Direction = computeDirection(p1.currentPosition, p1.currentDestination)
-    val w: Double = lambda + (1.0-lambda)*0.5*(1.0+desiredDirection.dot(dab/norm(dab)))
+    val w: Double = lambda + (1.0 - lambda) * 0.5 * (1.0 + desiredDirection.dot(dab / norm(dab)))
     //println(dab, yab, bab, desiredDirection,desiredDirection.dot(dab/norm(dab)),  w, exp(-bab/B), ((norm(dab) + norm(dab-yab))/2.0*bab) * 0.5 * (dab/norm(dab) + (dab-yab)/norm(dab-yab)))
 
     // final force
-    w*A*exp((p1.r+p2.r-bab)/B) * ((norm(dab) + norm(dab-yab))/(4.0*bab)) * (dab/norm(dab) + (dab-yab)/norm(dab-yab))
+    w * A * exp((p1.r + p2.r - bab) / B) * ((norm(dab) + norm(dab - yab)) / (4.0 * bab)) * (dab / norm(dab) + (dab - yab) / norm(dab - yab))
 
 
     // distance between pedestrians
@@ -80,6 +80,6 @@ class SocialForceESII(sim: SFGraphSimulator) extends SocialForceLike(sim) with A
   }
 
 
-  protected def insertNextEvent(): Unit = sim.insertEventWithDelay(sim.sf_dt) (new SocialForceESII(sim))
+  protected def insertNextEvent(): Unit = sim.insertEventWithDelay(sim.sf_dt)(new SocialForceESII(sim))
 }
 

@@ -1,6 +1,6 @@
 package hubmodel.mgmt
 
-import hubmodel.Vertex
+import hubmodel.VertexCell
 import hubmodel.input.infrastructure.BinaryGate
 import hubmodel.{Action, PedestrianDES, Position, SFGraphSimulator}
 
@@ -41,18 +41,18 @@ class UpdateFlowGates(sim: SFGraphSimulator) extends Action {
   val p: Double = 1
   val flowMin: Double = 0.2 // pax/m/s
   val flowMax: Double = 1 // pax/m/s
-  val rhoCritical: Double  = 1 // pax/m^2
-  val densityThreshold: Double = (1-math.pow(flowMin/flowMax, 1.0/p))*rhoCritical
+  val rhoCritical: Double = 1 // pax/m^2
+  val densityThreshold: Double = (1 - math.pow(flowMin / flowMax, 1.0 / p)) * rhoCritical
 
   def computeCoefficient(downstreamDensity: Double): Double = {
-    math.pow(1-downstreamDensity/rhoCritical, p)
+    math.pow(1 - downstreamDensity / rhoCritical, p)
   }
 
   override def execute(): Unit = {
     sim.eventLogger.trace("time: " + sim.currentTime + ": updating flow gates")
     sim.graph.flowGates.foreach(fg => fg.flowRate = {
       if (sim.densityHistory.last._2 >= densityThreshold) flowMin
-      else flowMax*fg.width*computeCoefficient(sim.densityHistory.last._2)
+      else flowMax * fg.width * computeCoefficient(sim.densityHistory.last._2)
     })
   }
 }

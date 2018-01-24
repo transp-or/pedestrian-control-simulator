@@ -12,19 +12,19 @@ object makePictures extends App {
     head("scopt", "3.x")
 
     opt[File]('w', "walls").required().valueName("<file>")
-      .action( (x, c) => c.copy(walls = x) )
+      .action((x, c) => c.copy(walls = x))
       .text("required, JSON specification of all the walls building the infrastructure")
 
     opt[File]('g', "graph").required().valueName("<file>")
-      .action( (x, c) => c.copy(graph = x) )
+      .action((x, c) => c.copy(graph = x))
       .text("required, JSON specification of the route choice graph")
 
     opt[String]('p', "prefix").optional().valueName("String")
-      .action( (x, c) => c.copy(prefix = x))
+      .action((x, c) => c.copy(prefix = x))
       .text("prefix to append in front of the output file names")
 
-    opt[Unit]('s', "showWallNames").action( (_, c) =>
-      c.copy(showWallNames = true) ).text("showWallNames is a flag: should the names of the walls be printed")
+    opt[Unit]('s', "showWallNames").action((_, c) =>
+      c.copy(showWallNames = true)).text("showWallNames is a flag: should the names of the walls be printed")
 
 
     //opt[Unit]("verbose").action( (_, c) =>

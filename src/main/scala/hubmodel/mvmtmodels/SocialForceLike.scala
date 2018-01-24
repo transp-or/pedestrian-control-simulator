@@ -9,7 +9,7 @@ abstract class SocialForceLike(sim: SFGraphSimulator) {
 
   /** Computes the direction based on the current position and the target position
     *
-    * @param pos current position
+    * @param pos  current position
     * @param goal target position
     * @return normalized direction
     */
@@ -30,13 +30,13 @@ abstract class SocialForceLike(sim: SFGraphSimulator) {
     //val relax: Double = 1.19 // parameters from other optimization (Social force model with explicit collision prediction)
     //val relax = 3.2
     //val relax = 0.84
-    relax*(desiredVel - currentVel)
+    relax * (desiredVel - currentVel)
   }
 
   /** Find the projection from of a point onto the wall
     *
     * @param pos point to project
-    * @param w [[Wall]] onto which the point must be projectec
+    * @param w   [[Wall]] onto which the point must be projectec
     * @return The projected point
     */
   protected def computeProjection(pos: Position, w: Wall): Position = {
@@ -48,7 +48,7 @@ abstract class SocialForceLike(sim: SFGraphSimulator) {
   /** True of the point is on the wall, false if not
     *
     * @param point point to check
-    * @param w wall
+    * @param w     wall
     * @return boolean whether indictating if the point is on the wall
     */
   protected def isOnWall(point: Position, w: Wall): Boolean = {
@@ -58,7 +58,7 @@ abstract class SocialForceLike(sim: SFGraphSimulator) {
   /** Finds the closest end point of a wall if the point is not on the wall
     *
     * @param point point which is not on the wall
-    * @param w wall to finds end from
+    * @param w     wall to finds end from
     * @return closest end point of the wall to the point
     */
   protected def getClosestEndPoint(point: Position, w: Wall): Position = {
@@ -69,7 +69,7 @@ abstract class SocialForceLike(sim: SFGraphSimulator) {
   /** Find the point used to compute the repulsive effects from the wall onto a pedestrian.
     *
     * @param pos Position of the pedestrian
-    * @param w wall to calculate repulsion from
+    * @param w   wall to calculate repulsion from
     * @return position used to calculate repulsion
     */
   protected def getClosestPoint(pos: Position, w: Wall): Position = {
@@ -80,6 +80,7 @@ abstract class SocialForceLike(sim: SFGraphSimulator) {
 
   /** Compute angle of sight reduction if direction between force and direction is larger
     * than a pre-specificed value.
+    *
     * @param d direction of sight (walking direction)
     * @param f direction of force
     * @return coefficient
@@ -92,8 +93,8 @@ abstract class SocialForceLike(sim: SFGraphSimulator) {
   /** Collect forces from population. The filter on the pedestrians does not take place here.
     * the argument 'pop' is already filtered.
     *
-    * @param p effected pedestrian
-    * @param pop population
+    * @param p        effected pedestrian
+    * @param pop      population
     * @param forceAcc force accumulator, initially zero
     * @return sum of forces acting on pedestrian
     */
@@ -107,8 +108,8 @@ abstract class SocialForceLike(sim: SFGraphSimulator) {
 
   /** Collects the wall repulsions for a specific pedestrian.
     *
-    * @param ped pedestrian
-    * @param walls collection of all walls
+    * @param ped      pedestrian
+    * @param walls    collection of all walls
     * @param forceAcc accumulator
     * @return the some of all the effects from the walls
     */
@@ -129,7 +130,6 @@ abstract class SocialForceLike(sim: SFGraphSimulator) {
     * @return increments in Position and Velocity
     */
   protected def computePedestrianIncrements(p: PedestrianSim): Unit = {
-
 
 
     // desired direction
@@ -163,10 +163,11 @@ abstract class SocialForceLike(sim: SFGraphSimulator) {
       //println(p.ID, collectAttractiveForce, collectRepulsiveForces, force)
 
 
-
       // sets the increments in position and velocity for the pedestrian
       p.velocityIncrement = sim.sf_dt * force
       p.positionIncrement = (p.currentVelocity + p.velocityIncrement) * sim.sf_dt.toDouble
+
+      //println(p.velocityIncrement , p.positionIncrement)
     }
   }
 
@@ -193,6 +194,11 @@ abstract class SocialForceLike(sim: SFGraphSimulator) {
     // enqueues pedestrians in the waiting zones if gating is used
     if (sim.useFlowGates) sim.population.foreach(sim.graph.enqueueInWaitingZone)
 
+    /*if (sim.population.filter(ped => !sim.spaceSF.isInsideWalkableArea(ped.currentPosition)).nonEmpty) {
+      val ped = sim.population.filter(ped => !sim.spaceSF.isInsideWalkableArea(ped.currentPosition))
+      println(ped)
+    }*/
+
     /*sim.population.filter(sim.intermediateDestinationReached).filterNot(_.isWaiting).foreach(p => sim.insertEventWithDelay(0) {
       new UpdateRouteForPedestrian(p, sim)
     })*/
@@ -202,7 +208,9 @@ abstract class SocialForceLike(sim: SFGraphSimulator) {
   }
 
   protected def insertNextEvent(): Unit
+
   protected def pedestrian2PedestrianForce(p1: PedestrianSim, p2: PedestrianSim): Force
+
   protected def pedestrian2WallForce(ped: PedestrianSim, pos: Position): Force
 
 }

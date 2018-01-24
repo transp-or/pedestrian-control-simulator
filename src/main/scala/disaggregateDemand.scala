@@ -25,61 +25,61 @@ object disaggregateDemand extends App {
   case class ODValue(O: Node, D: Node, flow: Double)
 
 
-    /** Container for the command line arguments.
-      *
-      * @param schedule file containing the schedule
-      */
-    case class Config(schedule: File = new File("."), outputFile: File = new File("."), lower: String = "", upper: String = "", verbose : Boolean = false)
+  /** Container for the command line arguments.
+    *
+    * @param schedule file containing the schedule
+    */
+  case class Config(schedule: File = new File("."), outputFile: File = new File("."), lower: String = "", upper: String = "", verbose: Boolean = false)
 
-    val parser = new scopt.OptionParser[Config]("disaggregateDemand") {
-      head("Disaggregation of pedestrian OD demand into station exit/entrances.")
+  val parser = new scopt.OptionParser[Config]("disaggregateDemand") {
+    head("Disaggregation of pedestrian OD demand into station exit/entrances.")
 
-      opt[File]('s', "schedule").required().valueName("<file>")
-        .action( (x, c) => c.copy(schedule = x) )
-        .text("required, JSON specification of the train schedule")
+    opt[File]('s', "schedule").required().valueName("<file>")
+      .action((x, c) => c.copy(schedule = x))
+      .text("required, JSON specification of the train schedule")
 
-      opt[File]('o', "output").required().valueName("<file>")
-        .action( (x, c) => c.copy(outputFile = x) )
-        .text("required, file to save the OD matrix")
+    opt[File]('o', "output").required().valueName("<file>")
+      .action((x, c) => c.copy(outputFile = x))
+      .text("required, file to save the OD matrix")
 
-      opt[String]('u', "upper").optional().valueName("<string>")
-        .action( (x, c) => c.copy(upper = x) )
-        .text("optional, upper bound on the train time table")
+    opt[String]('u', "upper").optional().valueName("<string>")
+      .action((x, c) => c.copy(upper = x))
+      .text("optional, upper bound on the train time table")
 
-      opt[String]('l', "lower").optional().valueName("<string>")
-        .action( (x, c) => c.copy(lower = x) )
-        .text("optional, lower bound on the train time table")
+    opt[String]('l', "lower").optional().valueName("<string>")
+      .action((x, c) => c.copy(lower = x))
+      .text("optional, lower bound on the train time table")
 
-      opt[Unit]('v', "verbose").action( (_, c) =>
-        c.copy(verbose = true) ).text("prints a summary of the data and OD matrix")
+    opt[Unit]('v', "verbose").action((_, c) =>
+      c.copy(verbose = true)).text("prints a summary of the data and OD matrix")
 
-      help("help").text("prints this usage text\n\n" +
-        "  This function is calibrated for the Lausanne 2025 station only.\n" +
-        "  The hypotheses which are used for disaggregating the flows to\n" +
-        "  specific nodes are the following:\n" +
-        "  - alighting flows:\n" +
-        "    - puw, puc -> M3: can't reach northbound platform, hence goes outside\n" +
-        "    - puw, puc -> bus: uses the ramp at north of station and stairs inside PU\n" +
-        "    - puw, puc -> walk: pedestrian leaving on foot use the three exit ways at the north area\n" +
-        "    - passengers exiting on foot via the south of the station use all the exits from all pu\n" +
-        "    - pue -> M3: southbound passengers cannot reach the platform from inside, hence they leave the sation\n" +
-        "    - pue -> M2: they stay inside the station to reach the M2\n" +
-        "    - transfer passengers stay in the same pu\n" +
-        "  - boarding flows to trains from:\n" +
-        "    - south-weast -> puw\n" +
-        "    - south-east-1 -> pue\n" +
-        "    - south-east-2 -> pue + puc\n" +
-        "    - ramp-north -> puc + puw\n" +
-        "    - other north entrances -> closest pu\n" +
-        "    - bus -> closest middle stairs (stairs inside pu)\n" +
-        "    - M2-southbound-1 -> puw\n" +
-        "    - M2-southbound-2 -> puw + puc\n" +
-        "    - M2-northbound-1 -> puc\n" +
-        "    - M2-northbound-2 -> puc\n" +
-        "    - M2-northbound-3 -> pue\n" +
-        "    - M3 -> cloest pu\n\n" +
-        "  For more details, investigate the maps in the source code !")
-    }
+    help("help").text("prints this usage text\n\n" +
+      "  This function is calibrated for the Lausanne 2025 station only.\n" +
+      "  The hypotheses which are used for disaggregating the flows to\n" +
+      "  specific nodes are the following:\n" +
+      "  - alighting flows:\n" +
+      "    - puw, puc -> M3: can't reach northbound platform, hence goes outside\n" +
+      "    - puw, puc -> bus: uses the ramp at north of station and stairs inside PU\n" +
+      "    - puw, puc -> walk: pedestrian leaving on foot use the three exit ways at the north area\n" +
+      "    - passengers exiting on foot via the south of the station use all the exits from all pu\n" +
+      "    - pue -> M3: southbound passengers cannot reach the platform from inside, hence they leave the sation\n" +
+      "    - pue -> M2: they stay inside the station to reach the M2\n" +
+      "    - transfer passengers stay in the same pu\n" +
+      "  - boarding flows to trains from:\n" +
+      "    - south-weast -> puw\n" +
+      "    - south-east-1 -> pue\n" +
+      "    - south-east-2 -> pue + puc\n" +
+      "    - ramp-north -> puc + puw\n" +
+      "    - other north entrances -> closest pu\n" +
+      "    - bus -> closest middle stairs (stairs inside pu)\n" +
+      "    - M2-southbound-1 -> puw\n" +
+      "    - M2-southbound-2 -> puw + puc\n" +
+      "    - M2-northbound-1 -> puc\n" +
+      "    - M2-northbound-2 -> puc\n" +
+      "    - M2-northbound-3 -> pue\n" +
+      "    - M3 -> cloest pu\n\n" +
+      "  For more details, investigate the maps in the source code !")
+  }
 
   val inputParameters: (File, File, String, String, Boolean) = parser.parse(args, Config()) match {
     case Some(c) => (c.schedule, c.outputFile, c.lower, c.upper, c.verbose)
@@ -125,7 +125,7 @@ object disaggregateDemand extends App {
             case Some(t) => t.isBefore(timeUpperBound)
             case None => train._2.arr.get.isBefore(timeUpperBound)
           })
-      } )
+      })
       case e: JsError => throw new Error("Error while parsing train timestable: " + JsError.toJson(e).toString())
     }
   }
@@ -200,7 +200,7 @@ object disaggregateDemand extends App {
   def areas2accessways(area: String, track: Int): Vector[String] = {
     if (area == "puw" && track == 8) Vector("ramp-west", "stairs-west", "stairs-east")
     else if (area == "puw" && track != 8) Vector("ramp-west", "stairs-east")
-    else if ( area == "puc") Vector("stairs-west", "stairs-east")
+    else if (area == "puc") Vector("stairs-west", "stairs-east")
     else if (area == "pue" && track == 8) Vector("stairs-west")
     else if (area == "pue" && track != 8) Vector("stairs-west", "stairs-east")
     else throw new RuntimeException("error in mapping" + ", " + area + ", " + track)
@@ -225,7 +225,7 @@ object disaggregateDemand extends App {
         ++
         timeTable.values.flatMap(train => {
           (ODFractions - "train").flatMap(Oarea => area2NodesBoarding(Oarea._1).flatMap(O => O._2.flatMap(Darea => {
-            areas2accessways(Darea, train.track).map(access => ODValue(O._1, Node(Darea, platformModifier(train.track) + "-" + access), 0.4*train.capacity*Oarea._2.head._2/(O._2.size * areas2accessways(Darea, train.track).size * area2NodesBoarding(Oarea._1).size)))
+            areas2accessways(Darea, train.track).map(access => ODValue(O._1, Node(Darea, platformModifier(train.track) + "-" + access), 0.4 * train.capacity * Oarea._2.head._2 / (O._2.size * areas2accessways(Darea, train.track).size * area2NodesBoarding(Oarea._1).size)))
           })))
         }
         )
@@ -241,7 +241,7 @@ object disaggregateDemand extends App {
   val numberODs: Int = ODMatrix.keys.flatMap(k => List(k._1.toString, k._2.toString)).toVector.distinct.size
   val ODNames: Vector[String] = ODMatrix.keys.flatMap(k => List(k._1.toString, k._2.toString)).toVector.distinct.sortBy(_.toString)
   val name2index: Map[String, Int] = ODNames.zipWithIndex.toMap
-  val ODMatrixAsMatrix: Array[Array[Double]]= Array.ofDim[Double](numberODs, numberODs)
+  val ODMatrixAsMatrix: Array[Array[Double]] = Array.ofDim[Double](numberODs, numberODs)
 
   if (verbose) {
     println("*****************************************************\nThere are " + numberODs + " different nodes:")
