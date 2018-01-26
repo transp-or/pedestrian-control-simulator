@@ -21,7 +21,7 @@ class SocialForceESI(sim: SFGraphSimulator) extends SocialForceLike(sim) with Ac
     * @param pos point on the wall
     * @return force acting on the pedestrian from pos
     */
-  protected def pedestrian2WallForce(ped: PedestrianSim, pos: Position): Force = {
+  protected override def pedestrian2WallForce(ped: PedestrianSim, pos: Position): Force = {
     // set of parameters used for calculating the repulsive effects
     val A: Double = 10.0 / 0.2
     val B: Double = 0.2
@@ -43,7 +43,7 @@ class SocialForceESI(sim: SFGraphSimulator) extends SocialForceLike(sim) with Ac
     * @param p2 pedestrian creating force
     * @return force acting on p1 created by p2
     */
-  protected def pedestrian2PedestrianForce(p1: PedestrianSim, p2: PedestrianSim): Force = {
+  protected override def pedestrian2PedestrianForce(p1: PedestrianSim, p2: PedestrianSim): Force = {
     val A: Double = 1.52
     val B: Double = 0.21
     val lambda: Double = 1.0

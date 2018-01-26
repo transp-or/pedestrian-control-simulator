@@ -25,7 +25,7 @@ class PedestrianSim(val oZone: Int,
                     val dZone: Int,
                     val freeFlowVel: Double,
                     val entryTime: Time,
-                    var currentPosition: Position,
+                    @deprecated var currentPosition: Position,
                     var currentDestination: Position,
                     var route: List[VertexCell]) extends PedestrianTrait {
 
@@ -64,7 +64,7 @@ class PedestrianSim(val oZone: Int,
   /** exit time from the system */
   var exitTime: Time = 0.0
 
-  val r: Double = ThreadLocalRandom.current.nextDouble(0.25, 0.35)
+  val r: Double = ThreadLocalRandom.current.nextDouble(0.3, 0.31)
   var omega: Double = 0.0
   var theta: Double = 0.0
   val m: Double = ThreadLocalRandom.current.nextDouble(60.0, 90.0) // mass of the pedestrian
@@ -94,8 +94,8 @@ class PedestrianSim(val oZone: Int,
 
   /** Adds the current position (currentPosition) to the history */
   def addHistory(t: Time): Unit = {
-    _historyPosition = _historyPosition :+ (t, this.currentPosition)
-    _historyPositionNew = _historyPositionNew :+ (new NewTime(t), this.currentPositionNew)
+    _historyPosition = _historyPosition :+ (t, DenseVector(this.currentPositionNew.X, this.currentPositionNew.Y))
+    //_historyPositionNew = _historyPositionNew :+ (new NewTime(t), this.currentPositionNew)
   }
 
   def setCurrentDestination(pos: NewPosition2D): Unit = {
@@ -128,12 +128,12 @@ class PedestrianSim(val oZone: Int,
     * The increments are set by the [[hubmodel.mvmtmodels.SocialForceESI]] model.
     */
   def move(): Unit = {
-    this.currentPosition = this.currentPosition + this.positionIncrement
-    this.currentPositionNew = this.currentPositionNew + new Vector2D(this.positionIncrement(0), this.positionIncrement(1))
-    this.positionIncrement = DenseVector(0.0, 0.0)
-    this.currentVelocity = boundVelocity(this.currentVelocity + this.velocityIncrement)
-    this.currentVelocityNew = this.currentVelocityNew + new Vector2D(this.velocityIncrement(0), this.velocityIncrement(1))
-    this.velocityIncrement = DenseVector(0.0, 0.0)
+    //this.currentPosition = this.currentPosition + this.positionIncrement
+    this.currentPositionNew = this.currentPositionNew + positionIncrementNew
+    this.positionIncrementNew = new ZeroVector2D
+    //this.currentVelocity = boundVelocity(this.currentVelocity + this.velocityIncrement)
+    this.currentVelocityNew = boundVelocity(this.currentVelocityNew + velocityIncrementNew)
+    this.velocityIncrementNew = new ZeroVector2D
   }
 
   /*

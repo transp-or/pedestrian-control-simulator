@@ -19,7 +19,7 @@ class SocialForceHelbing2005(sim: SFGraphSimulator) extends SocialForceLike(sim)
     * @param pos point on the wall
     * @return force acting on the pedestrian from pos
     */
-  protected def pedestrian2WallForce(ped: PedestrianSim, pos: Position): Force = {
+  protected override def pedestrian2WallForceNew(ped: PedestrianSim, pos: NewBetterPosition2D): NewBetterForce2D = {
     // set of parameters used for calculating the repulsive effects
     val A: Double = 5.0
     val B: Double = 0.1
@@ -27,10 +27,10 @@ class SocialForceHelbing2005(sim: SFGraphSimulator) extends SocialForceLike(sim)
     val ALimit: Double = 0
     val BLimit: Double = 1.0//0.001
 
-    val dab: Direction = ped.currentPosition - pos
-    val dabNorm: Double = pow(dab(0)*dab(0)+dab(1)*dab(1),0.5)
+    val dab: NewBetterDirection2D = ped.currentPositionNew - pos
+    val dabNorm: Double = dab.norm
 
-    A * exp((ped.r - dabNorm) / B) * (dab / dabNorm) +  ALimit * exp((ped.r - dabNorm) / BLimit) * (dab / dabNorm) /* +
+    (dab / dabNorm) * A * exp((ped.r - dabNorm) / B) + (dab / dabNorm) * ALimit * exp((ped.r - dabNorm) / BLimit) /* +
         k1 * max(0.0, ped.r - breeze.linalg.norm(ped.currentPosition - pos))
       ) +
       k2 * max(0.0, ped.r - breeze.linalg.norm(ped.currentPosition - pos)) * ped.currentVelocity.dot(dirOrtho) * dirOrtho*/
@@ -42,21 +42,21 @@ class SocialForceHelbing2005(sim: SFGraphSimulator) extends SocialForceLike(sim)
     * @param p2 pedestrian creating force
     * @return force acting on p1 created by p2
     */
-  protected def pedestrian2PedestrianForce(p1: PedestrianSim, p2: PedestrianSim): Force = {
+  protected override def pedestrian2PedestrianForceNew(p1: PedestrianSim, p2: PedestrianSim): NewBetterForce2D = {
     val A1: Double = 7.0
     val B1: Double = 0.3
     val A2: Double = 3.0
     val B2: Double = 0.2
     val lambda: Double = 0.75
 
-    val dab: Direction = p1.currentPosition - p2.currentPosition
-    val dabNorm: Double = pow(dab(0)*dab(0)+dab(1)*dab(1)+0.0001,0.5)
+    val dab: NewBetterDirection2D = p1.currentPositionNew - p2.currentPositionNew
+    val dabNorm: Double = (dab+0.00005).norm//pow(dab(0)*dab(0)+dab(1)*dab(1)+0.0001,0.5)
 
 
-    val desiredDirection: Direction = computeDirection(p1.currentPosition, p1.currentDestination)
-    val w: Double = lambda + (1.0 - lambda) * 0.5 * (1.0 + desiredDirection.dot(dab / norm(dab)))
+    val desiredDirection: NewBetterDirection2D = computeDirection(p1.currentPositionNew, p1.currentDestinationNew)
+    val w: Double = lambda + (1.0 - lambda) * 0.5 * (1.0 + desiredDirection.dot(dab / dabNorm))
     //w * A1 * exp((p1.r + p2.r - dabNorm) / B1) * (dab / dabNorm) + A2 * exp((p1.r + p2.r - dabNorm) / B2) * (dab / dabNorm)
-    A2 * exp((p1.r + p2.r - dabNorm) / B2) * (dab / dabNorm)
+     (dab / dabNorm) * A2 * exp((p1.r + p2.r - dabNorm) / B2)
   }
 
   protected def insertNextEvent(): Unit = sim.insertEventWithDelay(sim.sf_dt)(new SocialForceHelbing2005(sim))

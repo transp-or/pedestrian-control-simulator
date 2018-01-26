@@ -180,7 +180,7 @@ object runSimulation extends App {
 
     if (config.getBoolean("output.write_trajectories_as_VS")) {
       println("Writing VS data from video")
-      (sim.population ++ sim.populationCompleted).map(p => p.toVisioSafeFormat()).writeToCSV(config.getString("output.output_prefix")+"_simulation_trajectories.csv")
+      (sim.population ++ sim.populationCompleted).map(p => p.toVisioSafeFormat()).toVector.writeToCSV(config.getString("output.output_prefix")+"_simulation_trajectories.csv")
     }
   }
 

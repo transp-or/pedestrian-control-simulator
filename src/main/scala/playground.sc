@@ -266,3 +266,6 @@ new DrawCells(hexagons, "celltest.png", None, (xMax, yMax))
 val v = DenseVector(1.0, 2.0, 3.0)
 val vv = DenseVector(1.0, 2.0, 3.1)
 v.equals(vv)
+
+val l = Iterable()
+l.toList

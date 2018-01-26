@@ -41,7 +41,7 @@ package object hubmodel {
     def norm: Double = scala.math.pow(this.X*this.X + this.Y*this.Y, 0.5)
     def distanceTo(that: Vector2D): Double = scala.math.pow((that.X-this.X)*(that.X-this.X) + (that.Y-this.Y)*(that.Y-this.Y), 0.5)
     def dot(that: Vector2D): Double = this.X*that.X + this.Y*that.Y
-    def normalize: Vector2D = new Vector2D(this.X / this.norm, this.Y / this.norm)
+    def normalize: Vector2D = if (this.norm == 0.0) {this} else {new Vector2D(this.X / this.norm, this.Y / this.norm)}
 
     override def toString: String = "(" + X + ", " + Y + ")"
   }
@@ -77,8 +77,8 @@ package object hubmodel {
   def distance(a: Vector2D, b: Vector2D): Double = scala.math.pow((b.X-a.X)*(b.X-a.X) + (b.Y-a.Y)*(b.Y-a.Y), 0.5)
   def distance(a: Vector3D, b: Vector3D): Double = scala.math.pow((b.X-a.X)*(b.X-a.X) + (b.Y-a.Y)*(b.Y-a.Y) + (b.Z-a.Z)*(b.Z-a.Z), 0.5)
 
-  def norm(a: Vector2D): Double = scala.math.pow(a.X*a.X + a.Y*a.Y, 0.5)
-  def norm(a: Vector3D): Double = scala.math.pow(a.X*a.X + a.Y*a.Y + a.Z*a.Z, 0.5)
+  def normNew(a: Vector2D): Double = scala.math.pow(a.X*a.X + a.Y*a.Y, 0.5)
+  def normNew3d(a: Vector3D): Double = scala.math.pow(a.X*a.X + a.Y*a.Y + a.Z*a.Z, 0.5)
 
 
 
@@ -267,6 +267,15 @@ package object hubmodel {
     val BC: DenseVector[Double] = v.C - v.B
     val AP: DenseVector[Double] = pos - v.A
     val BP: DenseVector[Double] = pos - v.B
+    if (0 <= (AB dot AP) && (AB dot AP) <= (AB dot AB) && 0 <= (BC dot BP) && (BC dot BP) <= (BC dot BC)) true
+    else false
+  }
+
+  def isInVertexNew(v: VertexCell)(pos: NewBetterPosition2D): Boolean = {
+    val AB: DenseVector[Double] = v.B - v.A
+    val BC: DenseVector[Double] = v.C - v.B
+    val AP: DenseVector[Double] = DenseVector(pos.X, pos.Y) - v.A
+    val BP: DenseVector[Double] = DenseVector(pos.X, pos.Y) - v.B
     if (0 <= (AB dot AP) && (AB dot AP) <= (AB dot AB) && 0 <= (BC dot BP) && (BC dot BP) <= (BC dot BC)) true
     else false
   }

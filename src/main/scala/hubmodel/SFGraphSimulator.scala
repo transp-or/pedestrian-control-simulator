@@ -20,10 +20,10 @@ class SFGraphSimulator(override val startTime: Time,
                        controlDevices: ReadControlDevices) extends PedestrianDES[PedestrianSim](startTime, finalTime) {
 
   /* checks whether a pedestrian has reach is next destination zone */
-  def intermediateDestinationReached: PedestrianSim => Boolean = p => isInVertex(p.nextZone)(p.currentPosition)
+  def intermediateDestinationReached: PedestrianSim => Boolean = p => isInVertexNew(p.nextZone)(p.currentPositionNew)
 
   /* checks if the pedestrian has reached is final destination */
-  def finalDestinationReached: PedestrianSim => Boolean = p => isInVertex(graph.vertexMap(p.dZone.toString))(p.currentPosition)
+  def finalDestinationReached: PedestrianSim => Boolean = p => isInVertexNew(graph.vertexMap(p.dZone.toString))(p.currentPositionNew)
 
   /** Indicator whether flow gates are present */
   val useFlowGates: Boolean = graph.flowGates.nonEmpty && controlDevices.monitoredAreas.nonEmpty
@@ -50,7 +50,7 @@ class SFGraphSimulator(override val startTime: Time,
       sim.insertEventWithDelay(0)(new InsertVehicleArrivals(sim))
       sim.pedestrianFlows.flows.foreach(f => sim.insertEventWithDelay(0)(new PedestrianGeneration(f.O, f.D, (f.start.toSecondOfDay - sim.startTime), (f.end.toSecondOfDay - sim.startTime), f.f, sim)))
       sim.insertEventWithDelay(0)(new UpdateRoutes(sim))
-      sim.insertEventWithDelay(0)(new SocialForceHelbing2005(sim))
+      sim.insertEventWithDelay(0)(new NOMADModel(sim))
       if (sim.useControl) sim.insertEventWithDelay(0)(new EvaluateState(sim))
       if (sim.useFlowGates) sim.insertEventWithDelay(0)(new StartFlowGates(sim))
     }

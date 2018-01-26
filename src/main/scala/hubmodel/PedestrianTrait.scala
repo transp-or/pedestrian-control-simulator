@@ -20,6 +20,7 @@ trait PedestrianTrait {
   def currentPositionNew: NewBetterPosition2D
 
   /** old current position */
+  @deprecated
   def currentPosition: Position
 
   /** total travel time */
@@ -54,6 +55,11 @@ trait PedestrianTrait {
   def boundVelocity(desiredVel: Velocity): Velocity = {
     if (breeze.linalg.norm(desiredVel) <= (1.3 * 1.34)) desiredVel
     else ((1.3 * 1.34) / breeze.linalg.norm(desiredVel)) * desiredVel
+  }
+
+  def boundVelocity(desiredVel: NewBetterVelocity2D): NewBetterVelocity2D = {
+    if (desiredVel.norm <= (1.3 * 1.34)) desiredVel
+    else desiredVel * ((1.3 * 1.34) / desiredVel.norm)
   }
 
   /** method needed to guarantee equality is tested correctly */

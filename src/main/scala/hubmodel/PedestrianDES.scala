@@ -109,7 +109,7 @@ abstract class PedestrianDES[T <: PedestrianTrait](val startTime: Time,
     *  - adding a new pedestrian to the system
     *  - remove a subset of the population
     */
-  private var _population: Vector[T] = Vector()
+  /*private var _population: Vector[T] = Vector()
 
   def append2Population(p: T): Unit = synchronized(_population :+= p)
 
@@ -117,19 +117,19 @@ abstract class PedestrianDES[T <: PedestrianTrait](val startTime: Time,
     synchronized(_population = _population.filterNot(condition))
   }
 
-  def population: Vector[T] = synchronized(_population)
+  def population: Vector[T] = synchronized(_population)*/
 
   /** New population structure using a map where keys are IDs
     * This makes the usage of a tree for serching neigbors easier */
   private val _populationNew: collection.mutable.Map[String, T] = collection.mutable.Map()
 
-  def append2PopulationNew(p: T): Unit = {
+  def append2Population(p: T): Unit = {
     synchronized(_populationNew += (p.ID -> p))
     this.populationMTree.insert(p.ID, p.currentPositionNew)
     this.ID2Position = this.ID2Position + (p.ID -> p.currentPositionNew)
   }
 
-  def removeFromPopulationNew(condition: T => Boolean): Unit = synchronized(_populationNew.retain((k,v) => !condition(v)))
+  def removeFromPopulation(condition: T => Boolean): Unit = synchronized(_populationNew.retain((k,v) => !condition(v)))
 
   private var populationMTree: MTree[Vector2D] = new MTree(distance: (Vector2D, Vector2D) => Double)
   private var ID2Position: Map[String, Vector2D] = HashMap()
@@ -141,10 +141,10 @@ abstract class PedestrianDES[T <: PedestrianTrait](val startTime: Time,
   }
 
   def findNeighbours(id: String, r: Double): Iterable[T] = {
-    this.populationMTree.findInRange(id, this.ID2Position(id), r).map(id => this._populationNew.getOrElse(id, throw new IndexOutOfBoundsException))
+    this.populationMTree.findInRange(id, this.ID2Position(id), r).filterNot(_ == id).map(id => this._populationNew.getOrElse(id, throw new IndexOutOfBoundsException(id)))
   }
 
-  def populationNew: Iterable[T] = this._populationNew.values
+  def population: Iterable[T] = this._populationNew.values
 
 
 
