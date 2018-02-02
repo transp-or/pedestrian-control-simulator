@@ -5,148 +5,171 @@
       "origin": "12318",
       "destination": "12217",
       "flow": 100
-    },{
+    },
+    {
       "origin": "12318",
       "destination": "12218",
       "flow": 60
-    },{
+    },
+    {
       "origin": "12318",
       "destination": "12317",
       "flow": 80
-    },{
+    },
+    {
       "origin": "12318",
       "destination": "north-exit-under",
       "flow": 150
-    },{
+    },
+    {
       "origin": "12318",
       "destination": "north-exit-stairs",
       "flow": 100
-    }, {
+    },
+    {
       "origin": "12318",
       "destination": "south-exit",
       "flow": 50
-    },{
+    },
+    {
       "origin": "12217",
       "destination": "12217",
       "flow": 140
-    },{
+    },
+    {
       "origin": "12217",
       "destination": "12218",
       "flow": 140
-    },{
+    },
+    {
       "origin": "12217",
       "destination": "north-exit-under",
       "flow": 200
-    },{
+    },
+    {
       "origin": "12217",
       "destination": "north-exit-stairs",
       "flow": 160
-    }, {
+    },
+    {
       "origin": "12217",
       "destination": "south-exit",
       "flow": 160
-    },{
+    },
+    {
       "origin": "12218",
       "destination": "12217",
       "flow": 160
-    },{
+    },
+    {
       "origin": "12218",
       "destination": "north-exit-under",
       "flow": 200
-    },{
+    },
+    {
       "origin": "12218",
       "destination": "north-exit-stairs",
       "flow": 170
-    }, {
+    },
+    {
       "origin": "12218",
       "destination": "south-exit",
       "flow": 170
-    },{
+    },
+    {
       "origin": "12317",
       "destination": "north-exit-under",
       "flow": 400
-    },{
+    },
+    {
       "origin": "12317",
       "destination": "north-exit-stairs",
       "flow": 450
-    }, {
+    },
+    {
       "origin": "12317",
       "destination": "south-exit",
       "flow": 490
-    } ],
-  "flows": [ {
+    }
+  ],
+  "flows": [
+    {
       "origin": 1,
       "destination": 14,
       "start": "07:00:00",
-      "end": "07:30:00",
-      "flow": 300
-    },{
-    "origin": 1,
-    "destination": 13,
-    "start": "07:00:00",
-    "end": "07:30:00",
-    "flow": 300
-  }, {
+      "end": "07:10:00",
+      "flow": 100
+    },
+    {
+      "origin": 1,
+      "destination": 13,
+      "start": "07:00:00",
+      "end": "07:10:00",
+      "flow": 100
+    },
+    {
       "origin": 14,
       "destination": 1,
       "start": "07:00:00",
-      "end": "07:30:00",
-      "flow": 300
-    }, {
-    "origin": 13,
-    "destination": 1,
-    "start": "07:00:00",
-    "end": "07:30:00",
-    "flow": 200
-  },{
-    "origin": 1,
-    "destination": 14,
-    "start": "07:30:00",
-    "end": "08:00:00",
-    "flow": 600
-  }, {
-    "origin": 13,
-    "destination": 1,
-    "start": "07:00:00",
-    "end": "07:15:00",
-    "flow": 200
-  }, {
-    "origin": 1,
-    "destination": 14,
-    "start": "07:00:00",
-    "end": "07:15:00",
-    "flow": 200
-  },{
-    "origin": 1,
-    "destination": 13,
-    "start": "07:30:00",
-    "end": "08:00:00",
-    "flow": 900
-  }, {
-    "origin": 14,
-    "destination": 1,
-    "start": "07:30:00",
-    "end": "08:00:00",
-    "flow": 800
-  }, {
-    "origin": 13,
-    "destination": 1,
-    "start": "07:30:00",
-    "end": "08:00:00",
-    "flow": 600
-  }, {
-    "origin": 13,
-    "destination": 1,
-    "start": "07:45:00",
-    "end": "08:00:00",
-    "flow": 1000
-  }, {
-    "origin": 1,
-    "destination": 14,
-    "start": "07:45:00",
-    "end": "08:00:00",
-    "flow": 1000
-  }
+      "end": "07:10:00",
+      "flow": 100
+    },
+    {
+      "origin": 13,
+      "destination": 1,
+      "start": "07:00:00",
+      "end": "07:10:00",
+      "flow": 100
+    },
+    {
+      "origin": 1,
+      "destination": 14,
+      "start": "07:10:00",
+      "end": "07:20:00",
+      "flow": 200
+    },
+    {
+      "origin": 13,
+      "destination": 1,
+      "start": "07:10:00",
+      "end": "07:20:00",
+      "flow": 200
+    },
+    {
+      "origin": 1,
+      "destination": 13,
+      "start": "07:10:00",
+      "end": "07:20:00",
+      "flow": 200
+    },
+    {
+      "origin": 14,
+      "destination": 1,
+      "start": "07:10:00",
+      "end": "07:20:00",
+      "flow": 200
+    },
+    {
+      "origin": 13,
+      "destination": 1,
+      "start": "07:30:00",
+      "end": "08:00:00",
+      "flow": 600
+    },
+    {
+      "origin": 13,
+      "destination": 1,
+      "start": "07:45:00",
+      "end": "08:00:00",
+      "flow": 1000
+    },
+    {
+      "origin": 1,
+      "destination": 14,
+      "start": "07:45:00",
+      "end": "08:00:00",
+      "flow": 1000
+    }
   ]
 }
 

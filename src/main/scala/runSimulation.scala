@@ -1,4 +1,4 @@
-
+import hubmodel.writePopulationTrajectories
 import breeze.linalg.DenseVector
 import breeze.numerics.{pow, sqrt}
 import com.typesafe.config.ConfigFactory
@@ -9,7 +9,6 @@ import hubmodel.{PedestrianSim, SFGraphSimulator, Time, timeBlock}
 import myscala.math.stats.stats
 import myscala.output.SeqOfSeqExtensions.SeqOfSeqWriter
 import myscala.output.SeqTuplesExtensions.SeqTuplesWriter
-import myscala.output.SeqExtension.SeqWriter
 
 import scala.collection.parallel.ForkJoinTaskSupport
 
@@ -151,13 +150,15 @@ object runSimulation extends App {
     */
   def runSimulationWithVideo(): Unit = {
 
-    println("Making video of simulation, this can take some time...")
-
     // create simulation
     val sim = createSimulation()
 
+    println("Running simulation for video...")
+
     // execute simulation
-    sim.run()
+    timeBlock(sim.run())
+
+    println("Making video of simulation, this can take some time...")
 
     val gates: List[BinaryGate] = List()
 
@@ -179,8 +180,8 @@ object runSimulation extends App {
 
 
     if (config.getBoolean("output.write_trajectories_as_VS")) {
-      println("Writing VS data from video")
-      (sim.population ++ sim.populationCompleted).map(p => p.toVisioSafeFormat()).toVector.writeToCSV(config.getString("output.output_prefix")+"_simulation_trajectories.csv")
+      println("Writing VS data from video...")
+      sim.writePopulationTrajectories(config.getString("output.output_prefix") + "_simulation_trajectories.csv")
     }
   }
 
@@ -216,33 +217,37 @@ object runSimulation extends App {
   //                           Processes and writes results to CSV
   // ******************************************************************************************
 
-  println("Processing results")
+  if ( config.getBoolean("output.write_travel_times") || config.getBoolean("output.write_densities") || config.getBoolean("output.write_tt_stats") || config.getBoolean("output.write_inflow") ) {
 
-  // Collects times at which densities where measured
-  val densityTimes: Vector[Time] = results.head._2.unzip._1.toVector
-  val inflowTimes: Vector[Time] = results.head._3.unzip._1.toVector
+    println("Processing results")
 
-  // compute mean and variance of density
-  val meanDensity: DenseVector[Double] = results.map(res => DenseVector(res._2.unzip._2.toArray)).foldLeft(DenseVector.fill(results.head._2.size)(0.0)) { (old: DenseVector[Double], n: DenseVector[Double]) => old + (n / results.size.toDouble) }
-  val varianceDensity: DenseVector[Double] = sqrt(results.map(res => DenseVector(res._2.unzip._2.toArray)).foldLeft(DenseVector.fill(results.head._2.size)(0.0)) { (old: DenseVector[Double], n: DenseVector[Double]) => old + (pow(n - meanDensity, 2) / (results.size.toDouble - 1.0)) })
+    // Collects times at which densities where measured
+    val densityTimes: Vector[Time] = results.head._2.unzip._1.toVector
+    val inflowTimes: Vector[Time] = results.head._3.unzip._1.toVector
 
-  // Collects then writes individual travel times to csv
-  if (config.getBoolean("output.write_travel_times")) results.map(r => r._1.map(p => p.travelTime)).writeToCSV(config.getString("output.output_prefix") + "_travel_times.csv")
+    // compute mean and variance of density
+    val meanDensity: DenseVector[Double] = results.map(res => DenseVector(res._2.unzip._2.toArray)).foldLeft(DenseVector.fill(results.head._2.size)(0.0)) { (old: DenseVector[Double], n: DenseVector[Double]) => old + (n / results.size.toDouble) }
+    val varianceDensity: DenseVector[Double] = sqrt(results.map(res => DenseVector(res._2.unzip._2.toArray)).foldLeft(DenseVector.fill(results.head._2.size)(0.0)) { (old: DenseVector[Double], n: DenseVector[Double]) => old + (pow(n - meanDensity, 2) / (results.size.toDouble - 1.0)) })
 
-  // writes densities to csv, first column is time, second column is mean, third column is var, then all individual densities
-  if (config.getBoolean("output.write_densities")) (densityTimes +: meanDensity.toScalaVector() +: varianceDensity.toScalaVector() +: results.map(_._2.map(_._2).toVector)).writeToCSV(
-    config.getString("output.output_prefix") + "_densities.csv",
-    rowNames = None,
-    columnNames = Some(Vector("time", "mean", "variance") ++ Vector.fill(n)("r").zipWithIndex.map(t => t._1 + t._2.toString))
-  )
+    // Collects then writes individual travel times to csv
+    if (config.getBoolean("output.write_travel_times")) results.map(r => r._1.map(p => p.travelTime)).writeToCSV(config.getString("output.output_prefix") + "_travel_times.csv")
 
-  // computes statistics on travel times and writes them
-  if (config.getBoolean("output.write_tt_stats")) results.map(r => stats(r._1.map(p => p.travelTime))).writeToCSV(config.getString("output.output_prefix") + "_travel_times_stats.csv", rowNames = None, columnNames = Some(Vector("mean", "variance", "median", "max", "min")))
+    // writes densities to csv, first column is time, second column is mean, third column is var, then all individual densities
+    if (config.getBoolean("output.write_densities")) (densityTimes +: meanDensity.toScalaVector() +: varianceDensity.toScalaVector() +: results.map(_._2.map(_._2).toVector)).writeToCSV(
+      config.getString("output.output_prefix") + "_densities.csv",
+      rowNames = None,
+      columnNames = Some(Vector("time", "mean", "variance") ++ Vector.fill(n)("r").zipWithIndex.map(t => t._1 + t._2.toString))
+    )
 
-  // collects and writes inflow values to csv
-  if (config.getBoolean("output.write_inflow")) (inflowTimes +: results.map(d => d._3.map(_._2).toVector)).writeToCSV(config.getString("output.output_prefix") + "_inflow.csv")
+    // computes statistics on travel times and writes them
+    if (config.getBoolean("output.write_tt_stats")) results.map(r => stats(r._1.map(p => p.travelTime))).writeToCSV(config.getString("output.output_prefix") + "_travel_times_stats.csv", rowNames = None, columnNames = Some(Vector("mean", "variance", "median", "max", "min")))
 
-  // writes the pedestrian tajectories in the same format as VS for analysing the data
-  if ( !config.getBoolean("output.make_video") && config.getBoolean("output.write_trajectories_as_VS")) { results.head._1.map(p => p.toVisioSafeFormat()).writeToCSV(config.getString("output.output_prefix")+"_simulation_trajectories.csv") }
+    // collects and writes inflow values to csv
+    if (config.getBoolean("output.write_inflow")) (inflowTimes +: results.map(d => d._3.map(_._2).toVector)).writeToCSV(config.getString("output.output_prefix") + "_inflow.csv")
+  }
+
+  if ( !config.getBoolean("output.make_video") && config.getBoolean("output.write_trajectories_as_VS")) {
+    println("Writing VS data from video")
+    writePopulationTrajectories(results.head._1, config.getString("output.output_prefix") + "_simulation_trajectories.csv")
+  }
 }
-

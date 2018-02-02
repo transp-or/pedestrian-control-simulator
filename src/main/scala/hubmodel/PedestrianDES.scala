@@ -4,6 +4,7 @@ package hubmodel
   * Created by nicholas on 5/12/17.
   */
 
+import java.io.{BufferedWriter, File, FileWriter}
 import java.util.concurrent.ThreadLocalRandom
 
 import ch.qos.logback.classic.Level
@@ -146,7 +147,15 @@ abstract class PedestrianDES[T <: PedestrianTrait](val startTime: Time,
 
   def population: Iterable[T] = this._populationNew.values
 
-
+  def writePopulationTrajectories(file: String): Unit = {
+    val f = new File(file)
+    val bw = new BufferedWriter(new FileWriter(f))
+    for (p <- this.population) {
+      bw.write(p.toVisioSafeFormat().stripLineEnd)
+      bw.write("\n")
+    }
+    bw.close()
+  }
 
 
   /** Immutable structure for storing the pedestrians who have left the system.

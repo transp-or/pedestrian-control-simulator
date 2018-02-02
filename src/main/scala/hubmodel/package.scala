@@ -1,3 +1,4 @@
+import java.io.{BufferedWriter, File, FileWriter}
 import java.util.concurrent.ThreadLocalRandom
 
 import breeze.numerics.{floor, round}
@@ -41,7 +42,7 @@ package object hubmodel {
     def norm: Double = scala.math.pow(this.X*this.X + this.Y*this.Y, 0.5)
     def distanceTo(that: Vector2D): Double = scala.math.pow((that.X-this.X)*(that.X-this.X) + (that.Y-this.Y)*(that.Y-this.Y), 0.5)
     def dot(that: Vector2D): Double = this.X*that.X + this.Y*that.Y
-    def normalize: Vector2D = if (this.norm == 0.0) {this} else {new Vector2D(this.X / this.norm, this.Y / this.norm)}
+    def normalize: Vector2D = if (this.norm == 0.0) {throw new RuntimeException("Norm is zero !")} else {val n: Double = this.norm; new Vector2D(this.X / n, this.Y / n)}
 
     override def toString: String = "(" + X + ", " + Y + ")"
   }
@@ -309,5 +310,15 @@ package object hubmodel {
     */
   def enterDebugMethod: Unit = {
     println("called debug function")
+  }
+
+  def writePopulationTrajectories(population: Iterable[PedestrianTrait], file: String): Unit = {
+    val f = new File(file)
+    val bw = new BufferedWriter(new FileWriter(f))
+    for (p <- population) {
+      bw.write(p.toVisioSafeFormat().stripLineEnd)
+      bw.write("\n")
+    }
+    bw.close()
   }
 }

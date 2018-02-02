@@ -62,6 +62,8 @@ trait PedestrianTrait {
     else desiredVel * ((1.3 * 1.34) / desiredVel.norm)
   }
 
+  def toVisioSafeFormat(refDate: String = "2013,1,1"): String
+
   /** method needed to guarantee equality is tested correctly */
   def canEqual(a: Any): Boolean = a.isInstanceOf[PedestrianTrait]
 

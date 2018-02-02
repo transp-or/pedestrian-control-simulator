@@ -98,40 +98,49 @@ class NOMADModel(sim: SFGraphSimulator) extends Action {
     val distanceBetweenPeds: Double = max(vecBetweenPeds.norm, 0.0*(p.r + that.r))
 
     //if (p.currentVelocityNew.norm > 0.0 && ((p.currentPositionNew - that.currentPositionNew).norm <= (p.r + that.r) )) {
-      val delta: Double = max((p.r + that.r) - (p.currentPositionNew - that.currentPositionNew).norm, 0.0)
-      val k0: Double = -10.0
-      val k1: Double = 10.0
-      val orthogonalDirection: NewBetterDirection2D = projectOntoMe(new NewBetterDirection2D(p.currentVelocityNew.Y, p.currentVelocityNew.X * -1.0).normalize, vecBetweenPeds)
-    val orthogonalDirectionCloseRange: NewBetterDirection2D = new NewBetterDirection2D((that.currentPositionNew - p.currentPositionNew).Y, (that.currentPositionNew - p.currentPositionNew).X * -1.0).normalize
+    val delta: Double = (p.r + that.r) - (p.currentPositionNew - that.currentPositionNew).norm
+    val k0: Double = -1000.0
+    val k1: Double = 1000.0
+
+    val tmpOrthogonalDirectionCloseRange: NewBetterDirection2D = new NewBetterDirection2D((that.currentPositionNew - p.currentPositionNew).Y, (that.currentPositionNew - p.currentPositionNew).X * -1.0).normalize
+    val orthogonalDirectionCloseRange: NewBetterDirection2D = if (tmpOrthogonalDirectionCloseRange.dot(p.currentVelocityNew) < 0.0) {tmpOrthogonalDirectionCloseRange * -1.0} else {tmpOrthogonalDirectionCloseRange}
 
     //(that.currentPositionNew - p.currentPositionNew).normalize * k0 * delta + orthogonalDirection*(that.currentVelocityNew.norm - p.currentVelocityNew.norm) * k1 * delta
-      if (p.currentVelocityNew.norm > 0.0 && p.currentVelocityNew.dot(thatPos) > 0.0) {
+      if (p.currentVelocityNew.norm > 0.0 && p.currentVelocityNew.dot(vecBetweenPeds) > 0.0) {
+        val orthogonalDirection: NewBetterDirection2D = projectOntoMe(new NewBetterDirection2D(p.currentVelocityNew.Y, p.currentVelocityNew.X * -1.0).normalize, vecBetweenPeds).normalize
         val lateralDistance: Double = max(projectOntoMe(orthogonalDirection, vecBetweenPeds).norm,0.0)
-        (that.currentPositionNew - p.currentPositionNew).normalize * a0 * math.exp(-distanceBetweenPeds / r0) + orthogonalDirection * a1 * math.exp(-distanceBetweenPeds * lateralDistance / r1) +
-          (that.currentPositionNew - p.currentPositionNew).normalize * k0 * delta + (projectOntoMe(orthogonalDirectionCloseRange, that.currentVelocityNew) - projectOntoMe(orthogonalDirectionCloseRange, p.currentVelocityNew).norm) * k1 * delta
-
+        val f = (that.currentPositionNew - p.currentPositionNew).normalize * a0 * math.exp(-distanceBetweenPeds / r0) + orthogonalDirection * a1 * math.exp(-distanceBetweenPeds * lateralDistance / r1) +
+          (p.currentPositionNew - that.currentPositionNew).normalize * 1.0*math.exp(10.0*delta -0.5) + (projectOntoMe(orthogonalDirectionCloseRange, that.currentVelocityNew).norm - projectOntoMe(orthogonalDirectionCloseRange, p.currentVelocityNew).norm) * 1.0*math.exp(10.0*delta  -0.5)
+        //println("in front:", sim.currentTime, p.ID, that.ID, distanceBetweenPeds, f)
+        f
       } else {
-        (that.currentPositionNew - p.currentPositionNew).normalize * a0 * math.exp(-distanceBetweenPeds / r0) +
-          (that.currentPositionNew - p.currentPositionNew).normalize * k0 * delta + orthogonalDirectionCloseRange*(projectOntoMe(orthogonalDirectionCloseRange, that.currentVelocityNew).norm - projectOntoMe(orthogonalDirectionCloseRange, p.currentVelocityNew).norm) * k1 * delta
+        val f = (that.currentPositionNew - p.currentPositionNew).normalize * a0 * math.exp(-distanceBetweenPeds / r0) +
+          (p.currentPositionNew - that.currentPositionNew).normalize * 1.0*math.exp(10.0*delta -0.5) + (projectOntoMe(orthogonalDirectionCloseRange, that.currentVelocityNew).norm - projectOntoMe(orthogonalDirectionCloseRange, p.currentVelocityNew).norm) * 1.0*math.exp(10.0*delta -0.5)
+        //println("behind:",  sim.currentTime, p.ID, that.ID, distanceBetweenPeds, f)
+        f
       }
   }
 
+//100*exp(5.0*x+2.0)
 
   protected def computePedestrianIncrements(p: PedestrianSim): Unit = {
 
 
     // desired direction
-    val currentDirection = computeDesiredDirection(p.currentPositionNew, p.currentDestinationNew)
+    ///val currentDirection = computeDesiredDirection(p.currentPositionNew, p.currentDestinationNew)
 
-    def getPedInsideInfluenceArea: Iterable[PedestrianSim] = sim.findNeighbours(p.ID, 1.0)
+    def getPedInsideInfluenceArea: Iterable[PedestrianSim] = sim.findNeighbours(p.ID, 1.5)
 
     /** Attractive forces are composed of the will to reach the destination. */
+      /*println(computePathFollowingComponent(p),
+        getPedInsideInfluenceArea.foldLeft(new Vector2D(0.0, 0.0))((acc: NewBetterAcceleration2D, that: PedestrianSim) => acc + computePedestrianInteraction(p, that)),
+        sim.spaceSF.walls.foldLeft(new Vector2D(0.0, 0.0))((acc: NewBetterAcceleration2D, w: Wall) => acc + obstacleInteractionAcceleration(p, w)))*/
+
     val totalAcceleration: NewBetterAcceleration2D = {
       computePathFollowingComponent(p) +
         getPedInsideInfluenceArea.foldLeft(new Vector2D(0.0, 0.0))((acc: NewBetterAcceleration2D, that: PedestrianSim) => acc + computePedestrianInteraction(p, that)) +
         sim.spaceSF.walls.foldLeft(new Vector2D(0.0, 0.0))((acc: NewBetterAcceleration2D, w: Wall) => acc + obstacleInteractionAcceleration(p, w))
     }
-
 
     // if the pedestrian is not waiting at a gate, compute increments. Otherwise, return 0.0 for increments.
     if (!p.isWaiting) {
