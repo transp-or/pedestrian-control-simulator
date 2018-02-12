@@ -1,33 +1,47 @@
 {
   "location": "corridor",
   "PTflows": [],
-  "flows": [ {
+  "flows": [{
+      "origin": 2,
+      "destination": 1,
+      "start": "00:00:00",
+      "end": "00:02:00",
+      "flow": 50
+    },
+    {
       "origin": 1,
       "destination": 2,
       "start": "00:00:00",
       "end": "00:02:00",
-      "flow": 60
-    },
-    {
-      "origin": 2,
-      "destination": 1,
-      "start": "00:00:00",
-      "end": "00:02:00",
-      "flow": 60
-    },
-    {
-      "origin": 2,
-      "destination": 1,
-      "start": "00:02:00",
-      "end": "00:05:00",
-      "flow": 120
+      "flow": 50
     },
     {
       "origin": 1,
       "destination": 2,
       "start": "00:02:00",
-      "end": "00:05:00",
-      "flow": 120
+      "end": "00:04:00",
+      "flow": 100
+    },
+    {
+      "origin": 2,
+      "destination": 1,
+      "start": "00:02:00",
+      "end": "00:04:00",
+      "flow": 100
+    },
+    {
+      "origin": 2,
+      "destination": 1,
+      "start": "00:04:00",
+      "end": "00:06:00",
+      "flow": 180
+    },
+    {
+      "origin": 1,
+      "destination": 2,
+      "start": "00:04:00",
+      "end": "00:06:00",
+      "flow": 180
     }]
 }
 

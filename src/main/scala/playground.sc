@@ -1,7 +1,7 @@
 import breeze.linalg.DenseVector
 import disaggregateDemand.{Node, platformModifier}
 import hubmodel.input.infrastructure.GraphReader
-import runSimulation.{config, n}
+import RunSimulation.{config, n}
 
 import scala.collection.mutable
 
@@ -263,9 +263,6 @@ new DrawCells(hexagons, "celltest.png", None, (xMax, yMax))
 
 */
 
-val v = DenseVector(1.0, 2.0, 3.0)
-val vv = DenseVector(1.0, 2.0, 3.1)
-v.equals(vv)
+val str = "adcfsdvdsv.conf"
 
-val l = Iterable()
-l.toList
+str.takeRight(5)

@@ -24,8 +24,8 @@ trait Tools4Videos {
     * @param hist original data formatted as List[(Time, Position)]
     * @return reformating of data as List[(Time, List[Position])]
     */
-  def MergeListsByTime(hist: List[(Time, Position)]): List[(Int, List[Position])] = {
-    hist.groupBy(_._1).map { case (k, v) => ((k * 1000).round.toInt, v.map(_._2)) }.toList
+  def MergeListsByTime(hist: List[(Time, Position)]): List[(Double, List[Position])] = {
+    hist.groupBy(_._1).map { case (k, v) => (k, v.map(_._2)) }.toList
   }
 
   /** Template function for creating dots representing pedestrians.
@@ -81,7 +81,7 @@ trait Tools4Videos {
   * @param bkgdImageSizeMeters Tuple with the width and height in meters of the background image: (WIDTH, HEIGHT)
   * @param fps                 The number of frames per second
   * @param pop                 The set of pedestrians to draw
-  * @param criticalArea        The critical area in which the density is monitored
+  * @param criticalAreaInput   The critical area in which the density is monitored
   * @param gateCollection      the collection of gates which are used to limit inflow into specific areas
   * @param gateHistory         the status over time of the gates (open or closed)
   * @param densityMeasurements Density values inside the critical zone.
@@ -96,7 +96,7 @@ class MovingPedestriansWithDensityVideo(outputFile: String,
                                         gateCollection: Map[String, BinaryGate],
                                         var gateHistory: scala.collection.mutable.ArrayBuffer[(Int, List[(String, Boolean)])],
                                         var densityMeasurements: collection.mutable.ArrayBuffer[(Int, Double)],
-                                        times2Show: Range) extends Tools4Videos {
+                                        times2Show: Vector[Double]) extends Tools4Videos {
 
 
   def createWhiteBackground: BufferedImage = {
@@ -106,6 +106,9 @@ class MovingPedestriansWithDensityVideo(outputFile: String,
     gcanv.fillRect(0, 0, bkgdImageSizeMeters._1.round.toInt * 30, bkgdImageSizeMeters._2.round.toInt * 30)
     canv
   }
+
+  assert(times2Show.size > 0.0)
+  println(" * writing " + times2Show.size + " frames at " + fps + " frames per second.")
 
   // Loads the background image which is used as the base image for all dimensions.
 
@@ -144,12 +147,12 @@ class MovingPedestriansWithDensityVideo(outputFile: String,
   def mapVcoord: Double => Int = mapVcoordLinear(bkgdImageSizeMeters._2, canvasHeight)
 
   // formatting of the data: aggregation by times of the positions.
-  val population2TimePositionList: List[(Int, List[Position])] = MergeListsByTime(pop.flatMap(_.getHistoryPosition).toList).sortWith(_._1 < _._1)
+  val population2TimePositionList: List[(Double, List[Position])] = MergeListsByTime(pop.flatMap(_.getHistoryPosition).toList).sortWith(_._1 < _._1)
   // List of times with corresponding ellipses to draw. For each time, the list of ellipses coreespond to the pedestrians.
-  //println(times2Show)
+
   //println(population2TimePositionList.map(_._1).toVector.sorted)
-  var timeEllipses: List[(Int, List[Ellipse2D])] = population2TimePositionList.map(p => (p._1, p._2.map(createDot))).filter(pair => times2Show.contains(pair._1))
-  //println(population2TimePositionList.map(p => (p._1, p._2.map(createDot))).map(_._1))
+  var timeEllipses: Vector[(Double, List[Ellipse2D])] = population2TimePositionList.filter(pair => times2Show.exists(t => math.abs(t - pair._1) <= math.pow(10,-5))).map(p => (p._1, p._2.map(createDot))).toVector
+  //println(population2TimePositionList.filter(pair => times2Show.contains(pair._1)).map(_._1).sorted)
 
   // Image to use for combining all the different components: the bkgd image, the dots, the monitored areas, the gates, etc.
   val combine: BufferedImage = new BufferedImage(canvasWidth, canvasHeight, BufferedImage.TYPE_4BYTE_ABGR)
@@ -159,16 +162,22 @@ class MovingPedestriansWithDensityVideo(outputFile: String,
   //enc.getEncoder.setKeyInterval(fps)
 
   // Main iteration creating images, then pushing them to the encoder.
-  for (i <- timeEllipses.indices) {
-
+  //for (i <- timeEllipses.indices) {
+  var counter: Int = 0
+  for (i <- times2Show.indices) {
     //if (100*times2Show(i)/(times2Show.end-times2Show.head).toInt % 5 == 0) {println(100*times2Show(i)/(times2Show.end-times2Show.head))}
 
     /** Draws dots representing pedestrians */
     val points: BufferedImage = new BufferedImage(canvasWidth, canvasHeight, BufferedImage.TYPE_4BYTE_ABGR)
-    val gPoints: Graphics2D = points.createGraphics()
-    gPoints.setColor(Color.RED)
-    timeEllipses.head._2 foreach (p => gPoints.fill(p))
-    timeEllipses = timeEllipses.tail
+    //if (timeEllipses.head._1 == times2Show(i)) {
+      val gPoints: Graphics2D = points.createGraphics()
+      gPoints.setColor(Color.RED)
+    timeEllipses.indexWhere(te => math.abs(times2Show(i) - te._1) < math.pow(10,-5)) match {
+      case a if a >= 0 =>timeEllipses(a)._2.foreach(p => gPoints.fill(p))
+      case _ => {}
+    }
+      //timeEllipses = timeEllipses.tail
+    //}
 
     /** Draws colored boxes showing densities inside areas */
 
@@ -200,10 +209,10 @@ class MovingPedestriansWithDensityVideo(outputFile: String,
     }
 
     /** combine images into one */
-    def timeReadable(t: Int): String = {
-      val hours: Int = floor(t / 3600000.0).toInt
-      val minutes: Int = floor((t - hours * 3600000) / 60000.0).toInt
-      val seconds: Double = t - hours * 3600000 - minutes * 60000
+    def timeReadable(t: Double): String = {
+      val hours: Int = floor(t / 3600.0).toInt
+      val minutes: Int = floor((t - hours * 3600) / 60.0).toInt
+      val seconds: Double = t - hours * 3600 - minutes * 60
       hours.toString + ":" + minutes.toString + ":" + seconds.toString
     }
 
@@ -232,6 +241,12 @@ class MovingPedestriansWithDensityVideo(outputFile: String,
 
     // pushes current image to encoder to make video
     enc.encodeImage(combine)
+
+    counter += 1
+    if (counter % 100 == 0) {
+      System.out.print("\r * " + counter + "/" + times2Show.size + " frames encoded")
+    }
+
   }
 
   // closes encoder

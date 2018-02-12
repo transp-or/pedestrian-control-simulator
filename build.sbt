@@ -1,3 +1,4 @@
+import java.nio.file.Files
 
 name := "hub-simulator"
 organization := "transpor.molyneaux"
@@ -23,7 +24,7 @@ libraryDependencies ++= Seq(
     "org.scalactic" %% "scalactic" % "3.0.1",
     "transpor.tools" % "power-voronoi" % "1.0",
     "transpor.molyneaux" %% "scala-custom" % "1.0-SNAPSHOT",
-    "transpor.molyneaux" %% "visiosafe-analysis" % "1.0-SNAPSHOT"
+  //"transpor.molyneaux" %% "visiosafe-analysis" % "1.0-SNAPSHOT"
 )
 
 resolvers ++= Seq(
@@ -32,4 +33,14 @@ resolvers ++= Seq(
 // https://stackoverflow.com/questions/28459333/how-to-build-an-uber-jar-fat-jar-using-sbt-within-intellij-idea
 // META-INF discarding
 
-//mainClass in assembly := Some("makePictures")
+mainClass in (Compile, packageBin) := Some("RunSimulation")
+
+lazy val dataFolders = Array("test-case", "debug-case")
+
+lazy val distribution = taskKey[Unit]("Copies all the required files and builds a standalone jar to distribute.")
+distribution := {
+  IO.copyFile(assembly.value.getAbsoluteFile, baseDirectory.value.getAbsoluteFile / "distribution/hub-model.jar")
+  dataFolders.foreach(df => IO.copyDirectory(baseDirectory.value / df, baseDirectory.value / "distribution" / df))
+
+  sourceDirectory.value / "main" / "resources" listFiles() filter(f => f.getAbsolutePath.takeRight(5) == ".conf") foreach (f => IO.copyFile(f, baseDirectory.value / "distribution" / f.getName))
+}

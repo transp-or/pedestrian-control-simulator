@@ -8,6 +8,14 @@ package hubmodel
   */
 trait Action {
 
+
+  /** Relative priority between different classes. The higher the value, the higher the priority. This means
+    * that an [[Action]] with a higher priority will be executed before another action with lower priority.
+    *
+    * This should be used carefully as wrong priority can lead to problematic situations.
+    */
+  val priority: Int = 0
+
   /** Method which is called to do stuff. This method must be overriden for all subclasses of [[Action]].
     * The method will modifiy some elements of the simulation.
     */

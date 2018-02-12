@@ -1,11 +1,10 @@
-import hubmodel.writePopulationTrajectories
+import hubmodel.{NewTime, PedestrianSim, SFGraphSimulator, Time, timeBlock, writePopulationTrajectories}
 import breeze.linalg.DenseVector
 import breeze.numerics.{pow, sqrt}
-import com.typesafe.config.ConfigFactory
+import com.typesafe.config.{Config, ConfigFactory}
 import hubmodel.input.demand.{PedestrianFlows, TimeTable}
 import hubmodel.input.infrastructure.{BinaryGate, ContinuousSpaceReader, GraphReader, NodeNaming, ReadControlDevices}
 import hubmodel.output._
-import hubmodel.{PedestrianSim, SFGraphSimulator, Time, timeBlock}
 import myscala.math.stats.stats
 import myscala.output.SeqOfSeqExtensions.SeqOfSeqWriter
 import myscala.output.SeqTuplesExtensions.SeqTuplesWriter
@@ -15,7 +14,7 @@ import scala.collection.parallel.ForkJoinTaskSupport
 /** main class for running simulations of the train station.
   *
   */
-object runSimulation extends App {
+object RunSimulation extends App {
 
   // ******************************************************************************************
   //                    Read CLI arguments and process parameters file
@@ -51,7 +50,7 @@ object runSimulation extends App {
   }
 
   // Reads the file passed as argument
-  val config = ConfigFactory.load(confFile)
+  val config: Config = ConfigFactory.load(confFile)
 
   // checkValid(), just as in the plain SimpleLibContext.
   // Note that these fields are NOT lazy, because if we're going to
@@ -93,6 +92,7 @@ object runSimulation extends App {
   val simulationEndTime: Time = config.getDouble("sim.end_time")
   val socialForceInterval: Time = config.getDouble("sim.sf_dt")
   val evaluationInterval: Time = config.getDouble("sim.evaluate_dt")
+  val rebuildTreeInterval: NewTime = new NewTime(config.getDouble("sim.rebuild_tree_dt"))
 
   // number of simulations to run
   val n: Int = config.getInt("sim.nb_runs")
@@ -103,7 +103,7 @@ object runSimulation extends App {
   //                    Runs the simulation, creates video and outputs results
   // ******************************************************************************************
 
-  println("Running simulations")
+  println("Running " + n + " simulations")
 
   // Container for the results from a simulation. This type chould be modified if the collectResults function is modified
   type ResultsContainer = (Vector[PedestrianSim], List[(Time, Double)], List[(Time, Double)])
@@ -134,8 +134,9 @@ object runSimulation extends App {
     new SFGraphSimulator(
       startTime = simulationStartTime,
       finalTime = simulationEndTime,
-      sf_dt = socialForceInterval, // might impact parameters of SFM
+      sf_dt = socialForceInterval,
       evaluate_dt = evaluationInterval,
+      rebuildTreeInterval = Some(rebuildTreeInterval),
       spaceSF = infraSF.continuousSpace,
       graph = infraGraph.graph,
       timeTable = timeTable,
@@ -170,17 +171,18 @@ object runSimulation extends App {
         Option(config.getString("output.bckg_image_video"))
       },
       (config.getDouble("output.bckg_image_width"), config.getDouble("output.bckg_image_height")),
-      (1.0 / socialForceInterval).toInt,
+      (1.0 / 0.05).toInt,
       sim.populationCompleted ++ sim.population,
       sim.criticalArea,
       gates.map(g => g.ID -> g).toMap,
-      sim.gatesHistory.map(p => ((p._1 * 1000).round.toInt, p._2)),
-      sim.densityHistory.map(p => ((p._1 * 1000).round.toInt, p._2)),
-      (simulationStartTime * 1000).round.toInt to (simulationEndTime * 1000).round.toInt by 100)
+      sim.gatesHistory.map(p => ((p._1 * 1).round.toInt, p._2)),
+      sim.densityHistory.map(p => ((p._1 * 1).round.toInt, p._2)),
+      (simulationStartTime to simulationEndTime by 0.05).toVector
+    )
 
 
     if (config.getBoolean("output.write_trajectories_as_VS")) {
-      println("Writing VS data from video...")
+      println("Writing trajectory data from video...")
       sim.writePopulationTrajectories(config.getString("output.output_prefix") + "_simulation_trajectories.csv")
     }
   }
@@ -217,7 +219,7 @@ object runSimulation extends App {
   //                           Processes and writes results to CSV
   // ******************************************************************************************
 
-  if ( config.getBoolean("output.write_travel_times") || config.getBoolean("output.write_densities") || config.getBoolean("output.write_tt_stats") || config.getBoolean("output.write_inflow") ) {
+  if ( n > 0 && ( config.getBoolean("output.write_travel_times") || config.getBoolean("output.write_densities") || config.getBoolean("output.write_tt_stats") || config.getBoolean("output.write_inflow") ) ) {
 
     println("Processing results")
 
@@ -246,8 +248,8 @@ object runSimulation extends App {
     if (config.getBoolean("output.write_inflow")) (inflowTimes +: results.map(d => d._3.map(_._2).toVector)).writeToCSV(config.getString("output.output_prefix") + "_inflow.csv")
   }
 
-  if ( !config.getBoolean("output.make_video") && config.getBoolean("output.write_trajectories_as_VS")) {
-    println("Writing VS data from video")
+  if ( n > 0 && !config.getBoolean("output.make_video") && config.getBoolean("output.write_trajectories_as_VS")) {
+    println("Writing VS to file")
     writePopulationTrajectories(results.head._1, config.getString("output.output_prefix") + "_simulation_trajectories.csv")
   }
 }

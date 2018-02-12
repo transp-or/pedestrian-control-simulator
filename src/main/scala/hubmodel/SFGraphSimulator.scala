@@ -6,12 +6,14 @@ import hubmodel.input.infrastructure.{BinaryGate, GraphReader, NodeNaming, ReadC
 import hubmodel.mgmt.EvaluateState
 import hubmodel.mvmtmodels._
 import hubmodel.route.UpdateRoutes
+import hubmodel.tools.RebuildTree
 
 
 class SFGraphSimulator(override val startTime: Time,
                        override val finalTime: Time,
                        val sf_dt: Time,
                        val evaluate_dt: Time,
+                       val rebuildTreeInterval: Option[NewTime],
                        val spaceSF: SocialForceSpace,
                        val graph: RouteGraph,
                        val timeTable: TimeTable,
@@ -31,7 +33,10 @@ class SFGraphSimulator(override val startTime: Time,
   /** Indicator whether binary gaets are present */
   val useBinaryGates: Boolean = graph.binaryGates.nonEmpty && controlDevices.monitoredAreas.nonEmpty
 
+  /* Using control */
   val useControl: Boolean = useFlowGates && useBinaryGates
+
+  val useTreeForNeighbourSearch: Boolean = rebuildTreeInterval.nonEmpty
 
   /** KPIs */
   val criticalArea: List[VertexCell] = controlDevices.monitoredAreas.toList
@@ -48,11 +53,12 @@ class SFGraphSimulator(override val startTime: Time,
     override def execute(): Unit = {
       sim.eventLogger.trace("sim-time=" + sim.currentTime + ": simulation started. dt=" + sim.sf_dt)
       sim.insertEventWithDelay(0)(new InsertVehicleArrivals(sim))
-      sim.pedestrianFlows.flows.foreach(f => sim.insertEventWithDelay(0)(new PedestrianGeneration(f.O, f.D, (f.start.toSecondOfDay - sim.startTime), (f.end.toSecondOfDay - sim.startTime), f.f, sim)))
+      sim.pedestrianFlows.flows.foreach(f => sim.insertEventWithDelay(0)(new PedestrianGeneration(f.O, f.D, new NewTime(f.start.toSecondOfDay - sim.startTime), new NewTime(f.end.toSecondOfDay - sim.startTime), f.f, sim)))
       sim.insertEventWithDelay(0)(new UpdateRoutes(sim))
-      sim.insertEventWithDelay(0)(new NOMADModel(sim))
+      sim.insertEventWithDelay(0)(new NOMADOriginalModel(sim))
       if (sim.useControl) sim.insertEventWithDelay(0)(new EvaluateState(sim))
       if (sim.useFlowGates) sim.insertEventWithDelay(0)(new StartFlowGates(sim))
+      if (sim.useTreeForNeighbourSearch) sim.insertEventAtAbsolute(0.0)(new RebuildTree(sim))
     }
   }
 

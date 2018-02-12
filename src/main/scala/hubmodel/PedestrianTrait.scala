@@ -44,6 +44,9 @@ trait PedestrianTrait {
   /** return the OD pair as a Vector */
   def getODVec: Vector[NodeID] = Vector(oZone, dZone)
 
+  /** has reached destination and has exited simulation */
+  var completed: Boolean = false
+
   /** needs to be specified for each implementation */
   override def toString: String
 

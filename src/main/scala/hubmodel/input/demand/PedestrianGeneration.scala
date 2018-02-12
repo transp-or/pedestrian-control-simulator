@@ -9,7 +9,7 @@ import java.util.concurrent.ThreadLocalRandom
 
 import breeze.numerics.pow
 import hubmodel.input.infrastructure.{NodeID, TrackID}
-import hubmodel.{Action, NewPosition2D, NewTime, PedestrianDES, PedestrianSim, Position, SFGraphSimulator, Time}
+import hubmodel.{Action, NewPosition2D, NewTime, PedestrianDES, PedestrianSim, Position, SFGraphSimulator, Time, add}
 
 /** Extension of [[Action]] which will insert a [[CreatePedestrian]] actions based on a Poisson distribution for
   * the creation times.
@@ -18,7 +18,7 @@ import hubmodel.{Action, NewPosition2D, NewTime, PedestrianDES, PedestrianSim, P
   * @param end          end time of the pedestrian creation
   * @param numberPeople number of people to create
   */
-class PedestrianGeneration(o: NodeID, d: NodeID, start: Double, end: Double, numberPeople: Double, sim: SFGraphSimulator) extends Action {
+class PedestrianGeneration(o: NodeID, d: NodeID, start: NewTime, end: NewTime, numberPeople: Double, sim: SFGraphSimulator) extends Action {
 
   /** Poisson distribution
     *
@@ -50,7 +50,7 @@ class PedestrianGeneration(o: NodeID, d: NodeID, start: Double, end: Double, num
   override def execute(): Unit = {
     sim.eventLogger.trace("time=" + sim.currentTime + ": generating " + numberPeople + " pedestrians in interval " + start + ":" + end)
     //println((end-start).toLong, numberPeople, sim.randU, Vector())
-    poissonProcessIterator(end - start, numberPeople).foreach(t => sim.insertEventWithDelayNew(t)(new CreatePedestrian(o, d, sim)))
+    poissonProcessIterator(end.value - start.value, numberPeople).foreach(t => sim.insertEventWithDelayNew(add(start,t))(new CreatePedestrian(o, d, sim)))
     //arrivalTimes.
   }
 }

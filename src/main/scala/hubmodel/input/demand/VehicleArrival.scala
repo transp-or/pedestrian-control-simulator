@@ -5,7 +5,7 @@ package hubmodel.input.demand
   */
 
 import hubmodel.input.infrastructure.{NodeID, ODID, TrainID}
-import hubmodel.{Action, SFGraphSimulator}
+import hubmodel.{Action, NewTime, SFGraphSimulator}
 
 /** Insert the arrivals of all vehicle in the event list. The trains variables stored in the simulation is the
   * variable which is used.
@@ -38,7 +38,7 @@ class VehicleArrival(train: Train, sim: SFGraphSimulator) extends Action {
   override def execute(): Unit = {
     sim.eventLogger.trace("time=" + sim.currentTime + ": vehicle arrival")
     trainInducedFlow(train).foreach(flow => sim.insertEventWithDelay(0) {
-      new PedestrianGeneration(flow.O, flow.D, flow.start.toSecondOfDay, flow.end.toSecondOfDay, flow.f, sim)
+      new PedestrianGeneration(flow.O, flow.D, new NewTime(flow.start.toSecondOfDay), new NewTime(flow.end.toSecondOfDay), flow.f, sim)
     })
 
 

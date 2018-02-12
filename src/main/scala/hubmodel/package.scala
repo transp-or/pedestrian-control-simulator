@@ -113,16 +113,19 @@ package object hubmodel {
   @deprecated
   type Time = Double
 
-  class NewTime(val time: Double) extends AnyVal {
+  class NewTime(val value: Double) extends AnyVal {
+
+    def +(m: NewTime): NewTime = new NewTime(value + m.value)
 
     def asReadable: String = {
-      val hours: Int = floor(time / 3600.0).toInt
-      val minutes: Int = floor((time - hours * 3600) / 60.0).toInt
-      val seconds: Double = time - hours * 3600 - minutes * 60
+      val hours: Int = floor(value / 3600.0).toInt
+      val minutes: Int = floor((value - hours * 3600) / 60.0).toInt
+      val seconds: Double = value - hours * 3600 - minutes * 60
       hours.toString + ":" + minutes.toString + ":" + seconds.toString
     }
-
   }
+
+  def add(a: NewTime, b: NewTime): NewTime = new NewTime(a.value + b.value)
 
   /** Implicit conversion for printing the [[hubmodel.Time]] type. Covnerts the Double to readable
     * time for humans. Converts the seconds to hours, minutes and seconds of the day.
@@ -315,7 +318,11 @@ package object hubmodel {
   def writePopulationTrajectories(population: Iterable[PedestrianTrait], file: String): Unit = {
     val f = new File(file)
     val bw = new BufferedWriter(new FileWriter(f))
+    var counter: Int = 0
+    val totalPeds: Int = population.size
     for (p <- population) {
+      counter += 1
+      print(counter + "/" + totalPeds + " pedestrians processed\r")
       bw.write(p.toVisioSafeFormat().stripLineEnd)
       bw.write("\n")
     }
