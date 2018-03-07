@@ -1,12 +1,10 @@
-package hubmodel.input.infrastructure
+package hubmodel.supply
 
-import hubmodel.input.demand.Track2NodeMapping
-import play.api.libs.json._
-import play.api.libs.json.Reads._
 import play.api.libs.functional.syntax._
+import play.api.libs.json.Reads._
+import play.api.libs.json._
 
 import scala.io.BufferedSource
-import scala.util.Try
 
 /** Container for storing the maps of node names from ints to strings ance vice versa
   *
@@ -44,15 +42,16 @@ class NodeNaming(file: String) {
     }
   }.toMap*/
 
-  val string2IntMap: Map[String, NodeID] = _String2Int.map(p => p.string -> p.int).toMap
-  val int2StringMap: Map[NodeID, String] = string2IntMap.map(_.swap)
+  //val string2IntMap: Map[String, NodeID] = _String2Int.map(p => p.string -> p.int).toMap
+  //println(string2IntMap)
+  //val int2StringMap: Map[NodeID, String] = string2IntMap.map(_.swap)
 
-  val string2Int: String => Option[Vector[NodeID]] = str => Try {
-    Vector(string2IntMap(str))
-  }.toOption
+  //val string2Int: String => Option[Vector[NodeID]] = str => Try {
+   // Vector(string2IntMap(str))
+  //}.toOption
 
 
-  assert(string2IntMap.size == int2StringMap.size)
+  //assert(string2IntMap.size == int2StringMap.size)
 
 
 }

@@ -1,10 +1,9 @@
-package hubmodel.input {
+package hubmodel {
 
   /**
     * Created by nicholas on 3/6/17.
     */
 
-  import hubmodel.Position
   import play.api.libs.functional.syntax._
   import play.api.libs.json.Reads.{min, minLength}
   import play.api.libs.json._
@@ -12,7 +11,7 @@ package hubmodel.input {
   /** This package contains the classes and methods which are needed for building
     *
     */
-  package object infrastructure {
+  package object supply {
 
     type WallType = Int
 
@@ -23,13 +22,23 @@ package hubmodel.input {
 
     abstract class NodeParent
 
-    case class NodeID_New(ID: Int, humanID: String) extends NodeParent
+    case class NodeID_New(ID: String, humanID: String) extends NodeParent {
+      def this(ID: String) = this(ID, ID)
+      override def toString: ODID = this.humanID
+    }
 
-    case class TrackID_New(ID: Int, humanID: String) extends NodeParent
+    case class TrackID_New(ID: Int, humanID: String) extends NodeParent {
+      def this(ID: Int) = this(ID, ID.toString)
+      override def toString: ODID = this.humanID
+    }
 
-    case class TrainID_New(ID: String, humanID: String) extends NodeParent
+    case class TrainID_New(ID: String, humanID: String) extends NodeParent {
+      def this(ID: String) = this(ID, ID)
+      override def toString: ODID = this.humanID
 
-    type NodeID = Int
+    }
+
+    type NodeID = String
     type TrackID = Int
     type TrainID = String
     type ODID = String
@@ -222,7 +231,7 @@ package hubmodel.input {
         (JsPath \ "start_pos_y").write[Double] and
         (JsPath \ "end_pos_x").write[Double] and
         (JsPath \ "end_pos_y").write[Double] and
-        (JsPath \ "monitored_area").write[String]
+        (JsPath \ "controlled_area").write[String]
       ) (unlift(FlowGates_JSON.unapply))
 
     implicit val FlowGates_JSONReads: Reads[FlowGates_JSON] = (
@@ -232,7 +241,7 @@ package hubmodel.input {
         (JsPath \ "start_pos_y").read[Double] and
         (JsPath \ "end_pos_x").read[Double] and
         (JsPath \ "end_pos_y").read[Double] and
-        (JsPath \ "monitored_area").read[String]
+        (JsPath \ "controlled_area").read[String]
       ) (FlowGates_JSON.apply _)
 
     case class MovingWalkways_JSON(o: String, d: String)
@@ -256,7 +265,7 @@ package hubmodel.input {
         (JsPath \ "startPos_y").write[Double] and
         (JsPath \ "endPos_x").write[Double] and
         (JsPath \ "endPos_y").write[Double] and
-        (JsPath \ "monitored_area").write[String]
+        (JsPath \ "controlled_area").write[String]
       ) (unlift(BinaryGates_JSON.unapply))
 
     implicit val BinaryGates_JSONReads: Reads[BinaryGates_JSON] = (
@@ -266,7 +275,7 @@ package hubmodel.input {
         (JsPath \ "startPos_y").read[Double] and
         (JsPath \ "endPos_x").read[Double] and
         (JsPath \ "endPos_y").read[Double] and
-        (JsPath \ "monitored_area").read[String]
+        (JsPath \ "controlled_area").read[String]
       ) (BinaryGates_JSON.apply _)
 
     case class ControlAreas_JSON(name: String, x1: Double, y1: Double, x2: Double, y2: Double, x3: Double, y3: Double, x4: Double, y4: Double)

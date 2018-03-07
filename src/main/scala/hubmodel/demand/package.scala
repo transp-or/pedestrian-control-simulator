@@ -1,24 +1,20 @@
-import play.api.libs.json._
-import play.api.libs.json.Reads._
 import play.api.libs.functional.syntax._
+import play.api.libs.json.Reads._
+import play.api.libs.json._
 
 import scala.io.BufferedSource
 
 //import pedtrack.{Time, StringImprovements}
-import hubmodel.input.infrastructure.{NodeID, InfraODModel}
+import java.time.format.DateTimeFormatter
+import java.time.{LocalDateTime, LocalTime}
 
-import hubmodel.input.infrastructure.TrackID
+import hubmodel.supply.NodeID
 
 
 /**
   * Created by nicholas on 3/8/17.
   */
-package hubmodel.input {
-
-  import java.time.{LocalDateTime, LocalTime}
-  import java.time.format.DateTimeFormatter
-
-  import hubmodel.input.infrastructure.TrainID
+package hubmodel {
 
   package object demand {
 
@@ -92,8 +88,8 @@ package hubmodel.input {
 
 
     implicit val ExternalFlowReads: Reads[PedestrianFlow] = (
-      (JsPath \ "origin").read[NodeID] and
-        (JsPath \ "destination").read[NodeID] and
+      (JsPath \ "origin").read[String] and
+        (JsPath \ "destination").read[String] and
         (JsPath \ "start").read[LocalTime] and
         (JsPath \ "end").read[LocalTime] and
         (JsPath \ "flow").read[Double](min(0.0))
@@ -142,8 +138,15 @@ package hubmodel.input {
                                   TRAIN INDUCED FLOWS (TINF)
     -----------------------------------------------------------------------------------*/
     // assuming uniform access distribution
-    val splitFractions: Iterable[NodeID] => Vector[Double] = nodes => Vector.fill(nodes.size) {
-      1.0 / nodes.size
+    def splitFractionsUniform(arrNodes: Iterable[VertexRectangle], depNodes: Iterable[VertexRectangle], totalFlow: Double): Iterable[(VertexRectangle, VertexRectangle, Double)] = {
+      val perm = for {// all permutations of two lists of nodes
+        a <- arrNodes
+        b <- depNodes
+        if b != a
+      } yield {
+        (a, b)
+      }
+      perm.map(p => (p._1, p._2, totalFlow / perm.size)) // split fractions over all permutations. Not realistic but a start
     }
 
     // assumes passenger use infrastructure to capacity

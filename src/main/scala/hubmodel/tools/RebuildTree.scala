@@ -1,6 +1,6 @@
 package hubmodel.tools
 
-import hubmodel.{Action, NewTime, SFGraphSimulator}
+import hubmodel.{Action, SFGraphSimulator}
 
 /** Event which trigers the reconstruction from scratch of the m-tree which is used to find the neighbouring
   * pedestrians. The execute functions calls the method defined in the simulator which rebuilds the tree.

@@ -1,12 +1,5 @@
 package hubmodel.mvmtmodels
 
-import breeze.linalg.{DenseMatrix, DenseVector, norm}
-import breeze.numerics.{cos, sin, sqrt}
-import hubmodel.{Acceleration, Direction, Force, PedestrianDES, PedestrianSim, Position, SFGraphSimulator, Velocity}
-
-import scala.collection.mutable.ArrayBuffer
-import scala.math.pow
-
 /*
 class HeadedSocialForce(sim: SFGraphSimulator) extends SocialForce(sim) {
 

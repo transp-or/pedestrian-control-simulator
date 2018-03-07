@@ -1,15 +1,10 @@
-import breeze.linalg.DenseVector
-import disaggregateDemand.{Node, platformModifier}
-import hubmodel.input.infrastructure.GraphReader
-import RunSimulation.{config, n}
-
 import scala.collection.mutable
 
 /*import breeze.linalg.DenseVector
 import breeze.numerics.{cos, pow, sqrt}
 import hubmodel.{Position, generateUUID}
 
-import hubmodel.output.DrawCells
+import hubmodel.output.image.DrawCells
 import hubmodel.route.MyCell
 
 import scala.collection.SortedSet
@@ -263,6 +258,3 @@ new DrawCells(hexagons, "celltest.png", None, (xMax, yMax))
 
 */
 
-val str = "adcfsdvdsv.conf"
-
-str.takeRight(5)

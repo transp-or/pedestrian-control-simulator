@@ -1,7 +1,7 @@
 import java.io.File
 
-import hubmodel.input.infrastructure.{GraphReader, ContinuousSpaceReader}
-import hubmodel.output.{DrawGraph, DrawWalls, DrawWallsAndGraph}
+import hubmodel.output.image.{DrawGraph, DrawWalls, DrawWallsAndGraph}
+import hubmodel.supply.{ContinuousSpaceReader, GraphReader}
 
 
 object makePictures extends App {

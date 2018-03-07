@@ -2,8 +2,6 @@ import java.io.{BufferedWriter, File, FileWriter}
 import java.util.concurrent.ThreadLocalRandom
 
 import breeze.numerics.{floor, round}
-import myscala.math.linalg.areaFrom2DVectors
-import breeze.linalg.DenseVector
 
 /**
   * Created by nicholas on 5/12/17.
@@ -26,7 +24,7 @@ package object hubmodel {
     def norm: Double
     def distanceTo(that: A): Double
     def dot(that: A): Double
-    def normalize: A
+    def normalized: A
   }
 
   sealed class Vector2D(val X: Double, val Y: Double) extends PhysicalVector with PhysicalVectorOps[Vector2D] {
@@ -42,9 +40,14 @@ package object hubmodel {
     def norm: Double = scala.math.pow(this.X*this.X + this.Y*this.Y, 0.5)
     def distanceTo(that: Vector2D): Double = scala.math.pow((that.X-this.X)*(that.X-this.X) + (that.Y-this.Y)*(that.Y-this.Y), 0.5)
     def dot(that: Vector2D): Double = this.X*that.X + this.Y*that.Y
-    def normalize: Vector2D = if (this.norm == 0.0) {throw new RuntimeException("Norm is zero !")} else {val n: Double = this.norm; new Vector2D(this.X / n, this.Y / n)}
+    def normalized: Vector2D = if (this.norm == 0.0) {throw new RuntimeException("Norm is zero !")} else {val n: Double = this.norm; new Vector2D(this.X / n, this.Y / n)}
+    def orthogonal: Vector2D = new Vector2D(-this.Y, this.X).normalized
 
     override def toString: String = "(" + X + ", " + Y + ")"
+  }
+
+  object Vector2D {
+    def apply(x: Double, y: Double): Vector2D = new Vector2D(x,y)
   }
 
   final class ZeroVector2D extends Vector2D(0.0, 0.0)
@@ -62,7 +65,7 @@ package object hubmodel {
     def distanceTo(that: Vector3D): Double = scala.math.pow((that.X-this.X)*(that.X-this.X) + (that.Y-this.Y)*(that.Y-this.Y) + (that.Z-this.Z)*(that.Z-this.Z), 0.5)
     def norm: Double = scala.math.pow(this.X*this.X + this.Y*this.Y + this.Z*this.Z, 0.5)
     def dot(that: Vector3D): Double = this.X*that.X + this.Y*that.Y + this.Z*that.Z
-    def normalize: Vector3D = new Vector3D(this.X / this.norm, this.Y / this.norm, this.Z / this.norm)
+    def normalized: Vector3D = new Vector3D(this.X / this.norm, this.Y / this.norm, this.Z / this.norm)
 
     override def toString: String = "(" + X + ", " + Y + ", " + Z + ")"
   }
@@ -109,13 +112,13 @@ package object hubmodel {
   @deprecated
   type Force = breeze.linalg.DenseVector[Double]
 
-  // Type for representing Time: in seconds !
-  @deprecated
-  type Time = Double
 
   class NewTime(val value: Double) extends AnyVal {
 
-    def +(m: NewTime): NewTime = new NewTime(value + m.value)
+    def + (m: NewTime): NewTime = new NewTime(this.value + m.value)
+    def addDouble (m: Double): NewTime = new NewTime(this.value + m)
+    def - (m: NewTime): NewTime = new NewTime(this.value - m.value)
+    def abs: NewTime = new NewTime(java.lang.Math.abs(this.value))
 
     def asReadable: String = {
       val hours: Int = floor(value / 3600.0).toInt
@@ -123,60 +126,40 @@ package object hubmodel {
       val seconds: Double = value - hours * 3600 - minutes * 60
       hours.toString + ":" + minutes.toString + ":" + seconds.toString
     }
+
+    def asVisioSafe: String = {
+      val h: Int = floor(this.value / 3600).toInt
+      val min: Int = floor((this.value - h * 3600) / 60).toInt
+      val s: Int = floor(this.value - 3600 * h - 60 * min).toInt
+      val ms: Int = round(1000 * (this.value - 3600 * h - 60 * min - s)).toInt
+      h.toString + "," + min.toString + "," + s.toString + "," + ms.toString
+    }
+
+    override def toString: String = value.toString
+
   }
 
-  def add(a: NewTime, b: NewTime): NewTime = new NewTime(a.value + b.value)
+  object NewTime {
+    def apply(value: Double): NewTime = new NewTime(value)
 
-  /** Implicit conversion for printing the [[hubmodel.Time]] type. Covnerts the Double to readable
-    * time for humans. Converts the seconds to hours, minutes and seconds of the day.
-    *
-    * @param t Time to convert
-    */
-  @deprecated
-  implicit class timePrint(t: Time) {
+    def fromDouble(v: Double): NewTime = {new NewTime(v)}
 
-    /** Prints the time as a String
-      *
-      * @return
-      */
-    def timePrint: String = t.toString
-
-    /** Converts the number of seconds to readable human time.
-      *
-      * @return Time formatted as hh:mm:ss
-      */
-    def timeReadable: String = {
-      val hours: Int = floor(t / 3600.0).toInt
-      val minutes: Int = floor((t - hours * 3600) / 60.0).toInt
-      val seconds: Double = t - hours * 3600 - minutes * 60
-      hours.toString + ":" + minutes.toString + ":" + seconds.toString
+    implicit def orderingByValue: Ordering[NewTime] = {
+      Ordering.by(t => t.value)
     }
   }
 
-  /** Takes a [[hubmodel.Time]] as argument and converts it to a readable time.
-    *
-    * @param t [[hubmodel.Time]] to convert
-    * @return formatted as hh::mm::ss
-    */
-  def timeReadable(t: Time): String = {
-    val hours: Int = floor(t / 3600.0).toInt
-    val minutes: Int = floor((t - hours * 3600) / 60.0).toInt
-    val seconds: Double = t - hours * 3600 - minutes * 60
-    hours.toString + ":" + minutes.toString + ":" + seconds.toString
-  }
-
-  /** Formats the [[hubmodel.Time]] as VisioSafe does.
-    *
-    * @param t [[hubmodel.Time]] to convert
-    * @return formatted as h,m,s,ms
-    */
-  def time2VisioSafeTime(t: Time): String = {
-    val sec = t
-    val h: Int = floor(sec / 3600).toInt
-    val min: Int = floor((sec - h * 3600) / 60).toInt
-    val s: Int = floor(sec - 3600 * h - 60 * min).toInt
-    val ms: Int = round(1000 * (sec - 3600 * h - 60 * min - s)).toInt
-    h.toString + "," + min.toString + "," + s.toString + "," + ms.toString
+  object NewTimeNumeric extends Ordering[NewTime] {
+    def compare(x: NewTime, y: NewTime): Int = x.value compare y.value
+    /*def plus (x: NewTime,y: NewTime): NewTime = new NewTime(x.value + y.value)
+    def minus(x: NewTime,y: NewTime): NewTime = new NewTime(x.value - y.value)
+    def times(x: NewTime,y: NewTime): NewTime = new NewTime(x.value * y.value)
+    def negate(x: NewTime): NewTime = new NewTime(-x.value)
+    def fromInt (x: Int): NewTime = new NewTime(x.toDouble)
+    def toInt   (x: NewTime): Int    = x.value.toInt
+    def toLong  (x: NewTime): Long   = x.value.toLong
+    def toFloat (x: NewTime): Float  = x.value.toFloat
+    def toDouble(x: NewTime): Double = x.value*/
   }
 
   /** Generation of a UUID. This can be used to generate unique identifiers for objects.
@@ -196,43 +179,43 @@ package object hubmodel {
     * @param C    top right
     * @param D    top left
     */
-  final case class VertexCell(name: String, A: Position, B: Position, C: Position, D: Position) {
+  final case class VertexRectangle(name: String, A: NewBetterPosition2D, B: NewBetterPosition2D, C: NewBetterPosition2D, D: NewBetterPosition2D) {
 
     // unique identifier
     val ID: String = generateUUID
 
     // center of the rectangle
-    val center: Position = A + 0.5 * (B - A) + 0.5 * (D - A)
+    val center: NewBetterPosition2D = A + (B - A)*0.5 + (D - A)*0.5
 
     // area of the associated zone
-    val area: Double = areaFrom2DVectors(B - A, D - A)
+    val area: Double = (B - A).norm * (D - A).norm
 
     /** Is the point inside the vertex ?
       *
-      * @param pos [[Position]] to check
+      * @param pos [[NewBetterPosition2D]] to check
       * @return boolean indicating if the point is inside the vertex.
       */
-    def isInside(pos: Position): Boolean = {
-      val AB: DenseVector[Double] = B - A
-      val BC: DenseVector[Double] = C - B
-      val AP: DenseVector[Double] = pos - A
-      val BP: DenseVector[Double] = pos - B
+    def isInside(pos: NewBetterPosition2D): Boolean = {
+      val AB: NewBetterPosition2D = B - A
+      val BC: NewBetterPosition2D = C - B
+      val AP: NewBetterPosition2D = pos - A
+      val BP: NewBetterPosition2D = pos - B
       if (0 <= (AB dot AP) && (AB dot AP) <= (AB dot AB) && 0 <= (BC dot BP) && (BC dot BP) <= (BC dot BC)) true
       else false
     }
 
-    def uniformSamplePointInside: NewPosition2D = {
-      (ThreadLocalRandom.current.nextDouble(A(0), B(0)), ThreadLocalRandom.current.nextDouble(A(1), D(1)))
+    def uniformSamplePointInside: NewBetterPosition2D = {
+      Vector2D(ThreadLocalRandom.current.nextDouble(A.X+0.1, B.X-0.1), ThreadLocalRandom.current.nextDouble(A.Y+0.1, D.Y-0.1))
     }
 
     /** Equality based on the ID and not the positions
       *
-      * @param other [[VertexCell]] to which we want to compare to
+      * @param other [[VertexRectangle]] to which we want to compare to
       * @return
       */
     def equalsID(other: Any): Boolean = {
       other match {
-        case that: VertexCell => this.ID == that.ID
+        case that: VertexRectangle => this.ID == that.ID
         case _ => false
       }
     }
@@ -244,7 +227,7 @@ package object hubmodel {
       */
     override def equals(other: Any): Boolean =
       other match {
-        case that: VertexCell => this.A == that.A && this.B == that.B && this.C == that.C && this.D == that.D
+        case that: VertexRectangle => this.A == that.A && this.B == that.B && this.C == that.C && this.D == that.D
         case _ => false
       }
 
@@ -255,10 +238,12 @@ package object hubmodel {
     override def hashCode: Int = {
       (this.A, this.B, this.C, this.D).##
     }
+
+    override def toString: String = this.name
   }
 
 
-  /** Function to check whether a [[hubmodel.Position]] is inside a [[hubmodel.VertexCell]]. The default Vertex is a
+  /** Function to check whether a [[hubmodel.Position]] is inside a [[hubmodel.VertexRectangle]]. The default Vertex is a
     * plain rectangle, and hence this function checks whether the point is inside the rectangle. For more sophisticated
     * shapes, this function must be overriden.
     *
@@ -266,20 +251,11 @@ package object hubmodel {
     * @param pos position ot check
     * @return boolean indicating if the point is inside the vertex
     */
-  def isInVertex(v: VertexCell)(pos: Position): Boolean = {
-    val AB: DenseVector[Double] = v.B - v.A
-    val BC: DenseVector[Double] = v.C - v.B
-    val AP: DenseVector[Double] = pos - v.A
-    val BP: DenseVector[Double] = pos - v.B
-    if (0 <= (AB dot AP) && (AB dot AP) <= (AB dot AB) && 0 <= (BC dot BP) && (BC dot BP) <= (BC dot BC)) true
-    else false
-  }
-
-  def isInVertexNew(v: VertexCell)(pos: NewBetterPosition2D): Boolean = {
-    val AB: DenseVector[Double] = v.B - v.A
-    val BC: DenseVector[Double] = v.C - v.B
-    val AP: DenseVector[Double] = DenseVector(pos.X, pos.Y) - v.A
-    val BP: DenseVector[Double] = DenseVector(pos.X, pos.Y) - v.B
+  def isInVertex(v: VertexRectangle)(pos: NewBetterPosition2D): Boolean = {
+    val AB: NewBetterPosition2D = v.B - v.A
+    val BC: NewBetterPosition2D = v.C - v.B
+    val AP: NewBetterPosition2D = pos - v.A
+    val BP: NewBetterPosition2D = pos - v.B
     if (0 <= (AB dot AP) && (AB dot AP) <= (AB dot AB) && 0 <= (BC dot BP) && (BC dot BP) <= (BC dot BC)) true
     else false
   }

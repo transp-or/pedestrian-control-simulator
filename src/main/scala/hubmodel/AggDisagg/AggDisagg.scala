@@ -1,7 +1,5 @@
 package hubmodel.AggDisagg {
 
-  import hubmodel.{PedestrianSim, PedestrianTrait}
-
   /*class PedestrianInfraOD(val oZone: Int, val dZone: Int, val freeFlowVel: Double, val entryTime: Double) extends PedestrianTrait{//(oZone, dZone, freeFlowVel, Double.NaN, Double.NaN, entryTime, Double.NaN) {
     var exitTime = Double.NaN
     var travelDistance = Double.NaN

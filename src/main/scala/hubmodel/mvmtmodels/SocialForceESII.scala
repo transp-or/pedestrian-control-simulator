@@ -1,7 +1,7 @@
 package hubmodel.mvmtmodels
 
 import breeze.linalg.{DenseVector, norm}
-import breeze.numerics.{cos, exp, sqrt}
+import breeze.numerics.{exp, sqrt}
 import hubmodel._
 
 import scala.math.pow

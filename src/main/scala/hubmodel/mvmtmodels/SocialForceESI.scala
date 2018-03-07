@@ -1,13 +1,10 @@
 package hubmodel.mvmtmodels
 
-import breeze.linalg.{DenseVector, max, min, norm}
-import breeze.numerics.{cos, exp, sqrt}
-
-import math.pow
+import breeze.linalg.{DenseVector, norm}
+import breeze.numerics.{exp, sqrt}
 import hubmodel._
-import hubmodel.input.infrastructure.Wall
 
-import scala.collection.mutable.ArrayBuffer
+import scala.math.pow
 
 
 /**

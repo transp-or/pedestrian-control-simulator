@@ -3,7 +3,6 @@ package hubmodel.HubOutput.Writers
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
-import hubmodel.input.infrastructure.{NodeID, ODPair}
 import myscala.math.stats.Quantiles
 import play.api.libs.json.{JsValue, Json, Writes}
 

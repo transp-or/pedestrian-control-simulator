@@ -1,10 +1,8 @@
 import breeze.linalg.DenseVector
-import breeze.numerics.{cos, pow, sqrt}
-import hubmodel.{Position, generateUUID}
-
-import hubmodel.output.DrawCells
+import breeze.numerics.cos
+import hubmodel.output.image.DrawCells
 import hubmodel.route.MyCell
-import hubmodel.timeBlock
+import hubmodel.{Position, timeBlock}
 
 /*
   val qInterval1 = computeQuantiles(0.0 to 100.0 by 1.0)_
@@ -20,10 +18,6 @@ import hubmodel.timeBlock
 */
 
 object debugMain extends App {
-
-
-  import scala.collection.SortedSet
-  import scala.concurrent.Promise
 
   /*case class MyCell(center: Position, edgeLength: Double){ //}, conn: List[String]) {
     val ID: String = generateUUID
@@ -268,7 +262,7 @@ object debugMain extends App {
   val g = timeBlock {
     buildGraph(conn3.head, conn3.tail, List())
   }
-  println(g)
+  //println(g)
 
 
   //println(hexagons.map(_.potential).mkString("\n"))

@@ -1,64 +1,89 @@
 package hubmodel
 
-import breeze.linalg.DenseVector
-import hubmodel.input.demand.{InsertVehicleArrivals, PedestrianFlows, PedestrianGeneration, TimeTable}
-import hubmodel.input.infrastructure.{BinaryGate, GraphReader, NodeNaming, ReadControlDevices, RouteGraph, SocialForceSpace, StartFlowGates}
+import hubmodel.demand.{PTInducedQueue, PedestrianFlows, ProcessPedestrianFlows, ProcessTimeTable, TimeTable}
 import hubmodel.mgmt.EvaluateState
 import hubmodel.mvmtmodels._
 import hubmodel.route.UpdateRoutes
+import hubmodel.supply.{NodeID_New, NodeParent, ReadControlDevices, RouteGraph, SocialForceSpace, StartFlowGates, TrainID_New}
 import hubmodel.tools.RebuildTree
 
 
-class SFGraphSimulator(override val startTime: Time,
-                       override val finalTime: Time,
-                       val sf_dt: Time,
-                       val evaluate_dt: Time,
+class SFGraphSimulator(override val startTime: NewTime,
+                       override val finalTime: NewTime,
+                       val sf_dt: NewTime,
+                       val evaluate_dt: NewTime,
                        val rebuildTreeInterval: Option[NewTime],
                        val spaceSF: SocialForceSpace,
                        val graph: RouteGraph,
                        val timeTable: TimeTable,
                        val pedestrianFlows: PedestrianFlows,
-                       val nodeNaming: NodeNaming,
+                       //val nodeNaming: NodeNaming,
                        controlDevices: ReadControlDevices) extends PedestrianDES[PedestrianSim](startTime, finalTime) {
 
   /* checks whether a pedestrian has reach is next destination zone */
-  def intermediateDestinationReached: PedestrianSim => Boolean = p => isInVertexNew(p.nextZone)(p.currentPositionNew)
+  def intermediateDestinationReached: PedestrianSim => Boolean = p => isInVertex(p.nextZone)(p.currentPositionNew)
 
   /* checks if the pedestrian has reached is final destination */
-  def finalDestinationReached: PedestrianSim => Boolean = p => isInVertexNew(graph.vertexMap(p.dZone.toString))(p.currentPositionNew)
+  def finalDestinationReached: PedestrianSim => Boolean = p => isInVertex(p.dZone)(p.currentPositionNew)
+
+  println("Simulator configuration:")
 
   /** Indicator whether flow gates are present */
   val useFlowGates: Boolean = graph.flowGates.nonEmpty && controlDevices.monitoredAreas.nonEmpty
+  if (useFlowGates) {println( " * using flow gates")}
 
   /** Indicator whether binary gaets are present */
   val useBinaryGates: Boolean = graph.binaryGates.nonEmpty && controlDevices.monitoredAreas.nonEmpty
+  if (useBinaryGates) {println( " * using binary gates")}
 
-  /* Using control */
+  /** Using control */
   val useControl: Boolean = useFlowGates && useBinaryGates
+  if (useControl) {println( " * control strategies are used")}
 
-  val useTreeForNeighbourSearch: Boolean = rebuildTreeInterval.nonEmpty
+  /** Indicator whether an m-tree is used to perform neighbour search */
+  val useTreeForNeighbourSearch: Boolean = rebuildTreeInterval.isDefined
+  if (useTreeForNeighbourSearch) {println( " * using m-tree for neighbour search")}
+
 
   /** KPIs */
-  val criticalArea: List[VertexCell] = controlDevices.monitoredAreas.toList
+  val criticalArea: List[VertexRectangle] = controlDevices.monitoredAreas.toList
   //List(VertexCell("CriticalZone1", DenseVector(50.0, 10.720), DenseVector( 56.0, 10.720), DenseVector( 56.0, 16.800), DenseVector( 50.0, 16.800)))
   //val criticalArea: List[Vertex] = List(Vertex("CriticalZone1", DenseVector(51.5, 10.72), DenseVector(80.40, 10.72), DenseVector(80.40, 16.80), DenseVector(51.50, 16.80)))
-  val densityHistory: collection.mutable.ArrayBuffer[(Time, Double)] = collection.mutable.ArrayBuffer((startTime, 0.0))
-  val inflowHistory: collection.mutable.ArrayBuffer[(Time, Double)] = collection.mutable.ArrayBuffer((startTime, 0.0))
+  val densityHistory: collection.mutable.ArrayBuffer[(NewTime, Double)] = collection.mutable.ArrayBuffer((startTime, 0.0))
+  val inflowHistory: collection.mutable.ArrayBuffer[(NewTime, Double)] = collection.mutable.ArrayBuffer((startTime, 0.0))
 
-  val closedEdges: scala.collection.mutable.HashSet[(VertexCell, VertexCell)] = scala.collection.mutable.HashSet()
-  val gatesHistory: collection.mutable.ArrayBuffer[(Time, List[(String, Boolean)])] = collection.mutable.ArrayBuffer()
+  val closedEdges: scala.collection.mutable.HashSet[(VertexRectangle, VertexRectangle)] = scala.collection.mutable.HashSet()
+  val gatesHistory: collection.mutable.ArrayBuffer[(NewTime, List[(String, Boolean)])] = collection.mutable.ArrayBuffer()
+
+  val PTInducedFlows: collection.mutable.Map[VertexRectangle, PTInducedQueue] = collection.mutable.Map()
+
+  /** Takes a conceptual node (train or on foot) and returns the set of "real" nodes (the ones used by the graph)
+    * in which the pedestrians must be created.
+    *
+    * @param conceptualNode node representing the train or the pedestrian zone
+    * @return iterable in which the pedestrians will be created
+    */
+  def conceptualNode2GraphNodes(conceptualNode: NodeParent): Iterable[VertexRectangle] = {
+    conceptualNode match {
+      case x: TrainID_New => this.timeTable.train2NodesNew(x).map(n => this.graph.vertexMap(n.ID))
+      case x: NodeID_New => Iterable(this.graph.vertexMap(x.ID))
+      case _ => throw new Exception ("Track ID should not be there !")
+    }
+  }
+
+
 
 
   class StartSim(sim: SFGraphSimulator) extends super.GenericStartSim(sim) {
     override def execute(): Unit = {
       sim.eventLogger.trace("sim-time=" + sim.currentTime + ": simulation started. dt=" + sim.sf_dt)
-      sim.insertEventWithDelay(0)(new InsertVehicleArrivals(sim))
-      sim.pedestrianFlows.flows.foreach(f => sim.insertEventWithDelay(0)(new PedestrianGeneration(f.O, f.D, new NewTime(f.start.toSecondOfDay - sim.startTime), new NewTime(f.end.toSecondOfDay - sim.startTime), f.f, sim)))
-      sim.insertEventWithDelay(0)(new UpdateRoutes(sim))
-      sim.insertEventWithDelay(0)(new NOMADOriginalModel(sim))
-      if (sim.useControl) sim.insertEventWithDelay(0)(new EvaluateState(sim))
-      if (sim.useFlowGates) sim.insertEventWithDelay(0)(new StartFlowGates(sim))
-      if (sim.useTreeForNeighbourSearch) sim.insertEventAtAbsolute(0.0)(new RebuildTree(sim))
+      sim.insertEventWithZeroDelay(new ProcessTimeTable(sim))
+      sim.insertEventWithZeroDelay(new ProcessPedestrianFlows(sim))
+      sim.insertEventWithZeroDelay(new UpdateRoutes(sim))
+      sim.insertEventWithZeroDelay(new NOMADOriginalModel(sim))
+      if (sim.useControl) sim.insertEventWithZeroDelay(new EvaluateState(sim))
+      if (sim.useFlowGates) sim.insertEventWithZeroDelay(new StartFlowGates(sim))
+      if (sim.useTreeForNeighbourSearch) sim.insertEventWithDelayNew(new NewTime(0.0))(new RebuildTree(sim))
     }
   }
 

@@ -7,8 +7,8 @@ package hubmodel
 import java.io.{BufferedWriter, File, FileWriter}
 import java.util.concurrent.ThreadLocalRandom
 
-import ch.qos.logback.classic.Level
-import ch.qos.logback.classic.Logger
+import ch.qos.logback.classic.{Level, Logger}
+import hubmodel.NewTimeNumeric.mkOrderingOps
 import myscala.math.algo.MTree
 
 import scala.collection.immutable.HashMap
@@ -26,8 +26,8 @@ import scala.util.Random
   * @param finalTime end time of the simulation
   *
   */
-abstract class PedestrianDES[T <: PedestrianTrait](val startTime: Time,
-                                                   val finalTime: Time) {
+abstract class PedestrianDES[T <: PedestrianTrait](val startTime: NewTime,
+                                                   val finalTime: NewTime) {
 
   /** Randomly generated string to make unique logs */
   val str: String = Random.alphanumeric take 10 mkString ""
@@ -39,24 +39,24 @@ abstract class PedestrianDES[T <: PedestrianTrait](val startTime: Time,
   val errorLogger: Logger = new Log("log-DES-errors" + str, Level.TRACE).logger
 
   /** current time of the simulation */
-  private var _currentTime: Time = startTime
+  private var _currentTime: NewTime = startTime
 
   /** getter method for the current time */
-  def currentTime: Time = _currentTime
+  def currentTime: NewTime = _currentTime
 
   /** An Action becomes an Event when a time is associated.
     *
     * @param t      time at which the action must be performed
     * @param action the action itself (class with execute method)
     */
-  class MyEvent(val t: Time, val action: Action) extends Ordered[MyEvent] {
+  class MyEvent(val t: NewTime, val action: Action) extends Ordered[MyEvent] {
 
     // return 0 if the same, negative if this < that, positive if this > that (in terms of priority)
     override def compare(that: MyEvent): Int = {
       if (this.t > that.t) -1 // this.t is larger than that.t, that should be executed before this, hence that has higher priority
       else if (this.t < that.t) 1 // this.t is smaller than that.t, this should be executed before that, hence this has higher priority
-      else if (this.action.priority > that.action.priority) 1 // if times are equal, then sort by Action priority. this has higher priority.
-      else if (this.action.priority < that.action.priority) -1 // that has high priority.
+      //else if (this.action.priority > that.action.priority) 1 // if times are equal, then sort by Action priority. this has higher priority.
+      //else if (this.action.priority < that.action.priority) -1 // that has high priority.
       else 0
     }
   }
@@ -86,8 +86,8 @@ abstract class PedestrianDES[T <: PedestrianTrait](val startTime: Time,
     * @param action the [[Action]] which must take place
     */
   @deprecated
-  def insertEventWithDelay[U <: Action](delay: Time)(action: U): Unit = {
-    if (currentTime + delay <= finalTime) eventList += new MyEvent(currentTime + delay, action)
+  def insertEventWithDelay[U <: Action](delay: NewTime)(action: U): Unit = {
+    if ((currentTime + delay) <= finalTime) eventList += new MyEvent(currentTime + delay, action)
   }
 
   /** Inserts an event into the eventList after a given delay. No need for sorting as the PriorityQueue is always
@@ -98,8 +98,11 @@ abstract class PedestrianDES[T <: PedestrianTrait](val startTime: Time,
     * @param action the [[Action]] which must take place
     */
   def insertEventWithDelayNew[U <: Action](delay: NewTime)(action: U): Unit = {
-    if (currentTime + delay.value <= finalTime) eventList += new MyEvent(currentTime + delay.value, action)
+    if (currentTime + delay <= finalTime) eventList += new MyEvent(currentTime + delay, action)
   }
+
+  def insertEventWithZeroDelay[U <: Action](action: U): Unit = { eventList += new MyEvent(currentTime, action) }
+
 
 
 
@@ -110,7 +113,7 @@ abstract class PedestrianDES[T <: PedestrianTrait](val startTime: Time,
     * @param t      time after the [[currentTime]] at which the event must take place
     * @param action the [[Action]] which must take place
     */
-  def insertEventAtAbsolute[U <: Action](t: Time)(action: U): Unit = {
+  def insertEventAtAbsolute[U <: Action](t: NewTime)(action: U): Unit = {
     if (startTime <= t && t <= finalTime) eventList += new MyEvent(t, action)
   }
 
@@ -140,10 +143,18 @@ abstract class PedestrianDES[T <: PedestrianTrait](val startTime: Time,
     this.ID2Position = this.ID2Position + (p.ID -> p.currentPositionNew)
   }
 
+  @deprecated
   def removeFromPopulation(condition: T => Boolean): Unit = synchronized(_populationNew.retain((k,v) => {
     v.completed = true
     !condition(v)
   }))
+
+  def processCompletedPedestrian(condition: T => Boolean): Unit = {
+    val completedPeds: Map[String, T] = synchronized(this._populationNew.filter( kv => condition(kv._2) ) ).toMap
+    completedPeds.values.foreach(_.completed = true)
+    synchronized(completedPeds.keys.foreach(id => this._populationNew.remove(id)))
+    synchronized(this._populationCompleted ++= completedPeds.values)
+  }
 
   private var populationMTree: MTree[Vector2D] = new MTree(distance: (Vector2D, Vector2D) => Double)
   private var ID2Position: Map[String, Vector2D] = HashMap()
@@ -182,6 +193,7 @@ abstract class PedestrianDES[T <: PedestrianTrait](val startTime: Time,
     */
   private var _populationCompleted: Vector[T] = Vector()
 
+  @deprecated
   def concatenate2PopulationCompleted(pop: Iterable[T]): Unit = {
     synchronized(_populationCompleted ++= pop)
   }
@@ -261,12 +273,16 @@ abstract class PedestrianDES[T <: PedestrianTrait](val startTime: Time,
     * until the list is empty.
     */
   def genericRun(startEvent: GenericStartSim): Unit = {
+    println("Starting simulation")
     insertEventWithDelayNew(new NewTime(0.0)) {
       startEvent
     }
     while (this.eventList.nonEmpty) {
       val event = eventList.dequeue()
       this._currentTime = event.t
+      if (this._currentTime.value % 120.0 == 0){
+        print(" * simulation at " + this._currentTime +" sec\r")
+      }
       event.action.execute()
     }
   }

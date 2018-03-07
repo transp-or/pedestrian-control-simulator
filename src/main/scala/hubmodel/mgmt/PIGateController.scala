@@ -1,8 +1,9 @@
 package hubmodel.mgmt
 
 import breeze.linalg.{max, min}
-import hubmodel.input.infrastructure.FlowGate
-import hubmodel.{Action, SFGraphSimulator, Time}
+import hubmodel.NewTimeNumeric.mkOrderingOps
+import hubmodel.supply.FlowGate
+import hubmodel.{Action, NewTime, SFGraphSimulator}
 
 class PIGateController(sim: SFGraphSimulator) extends Action {
 
@@ -10,9 +11,9 @@ class PIGateController(sim: SFGraphSimulator) extends Action {
     gates.map(g => g -> totalInflow / gates.size).toMap
   }
 
-  def computeReleaseTimes(rate: Time, maxTime: Time, currentTime: Time, acc: List[Time]): List[Time] = {
+  def computeReleaseTimes(rate: Double, maxTime: NewTime, currentTime: NewTime, acc: List[NewTime]): List[NewTime] = {
     if (currentTime >= maxTime) acc
-    else computeReleaseTimes(rate, maxTime, currentTime + 1.0 / rate, (currentTime + 1.0 / rate) :: acc)
+    else computeReleaseTimes(rate, maxTime, currentTime.addDouble(1.0 / rate), (currentTime.addDouble(1.0 / rate)) :: acc)
   }
 
   override def execute(): Unit = {
@@ -26,14 +27,19 @@ class PIGateController(sim: SFGraphSimulator) extends Action {
     //if (sim.densityHistory.last._2 > 0.1) {
     //sim.inflowHistory.append((sim.currentTime,totalInflow))
     sim.graph.flowGates.foreach(fg => {
-      // when execution of release pedestrian takes place, if flow rate is 0 then the event will never happen. Hence manually insert one to restart flow gates.
-      if (fg.flowRate == 0.0 && totalInflow > 0.0) sim.insertEventWithDelay(1.0 / min(fg.width * 1.5, fg.width * (totalInflow / sim.graph.flowGates.size)))(new fg.ReleasePedestrian(sim))
       fg.flowRate = min(fg.width * 1.5, fg.width * (totalInflow / sim.graph.flowGates.size))
+      // when execution of release pedestrian takes place, if flow rate is 0 then the event will never happen. Hence manually insert one to restart flow gates.
+      if (fg.flowRate > 0.0) {
+        computeReleaseTimes(fg.flowRate, sim.evaluate_dt, NewTime(0.0), List()).foreach(t => sim.insertEventWithDelay(t)(new fg.ReleasePedestrian(sim)))
+      }
+      /*else {
+        sim.insertEventWithDelay(1.0 / min(fg.width * 1.5, fg.width * (totalInflow / sim.graph.flowGates.size)))(new fg.ReleasePedestrian(sim))
+      }*/
     })
 
-    sim.graph.flowGates.foreach(fg => {
+    /*sim.graph.flowGates.foreach(fg => {
       computeReleaseTimes(fg.flowRate, sim.evaluate_dt, 0.0, List()).foreach(t => sim.insertEventWithDelay(t)(new fg.ReleasePedestrian(sim)))
-    })
+    })*/
     //println("total inflow=" + totalInflow + ", density=" + (sim.densityHistory.dropRight(1).last._2, sim.densityHistory.last._2) + " @ time=" + sim.currentTime)
     //println(sim.inflowHistory.last._2, sim.densityHistory.last._2, sim.densityHistory.dropRight(1).last._2)
     //} else {

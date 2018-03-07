@@ -2,8 +2,7 @@ package hubmodel.route
 
 import breeze.linalg.DenseVector
 import breeze.numerics.{cos, pow, sqrt}
-import hubmodel.{Action, PedestrianDES, PedestrianSim, Position, generateUUID}
-import myscala.math.linalg.areaFrom2DVectors
+import hubmodel._
 
 case class MyCell(center: Position, edgeLength: Double) { //}, conn: List[String]) {
   val ID: String = generateUUID

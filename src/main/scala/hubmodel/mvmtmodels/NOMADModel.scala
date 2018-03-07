@@ -1,9 +1,8 @@
 package hubmodel.mvmtmodels
 
 import breeze.linalg.max
-import hubmodel.input.infrastructure.Wall
-import hubmodel.tools.RebuildTree
-import hubmodel.{Action, NewBetterAcceleration2D, NewBetterDirection2D, NewBetterForce2D, NewBetterPosition2D, NewBetterVelocity2D, NewTime, PedestrianSim, SFGraphSimulator, Vector2D, ZeroVector2D, distance, normNew}
+import hubmodel.supply.Wall
+import hubmodel._
 
 class NOMADModel(sim: SFGraphSimulator) extends Action {
 
@@ -75,8 +74,8 @@ class NOMADModel(sim: SFGraphSimulator) extends Action {
     val p2wall: Vector2D = getClosestPoint(p.currentPositionNew, w) - p.currentPositionNew
     val d: Double = p2wall.norm
     if (d > shy) new ZeroVector2D
-    else if (d <= 0.5 * shy) p2wall.normalize * aW
-    else p2wall.normalize * 2.0 * (1.0 - d / shy) * aW
+    else if (d <= 0.5 * shy) p2wall.normalized * aW
+    else p2wall.normalized * 2.0 * (1.0 - d / shy) * aW
   }
 
   private def projectOntoMe(me: Vector2D, that: Vector2D): Vector2D = {
@@ -108,20 +107,20 @@ class NOMADModel(sim: SFGraphSimulator) extends Action {
     val smoothingPar3: Double = 1.0
 
 
-    val tmpOrthogonalDirectionCloseRange: NewBetterDirection2D = new NewBetterDirection2D((that.currentPositionNew - p.currentPositionNew).Y, (that.currentPositionNew - p.currentPositionNew).X * -1.0).normalize
+    val tmpOrthogonalDirectionCloseRange: NewBetterDirection2D = new NewBetterDirection2D((that.currentPositionNew - p.currentPositionNew).Y, (that.currentPositionNew - p.currentPositionNew).X * -1.0).normalized
     val orthogonalDirectionCloseRange: NewBetterDirection2D = if (tmpOrthogonalDirectionCloseRange.dot(p.currentVelocityNew) < 0.0) {tmpOrthogonalDirectionCloseRange * -1.0} else {tmpOrthogonalDirectionCloseRange}
 
     //(that.currentPositionNew - p.currentPositionNew).normalize * k0 * delta + orthogonalDirection*(that.currentVelocityNew.norm - p.currentVelocityNew.norm) * k1 * delta
       if (p.currentVelocityNew.norm > 0.0 && p.currentVelocityNew.dot(vecBetweenPeds) > 0.0) {
-        val orthogonalDirection: NewBetterDirection2D = projectOntoMe(new NewBetterDirection2D(p.currentVelocityNew.Y, p.currentVelocityNew.X * -1.0).normalize, vecBetweenPeds).normalize
+        val orthogonalDirection: NewBetterDirection2D = projectOntoMe(new NewBetterDirection2D(p.currentVelocityNew.Y, p.currentVelocityNew.X * -1.0).normalized, vecBetweenPeds).normalized
         val lateralDistance: Double = max(projectOntoMe(orthogonalDirection, vecBetweenPeds).norm,0.0)
-        val f = (that.currentPositionNew - p.currentPositionNew).normalize * a0 * math.exp(-distanceBetweenPeds / r0) + orthogonalDirection * a1 * math.exp(-distanceBetweenPeds * lateralDistance / r1) +
-          (p.currentPositionNew - that.currentPositionNew).normalize * smoothingPar3*math.exp(smoothingPar2*delta + smoothingPar1) + (projectOntoMe(orthogonalDirectionCloseRange, that.currentVelocityNew).norm - projectOntoMe(orthogonalDirectionCloseRange, p.currentVelocityNew).norm) * smoothingPar3*math.exp(smoothingPar2*delta + smoothingPar1)
+        val f = (that.currentPositionNew - p.currentPositionNew).normalized * a0 * math.exp(-distanceBetweenPeds / r0) + orthogonalDirection * a1 * math.exp(-distanceBetweenPeds * lateralDistance / r1) +
+          (p.currentPositionNew - that.currentPositionNew).normalized * smoothingPar3*math.exp(smoothingPar2*delta + smoothingPar1) + (projectOntoMe(orthogonalDirectionCloseRange, that.currentVelocityNew).norm - projectOntoMe(orthogonalDirectionCloseRange, p.currentVelocityNew).norm) * smoothingPar3*math.exp(smoothingPar2*delta + smoothingPar1)
         //println("in front:", sim.currentTime, p.ID, that.ID, distanceBetweenPeds, f)
         f
       } else {
-        val f = (that.currentPositionNew - p.currentPositionNew).normalize * a0 * math.exp(-distanceBetweenPeds / r0) +
-          (p.currentPositionNew - that.currentPositionNew).normalize * smoothingPar3*math.exp(smoothingPar2*delta + smoothingPar1) + (projectOntoMe(orthogonalDirectionCloseRange, that.currentVelocityNew).norm - projectOntoMe(orthogonalDirectionCloseRange, p.currentVelocityNew).norm) * smoothingPar3*math.exp(smoothingPar2*delta + smoothingPar1)
+        val f = (that.currentPositionNew - p.currentPositionNew).normalized * a0 * math.exp(-distanceBetweenPeds / r0) +
+          (p.currentPositionNew - that.currentPositionNew).normalized * smoothingPar3*math.exp(smoothingPar2*delta + smoothingPar1) + (projectOntoMe(orthogonalDirectionCloseRange, that.currentVelocityNew).norm - projectOntoMe(orthogonalDirectionCloseRange, p.currentVelocityNew).norm) * smoothingPar3*math.exp(smoothingPar2*delta + smoothingPar1)
         //println("behind:",  sim.currentTime, p.ID, that.ID, distanceBetweenPeds, f)
         f
       }
@@ -154,8 +153,8 @@ class NOMADModel(sim: SFGraphSimulator) extends Action {
       p.travelTime = sim.currentTime - p.entryTime
 
       // sets the increments in position and velocity for the pedestrian
-      p.velocityIncrementNew = totalAcceleration * sim.sf_dt
-      p.positionIncrementNew = p.currentVelocityNew * sim.sf_dt.toDouble
+      p.velocityIncrementNew = totalAcceleration * sim.sf_dt.value
+      p.positionIncrementNew = p.currentVelocityNew * sim.sf_dt.value
 
       //println(p.velocityIncrement , p.positionIncrement)
     }
@@ -172,11 +171,14 @@ class NOMADModel(sim: SFGraphSimulator) extends Action {
       ped.move()
       ped.addHistory(sim.currentTime)
     }) // transformation of pedestrian objects
+
+
+    sim.processCompletedPedestrian(sim.finalDestinationReached)
     // adds the pedestrians who reach the final destination to the completed list
-    sim.concatenate2PopulationCompleted(sim.population.filter(sim.finalDestinationReached))
+    //sim.concatenate2PopulationCompleted(sim.population.filter(sim.finalDestinationReached))
 
     // removes the pedestrians which reached their final destination from the population and sets their "completed" flag to true
-    sim.removeFromPopulation(sim.finalDestinationReached)
+    //sim.removeFromPopulation(sim.finalDestinationReached)
 
     // enqueues pedestrians in the waiting zones if gating is used
     if (sim.useFlowGates) sim.population.foreach(sim.graph.enqueueInWaitingZone)
@@ -185,6 +187,6 @@ class NOMADModel(sim: SFGraphSimulator) extends Action {
     insertNextEvent()
   }
 
-  protected def insertNextEvent(): Unit = sim.insertEventWithDelayNew(new NewTime(sim.sf_dt))(new NOMADModel(sim))
+  protected def insertNextEvent(): Unit = sim.insertEventWithDelayNew(sim.sf_dt)(new NOMADModel(sim))
 
 }

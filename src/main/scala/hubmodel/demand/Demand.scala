@@ -1,8 +1,9 @@
-package hubmodel.input.demand
+package hubmodel.demand
 
 import java.time.LocalTime
 
-import hubmodel.input.infrastructure.{InfraODModel, NodeID, NodeParent, ODID, TrackID, TrainID}
+import hubmodel.NewTime
+import hubmodel.supply.{NodeID, NodeID_New, NodeParent, ODID, TrackID, TrackID_New, TrainID, TrainID_New}
 //import pedtrack.StringImprovements
 import play.api.libs.json.{JsError, JsSuccess, JsValue, Json}
 
@@ -42,6 +43,7 @@ case class Track2NodeMapping(loc: String, private val Track2NodeMappingInput: Ve
   * @param capacity max capacity of the train
   */
 case class Train(ID: String, trainType: String, track: Int, arr: Option[LocalTime], dep: Option[LocalTime], capacity: Int) {
+  val IDNew: TrainID_New = TrainID_New(ID, ID)
   override def toString: ODID = {
     arr match {
       case Some(str) => {
@@ -92,6 +94,8 @@ class TimeTable(file: String) {
 
   // map from the train's ID to the track
   val train2TrackMap: Map[String, TrackID] = _timeTable.train2Track
+  val train2TrackMapNew: TrainID_New => TrackID_New = trainID => new TrackID_New(_timeTable.train2Track(trainID.ID))
+
 
   private val _track2Node: Track2NodeMapping = {
     val source: BufferedSource = scala.io.Source.fromFile(file)
@@ -111,7 +115,16 @@ class TimeTable(file: String) {
     track2Nodes(train2TrackMap(train))
   }.toOption
 
+
+  // mapping from tracks to nodes THIS WILL NEED TO BE EXTENDED LATER ON
+  val track2NodesNew: TrackID_New => Vector[NodeID_New] = track => _track2Node.track2Nodes(track.ID).map(n => NodeID_New(n, n.toString))
+
+  // mapping from train to nodes
+  val train2NodesNew: TrainID_New => Vector[NodeID_New] = train => track2NodesNew(train2TrackMapNew(train))
+
+
   // check if vectors of nodeID are the same
+  //@deprecated
   def isOnSamePlatform(t1: TrainID, t2: TrainID): Boolean = {
     train2Nodes(t1) match {
       case Some(x) => train2Nodes(t2) match {
@@ -121,6 +134,23 @@ class TimeTable(file: String) {
       case None => false
     }
     //train2Nodes(t1).get.sorted.zip(train2Nodes(t2).get.sorted).forall(p => p._1==p._2)
+  }
+
+  // check if vectors of nodeID are the same
+  def isOnSamePlatform(t1: TrainID_New, t2: NodeParent): Boolean = {
+    t2 match {
+      case tID: TrainID_New => {
+        train2Nodes(t1.ID) match {
+          case Some(x) => train2Nodes(tID.ID) match {
+            case Some(y) => x.sorted.zip(y.sorted).forall(p => p._1 == p._2)
+            case None => false
+          }
+          case None => false
+        }
+        //train2Nodes(t1).get.sorted.zip(train2Nodes(t2).get.sorted).forall(p => p._1==p._2)
+      }
+      case _ => false
+    }
   }
 }
 
@@ -137,11 +167,30 @@ class TimeTable(file: String) {
   * @param D     destination [[NodeID]]
   * @param f     number of people
   */
-case class PedestrianFlow(O: NodeID, D: NodeID, start: LocalTime, end: LocalTime, f: Double)
+case class PedestrianFlow(O: String, D: String, private val _start: LocalTime, private val _end: LocalTime, f: Double){
+  val start: NewTime = new NewTime(_start.toSecondOfDay)
+  val end: NewTime = new NewTime(_end.toSecondOfDay)
+}
 
-case class PTFlow(origin: ODID, destination: ODID, f: Double)
+case class PTFlow(private val _origin: String, private val _destination: String, f: Double){
+  val origin: TrainID_New = if (_origin.charAt(0) == 'T') new TrainID_New(_origin.substring(2))
+  else throw new IllegalArgumentException("Data in time table file is badly formatted: " + _origin.charAt(0) + " while T is expected. (" + _origin + ")")
 
-case class PedestrianFlow_New(O: NodeParent, D: NodeParent, start: LocalTime, end: LocalTime, f: Double)
+  val destination: NodeParent = if (_destination.charAt(0) == 'T') new TrainID_New(_destination.substring(2))
+  else if (_destination.charAt(0) == 'S') new NodeID_New(_destination.substring(2))
+  else throw new IllegalArgumentException("Data in time table file is badly formatted: " + _destination.charAt(0) + " while S is expected. (" + _destination + ")")
+}
+
+abstract class PedestrianFlow_New_Parent(val O: NodeParent, val D: NodeParent, val f: Double) {
+  override def toString: NodeID = "(" + O + ", " + D + ", " + f + ")"
+}
+
+case class PedestrianFlow_New(override val O: NodeID_New, override val D: NodeParent, start: NewTime, end: NewTime, override val f: Double) extends PedestrianFlow_New_Parent(O, D, f) {
+  override def toString: NodeID = "(" + O + ", " + D + ", " + f + ", " + this.start + ", " + this.end + ")"
+}
+
+case class PedestrianFlowPT_New(override val O: TrainID_New, override val D: NodeParent, override val f: Double) extends PedestrianFlow_New_Parent(O, D, f)
+
 
 
 class PedestrianFlows(file: String, timeTable: TimeTable) {
@@ -155,8 +204,19 @@ class PedestrianFlows(file: String, timeTable: TimeTable) {
     }
   }
 
+  @deprecated
   val flows: Vector[PedestrianFlow] = _pedestrianFlowData.flows
+
+  @deprecated
   val PTflows: Vector[PTFlow] = _pedestrianFlowData.PTflows
+
+  val flowsNew: Iterable[PedestrianFlow_New] =
+    _pedestrianFlowData.flows.map(f => PedestrianFlow_New(NodeID_New(f.O, f.O.toString), NodeID_New(f.D, f.D.toString), f.start, f.end, f.f))
+
+  val flowsPTInducedNew: Iterable[PedestrianFlowPT_New] =
+    _pedestrianFlowData.PTflows.map(f => {
+      PedestrianFlowPT_New(f.origin, f.destination, f.f)
+    })
 
 }
 

@@ -1,7 +1,7 @@
 package hubmodel
 
 
-class IncompatibleControlDevicesException(message: String) extends Exception(message) {
+class ControlDevicesException(message: String) extends Exception(message) {
 
   def this(message: String, cause: Throwable) {
     this(message)

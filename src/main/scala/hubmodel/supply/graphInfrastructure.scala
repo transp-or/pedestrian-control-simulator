@@ -1,14 +1,13 @@
-package hubmodel.input.infrastructure
+package hubmodel.supply
 
-import breeze.linalg.norm
-import hubmodel.{Action, PedestrianDES, PedestrianSim, Position, SFGraphSimulator, generateUUID, VertexCell, isInVertex}
-import play.api.libs.json.{JsError, JsSuccess, JsValue, Json}
-import breeze.linalg.DenseVector
-import breeze.numerics.round
+import breeze.linalg.{DenseVector, norm}
+import hubmodel._
 import org.jgrapht.alg.shortestpath.DijkstraShortestPath
 import org.jgrapht.graph.{DefaultDirectedWeightedGraph, DefaultWeightedEdge}
+import play.api.libs.json.{JsError, JsSuccess, JsValue, Json}
+
+import scala.collection.JavaConverters._
 import scala.io.BufferedSource
-import collection.JavaConverters._
 
 
 /** Representation of an edge used in the graph structure. Can be used as parent for advanced edges with gates.
@@ -16,13 +15,13 @@ import collection.JavaConverters._
   * @param startVertex vertex at origin
   * @param endVertex   vertex at destination
   */
-class MyEdge(val startVertex: VertexCell, val endVertex: VertexCell) extends DefaultWeightedEdge {
+class MyEdge(val startVertex: VertexRectangle, val endVertex: VertexRectangle) extends DefaultWeightedEdge {
 
   // ID of the edge
   val ID: String = generateUUID
 
   // distance between vertices in straight line.
-  val length: Double = norm(startVertex.center - endVertex.center)
+  val length: Double = (startVertex.center - endVertex.center).norm
 
   // Cost of the edge
   private var _cost: Double = length
@@ -62,7 +61,7 @@ class MyEdge(val startVertex: VertexCell, val endVertex: VertexCell) extends Def
   }
 }
 
-abstract class MyEdgeWithGate(override val startVertex: VertexCell, override val endVertex: VertexCell, val start: Position, val end: Position, val monitoredArea: String) extends MyEdge(startVertex, endVertex) {
+abstract class MyEdgeWithGate(override val startVertex: VertexRectangle, override val endVertex: VertexRectangle, val start: Position, val end: Position, val monitoredArea: String) extends MyEdge(startVertex, endVertex) {
 
   val width: Double = norm(end - start)
 
@@ -83,20 +82,35 @@ abstract class MyEdgeWithGate(override val startVertex: VertexCell, override val
       *
       */
     override def execute(): Unit = {
-      sim.eventLogger.trace("sim-time=" + sim.currentTime + ": released pedestrian. Peds in queue=" + pedestrianQueue.size)
       if (pedestrianQueue.nonEmpty) {
         pedestrianQueue.head.isWaiting = false
         pedestrianQueue.head.freedFrom.append(ID)
         pedestrianQueue.dequeue()
+        sim.eventLogger.trace("sim-time=" + sim.currentTime + ": gate: " + this + ": released pedestrian. Peds in queue=" + pedestrianQueue.size)
+      } else {
+        sim.eventLogger.trace("sim-time=" + sim.currentTime + ": gate: " + this + ": no one in queue to release")
       }
       // inserts new event based on the current flow rate allowed through the gate.
       //sim.insertEventWithDelay(1.0 / flowRate)(new ReleasePedestrian(sim))
     }
   }
 
+  /** Enqueues a pedestrian i the queue for passing through a flow gate.
+    *
+    * @param sim
+    */
+  class EnqueuePedestrian(ped: PedestrianSim, sim: SFGraphSimulator) extends Action {
+
+    override def execute(): Unit = {
+      ped.isWaiting = true
+      pedestrianQueue.enqueue(ped)
+      sim.eventLogger.trace("sim-time=" + sim.currentTime + ": enqueued pedestrian. Peds in queue=" + pedestrianQueue.size)
+    }
+  }
+
 }
 
-/** Extension of [[hubmodel.input.infrastructure.MyEdge]] for the usage of "flow gates". The gates control the
+/** Extension of [[hubmodel.supply.MyEdge]] for the usage of "flow gates". The gates control the
   * flow of pedestrians passing through them.
   *
   * TODO: A more realistic approach for the modeling of gates could be used to determine the maximum capacity.
@@ -106,7 +120,7 @@ abstract class MyEdgeWithGate(override val startVertex: VertexCell, override val
   * @param start       one end of the gate
   * @param end         other end of the gate
   */
-class FlowGate(startVertex: VertexCell, endVertex: VertexCell, start: Position, end: Position, ma: String) extends MyEdgeWithGate(startVertex, endVertex, start, end, ma) {
+class FlowGate(startVertex: VertexRectangle, endVertex: VertexRectangle, start: Position, end: Position, ma: String) extends MyEdgeWithGate(startVertex, endVertex, start, end, ma) {
 
   // variable flow rate of the gate [pax/s]
   var flowRate = 0.5
@@ -137,6 +151,8 @@ class FlowGate(startVertex: VertexCell, endVertex: VertexCell, start: Position, 
   override def hashCode: Int = {
     (super.hashCode, this.start, this.end).##
   }
+
+  override def toString: String = "FlowGate: o: " + startVertex + ", d:" + endVertex
 }
 
 /** Object to model gates controlling the flow of pedestrians
@@ -146,14 +162,14 @@ class FlowGate(startVertex: VertexCell, endVertex: VertexCell, start: Position, 
   * @param start    one end of the gate (used for visualization)
   * @param end      other end of the gate (used for visualization)
   */
-class BinaryGate(o: VertexCell,
-                 d: VertexCell,
+class BinaryGate(o: VertexRectangle,
+                 d: VertexRectangle,
                  start: Position,
                  end: Position,
                  ma: String) extends MyEdgeWithGate(o, d, start, end, ma) {
 
 
-  var flowRate = Double.MaxValue
+  var flowRate: Double = Double.MaxValue
 
   // On creation, all gates are open
   var isOpen: Boolean = true
@@ -192,12 +208,12 @@ class BinaryGate(o: VertexCell,
   * @param endVertex   vertex at destination
   * @param capacity    capacity of the MV
   */
-class MovingWalkway(override val startVertex: VertexCell, override val endVertex: VertexCell, val capacity: Double) extends MyEdge(startVertex, endVertex) {
+class MovingWalkway(override val startVertex: VertexRectangle, override val endVertex: VertexRectangle, val capacity: Double) extends MyEdge(startVertex, endVertex) {
   val speed: Double = 2.0
 }
 
 /** Initialisation of the flow gates. The is the event inserted into the [[SFGraphSimulator.StartSim]] event.
-  * The "first round" of the [[hubmodel.input.infrastructure.FlowGate.ReleasePedestrian]] events are inserted;
+  * The "first round" of the [[hubmodel.supply.FlowGate.ReleasePedestrian]] events are inserted;
   * these will call the next events.
   *
   * @param sim simulation environment
@@ -205,7 +221,7 @@ class MovingWalkway(override val startVertex: VertexCell, override val endVertex
 class StartFlowGates(sim: SFGraphSimulator) extends Action {
   override def execute(): Unit = {
     sim.eventLogger.trace("sim-time=" + sim.currentTime + ": started flow gates")
-    sim.graph.flowGates.foreach(fg => sim.insertEventWithDelay(0)(new fg.ReleasePedestrian(sim)))
+    sim.graph.flowGates.foreach(fg => sim.insertEventWithZeroDelay(new fg.ReleasePedestrian(sim)))
   }
 }
 
@@ -219,19 +235,21 @@ class StartFlowGates(sim: SFGraphSimulator) extends Action {
   * @param standardEdges connections between each vertex. THIS SHOULD BE MYEDGES PROBABLY ?
   * @param flowGates     links on which there are flow gates
   */
-class RouteGraph(private val vertices: Vector[VertexCell],
+class RouteGraph(private val vertices: Vector[VertexRectangle],
                  val standardEdges: Iterable[MyEdge],
                  val flowGates: Iterable[FlowGate],
                  val binaryGates: Iterable[BinaryGate],
                  val movingWalkways: Iterable[MovingWalkway]) extends WithGates {
 
-  def enqueueInWaitingZone(p: PedestrianSim): Unit = super.enqueueInWaitingZone(flowGates)(p)
+  def enqueueInWaitingZone(p: PedestrianSim): Unit = {
+    super.enqueueInWaitingZone(flowGates)(p)
+  }
 
   // Map from vertex names to the vertices themselves
-  val vertexMap: Map[String, VertexCell] = vertices.map(v => v.name -> v).toMap
+  val vertexMap: Map[String, VertexRectangle] = vertices.map(v => v.name -> v).toMap
 
   // building the graph
-  private val network: DefaultDirectedWeightedGraph[VertexCell, MyEdge] = new DefaultDirectedWeightedGraph[VertexCell, MyEdge](classOf[MyEdge])
+  private val network: DefaultDirectedWeightedGraph[VertexRectangle, MyEdge] = new DefaultDirectedWeightedGraph[VertexRectangle, MyEdge](classOf[MyEdge])
   vertices.foreach(v => network.addVertex(v))
   val allEdges: Iterable[MyEdge] = standardEdges ++ flowGates ++ binaryGates ++ movingWalkways
 
@@ -241,7 +259,7 @@ class RouteGraph(private val vertices: Vector[VertexCell],
   })
 
   // object used to get the shortest path in the network
-  private var shortestPathBuilder: DijkstraShortestPath[VertexCell, MyEdge] = new DijkstraShortestPath[VertexCell, MyEdge](network)
+  private var shortestPathBuilder: DijkstraShortestPath[VertexRectangle, MyEdge] = new DijkstraShortestPath[VertexRectangle, MyEdge](network)
 
   /** Updates the cost of each edge in the graph based on the cost of the edges stored in the "edges" variable.
     * This method updates the cost of the edges before actually updating the graph object itslef.
@@ -249,7 +267,7 @@ class RouteGraph(private val vertices: Vector[VertexCell],
   def updateGraph(): Unit = {
     allEdges.foreach(_.updateCost(1.0))
     allEdges.foreach(e => network.setEdgeWeight(e, e.cost))
-    this.shortestPathBuilder = new DijkstraShortestPath[VertexCell, MyEdge](network)
+    this.shortestPathBuilder = new DijkstraShortestPath[VertexRectangle, MyEdge](network)
   }
 
   /** Uses to shortestPathBuilder to compute the shortest path between two vertices.
@@ -258,13 +276,13 @@ class RouteGraph(private val vertices: Vector[VertexCell],
     * @param d destination node
     * @return the list if vertices representing the path
     */
-  def getShortestPath(o: VertexCell, d: VertexCell): List[VertexCell] = {
+  def getShortestPath(o: VertexRectangle, d: VertexRectangle): List[VertexRectangle] = {
     shortestPathBuilder.getPath(o, d).getVertexList.asScala.toList
   }
 
-  /** Creates a [[hubmodel.Position]] inside the specific [[hubmodel.VertexCell]] corresponding to the name passed as argument.
+  /** Creates a [[hubmodel.Position]] inside the specific [[hubmodel.VertexRectangle]] corresponding to the name passed as argument.
     *
-    * @param node name of the [[hubmodel.VertexCell]] to generate a point inside
+    * @param node name of the [[hubmodel.VertexRectangle]] to generate a point inside
     * @return [[hubmodel.Position]] uniformly sampled inside
     */
   /*def generateInZone(node: String): Position = {
@@ -281,7 +299,7 @@ trait WithGates {
     * @param p pedestrian to enqueue
     */
   def enqueueInWaitingZone(flowGates: Iterable[FlowGate])(p: PedestrianSim): Unit = {
-    val gate: Option[FlowGate] = flowGates.filterNot(p.freedFrom contains _.ID).find(fg => isInVertex(fg.startVertex)(p.currentPosition))
+    val gate: Option[FlowGate] = flowGates.filterNot(p.freedFrom contains _.ID).find(fg => isInVertex(fg.startVertex)(p.currentPositionNew))
     if (gate.isDefined && !gate.get.pedestrianQueue.contains(p)) {
       p.isWaiting = true
       gate.get.pedestrianQueue.enqueue(p)
@@ -306,8 +324,8 @@ class GraphReader(graphSpecificationFile: String) extends Infrastructure {
 
     input.validate[InfraGraphParser] match {
       case s: JsSuccess[InfraGraphParser] =>
-        val v: Vector[VertexCell] = s.get.nodes.map(n => VertexCell(n.name, DenseVector(n.x1, n.y1), DenseVector(n.x2, n.y2), DenseVector(n.x3, n.y3), DenseVector(n.x4, n.y4)))
-        val vertexMap: Map[String, VertexCell] = v.map(v => v.name -> v).toMap
+        val v: Vector[VertexRectangle] = s.get.nodes.map(n => VertexRectangle(n.name, Vector2D(n.x1, n.y1), Vector2D(n.x2, n.y2), Vector2D(n.x3, n.y3), Vector2D(n.x4, n.y4)))
+        val vertexMap: Map[String, VertexRectangle] = v.map(v => v.name -> v).toMap
         val e: Iterable[MyEdge] = s.get.standardConnections.flatMap(c => c.conn.map(neigh => new MyEdge(vertexMap(c.node), vertexMap(neigh))))
         val fg: Iterable[FlowGate] = s.get.flowGates.map(fg => new FlowGate(vertexMap(fg.o), vertexMap(fg.d), DenseVector(fg.start_pos_x, fg.start_pos_y), DenseVector(fg.end_pos_x, fg.end_pos_y), fg.area))
         val mv: Iterable[MovingWalkway] = s.get.movingWalkways.map(m => new MovingWalkway(vertexMap(m.o), vertexMap(m.d), 1.0))

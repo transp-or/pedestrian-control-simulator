@@ -3,7 +3,7 @@ package hubmodel
 import java.util.concurrent.ThreadLocalRandom
 
 import breeze.linalg.DenseVector
-import breeze.numerics.{floor, round}
+import breeze.numerics.round
 
 
 /**
@@ -21,13 +21,13 @@ import breeze.numerics.{floor, round}
   * @param currentDestination intermediate destination point (next target)
   * @param route              initial route
   */
-class PedestrianSim(val oZone: Int,
-                    val dZone: Int,
+class PedestrianSim(val oZone: VertexRectangle,
+                    val dZone: VertexRectangle,
                     val freeFlowVel: Double,
-                    val entryTime: Time,
+                    val entryTime: NewTime,
                     @deprecated var currentPosition: Position,
                     var currentDestination: Position,
-                    var route: List[VertexCell]) extends PedestrianTrait {
+                    var route: List[VertexRectangle]) extends PedestrianTrait {
 
   var currentPositionNew = new NewBetterPosition2D(currentPosition(0), currentPosition(1))
   var currentDestinationNew: NewBetterPosition2D = new NewBetterPosition2D(currentDestination(0), currentDestination(1))
@@ -43,33 +43,39 @@ class PedestrianSim(val oZone: Int,
     * @param posD      intermediate destination point (next target)
     * @param route     initial route
     */
-  def this(oZone: Int, dZone: Int, entryTime: Time, posO: Position, posD: Position, route: List[VertexCell]) {
-    this(oZone, dZone, 1.34 + 0.0 * ThreadLocalRandom.current().nextGaussian(), entryTime, posO, posD, route)
+  def this(oZone: VertexRectangle, dZone: VertexRectangle, entryTime: NewTime, posO: NewBetterPosition2D, posD: NewBetterPosition2D, route: List[VertexRectangle]) {
+    this(oZone, dZone, 1.34 + 0.0 * ThreadLocalRandom.current().nextGaussian(), entryTime, DenseVector(posO.X, posO.Y), DenseVector(posD.X, posD.Y), route)
   }
 
-  def this(oZone: Int, dZone: Int, entryTime: Time, posO: NewPosition2D, posD: NewPosition2D, route: List[VertexCell]) {
-    this(oZone, dZone, 1.34 + 0.0 * ThreadLocalRandom.current().nextGaussian(), entryTime, DenseVector(posO._1, posO._2), DenseVector(posD._1, posD._2), route)
-  }
+  /*def this(oZone: VertexRectangle, dZone: VertexRectangle, entryTime: NewTime, posO: NewBetterPosition2D, posD: NewBetterPosition2D, route: List[VertexRectangle]) {
+    this(oZone, dZone, 1.34 + 0.0 * ThreadLocalRandom.current().nextGaussian(), entryTime, DenseVector(posO.X, posO.Y), DenseVector(posD.X, posD.Y), route)
+  }*/
 
   /** current velocity, initialized to 0 */
   var currentVelocity: Velocity = DenseVector(0.0, 0.0)
   var currentVelocityNew: NewBetterVelocity2D = new ZeroVector2D
 
   /** total travel time */
-  var travelTime: Double = 0.0
+  var travelTime: NewTime = NewTime(0.0)
 
   /** total travelled distance */
   var travelDistance: Double = 0.0
 
   /** exit time from the system */
-  var exitTime: Time = 0.0
+  var exitTime: NewTime = NewTime(0.0)
 
-  val r: Double = ThreadLocalRandom.current.nextDouble(0.3, 0.31)
+  val r: Double = ThreadLocalRandom.current.nextDouble(0.2, 0.3)
   var omega: Double = 0.0
   var theta: Double = 0.0
   val m: Double = ThreadLocalRandom.current.nextDouble(60.0, 90.0) // mass of the pedestrian
   val I: Double = 0.5 * r * r * m
 
+  val a0: Double = ThreadLocalRandom.current.nextDouble(8.0 , 12.0)
+  val r0: Double = ThreadLocalRandom.current.nextDouble(0.10, 0.6 )
+  val a1: Double = ThreadLocalRandom.current.nextDouble(8.0 , 12.0)
+  val r1: Double = ThreadLocalRandom.current.nextDouble(0.10, 0.6 )
+  val k0: Double = ThreadLocalRandom.current.nextDouble(800.0,1200.0)
+  val k1: Double = ThreadLocalRandom.current.nextDouble(800.0,1200.0)
 
   /** is the pedestrian waiting in a zone */
   var isWaiting: Boolean = false
@@ -78,31 +84,32 @@ class PedestrianSim(val oZone: Int,
   val freedFrom: scala.collection.mutable.ArrayBuffer[String] = scala.collection.mutable.ArrayBuffer()
 
   /** History of the pedestrians positions */
-  private var _historyPosition: Vector[(Time, Position)] = Vector((entryTime, currentPosition))
-  private var _historyPositionNew: Vector[(NewTime, NewBetterPosition2D)] = Vector((new NewTime(entryTime), currentPositionNew))
+  //private var _historyPosition: Vector[(Time, Position)] = Vector((entryTime, currentPosition))
+  private var _historyPosition: Vector[(NewTime, NewBetterPosition2D)] = Vector((entryTime, currentPositionNew))
 
   /** target zone */
-  var nextZone: VertexCell = route.head
+  var nextZone: VertexRectangle = route.head
 
   /** getter methdd for the history of the positions */
-  def getHistoryPosition: Vector[(Time, Position)] = _historyPosition
+  def getHistoryPosition: Vector[(NewTime, NewBetterPosition2D)] = _historyPosition
 
   /** Adds a specific position to the history vector */
-  def addHistory(t: Time, pos: Position): Unit = {
-    _historyPosition = _historyPosition :+ (t, currentPosition)
-  }
+  /*def addHistory(t: Time, pos: Position): Unit = {
+    _historyPosition = _historyPosition :+ (NewTime(t), this.currentPositionNew)
+  }*/
 
   /** Adds the current position (currentPosition) to the history */
-  def addHistory(t: Time): Unit = {
-    _historyPosition = _historyPosition :+ (t, DenseVector(this.currentPositionNew.X, this.currentPositionNew.Y))
-    //_historyPositionNew = _historyPositionNew :+ (new NewTime(t), this.currentPositionNew)
+  def addHistory(t: NewTime): Unit = {
+    _historyPosition = _historyPosition :+ (t, this.currentPositionNew)
+    //_historyPosition = _historyPosition :+ (new NewTime(t), this.currentPositionNew)
   }
 
-  def setCurrentDestination(pos: NewPosition2D): Unit = {
-    this.currentDestination(0) = pos._1
-    this.currentDestination(1) = pos._2
-    this.currentDestinationNew = new NewBetterPosition2D(pos._1, pos._2)
+  def setCurrentDestination(pos: NewBetterPosition2D): Unit = {
+    this.currentDestination(0) = pos.X
+    this.currentDestination(1) = pos.Y
+    this.currentDestinationNew = pos
   }
+
   /*def popHistory: Position = {
     //if (_historyPosition.isEmpty) None
     //else {
@@ -156,7 +163,8 @@ class PedestrianSim(val oZone: Int,
     * @return pedestrian printed as a string with some information.
     */
   override def toString: String = {
-    this.ID + ", O=" + this.oZone.toString + ", pos=" + this.currentPosition.toString + ", previous pos= " + this._historyPosition.map(_._2) +", D=" + this.dZone.toString + ", vel=" + this.currentVelocity
+    //this.ID + ", O=" + this.oZone.toString + ", pos=" + this.currentPosition.toString + ", previous pos= " + this._historyPosition.map(_._2) +", D=" + this.dZone.toString + ", vel=" + this.currentVelocity
+    this.ID
   }
 
   /** Prints all the history of the pedestrian in the VisioSafe format. This way, any code which works with VS also
@@ -166,10 +174,10 @@ class PedestrianSim(val oZone: Int,
     * @return one row per position in the historyPosition
     */
   def toVisioSafeFormat(refDate: String = "2013,1,1"): String = {
-    def innerPrint(hist: Vector[(Time, Position)], str: String): String = {
+    def innerPrint(hist: Vector[(NewTime, NewBetterPosition2D)], str: String): String = {
       if (hist.isEmpty) str
-      else if (str.isEmpty) innerPrint(hist.tail, refDate + "," + time2VisioSafeTime(hist.head._1) + ",0," + round(hist.head._2(0) * 1000) + "," + round(hist.head._2(1) * 1000) + "," + this.ID.hashCode)
-      else innerPrint(hist.tail, str + "\n" + refDate + "," + time2VisioSafeTime(hist.head._1) + ",0," + round(hist.head._2(0) * 1000) + "," + round(hist.head._2(1) * 1000) + "," + this.ID.hashCode)
+      else if (str.isEmpty) innerPrint(hist.tail, refDate + "," + hist.head._1.asVisioSafe + ",0," + round(hist.head._2.X * 1000) + "," + round(hist.head._2.Y * 1000) + "," + this.ID.hashCode)
+      else innerPrint(hist.tail, str + "\n" + refDate + "," + hist.head._1.asVisioSafe + ",0," + round(hist.head._2.X * 1000) + "," + round(hist.head._2.Y * 1000) + "," + this.ID.hashCode)
     }
     innerPrint(this._historyPosition, "")
   }

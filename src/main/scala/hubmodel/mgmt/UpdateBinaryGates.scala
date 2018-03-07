@@ -1,15 +1,13 @@
 package hubmodel.mgmt
 
-import hubmodel.VertexCell
-import hubmodel.input.infrastructure.BinaryGate
-import hubmodel.{Action, PedestrianDES, Position, SFGraphSimulator}
+import hubmodel.{Action, SFGraphSimulator}
 
 
 /**
   * Created by nicholas on 5/13/17.
   */
 
-/** Moves the [[hubmodel.input.infrastructure.BinaryGate]] positions. Based on the function measuring the state of the system, this Class
+/** Moves the [[hubmodel.supply.BinaryGate]] positions. Based on the function measuring the state of the system, this Class
   * will chnage the positions of the gates.
   *
   * @param sim simulation environment

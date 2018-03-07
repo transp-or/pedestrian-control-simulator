@@ -1,4 +1,4 @@
-package hubmodel.input.infrastructure
+package hubmodel.supply
 
 import java.io.{BufferedWriter, File, FileWriter}
 
@@ -115,18 +115,18 @@ class InfraODModel(infraRaw: InfraODParser, val nameMappings: NameConversions) e
   val location: String = infraRaw.location
   val subLocation: String = infraRaw.subLocation
   val network: Map[Tuple2[NodeID, NodeID], Double] = {
-    val tmpNetwork: Map[Tuple2[NodeID, NodeID], Double] = infraRaw.connectionMatrix.map(od => (nameMappings.string2IntMap(od.O), nameMappings.string2IntMap(od.D)) -> od.distance).toMap
+    val tmpNetwork: Map[Tuple2[NodeID, NodeID], Double] = infraRaw.connectionMatrix.map(od => (od.O, od.D) -> od.distance).toMap
     val complementOfTmpNetwork: Map[Tuple2[NodeID, NodeID], Double] = for (pairs <- tmpNetwork if !tmpNetwork.keySet.contains(pairs._1.swap)) yield {
       pairs._1.swap -> pairs._2
     }
     tmpNetwork ++ complementOfTmpNetwork
   }
 
-  val nodes: Vector[NodeID] = infraRaw.connectionMatrix.flatMap(od => List(nameMappings.string2IntMap(od.O), nameMappings.string2IntMap(od.D))).distinct
-  val nodeCapacity: Map[NodeID, Double] = infraRaw.nodeThroughput.map(v => nameMappings.string2IntMap(v.ID) -> v.throughput).toMap
+  val nodes: Vector[NodeID] = infraRaw.connectionMatrix.flatMap(od => List(od.O, od.D)).distinct
+  val nodeCapacity: Map[NodeID, Double] = infraRaw.nodeThroughput.map(v => v.ID -> v.throughput).toMap
   val nodesWithCapacity: Vector[NodeID] = nodeCapacity.keys.toVector
   val isCapacitated: NodeID => Boolean = node => this.nodesWithCapacity.contains(node)
-  val node2Platform: Map[NodeID, TrackID] = infraRaw.nodeToPlatformInput.map(x => nameMappings.string2IntMap(x.node) -> nameMappings.string2IntMap(x.plat)).toMap
+  val node2Platform: Map[NodeID, TrackID] = infraRaw.nodeToPlatformInput.map(x => x.node -> nameMappings.string2IntMap(x.plat)).toMap
   val platform2Node: Map[TrackID, Iterable[NodeID]] = node2Platform.groupBy(_._2).mapValues(_.keys)
   val track2platform: Map[Int, Int] = infraRaw.platform2Track.flatMap(p => p.tracks.map(t => t -> nameMappings.string2IntMap(p.platform))).toMap
 

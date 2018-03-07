@@ -1,7 +1,5 @@
 package hubmodel
 
-import hubmodel.input.infrastructure.NodeID
-
 /**
   * Parent trait for different implementation of pedestrians. This can make functions more generic.
   */
@@ -11,10 +9,10 @@ trait PedestrianTrait {
   val ID: String = generateUUID
 
   /** origin zone */
-  def oZone: NodeID
+  def oZone: VertexRectangle
 
   /** destination zone */
-  def dZone: NodeID
+  def dZone: VertexRectangle
 
   /** current position */
   def currentPositionNew: NewBetterPosition2D
@@ -24,7 +22,7 @@ trait PedestrianTrait {
   def currentPosition: Position
 
   /** total travel time */
-  def travelTime: Time
+  def travelTime: NewTime
 
   /** total distance travelled */
   def travelDistance: Double
@@ -33,16 +31,16 @@ trait PedestrianTrait {
   def freeFlowVel: Double
 
   /** entry time into the system */
-  def entryTime: Time
+  def entryTime: NewTime
 
   /** exit time from the system */
-  def exitTime: Time
+  def exitTime: NewTime
 
   /** returns the OD pair as a tuple */
-  def getODTuple: (NodeID, NodeID) = (oZone, dZone)
+  def getODTuple: (VertexRectangle, VertexRectangle) = (oZone, dZone)
 
   /** return the OD pair as a Vector */
-  def getODVec: Vector[NodeID] = Vector(oZone, dZone)
+  def getODVec: Vector[VertexRectangle] = Vector(oZone, dZone)
 
   /** has reached destination and has exited simulation */
   var completed: Boolean = false

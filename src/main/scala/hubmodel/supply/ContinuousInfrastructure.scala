@@ -1,6 +1,7 @@
-package hubmodel.input.infrastructure
+package hubmodel.supply
 
 import java.awt.geom.Path2D
+
 import hubmodel.Position
 import play.api.libs.json.{JsError, JsSuccess, JsValue, Json}
 
@@ -29,7 +30,7 @@ class ContinuousSpaceReader(file: String) {
 /** Container of all the data linked to the "real" representation of the infrastructure. All the data
   * like the walls, location of doors, etc. is stored here.
   *
-  * @param walls : Vector or [[Wall]]
+  * @param walls : Vector or [[hubmodel.supply.Wall]]
   */
 class SocialForceSpace(val walls: Vector[Wall]) extends Infrastructure with buildClosedPolygon {
   override val location: String = "unused"

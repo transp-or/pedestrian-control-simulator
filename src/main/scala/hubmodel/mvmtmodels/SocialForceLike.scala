@@ -2,8 +2,8 @@ package hubmodel.mvmtmodels
 
 import breeze.linalg.{DenseVector, norm}
 import breeze.numerics.cos
-import hubmodel.input.infrastructure.Wall
-import hubmodel.{Direction, Force, NewBetterAcceleration2D, NewBetterDirection2D, NewBetterForce2D, NewBetterPosition2D, NewBetterVelocity2D, PedestrianSim, Position, SFGraphSimulator, Velocity, ZeroVector2D, enterDebugMethod, normNew}
+import hubmodel.supply.Wall
+import hubmodel._
 
 abstract class SocialForceLike(sim: SFGraphSimulator) {
 
@@ -176,8 +176,8 @@ abstract class SocialForceLike(sim: SFGraphSimulator) {
 
 
       // sets the increments in position and velocity for the pedestrian
-      p.velocityIncrementNew = force * sim.sf_dt
-      p.positionIncrementNew = (p.currentVelocityNew + p.velocityIncrementNew) * sim.sf_dt.toDouble // (p.currentVelocity + p.velocityIncrement)
+      p.velocityIncrementNew = force * sim.sf_dt.value
+      p.positionIncrementNew = (p.currentVelocityNew + p.velocityIncrementNew) * sim.sf_dt.value // (p.currentVelocity + p.velocityIncrement)
 
       //println(p.velocityIncrementNew , p.positionIncrementNew)
     }
@@ -198,11 +198,14 @@ abstract class SocialForceLike(sim: SFGraphSimulator) {
       ped.addHistory(sim.currentTime)
     }) // transformation of pedestrian objects
     // adds the pedestrians who reach the final destination to the completed list
-    sim.concatenate2PopulationCompleted(sim.population.filter(sim.finalDestinationReached))
+    sim.processCompletedPedestrian(sim.finalDestinationReached)
+
+
+    //sim.concatenate2PopulationCompleted(sim.population.filter(sim.finalDestinationReached))
 
     // removes the pedestrians whic reached their final destination from the population
-    sim.removeFromPopulation(sim.finalDestinationReached)
-    sim.rebuildMTree()
+    //sim.removeFromPopulation(sim.finalDestinationReached)
+    //sim.rebuildMTree()
 
     // enqueues pedestrians in the waiting zones if gating is used
     if (sim.useFlowGates) sim.population.foreach(sim.graph.enqueueInWaitingZone)
