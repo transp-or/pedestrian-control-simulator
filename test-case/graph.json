@@ -3,7 +3,7 @@
   "sublocation": "none",
   "nodes": [
     {
-      "name": "1",
+      "name": "bottom",
       "x": 6.0,
       "y": 12.5,
       "x1": 0.1,
@@ -16,7 +16,7 @@
       "y4": 1
     },
     {
-      "name": "2",
+      "name": "top",
       "x": 91.5,
       "y": 12.5,
       "x1": 0.1,
@@ -31,15 +31,15 @@
   ],
   "connectivity": [
     {
-      "node": "1",
+      "node": "bottom",
       "connected_to": [
-        "2"
+        "top"
       ]
     },
     {
-      "node": "2",
+      "node": "top",
       "connected_to": [
-        "1"
+        "bottom"
       ]
     }
     ],

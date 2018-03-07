@@ -1,4 +1,5 @@
-    [{
+    [
+      {
       "string": "bottom",
       "int": 1
     },

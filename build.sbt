@@ -1,4 +1,4 @@
-import java.nio.file.Files
+
 
 name := "hub-simulator"
 organization := "transpor.molyneaux"
@@ -35,12 +35,11 @@ resolvers ++= Seq(
 
 mainClass in (Compile, packageBin) := Some("RunSimulation")
 
-lazy val dataFolders = Array("test-case", "debug-case")
+lazy val dataFolders = Array("test-case", "piw-corridor")
 
 lazy val distribution = taskKey[Unit]("Copies all the required files and builds a standalone jar to distribute.")
 distribution := {
   IO.copyFile(assembly.value.getAbsoluteFile, baseDirectory.value.getAbsoluteFile / "distribution/hub-model.jar")
   dataFolders.foreach(df => IO.copyDirectory(baseDirectory.value / df, baseDirectory.value / "distribution" / df))
-
   sourceDirectory.value / "main" / "resources" listFiles() filter(f => f.getAbsolutePath.takeRight(5) == ".conf") foreach (f => IO.copyFile(f, baseDirectory.value / "distribution" / f.getName))
 }

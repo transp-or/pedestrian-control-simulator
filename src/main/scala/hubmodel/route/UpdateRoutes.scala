@@ -33,12 +33,12 @@ class UpdateRoutes(sim: SFGraphSimulator) extends Action {
         p.setCurrentDestination(p.nextZone.uniformSamplePointInside)
       }
     })
-    sim.insertEventWithDelay(sim.sf_dt)(new UpdateRoutes(sim))
+    sim.insertEventWithDelayNew(sim.sf_dt)(new UpdateRoutes(sim))
   }
 }
 
-class UpdateGraph(sim: SFGraphSimulator) extends Action {
+/*class UpdateGraph(sim: SFGraphSimulator) extends Action {
   override def execute(): Unit = {
     sim.graph.updateGraph()
   }
-}
+}*/

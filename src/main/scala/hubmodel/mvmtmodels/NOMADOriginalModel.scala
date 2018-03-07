@@ -192,10 +192,9 @@ class NOMADOriginalModel(sim: SFGraphSimulator) extends Action {
     if (sim.useFlowGates) {
       sim.graph.flowGates.foreach(fg => {
         sim.population
-          .filter(p => !fg.pedestrianQueue.contains(p) && !p.freedFrom.contains(fg.ID) && isInVertex(fg.startVertex)(p.currentPositionNew) )
+          .filter(p => p.nextZone == fg.endVertex && !fg.pedestrianQueue.contains(p) && !p.freedFrom.contains(fg.ID) && isInVertex(fg.startVertex)(p.currentPositionNew) )
           .foreach(p => sim.insertEventWithZeroDelay(new fg.EnqueuePedestrian(p, sim)))
       })
-      //sim.population.foreach(sim.graph.enqueueInWaitingZone)
     }
 
 
