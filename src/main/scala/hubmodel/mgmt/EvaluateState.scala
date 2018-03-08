@@ -1,11 +1,12 @@
 package hubmodel.mgmt
 
-import hubmodel.{Action, SFGraphSimulator, Vector2D, isInVertex}
+import hubmodel.{Action, SFGraphSimulator, isInVertex}
 import kn.uni.voronoitreemap.datastructure.OpenList
 import kn.uni.voronoitreemap.diagram.PowerDiagram
 import kn.uni.voronoitreemap.j2d.{PolygonSimple, Site}
 
 import scala.collection.JavaConversions._
+import myscala.math.vector.{Vector2D}
 
 /**
   * Created by nicholas on 5/13/17.

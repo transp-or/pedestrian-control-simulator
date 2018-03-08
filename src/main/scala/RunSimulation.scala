@@ -1,4 +1,4 @@
-import breeze.linalg.DenseVector
+import breeze.linalg.{DenseVector, max}
 import breeze.numerics.{pow, sqrt}
 import com.typesafe.config.{Config, ConfigFactory}
 import hubmodel.demand.{PedestrianFlows, TimeTable}
@@ -181,20 +181,20 @@ object RunSimulation extends App {
     new MovingPedestriansWithDensityWithWallVideo(
       config.getString("output.output_prefix") + "_moving_pedestrians_walls.mp4",
       sim.spaceSF.walls,
-      (1.0 / config.getDouble("output.video_dt")).toInt,
+      math.max((1.0 / config.getDouble("output.video_dt")).toInt, 1),
       sim.populationCompleted ++ sim.population,
       sim.criticalArea,
       gates.map(g => g.ID -> g).toMap,
       sim.gatesHistory.map(p => ((p._1.value*1).round.toInt, p._2)),
       sim.densityHistory.map(p => ((p._1.value*1).round.toInt, p._2)),
-      (simulationStartTime.value to simulationEndTime.value by 0.2).map(new NewTime(_))
+      (simulationStartTime.value to simulationEndTime.value by config.getDouble("output.video_dt")).map(new NewTime(_))
     )
 
 
-    if (config.getBoolean("output.write_trajectories_as_VS")) {
+    /*if (config.getBoolean("output.write_trajectories_as_VS")) {
       println("Writing trajectory data from video...")
       sim.writePopulationTrajectories(config.getString("output.output_prefix") + "_simulation_trajectories.csv")
-    }
+    }*/
     collectResults(sim)
   }
 
@@ -220,7 +220,7 @@ object RunSimulation extends App {
     }
     else if (config.getBoolean("output.make_video") && n > 0 && !runSimulationsInParallel) {
       val simulationCollection: collection.immutable.Vector[SFGraphSimulator] = collection.immutable.Vector.fill(n-1)(createSimulation())
-      simulationCollection.map(runAndCollect) :+ runSimulationWithVideo()
+      simulationCollection.map(runAndCollect).seq.toVector :+ runSimulationWithVideo()
     }
     else if (!config.getBoolean("output.make_video") && n > 0 && runSimulationsInParallel) {
       val simulationCollection: collection.parallel.ParSeq[SFGraphSimulator] = collection.parallel.ParSeq.fill(n)(createSimulation())
@@ -256,7 +256,7 @@ object RunSimulation extends App {
     if (config.getBoolean("output.write_densities")) (densityTimes +: meanDensity.toScalaVector() +: varianceDensity.toScalaVector() +: results.map(_._2.map(_._2).toVector)).writeToCSV(
       config.getString("output.output_prefix") + "_densities.csv",
       rowNames = None,
-      columnNames = Some(Vector("time", "mean", "variance") ++ Vector.fill(n)("r").zipWithIndex.map(t => t._1 + t._2.toString))
+      columnNames = Some(Vector("time", "mean", "variance") ++ Vector.fill(n+(if (config.getBoolean("output.make_video")){1} else {0}))("r").zipWithIndex.map(t => t._1 + t._2.toString))
     )
 
     // computes statistics on travel times and writes them

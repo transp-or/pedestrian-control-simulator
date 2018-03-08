@@ -2,8 +2,9 @@ package hubmodel.mvmtmodels
 
 import breeze.linalg.{DenseVector, norm}
 import breeze.numerics.cos
-import hubmodel.supply.Wall
 import hubmodel._
+import hubmodel.supply.Wall
+import myscala.math.vector.{Vector2D, ZeroVector2D}
 
 abstract class SocialForceLike(sim: SFGraphSimulator) {
 
@@ -18,7 +19,7 @@ abstract class SocialForceLike(sim: SFGraphSimulator) {
   }
 
   protected def computeDirection(pos: NewBetterPosition2D, goal: NewBetterPosition2D): NewBetterDirection2D = {
-    (goal - pos) / normNew(goal - pos)
+    (goal - pos) / (goal - pos).norm
   }
 
   /** Based on the current velocity and the target velocity, computed the acceleration. The relaxation term is

@@ -53,7 +53,7 @@ class SocialForceESI(sim: SFGraphSimulator) extends SocialForceLike(sim) with Ac
     val dab: Direction = p1.currentPosition - p2.currentPosition
     val yab: Direction = dt * p2.currentVelocity
     val bab: Double = 0.5 * sqrt(pow(norm(dab) + norm(dab - yab), 2) - pow(norm(yab), 2))
-    println(norm(dab), bab, exp((-bab) / B), exp((p1.r + p2.r - bab) / B), (norm(dab) + norm(dab - yab)) / (4.0 * bab), norm((dab / norm(dab) + (dab - yab) / norm(dab - yab))))
+    //println(norm(dab), bab, exp((-bab) / B), exp((p1.r + p2.r - bab) / B), (norm(dab) + norm(dab - yab)) / (4.0 * bab), norm((dab / norm(dab) + (dab - yab) / norm(dab - yab))))
 
     val desiredDirection: Direction = computeDirection(p1.currentPosition, p1.currentDestination)
     val w: Double = lambda + (1.0 - lambda) * 0.5 * (1.0 + desiredDirection.dot(dab / norm(dab)))

@@ -1,13 +1,14 @@
 package hubmodel.supply
 
 import breeze.linalg.DenseVector
-import hubmodel.{ControlDevicesException, Vector2D, VertexRectangle}
+import hubmodel.VertexRectangle
+import hubmodel.tools.ControlDevicesException
 import play.api.libs.json.{JsError, JsSuccess, JsValue, Json}
+import myscala.math.vector.Vector2D
 
 import scala.io.BufferedSource
 
 class ReadControlDevices(file: String, vertexMap: Map[String, VertexRectangle]) {
-println(vertexMap)
   val (monitoredAreas, amws, flowGates, binaryGates): (Vector[VertexRectangle], Vector[MovingWalkway], Vector[FlowGate], Vector[BinaryGate]) = {
     val source: BufferedSource = scala.io.Source.fromFile(file)
     val input: JsValue = Json.parse(try source.mkString finally source.close)
@@ -36,7 +37,6 @@ println(vertexMap)
   }
 
   if (flowGates.exists(fg => !monitoredAreas.map(_.name).contains(fg.monitoredArea))) {
-    println(flowGates.map(_.monitoredArea), monitoredAreas)
     throw new ControlDevicesException("flow gate controlled area not found in list of monitored areas")
   }
 }

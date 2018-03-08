@@ -5,10 +5,9 @@ import java.awt.image.BufferedImage
 import java.awt.{BasicStroke, Color, Graphics2D}
 import java.io.File
 
-import breeze.numerics.floor
+import hubmodel._
 import hubmodel.output.{getBounds, mapCoordAffine}
 import hubmodel.supply.{BinaryGate, Wall}
-import hubmodel._
 import org.jcodec.api.awt.AWTSequenceEncoder
 
 /** Creates a video showing the movement of individual pedestrians with the critical zones in which the density is
@@ -192,10 +191,10 @@ class MovingPedestriansWithDensityWithWallVideo(outputFile: String,
 
 
   /** combine images into one */
-  def timeReadable(t: Double): String = {
+  /*def timeReadable(t: Double): String = {
     val hours: Int = floor(t / 3600.0).toInt
     val minutes: Int = floor((t - hours * 3600) / 60.0).toInt
     val seconds: Double = t - hours * 3600 - minutes * 60
     hours.toString + ":" + minutes.toString + ":" + seconds.toString
-  }
+  }*/
 }

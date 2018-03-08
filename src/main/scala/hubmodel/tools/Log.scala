@@ -1,4 +1,4 @@
-package hubmodel
+package hubmodel.tools
 
 import ch.qos.logback.classic.encoder.PatternLayoutEncoder
 import ch.qos.logback.classic.spi.ILoggingEvent

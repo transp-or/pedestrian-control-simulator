@@ -1,8 +1,9 @@
 package hubmodel.mvmtmodels
 
 import breeze.linalg.max
-import hubmodel.supply.Wall
 import hubmodel._
+import hubmodel.supply.Wall
+import myscala.math.vector.{Vector2D, ZeroVector2D}
 
 class NOMADModel(sim: SFGraphSimulator) extends Action {
 
@@ -14,7 +15,7 @@ class NOMADModel(sim: SFGraphSimulator) extends Action {
     * @return normalized direction
     */
   protected def computeDesiredDirection(pos: NewBetterPosition2D, goal: NewBetterPosition2D): NewBetterDirection2D = {
-    (goal - pos) / normNew(goal - pos)
+    (goal - pos) / (goal - pos).norm
   }
 
   protected def computePathFollowingComponent(p: PedestrianSim): NewBetterAcceleration2D = {
@@ -52,7 +53,7 @@ class NOMADModel(sim: SFGraphSimulator) extends Action {
     * @return closest end point of the wall to the point
     */
   protected def getClosestEndPoint(point: NewBetterPosition2D, w: Wall): NewBetterPosition2D = {
-    if (normNew(new NewBetterPosition2D(w.startPoint(0), w.startPoint(1)) - point) < normNew(new NewBetterPosition2D(w.endPoint(0), w.endPoint(1)) - point)) new NewBetterPosition2D(w.startPoint(0), w.startPoint(1))
+    if ((new NewBetterPosition2D(w.startPoint(0), w.startPoint(1)) - point).norm < (new NewBetterPosition2D(w.endPoint(0), w.endPoint(1)) - point).norm) new NewBetterPosition2D(w.startPoint(0), w.startPoint(1))
     else new NewBetterPosition2D(w.endPoint(0), w.endPoint(1))
   }
 

@@ -9,6 +9,8 @@ import java.util.concurrent.ThreadLocalRandom
 
 import ch.qos.logback.classic.{Level, Logger}
 import hubmodel.NewTimeNumeric.mkOrderingOps
+import hubmodel.tools.Log
+import myscala.math.vector.{Vector2D, norm}
 import myscala.math.algo.MTree
 
 import scala.collection.immutable.HashMap
@@ -156,7 +158,7 @@ abstract class PedestrianDES[T <: PedestrianTrait](val startTime: NewTime,
     synchronized(this._populationCompleted ++= completedPeds.values)
   }
 
-  private var populationMTree: MTree[Vector2D] = new MTree(distance: (Vector2D, Vector2D) => Double)
+  private var populationMTree: MTree[Vector2D] = new MTree(norm: (Vector2D, Vector2D) => Double)
   private var ID2Position: Map[String, Vector2D] = HashMap()
 
   def rebuildMTree(): Unit = {

@@ -5,6 +5,8 @@ import java.util.concurrent.ThreadLocalRandom
 import breeze.linalg.DenseVector
 import breeze.numerics.round
 
+import myscala.math.vector.ZeroVector2D
+
 
 /**
   * Created by nicholas on 5/13/17.

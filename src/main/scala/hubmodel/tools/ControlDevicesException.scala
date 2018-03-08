@@ -1,5 +1,4 @@
-package hubmodel
-
+package hubmodel.tools
 
 class ControlDevicesException(message: String) extends Exception(message) {
 

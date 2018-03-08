@@ -7,8 +7,8 @@ import java.io.File
 import javax.imageio.ImageIO
 
 import breeze.numerics.floor
-import hubmodel.supply.BinaryGate
 import hubmodel._
+import hubmodel.supply.BinaryGate
 import org.jcodec.api.awt.AWTSequenceEncoder
 
 

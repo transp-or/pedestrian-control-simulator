@@ -5,7 +5,7 @@ import hubmodel._
 import org.jgrapht.alg.shortestpath.DijkstraShortestPath
 import org.jgrapht.graph.{DefaultDirectedWeightedGraph, DefaultWeightedEdge}
 import play.api.libs.json.{JsError, JsSuccess, JsValue, Json}
-
+import myscala.math.vector.{Vector2D}
 import scala.collection.JavaConverters._
 import scala.io.BufferedSource
 

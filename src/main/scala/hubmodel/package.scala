@@ -2,75 +2,13 @@ import java.io.{BufferedWriter, File, FileWriter}
 import java.util.concurrent.ThreadLocalRandom
 
 import breeze.numerics.{floor, round}
+import myscala.math.vector.{Vector2D, Vector3D}
 
 /**
   * Created by nicholas on 5/12/17.
   */
 
 package object hubmodel {
-
-  trait PhysicalVector
-
-  trait PhysicalVectorOps[A] {
-
-    def + (that: A): A
-    def - (that: A): A
-
-    def + (d: Double): A
-    def - (d: Double): A
-    def * (d: Double): A
-    def / (d: Double): A
-
-    def norm: Double
-    def distanceTo(that: A): Double
-    def dot(that: A): Double
-    def normalized: A
-  }
-
-  sealed class Vector2D(val X: Double, val Y: Double) extends PhysicalVector with PhysicalVectorOps[Vector2D] {
-
-    def + (that: Vector2D): Vector2D = {new Vector2D(this.X + that.X, this.Y + that.Y)}
-    def - (that: Vector2D): Vector2D = {new Vector2D(this.X - that.X, this.Y - that.Y)}
-
-    def + (i: Double): Vector2D = {new Vector2D(this.X + i, this.Y + i)}
-    def - (i: Double): Vector2D = {new Vector2D(this.X - i, this.Y - i)}
-    def * (i: Double): Vector2D = {new Vector2D(this.X * i, this.Y * i)}
-    def / (i: Double): Vector2D = {new Vector2D(this.X / i, this.Y / i)}
-
-    def norm: Double = scala.math.pow(this.X*this.X + this.Y*this.Y, 0.5)
-    def distanceTo(that: Vector2D): Double = scala.math.pow((that.X-this.X)*(that.X-this.X) + (that.Y-this.Y)*(that.Y-this.Y), 0.5)
-    def dot(that: Vector2D): Double = this.X*that.X + this.Y*that.Y
-    def normalized: Vector2D = if (this.norm == 0.0) {throw new RuntimeException("Norm is zero !")} else {val n: Double = this.norm; new Vector2D(this.X / n, this.Y / n)}
-    def orthogonal: Vector2D = new Vector2D(-this.Y, this.X).normalized
-
-    override def toString: String = "(" + X + ", " + Y + ")"
-  }
-
-  object Vector2D {
-    def apply(x: Double, y: Double): Vector2D = new Vector2D(x,y)
-  }
-
-  final class ZeroVector2D extends Vector2D(0.0, 0.0)
-
-  sealed class Vector3D(val X: Double, val Y: Double, val Z: Double) extends PhysicalVector with PhysicalVectorOps[Vector3D] {
-
-    def + (that: Vector3D): Vector3D = {new Vector3D(this.X + that.X, this.Y + that.Y, this.Z + that.Z)}
-    def - (that: Vector3D): Vector3D = {new Vector3D(this.X - that.X, this.Y - that.Y, this.Z - that.Z)}
-
-    def + (i: Double): Vector3D = {new Vector3D(this.X + i, this.Y + i, this.Z + i)}
-    def - (i: Double): Vector3D = {new Vector3D(this.X - i, this.Y - i, this.Z - i)}
-    def * (i: Double): Vector3D = {new Vector3D(this.X * i, this.Y * i, this.Z * i)}
-    def / (i: Double): Vector3D = {new Vector3D(this.X / i, this.Y / i, this.Z / i)}
-
-    def distanceTo(that: Vector3D): Double = scala.math.pow((that.X-this.X)*(that.X-this.X) + (that.Y-this.Y)*(that.Y-this.Y) + (that.Z-this.Z)*(that.Z-this.Z), 0.5)
-    def norm: Double = scala.math.pow(this.X*this.X + this.Y*this.Y + this.Z*this.Z, 0.5)
-    def dot(that: Vector3D): Double = this.X*that.X + this.Y*that.Y + this.Z*that.Z
-    def normalized: Vector3D = new Vector3D(this.X / this.norm, this.Y / this.norm, this.Z / this.norm)
-
-    override def toString: String = "(" + X + ", " + Y + ", " + Z + ")"
-  }
-
-  final class ZeroVector3D extends Vector3D(0.0, 0.0, 0.0)
 
   type NewBetterPosition2D = Vector2D
   type NewBetterDirection2D = Vector2D
@@ -81,16 +19,7 @@ package object hubmodel {
   def distance(a: Vector2D, b: Vector2D): Double = scala.math.pow((b.X-a.X)*(b.X-a.X) + (b.Y-a.Y)*(b.Y-a.Y), 0.5)
   def distance(a: Vector3D, b: Vector3D): Double = scala.math.pow((b.X-a.X)*(b.X-a.X) + (b.Y-a.Y)*(b.Y-a.Y) + (b.Z-a.Z)*(b.Z-a.Z), 0.5)
 
-  def normNew(a: Vector2D): Double = scala.math.pow(a.X*a.X + a.Y*a.Y, 0.5)
-  def normNew3d(a: Vector3D): Double = scala.math.pow(a.X*a.X + a.Y*a.Y + a.Z*a.Z, 0.5)
 
-
-
-  @deprecated
-  type NewPosition2D = (Double, Double)
-
-  @deprecated
-  def norm(a: NewPosition2D, b: NewPosition2D): Double = scala.math.pow((b._1-a._1)*(b._1-a._1) + (b._2-a._2)*(b._2-a._2), 0.5)
 
   // Type representing a 2D position
   @deprecated
@@ -123,7 +52,7 @@ package object hubmodel {
     def asReadable: String = {
       val hours: Int = floor(value / 3600.0).toInt
       val minutes: Int = floor((value - hours * 3600) / 60.0).toInt
-      val seconds: Double = value - hours * 3600 - minutes * 60
+      val seconds: Double = floor(value - hours * 3600 - minutes * 60)
       hours.toString + ":" + minutes.toString + ":" + seconds.toString
     }
 
@@ -151,15 +80,6 @@ package object hubmodel {
 
   object NewTimeNumeric extends Ordering[NewTime] {
     def compare(x: NewTime, y: NewTime): Int = x.value compare y.value
-    /*def plus (x: NewTime,y: NewTime): NewTime = new NewTime(x.value + y.value)
-    def minus(x: NewTime,y: NewTime): NewTime = new NewTime(x.value - y.value)
-    def times(x: NewTime,y: NewTime): NewTime = new NewTime(x.value * y.value)
-    def negate(x: NewTime): NewTime = new NewTime(-x.value)
-    def fromInt (x: Int): NewTime = new NewTime(x.toDouble)
-    def toInt   (x: NewTime): Int    = x.value.toInt
-    def toLong  (x: NewTime): Long   = x.value.toLong
-    def toFloat (x: NewTime): Float  = x.value.toFloat
-    def toDouble(x: NewTime): Double = x.value*/
   }
 
   /** Generation of a UUID. This can be used to generate unique identifiers for objects.
