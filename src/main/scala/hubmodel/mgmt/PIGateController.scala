@@ -13,12 +13,12 @@ class PIGateController(sim: SFGraphSimulator) extends Action {
 
   def computeReleaseTimes(rate: Double, maxTime: NewTime, currentTime: NewTime, acc: List[NewTime]): List[NewTime] = {
     if (currentTime >= maxTime) acc
-    else computeReleaseTimes(rate, maxTime, currentTime.addDouble(1.0 / rate), (currentTime.addDouble(1.0 / rate)) :: acc)
+    else computeReleaseTimes(rate, maxTime, currentTime.addDouble(1.0 / rate), currentTime.addDouble(1.0 / rate) :: acc)
   }
 
   override def execute(): Unit = {
     sim.eventLogger.trace("time: " + sim.currentTime + ": updating flow gates using PI controller")
-    val totalInflow: Double = max(0.1, min(3.0, sim.inflowHistory.last._2 - 1.0 * (sim.densityHistory.last._2 - sim.densityHistory.dropRight(1).last._2) + 0.25 * (0.8 - sim.densityHistory.last._2)))
+    val totalInflow: Double = max(0.1, min(3.0, sim.inflowHistory.last._2 - 1.1 * (sim.densityHistory.last._2 - sim.densityHistory.dropRight(1).last._2) + 0.25 * (1.2 - sim.densityHistory.last._2)))
     //println("PI data @ "+ sim.currentTime + ", " + sim.densityHistory.last._2 + "," + (sim.densityHistory.last._2 - sim.densityHistory.dropRight(1).last._2) + ", " + (0.8 - sim.densityHistory.last._2) + ", " + totalInflow)
 
     sim.inflowHistory.append((sim.currentTime, totalInflow))
@@ -30,7 +30,7 @@ class PIGateController(sim: SFGraphSimulator) extends Action {
       fg.flowRate = min(fg.width * 1.5, fg.width * (totalInflow / sim.graph.flowGates.size))
       // when execution of release pedestrian takes place, if flow rate is 0 then the event will never happen. Hence manually insert one to restart flow gates.
       if (fg.flowRate > 0.0) {
-        computeReleaseTimes(fg.flowRate, sim.evaluate_dt, NewTime(0.0), List()).foreach(t => sim.insertEventWithDelay(t)(new fg.ReleasePedestrian(sim)))
+        computeReleaseTimes(fg.flowRate, sim.evaluate_dt, NewTime(0.0), List()).foreach(t => sim.insertEventWithDelayNew(t)(new fg.ReleasePedestrian(sim)))
       }
       /*else {
         sim.insertEventWithDelay(1.0 / min(fg.width * 1.5, fg.width * (totalInflow / sim.graph.flowGates.size)))(new fg.ReleasePedestrian(sim))

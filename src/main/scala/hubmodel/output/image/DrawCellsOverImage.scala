@@ -1,26 +1,24 @@
 package hubmodel.output.image
 
+import java.awt.{Color, Font, FontMetrics, Graphics2D}
 import java.awt.image.BufferedImage
-import java.awt.{Color, Font, Graphics2D}
-import java.io.File
 import javax.imageio.ImageIO
-import java.awt.FontMetrics
 
-import hubmodel.output.{IMAGE_WIDTH, computeImageHeightPixels, mapCoordAffine, createWhiteBackground}
-import hubmodel.output.video.Tools4Videos
-import hubmodel.tools.{MyCellComputationTrait, MyCellRepresentationTrait, MyCellTrait}
+import hubmodel.output.{createBackgroundFromImage, mapCoordAffine}
+import hubmodel.tools.MyCellTrait
 
-class DrawCells[T <: MyCellTrait](cells: Iterable[T], filename: String) extends Tools4Videos {
+class DrawCellsOverImage[T <: MyCellTrait](
+                          bkgdImage: Option[String],
+                          bkgdImageSizeMeters: (Double, Double, Double, Double),
+                          cells: Iterable[T],
+                          fileName: String
+                        ) {
 
-  val xMin: Double = cells.flatMap(_.xCoords).min
-  val xMax: Double = cells.flatMap(_.xCoords).max
-  val yMin: Double = cells.flatMap(_.yCoords).min
-  val yMax: Double = cells.flatMap(_.yCoords).max
+  val trueWidth: Double = bkgdImageSizeMeters._3 - bkgdImageSizeMeters._1
+  val trueHeight: Double = bkgdImageSizeMeters._4 - bkgdImageSizeMeters._2
 
 
-  val cleanCanvas: BufferedImage = createWhiteBackground((xMax-xMin, yMax - yMin))
-
-  //val IMAGE_HEIGHT: Int = computeImageHeightPixels(xMin, yMin, xMax, yMax)
+  val cleanCanvas: BufferedImage = createBackgroundFromImage(bkgdImage, (trueWidth, trueHeight))
 
   val canvasWidth: Int = cleanCanvas.getWidth
   val canvasHeight: Int = cleanCanvas.getHeight
@@ -29,13 +27,14 @@ class DrawCells[T <: MyCellTrait](cells: Iterable[T], filename: String) extends 
     *
     * @return function taking a horizontal position and returning the position in pixels
     */
-  def mapHcoord: Double => Int = mapCoordAffine(xMin, xMax, canvasWidth)
+  def mapHcoord: Double => Int = mapCoordAffine(bkgdImageSizeMeters._1, bkgdImageSizeMeters._3, canvasWidth)
 
   /** Vertical mapping of coordinates
     *
     * @return function taking a vertical position and returning the position in pixels
     */
-  def mapVcoord: Double => Int = mapCoordAffine(yMin, yMax,canvasHeight)
+  def mapVcoord: Double => Int = mapCoordAffine(bkgdImageSizeMeters._2, bkgdImageSizeMeters._4,canvasHeight)
+
 
   val gcleanCanvas: Graphics2D = cleanCanvas.createGraphics()
   gcleanCanvas.setColor(Color.BLACK)
@@ -66,9 +65,8 @@ class DrawCells[T <: MyCellTrait](cells: Iterable[T], filename: String) extends 
   })
 
 
-  if (filename.length > 0) {
-    ImageIO.write(cleanCanvas, filename.split("\\.").last, new java.io.File(filename))
+  if (fileName.length > 0) {
+    ImageIO.write(cleanCanvas, fileName.split("\\.").last, new java.io.File(fileName))
   }
+
 }
-
-

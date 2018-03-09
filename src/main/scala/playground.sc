@@ -258,3 +258,6 @@ new DrawCells(hexagons, "celltest.png", None, (xMax, yMax))
 
 */
 
+val q = collection.mutable.Queue()
+println(q.contains("a"))
+q.dequeue()

@@ -1,5 +1,10 @@
 package hubmodel
 
+import java.awt.{Color, Graphics2D}
+import java.awt.image.BufferedImage
+import java.io.File
+import javax.imageio.ImageIO
+
 import breeze.linalg.{max, min}
 import breeze.numerics.round
 import hubmodel.supply.Wall
@@ -82,5 +87,28 @@ package object output {
     */
   def mapCoordAffine(trueMin: Double, trueMax: Double, pixelWidth: Int)(coord: Double): Int = {
     math.round((coord-trueMin)*((pixelWidth-2*border)/(trueMax-trueMin)) + border).toInt
+  }
+
+  def createWhiteBackground(bkgdImageSizeMeters: (Double, Double)): BufferedImage = {
+
+    val initialWidth: Int = bkgdImageSizeMeters._1.ceil.toInt * 20
+    val initialHeight: Int = bkgdImageSizeMeters._2.ceil.toInt * 20
+
+    // rounds the canvas width to an even number
+    val canvasWidth: Int = if (initialWidth % 2 == 0) initialWidth else initialWidth + 1
+    val canvasHeight: Int = if (initialHeight % 2 == 0) initialHeight else initialHeight + 1
+    val canv: BufferedImage = new BufferedImage(border*2 + canvasWidth, border*2 + canvasHeight, BufferedImage.TYPE_4BYTE_ABGR)
+    val gcanv: Graphics2D = canv.createGraphics()
+    gcanv.setColor(Color.WHITE)
+    gcanv.fillRect(0, 0, border*2 + canvasWidth, border*2 + canvasHeight)
+    canv
+  }
+
+  def createBackgroundFromImage(bkgdImage: Option[String], bkgdImageSizeMeters: (Double, Double)): BufferedImage = { bkgdImage match {
+    case Some(f) => try { ImageIO.read(new File(f)) } catch {
+      case ime: javax.imageio.IIOException => println(ime + " in MakeVideo for file: " + f); createWhiteBackground(bkgdImageSizeMeters)
+      case e : Throwable => println(e + " in MakeVideo for file: " + f); createWhiteBackground(bkgdImageSizeMeters) }
+    case None => { createWhiteBackground(bkgdImageSizeMeters) }
+  }
   }
 }

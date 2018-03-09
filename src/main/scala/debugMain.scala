@@ -1,8 +1,11 @@
 import breeze.linalg.DenseVector
 import breeze.numerics.cos
 import hubmodel.output.image.DrawCells
-import hubmodel.route.MyCell
-import hubmodel.{Position, timeBlock}
+import hubmodel.route.HexagonPotentialField
+import hubmodel.{NewBetterPosition2D, Position}
+import myscala.math.vector.Vector2D
+import myscala.timeBlock
+
 
 /*
   val qInterval1 = computeQuantiles(0.0 to 100.0 by 1.0)_
@@ -148,7 +151,7 @@ object debugMain extends App {
   val radius: Double = 1.5
 
 
-  def insideSpace(p: Position): Boolean = {
+  def insideSpace(p: NewBetterPosition2D): Boolean = {
 
     val xMin1 = 0.0
     val xMax1 = 10.0
@@ -161,29 +164,29 @@ object debugMain extends App {
     val yMin2 = 7.0
     val yMax2 = 13.0
 
-    (p(0) >= xMin1 && p(0) <= xMax1 && p(1) >= yMin1 && p(1) <= yMax1) || (p(0) >= xMin2 && p(0) <= xMax2 && p(1) >= yMin2 && p(1) <= yMax2)
+    (p.X >= xMin1 && p.X <= xMax1 && p.Y >= yMin1 && p.Y <= yMax1) || (p.X >= xMin2 && p.X <= xMax2 && p.Y >= yMin2 && p.Y <= yMax2)
   }
 
 
-  val hexagons: IndexedSeq[MyCell] = (for (
+  val hexagons: IndexedSeq[HexagonPotentialField] = (for (
     x <- xMin to xMax by 2 * radius * cos(30.0 * math.Pi / 180.0);
     y <- yMin to yMax by 3 * radius)
     yield {
-      MyCell(DenseVector(x, y), radius)
+      HexagonPotentialField(Vector2D(x, y), radius)
     }).filter(h => h.angles.exists(insideSpace)) ++ (for (
     x <- (xMin + radius * cos(30.0 * math.Pi / 180.0)) to xMax by 2 * radius * cos(30.0 * math.Pi / 180.0);
     y <- yMin + 1.5 * radius to yMax by 3 * radius)
     yield {
-      MyCell(DenseVector(x, y), radius)
+      HexagonPotentialField(Vector2D(x, y), radius)
     }).filter(h => h.angles.exists(insideSpace))
 
 
-  val connections2: Map[MyCell, List[MyCell]] = hexagons.map(h => h -> hexagons.filter(hin => breeze.linalg.norm(h.center - hin.center) < 1.01 * 2 * radius * cos(30.0 * math.Pi / 180.0)).filterNot(h == _).toList).toMap
+  val connections2: Map[HexagonPotentialField, List[HexagonPotentialField]] = hexagons.map(h => h -> hexagons.filter(hin => (h.c - hin.c).norm < 1.01 * 2 * radius * cos(30.0 * math.Pi / 180.0)).filterNot(h == _).toList).toMap
 
 
   val doorwayPoints = (9.0 to 11.0 by 0.25).map(y => DenseVector(0.0, y))
 
-  val finalCells: IndexedSeq[MyCell] = hexagons.filter(h => doorwayPoints.exists(h.isInside))
+  val finalCells: IndexedSeq[HexagonPotentialField] = hexagons.filter(h => doorwayPoints.exists(p => h.isInside(Vector2D(p(0), p(1)))))
 
 
   /*
@@ -251,10 +254,10 @@ object debugMain extends App {
   //println(u.potential,v.potential,w.potential,x.potential,e.potential,b.potential,a.potential)
   //println(u.potential,t.potential,s.potential,r.potential,f.potential,c.potential,a.potential)
 
-  val destination = MyCell(DenseVector(0.0, 0.0), radius)
-  val conn3: Map[MyCell, List[MyCell]] = connections2 + (destination -> finalCells.toList)
+  val destination = HexagonPotentialField(Vector2D(0.0, 0.0), radius)
+  val conn3: Map[HexagonPotentialField, List[HexagonPotentialField]] = connections2 + (destination -> finalCells.toList)
 
-  def buildGraph(conn: (MyCell, List[MyCell]), connections: Map[MyCell, List[MyCell]], acc: List[(MyCell, MyCell)]): List[(MyCell, MyCell)] = {
+  def buildGraph(conn: (HexagonPotentialField, List[HexagonPotentialField]), connections: Map[HexagonPotentialField, List[HexagonPotentialField]], acc: List[(HexagonPotentialField, HexagonPotentialField)]): List[(HexagonPotentialField, HexagonPotentialField)] = {
     if (connections.isEmpty) acc ++ conn._2.filter(_.potential >= conn._1.potential).map((_, conn._1))
     else buildGraph(connections.head, connections.tail, conn._2.filter(_.potential >= conn._1.potential).map((_, conn._1)) ++ acc)
   }
@@ -267,7 +270,7 @@ object debugMain extends App {
 
   //println(hexagons.map(_.potential).mkString("\n"))
 
-  new DrawCells(hexagons, "celltest.png", None, (xMax, yMax))
+  new DrawCells(hexagons, "celltest.png")
 
 }
 

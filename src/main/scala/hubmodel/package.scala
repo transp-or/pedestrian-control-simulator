@@ -190,13 +190,13 @@ package object hubmodel {
     * @tparam R return type of that code
     * @return returns the same object as the original block would of done
     */
-  def timeBlock[R](block: => R): R = {
+  /*def timeBlock[R](block: => R): R = {
     val t0 = System.nanoTime()
     val result = block // call-by-name
     val t1 = System.nanoTime()
     println("Elapsed time: " + (t1 - t0) / 1000000000.0 + " seconds")
     result
-  }
+  }*/
 
   /** Function on which to place a breakpoint for debugging. One way to use this function is the following:
     * {{{

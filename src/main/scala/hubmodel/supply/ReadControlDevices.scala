@@ -18,7 +18,7 @@ class ReadControlDevices(file: String, vertexMap: Map[String, VertexRectangle]) 
         (
           s.get.criticalZones.map(z => VertexRectangle(z.name, Vector2D(z.x1, z.y1), Vector2D(z.x2, z.y2), Vector2D(z.x3, z.y3), Vector2D(z.x4, z.y4))),
           s.get.amws.map(m => new MovingWalkway(vertexMap(m.o), vertexMap(m.d), 1.0)),
-          s.get.flowGates.map(fg => {println(fg.o, fg.d);new FlowGate(vertexMap(fg.o), vertexMap(fg.d), DenseVector(fg.start_pos_x, fg.start_pos_y), DenseVector(fg.end_pos_x, fg.end_pos_y), fg.area)}),
+          s.get.flowGates.map(fg => new FlowGate(vertexMap(fg.o), vertexMap(fg.d), DenseVector(fg.start_pos_x, fg.start_pos_y), DenseVector(fg.end_pos_x, fg.end_pos_y), fg.area)),
           s.get.binaryGates.map(bg => new BinaryGate(vertexMap(bg.o), vertexMap(bg.d), DenseVector(bg.s_x, bg.s_y), DenseVector(bg.e_x, bg.e_y), bg.area))
         )
       case e: JsError => throw new Error("Error while parsing graph specification file for control elements: " + JsError.toJson(e).toString())

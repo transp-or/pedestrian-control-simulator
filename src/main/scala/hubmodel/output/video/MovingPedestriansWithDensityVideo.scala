@@ -6,6 +6,7 @@ import java.awt.{BasicStroke, Color, Graphics2D}
 import java.io.File
 import javax.imageio.ImageIO
 
+import hubmodel.output.createBackgroundFromImage
 import breeze.numerics.floor
 import hubmodel._
 import hubmodel.supply.BinaryGate
@@ -47,12 +48,7 @@ class MovingPedestriansWithDensityVideo(outputFile: String,
 
   // Loads the background image which is used as the base image for all dimensions.
 
-    val cleanCanvas: BufferedImage = bkgdImage match {
-      case Some(f) => try { ImageIO.read(new File(f)) } catch {
-        case ime: javax.imageio.IIOException => println(ime + " in MakeVideo for file: " + f); createWhiteBackground(bkgdImageSizeMeters)
-        case e : Throwable => println(e + " in MakeVideo for file: " + f); createWhiteBackground(bkgdImageSizeMeters) }
-      case None => { createWhiteBackground(bkgdImageSizeMeters) }
-    }
+    val cleanCanvas: BufferedImage = createBackgroundFromImage(bkgdImage, bkgdImageSizeMeters)
 
 
   val canvasWidth: Int = if (cleanCanvas.getWidth % 2 == 0) cleanCanvas.getWidth else cleanCanvas.getWidth + 1

@@ -6,7 +6,7 @@ import java.awt.{BasicStroke, Color, Graphics2D}
 import java.io.File
 
 import hubmodel._
-import hubmodel.output.{getBounds, mapCoordAffine}
+import hubmodel.output.{getBounds, mapCoordAffine, createWhiteBackground}
 import hubmodel.supply.{BinaryGate, Wall}
 import org.jcodec.api.awt.AWTSequenceEncoder
 

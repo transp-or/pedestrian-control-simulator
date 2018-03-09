@@ -1,4 +1,4 @@
-import breeze.linalg.{DenseVector, max}
+import breeze.linalg.DenseVector
 import breeze.numerics.{pow, sqrt}
 import com.typesafe.config.{Config, ConfigFactory}
 import hubmodel.demand.{PedestrianFlows, TimeTable}
@@ -6,7 +6,8 @@ import hubmodel.output.TRANSFORM.PopulationProcessing
 import hubmodel.output.image.{DrawGraph, DrawWalls, DrawWallsAndGraph}
 import hubmodel.output.video.MovingPedestriansWithDensityWithWallVideo
 import hubmodel.supply.{BinaryGate, ContinuousSpaceReader, GraphReader, ReadControlDevices}
-import hubmodel.{NewTime, PedestrianSim, SFGraphSimulator, timeBlock, writePopulationTrajectories}
+import hubmodel.{NewTime, PedestrianSim, SFGraphSimulator, writePopulationTrajectories}
+import myscala.timeBlock
 import myscala.math.stats.stats
 import myscala.output.SeqOfSeqExtensions.SeqOfSeqWriter
 import myscala.output.SeqTuplesExtensions.SeqTuplesWriter
@@ -256,7 +257,7 @@ object RunSimulation extends App {
     if (config.getBoolean("output.write_densities")) (densityTimes +: meanDensity.toScalaVector() +: varianceDensity.toScalaVector() +: results.map(_._2.map(_._2).toVector)).writeToCSV(
       config.getString("output.output_prefix") + "_densities.csv",
       rowNames = None,
-      columnNames = Some(Vector("time", "mean", "variance") ++ Vector.fill(n+(if (config.getBoolean("output.make_video")){1} else {0}))("r").zipWithIndex.map(t => t._1 + t._2.toString))
+      columnNames = Some(Vector("time", "mean", "variance") ++ Vector.fill(results.size)("r").zipWithIndex.map(t => t._1 + t._2.toString))
     )
 
     // computes statistics on travel times and writes them
@@ -276,7 +277,7 @@ object RunSimulation extends App {
   // ******************************************************************************************
 
   if (config.getBoolean("output.write_tt_4_transform")) {
-    results.flatten(_._1).computeTT4TRANSFORM(0.0.to(100.0).by(config.getDouble("output.write_tt_4_transform_quantile_interval")), simulationStartTime, simulationEndTime, config.getString("files.ped_walking_time_dist"))
+    results.flatten(_._1).computeTT4TRANSFORM(0.0.to(100.0).by(config.getDouble("output.write_tt_4_transform_quantile_interval")), simulationStartTime, simulationEndTime, config.getString("output.output_prefix") + "_" + config.getString("files.ped_walking_time_dist"))
   }
 
 }

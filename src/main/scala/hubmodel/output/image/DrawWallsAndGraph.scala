@@ -4,7 +4,6 @@ import java.awt.image.BufferedImage
 import java.awt.{Color, Graphics2D}
 import javax.imageio.ImageIO
 
-import breeze.linalg.min
 import hubmodel.VertexRectangle
 import hubmodel.output._
 import hubmodel.supply.Wall
@@ -13,10 +12,10 @@ class DrawWallsAndGraph(walls: Vector[Wall], edges: Vector[(VertexRectangle, Ver
 
   val wallBounds: (Double, Double, Double, Double) = getBounds(walls)
   val graphBounds: (Double, Double, Double, Double) = getBounds(edges)
-  val trueXMin = min(wallBounds._1, graphBounds._1)
-  val trueXMax = min(wallBounds._3, graphBounds._3)
-  val trueYMin = min(wallBounds._2, graphBounds._2)
-  val trueYMax = min(wallBounds._4, graphBounds._4)
+  val trueXMin: Double = math.min(wallBounds._1, graphBounds._1)
+  val trueXMax: Double = math.max(wallBounds._3, graphBounds._3)
+  val trueYMin: Double = math.min(wallBounds._2, graphBounds._2)
+  val trueYMax: Double = math.max(wallBounds._4, graphBounds._4)
 
   val IMAGE_HEIGHT: Int = computeImageHeightPixels((trueXMin, trueYMin, trueXMax, trueYMax))
 
