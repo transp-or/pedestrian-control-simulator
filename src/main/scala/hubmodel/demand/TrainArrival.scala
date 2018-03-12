@@ -18,7 +18,7 @@ class TrainArrival(train: Train, sim: SFGraphSimulator) extends Action {
   override def execute(): Unit = {
     sim.eventLogger.trace("time=" + sim.currentTime + ": train arrival")
 
-    flows.foreach(flow => sim.insertEventWithZeroDelay{
+    flows.foreach(flow => sim.insertEventWithZeroDelay {
       new PedestrianGeneration(flow._1, flow._2, new NewTime(0.0), math.round(flow._3).toInt, sim)
     })
   }

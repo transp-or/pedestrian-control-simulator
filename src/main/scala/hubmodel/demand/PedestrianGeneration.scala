@@ -22,7 +22,7 @@ class PedestrianGeneration(o: VertexRectangle, d: VertexRectangle, start: NewTim
     *
     * @param duration     endTime - startTime
     * @param numberPeople number of start times to generate
-    * @return Vector of [[Time]] corresponding to the arrival times inside the zone
+    * @return Vector of [[NewTime]] corresponding to the arrival times inside the zone
     */
   def poissonProcessIterator(duration: Double, numberPeople: Double): Iterator[NewTime] = {
     val rate: Double = numberPeople / duration
