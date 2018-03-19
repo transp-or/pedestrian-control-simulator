@@ -1,8 +1,8 @@
-= DefinitIon of the supply =
+# DefinitIon of the supply #
 The infrastructure must be specified in two files, the first contains the collection of walls and the second
 contains the specification of the graph used for route choice with the management strategy specifications.
 
-== Wall specification file ==
+## Wall specification file ##
 A wall is described as a line. Each wall also contains a comment field, which is only used for debugging and for
 plotting. The last property of each wall is the "type" field, indicating whether the wall is part of the outer
 shell or not. This leads to the following:
@@ -11,12 +11,12 @@ shell or not. This leads to the following:
 - y1: y coordinate of start of wall
 - x2: x coordinate of end of wall
 - y2: y coordinate of end of wall
-- type: indicator whethe the wall belongs to the outer shell or not (0 = true, 1 = false)
+- type: indicator whethe the wall belongs to the outer shell or not (0 # true, 1 # false)
 
-'''Example'''
+**Example**
 Two other elements are passed in the JSON file: the ''location'' and and ''sublocation'' fields. These are used
 mainly for readibility reasons. Below is a full example:
-{{{
+```json
 {
 "location": "lausanne",
 "sublocation": "PIW",
@@ -45,9 +45,9 @@ mainly for readibility reasons. Below is a full example:
 }
 ]
 }
-}}}
+```
 
-==Graph specification file==
+##Graph specification file##
 The graph is composed of two collections. The first is the collection of zones, and the second is the collection
 of connections between the zones. Alongside the graph specification, the possible management strategies are also
 defined. These can be empty if no management strategy is passed. The zones are defined as follows:
@@ -70,10 +70,10 @@ The connectivity specification is:
 The connections are directed, hence there must be as many connection objects as nodes. In this context, the terms
 "node" and "zone" can be used in an interchangable manner.
 
-''' Example'''
+** Example**
 As for the walls file the ''location'' and and ''sublocation'' fields must exist. They are not used by the
 simulation but must still be present.
-{{{
+```json
 {
 "location": "lausanne",
 "sublocation": "test",
@@ -133,14 +133,14 @@ simulation but must still be present.
 "binary_gates": [],
 "flow_separators": []
 }
-}}}
+```
 
-= Definition of the demand =
+# Definition of the demand #
 As the objective is to simulate transportation hubs (excluding airports) the pedestrian demand can come from two
 distinct origins: public transport vehicles and walking pedestrians. This data is passed as JSON files to the
 simulator.
 
-== Timetable specification ==
+## Timetable specification ##
 The arrival time, departure time, platform and train specifictions are provided in the timetable file. The fields
 which must be completed are the following:
 - id: unique identifier of the vehicle
@@ -155,8 +155,8 @@ can be freely combined. The "type" field can be used to identify classes of vehi
 included in the timetable specification file: the track to zone mapping. This "map" links the platform to a
 set of zones where the passengers will disembark/embark.
 
-''' Example'''
-{{{
+** Example**
+```json
 
 "location": "lausanne",
 "trains": [
@@ -186,13 +186,13 @@ set of zones where the passengers will disembark/embark.
 }
 ]
 }
-}}}
+```
 
-== Pedestrian flow specification ==
+## Pedestrian flow specification ##
 The pedestrian flows between the different public tranports vehicles and places in the transportation hub
 can be specified int wo ways, which can be freely combined. The first is a flow-based specification and the second
 is a disaggregate approach.
-=== Flow-based specification ===
+### Flow-based specification ###
 There are two types of flows: flows originating from public transport vehicles and flows originating from a "fixed
 location". When passengers disembark from a vehicle, they immediately move towards their destination. Hence the
 time at which they enter the system depends on the arrival time of the vehicle inside the hub. The fields whch
@@ -209,9 +209,9 @@ they arrive independently from one another. They tend to follow a Poisosn proces
  - end: end time of the flow
  - flow: number of pedestrians to be generated in the interval
 
-'''Example'''
+**Example**
 Below a sample file is available:
-{{{
+```json
 {
 "location": "lausanne",
 "PTflows": [
@@ -245,9 +245,9 @@ Below a sample file is available:
 }
 ]
 }
-}}}
+```
 
-=== Disaggregate demand ===
+### Disaggregate demand ###
 The disaggregate pedestrian input can also be used. This has been specifically developped for transfering data
 between the urban model and hub model in the context of the TRANS-FORM project. This data is basically a disaggregate
 OD matrix. Each entry corresponds to a pedestrian, and the fields to be filled are the following:
@@ -256,10 +256,10 @@ OD matrix. Each entry corresponds to a pedestrian, and the fields to be filled a
 - D: destintation zone of the pedestrian
 - entryTime: time at which the pedestrian will enter the simulation environment
 
-'''Example'''
+**Example**
 The data is stored using JSON. Below is a sample. In this sample the exitTime is provided, but this is not required
 for running the simulations.
-{{{
+```json
 [
 { "ID":"1", "O":"1", "D":"6", "entryTime": 25200.336, "exitTime":25223.771},
 { "ID":"3", "O":"7", "D":"6", "entryTime": 25201.366, "exitTime":25271.026},
@@ -270,6 +270,6 @@ for running the simulations.
 { "ID":"10", "O":"12", "D":"6", "entryTime": 25205.565, "exitTime":25275.628},
 { "ID":"11", "O":"12", "D":"7", "entryTime": 25207.035, "exitTime":25246.846}
 ]
-}}}
+```
 
  
