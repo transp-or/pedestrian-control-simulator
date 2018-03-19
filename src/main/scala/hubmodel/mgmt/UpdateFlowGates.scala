@@ -48,7 +48,7 @@ class UpdateFlowGates(sim: SFGraphSimulator) extends Action {
 
   override def execute(): Unit = {
     sim.eventLogger.trace("time: " + sim.currentTime + ": updating flow gates")
-    sim.graph.flowGates.foreach(fg => fg.flowRate = {
+    sim.controlDevices.flowGates.foreach(fg => fg.flowRate = {
       if (sim.densityHistory.last._2 >= densityThreshold) flowMin
       else flowMax * fg.width * computeCoefficient(sim.densityHistory.last._2)
     })

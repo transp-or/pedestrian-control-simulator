@@ -6,7 +6,7 @@ import myscala.math.vector.Vector2D
 
 object PlotJapeneseFigure extends App {
 
-  class CellSpeedDev(c: NewBetterPosition2D, s: Double, v: Double, range: Double) extends Square(c, s) with MyCellTrait{
+  class CellSpeedDev(c: NewBetterPosition2D, s: Double, v: Double, range: Double) extends Square(c, s) with MyCellTrait {
 
     val scalarToShow: Double = v
     val horizontalMaxTextWidth: Double = s
