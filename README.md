@@ -1,3 +1,15 @@
+---
+title: Documentation for the \textit{hub model}
+author: Nicholas Molyneaux
+header-includes: |
+    \usepackage[left=2cm,right=2cm,top=3cm,bottom=2.5cm,headheight=1cm]{geometry}
+    \usepackage{fancyhdr}
+    \pagestyle{fancy}
+    \fancyhead[CO,CE]{Hub model doc}
+    \fancyfoot[CO,CE]{TRANS-FORM}
+    \fancyfoot[LE,RO]{\thepage}
+---
+
 # Introduction #
 # Input data #
 ## Infrastructure specification ##
@@ -8,12 +20,13 @@ contains the specification of the graph used for route choice with the managemen
 A wall is described as a line. Each wall also contains a comment field, which is only used for debugging and for
 plotting. The last property of each wall is the "type" field, indicating whether the wall is part of the outer
 shell or not. This leads to the following:
-- comment: humand-readible information, used for debugging
-- x1: x coordinate of start of wall
-- y1: y coordinate of start of wall
-- x2: x coordinate of end of wall
-- y2: y coordinate of end of wall
-- type: indicator whether the wall belongs to the outer shell or not (0 # true, 1 # false)
+
+* comment: humand-readible information, used for debugging
+* x1: x coordinate of start of wall
+* y1: y coordinate of start of wall
+* x2: x coordinate of end of wall
+* y2: y coordinate of end of wall
+* type: indicator whether the wall belongs to the outer shell or not (0 for true, 1 for false)
 
 **Example**
 Two other elements are passed in the JSON file: the ''location'' and and ''sublocation'' fields. These are used
@@ -53,27 +66,30 @@ mainly for readibility reasons. Below is a full example:
 The graph is composed of two collections. The first is the collection of zones, and the second is the collection
 of connections between the zones. Alongside the graph specification, the possible management strategies are also
 defined. These can be empty if no management strategy is passed. The zones are defined as follows:
-- name: unique name of the zone
-- x: x-coord of center of the zone (obsolete)
-- y: y-coord of center of the zone (obsolete)
-- x1: x-coord of bottom left
-- y1: y-coord of bottom left
-- x2: x-coord of bottom right
-- y2: y-coord of bottom right
-- x3: x-coord of top right
-- y3: y-coord of top right
-- x4: x-coord of top left
-- y4: y-coord of top left
+ 
+* name: unique name of the zone
+* x: x-coord of center of the zone (obsolete)
+* y: y-coord of center of the zone (obsolete)
+* x1: x-coord of bottom left
+* y1: y-coord of bottom left
+* x2: x-coord of bottom right
+* y2: y-coord of bottom right
+* x3: x-coord of top right
+* y3: y-coord of top right
+* x4: x-coord of top left
+* y4: y-coord of top left
 
 The order of these corners __MUST__ be respected.
 
 The connectivity specification is:
-- node: name of the current node
-- connectivity: connections from the current node to the nodes listed here (directed)
+ 
+ * node: name of the current node
+ * connectivity: connections from the current node to the nodes listed here (directed)
+ 
 The connections are directed, hence there must be as many connection objects as nodes. In this context, the terms
 "node" and "zone" can be used in an interchangable manner.
 
-** Example**
+**Example**
 As for the walls file the ''location'' and and ''sublocation'' fields must exist. They are not used by the
 simulation but must still be present.
 ```json
@@ -146,19 +162,20 @@ simulator.
 ### Timetable specification ###
 The arrival time, departure time, platform and train specifictions are provided in the timetable file. The fields
 which must be completed are the following:
-- id: unique identifier of the vehicle
-- type: type of the vehicle
-- track: track/platform/shelter where the vehicle arrives
-- arrival-time: arrival time of the vehicle (time of day)
-- departure-time: departure time of the vehicle (time of day)
-- capacity: maximum capacity of the vehicle
+ 
+ * id: unique identifier of the vehicle
+ * type: type of the vehicle
+ * track: track/platform/shelter where the vehicle arrives
+ * arrival-time: arrival time of the vehicle (time of day)
+ * departure-time: departure time of the vehicle (time of day)
+ * capacity: maximum capacity of the vehicle
 
 Although the terminolgy refers to train, any type of public transport vehicle can be used. Buses, trams and trains
 can be freely combined. The "type" field can be used to identify classes of vehicles. A second element must be
 included in the timetable specification file: the track to zone mapping. This "map" links the platform to a
 set of zones where the passengers will disembark/embark.
 
-** Example**
+**Example**
 ```json
 {
   "location": "lausanne",
@@ -195,22 +212,25 @@ set of zones where the passengers will disembark/embark.
 The pedestrian flows between the different public tranports vehicles and places in the transportation hub
 can be specified int wo ways, which can be freely combined. The first is a flow-based specification and the second
 is a disaggregate approach.
+
 #### Flow-based specification ####
 There are two types of flows: flows originating from public transport vehicles and flows originating from a "fixed
 location". When passengers disembark from a vehicle, they immediately move towards their destination. Hence the
 time at which they enter the system depends on the arrival time of the vehicle inside the hub. The fields whch
 define these flows are the following:
-- origin: id of the originating vehicle
-- destination: id of the destination node or vehicle
-- flow: number of pedestrians walking this trip
+ 
+ * origin: id of the originating vehicle
+ * destination: id of the destination node or vehicle
+ * flow: number of pedestrians walking this trip
 
 Pedestrians arriving from a "fixed" location do not depend on some sort of scheduled transportation system, hence
 they arrive independently from one another. They tend to follow a Poisosn process. The requeried fields are:
- - origin: origin node of the flow
- - destination: destination node or vehicle of the flow
- - start: start time of the flow
- - end: end time of the flow
- - flow: number of pedestrians to be generated in the interval
+ 
+ * origin: origin node of the flow
+ * destination: destination node or vehicle of the flow
+ * start: start time of the flow
+ * end: end time of the flow
+ * flow: number of pedestrians to be generated in the interval
 
 **Example**
 Below a sample file is available:
@@ -254,10 +274,11 @@ Below a sample file is available:
 The disaggregate pedestrian input can also be used. This has been specifically developped for transfering data
 between the urban model and hub model in the context of the TRANS-FORM project. This data is basically a disaggregate
 OD matrix. Each entry corresponds to a pedestrian, and the fields to be filled are the following:
-- ID: unique ID of the pedestrian
-- O: origin zone of the pedestrian
-- D: destintation zone of the pedestrian
-- entryTime: time at which the pedestrian will enter the simulation environment
+ 
+ * ID: unique ID of the pedestrian
+ * O: origin zone of the pedestrian
+ * D: destintation zone of the pedestrian
+ * entryTime: time at which the pedestrian will enter the simulation environment
 
 **Example**
 The data is stored using JSON. Below is a sample. In this sample the exitTime is provided, but this is not required
