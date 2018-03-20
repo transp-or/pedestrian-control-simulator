@@ -5,7 +5,7 @@ import play.api.libs.json.{JsError, JsSuccess, JsValue, Json}
 
 import scala.io.BufferedSource
 
-class ReadDisaggregateDemand(fileName: String) {
+class ReadDisaggDemand(fileName: String) {
 
   private val _pedestrians: Vector[PedestrianJSON] = {
 

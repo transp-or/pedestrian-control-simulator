@@ -1,4 +1,4 @@
-package org.kabeja;
+package hubmodel.input.ProcessDXF;
 
 import org.kabeja.dxf.*;
 
@@ -11,12 +11,49 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 
+/**
+ * Parser for CAD files for the hub model. Extends the {@link DXFReader} class with methods for reading specific
+ * layers and writing the contents in the JSON format for the hub model.
+ *
+ * ==Usage==
+ * {{{
+ *            String fileName = "hub_test.dxf";
+ *            String wallLayerID = "walls";
+ *            String zoneLayerID = "zones";
+ *            String graphLayerID = "graph";
+ *
+ *            DXFReaderHubModel dxf = new DXFReaderHubModel(fileName, wallLayerID, zoneLayerID, graphLayerID);
+ *            dxf.writeWallsToFile("walls-test.json");
+ *            dxf.writeGraphToFile("graph-test.json");
+ * }}}
+ *
+ */
 public class DXFReaderHubModel extends DXFReader {
 
+    /**
+     * Layer containing the walls. Set on construction.
+     */
     private DXFLayer wallLayer;
+
+    /**
+     * Layer containing the zones. Set on construction.
+     */
     private DXFLayer zoneLayer;
+
+    /**
+     * Layer containing the graph. Set on construction.
+     */
     private DXFLayer graphLayer;
 
+    /**
+     * Constructor. The file name with the names of the three layers must be passed as arguments. On construction,
+     * the layers are set.
+     *
+     * @param fileName String with the name of the DXF file.
+     * @param wallLayerName String with the name of the wall layer.
+     * @param zoneLayerName String with the name of the zone layer.
+     * @param graphLayerName String with the name of the grpah layer.
+     */
     public DXFReaderHubModel(String fileName, String wallLayerName, String zoneLayerName, String graphLayerName) {
         super(fileName);
 
@@ -25,6 +62,16 @@ public class DXFReaderHubModel extends DXFReader {
         this.graphLayer = this.getDXFDocument().getDXFLayer(graphLayerName);
     }
 
+    /**
+     * Collects all the walls on the specific layer, then writes them to JSON text file.
+     *
+     * Three type of objects are scanned: {@link DXFConstants.ENTITY_TYPE_LWPOLYLINE},
+     * {@link DXFConstants.ENTITY_TYPE_POLYLINE} and {@link DXFConstants.ENTITY_TYPE_LINE}. The polylines are then split
+     * into individual {@link Wall}s, while the plain lines are directly converted to {@link Wall}. All the walls are
+     * then written as JSON to the file passed as argument.
+     *
+     * @param fileName
+     */
     public void writeWallsToFile(String fileName) {
 
         // Reads all entities which can be used to create walls.
@@ -60,27 +107,49 @@ public class DXFReaderHubModel extends DXFReader {
             }
         }
 
+        // initilize string
         String str = "{\n" +
                 "  \"location\": \"lausanne\",\n" +
                 "  \"sublocation\": \"PIW\",\n" +
                 "  \"walls\": [";
 
+        // appends all wall objects
         for (int i =0; i < walls.size(); i++) {
             str += walls.get(i).toJSON();
             if (i != walls.size()-1) {
                 str += ",";
             }
         }
+
+        // closes JSON
         str += "]}";
 
+        // Converts the string to an Array for writing
         ArrayList<String> strA = new ArrayList<String>();
         strA.add(str);
 
+        // Writes file
         Path file = Paths.get(fileName);
         try { Files.write(file, strA , Charset.forName("UTF-8")); }
         catch (IOException e) {e.printStackTrace();}
     }
 
+    /**
+     * Collects and combines the zones and graph before writing them to a file.
+     *
+     * On the zone layer, {@link DXFConstants.ENTITY_TYPE_LWPOLYLINE} and {@link DXFConstants.ENTITY_TYPE_POLYLINE}
+     * objects are collected and {@link Zone} objects are built from them. Secondly, all
+     * {@link DXFConstants.ENTITY_TYPE_MTEXT} objects are also collectd and used to name the nodes. The matching scheme
+     * is the following: for each {@link DXFConstants.ENTITY_TYPE_MTEXT}, associate the text to the zone in which it
+     * is located.
+     *
+     * On the graph layer, only {@link DXFConstants.ENTITY_TYPE_LINE} objects are searched for. Each of these is
+     * converted to an {@link Edge} object. Once this is done, {@link Connections} objects are built from them.
+     *
+     * Finally, the zones and connections are written as JSON.
+     *
+     * @param fileName
+     */
     public void writeGraphToFile(String fileName) {
 
         List<DXFPolyline> lwpl_z = this.zoneLayer.getDXFEntities(DXFConstants.ENTITY_TYPE_LWPOLYLINE);

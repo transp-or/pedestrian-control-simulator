@@ -4,7 +4,7 @@ import hubmodel.{Action, NewTime, SFGraphSimulator, VertexRectangle}
 
 class TrainArrival(train: Train, sim: SFGraphSimulator) extends Action {
 
-  val alightingFlows: Iterable[PedestrianFlow_New_Parent] = sim.pedestrianFlows.flowsPTInducedNew.filter({
+  val alightingFlows: Iterable[PedestrianFlow_New_Parent] = sim.pedestrianFlows.flowsPTInduced.filter({
     case f: PedestrianFlowPT_New => !sim.timeTable.isOnSamePlatform(f.O, f.D)
     case _ => true
   })

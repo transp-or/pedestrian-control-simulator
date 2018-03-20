@@ -9,6 +9,7 @@ import java.util.concurrent.ThreadLocalRandom
 
 import ch.qos.logback.classic.{Level, Logger}
 import hubmodel.NewTimeNumeric.mkOrderingOps
+import hubmodel.demand.CreatePedestrian
 import hubmodel.tools.Log
 import myscala.math.vector.{Vector2D, norm}
 import myscala.math.algo.MTree

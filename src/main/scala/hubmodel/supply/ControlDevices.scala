@@ -1,14 +1,10 @@
 package hubmodel.supply
 
-import breeze.linalg.DenseVector
 import hubmodel.VertexRectangle
 import hubmodel.tools.ControlDevicesException
-import play.api.libs.json.{JsError, JsSuccess, JsValue, Json}
-import myscala.math.vector.Vector2D
 
-import scala.io.BufferedSource
 
-class ReadControlDevices(graph: GraphReader) {
+class ControlDevices(graph: GraphReader) {
 
   val (monitoredAreas, amws, flowGates, binaryGates): (Iterable[VertexRectangle], Iterable[MovingWalkway], Iterable[FlowGate], Iterable[BinaryGate]) = {
     (
@@ -18,11 +14,11 @@ class ReadControlDevices(graph: GraphReader) {
       graph.binaryGates)
   }
 
-  if (flowGates.nonEmpty != monitoredAreas.nonEmpty) {
-    throw new ControlDevicesException("flow gates present but no monitored area, or vice-versa")
+  if (flowGates.nonEmpty && monitoredAreas.isEmpty) {
+    throw new ControlDevicesException("flow gates present but no monitored area")
   }
 
-  if (binaryGates.nonEmpty != monitoredAreas.nonEmpty) {
+  if (binaryGates.nonEmpty && monitoredAreas.isEmpty) {
     throw new ControlDevicesException("binary gates present but no monitored area, or vice-versa")
   }
 

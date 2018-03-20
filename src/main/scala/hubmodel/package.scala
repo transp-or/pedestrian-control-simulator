@@ -160,6 +160,8 @@ package object hubmodel {
     }
 
     override def toString: String = this.name
+
+    def nameCompare(n: String): Boolean = this.name == n
   }
 
 

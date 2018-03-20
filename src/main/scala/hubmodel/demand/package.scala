@@ -149,37 +149,26 @@ package hubmodel {
       perm.map(p => (p._1, p._2, totalFlow / perm.size)) // split fractions over all permutations. Not realistic but a start
     }
 
-    // assumes passenger use infrastructure to capacity
 
+    /* ----------------------------------------------------------------------------------
+                              DISAGRGEGATE PEDESTRIAN DEMAND
+    -----------------------------------------------------------------------------------*/
 
-    /*def timeTable2Inflow(infra: InfraODModel, trainSchedule: TrainTimeTable, trainPassengers: Vector[PassengerFlow]): Vector[PedestrianFlow] = {
-      def connectionsToSplitFractionsHelper(arrNodes: Iterable[NodeID], depNodes: Iterable[NodeID]): Vector[(NodeID, NodeID, Double)] = {
-        val perm = for { // all permutations of two lists of nodes
-          a <- arrNodes
-          b <- depNodes
-          if b != a
-        } yield {(a,b)}
-        perm.map(p => (p._1, p._2, 1.0/perm.size)).toVector // split fractions over all permutations. Not realistic but a start
-      }
+    case class PedestrianJSON(
+                             ID: String,
+                             oZone: String,
+                             dZone: String,
+                             entryTime: Double,
+                             exitTime: Double
+                             )
 
-      /** Vector of required connections extracted from the passenger flows */
-      val requiredConnections: Vector[(TrainID, TrainID)] = trainPassengers.map(p => (p.O, p.D))
-
-      /** Map from connecting trains to corresponding nodes */
-      val connectionsToNodes: Map[(TrainID, TrainID),(Iterable[NodeID], Iterable[NodeID])] = requiredConnections.map(c => c -> (infra.platform2Node(infra.track2platform(trainSchedule.train2Track(c._1))), infra.platform2Node(infra.track2platform(trainSchedule.train2Track(c._2))))).toMap
-
-      /** Train connections to split fractions map */
-      val connectionsToSplitFractions: Map[(TrainID, TrainID),Vector[(NodeID, NodeID, Double)]] = connectionsToNodes.map(c => c._1 -> connectionsToSplitFractionsHelper(c._2._1, c._2._2))
-      println(connectionsToSplitFractions)
-      trainPassengers
-        .filter(PTFlow => !infra.isOnSamePlatform(trainSchedule.train2Track(PTFlow.O), trainSchedule.train2Track(PTFlow.D)))
-        .flatMap(p => {
-        connectionsToSplitFractions(p.O, p.D).map(c =>
-          PedestrianFlow(c._1, c._2, trainSchedule.timeTable(p.O).arr, trainSchedule.timeTable(p.O).arr.plusSeconds(180), p.flow*c._3)
-        ) // very strong assumption: alighting happens in 3 minutes. Need to relax this later on
-      }
-      )
-    }*/
+    implicit val PedestrianJSONReads: Reads[PedestrianJSON] = (
+      (JsPath \ "ID").read[String] and
+        (JsPath \ "O").read[String] and
+        (JsPath \ "D").read[String] and
+        (JsPath \ "entryTime").read[Double] and
+        (JsPath \ "exitTime").read[Double]
+      ) (PedestrianJSON.apply _)
 
     // closing Demand package
   }

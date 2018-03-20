@@ -41,7 +41,8 @@ class PedestrianGeneration(o: VertexRectangle, d: VertexRectangle, start: NewTim
     //poissonProcessIterator(end.value-start.value, numberPeople).foreach(t => {sim.insertEventWithDelayNew(add(start,t))(new CreatePedestrian(o, d, sim))})
     val tinfQueue: PTInducedQueue = sim.PTInducedFlows.getOrElseUpdate(o, new PTInducedQueue(o))
     if (tinfQueue.isEmpty) {
-      sim.insertEventWithDelayNew(new NewTime(-math.log(ThreadLocalRandom.current.nextDouble(0.0, 1.0) / sim.PTInducedFlows(o).rate))){new ReleasePedPTInducedFlow(o, sim)}}
+      sim.insertEventWithDelayNew(new NewTime(-math.log(ThreadLocalRandom.current.nextDouble(0.0, 1.0) / sim.PTInducedFlows(o).rate))){new ReleasePedPTInducedFlow(o, sim)}
+    }
     tinfQueue.appendPeds(Vector.fill(numberPeople){new CreatePedestrian(o,d,sim)})
     //arrivalTimes.
   }

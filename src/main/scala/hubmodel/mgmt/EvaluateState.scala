@@ -19,12 +19,7 @@ import myscala.math.vector.{Vector2D}
   */
 class EvaluateState(sim: SFGraphSimulator) extends Action with Controller {
 
-  /** Method called by the simulation to perform the action. Here, the KPIs are evaluted.
-    *
-    */
-  override def execute(): Unit = {
-    sim.eventLogger.trace("sim-time=" + sim.currentTime + ": state evaluation")
-
+  def computeDensity(): Unit = {
     // computes the number of people inside the zone(s) to control.
     val paxInZone: Int = sim.population.count(ped => isInVertex(sim.criticalArea.head)(ped.currentPositionNew))
     //sim.densityHistory.append((sim.currentTime, paxInZone/sim.criticalArea.head.area))
@@ -36,10 +31,10 @@ class EvaluateState(sim: SFGraphSimulator) extends Action with Controller {
         sim.population.map(p => new Site(p.currentPositionNew.X, p.currentPositionNew.Y)).foreach(stupidList.add)
         voronoi.setSites(stupidList)
         val box: PolygonSimple = new PolygonSimple
-        box.add(sim.criticalArea.head.A.X, sim.criticalArea.head.A.Y) //21.440, 10.720)
-        box.add(sim.criticalArea.head.B.X, sim.criticalArea.head.B.Y) //80.400, 10.720)
-        box.add(sim.criticalArea.head.C.X, sim.criticalArea.head.C.Y) //80.400, 16.800)
-        box.add(sim.criticalArea.head.D.X, sim.criticalArea.head.D.Y) //21.440, 16.800)
+        box.add(sim.criticalArea.head.A.X, sim.criticalArea.head.A.Y)
+        box.add(sim.criticalArea.head.B.X, sim.criticalArea.head.B.Y)
+        box.add(sim.criticalArea.head.C.X, sim.criticalArea.head.C.Y)
+        box.add(sim.criticalArea.head.D.X, sim.criticalArea.head.D.Y)
         voronoi.setClipPoly(box)
         sim.densityHistory.append(
           (sim.currentTime, voronoi.computeDiagram().filter(s => isInVertex(sim.criticalArea.head)(Vector2D(s.x, s.y))).foldLeft(0.0)((acc: Double, n: Site) => acc + 1.0 / (paxInZone * n.getPolygon.getArea)))
@@ -56,9 +51,16 @@ class EvaluateState(sim: SFGraphSimulator) extends Action with Controller {
         (sim.currentTime, 0.0)
       )
     }
+  }
+
+  /** Method called by the simulation to perform the action. Here, the KPIs are evaluted.
+    *
+    */
+  override def execute(): Unit = {
+    sim.eventLogger.trace("sim-time=" + sim.currentTime + ": state evaluation")
+    this.computeDensity()
     sim.eventLogger.trace("sim-time=" + sim.currentTime + ": number people inside critical area: " + sim.densityHistory.last._2)
-    //sim.insertEventWithDelay(0) (new MoveGates)
-    if (sim.useFlowGates) sim.insertEventWithZeroDelay(new PIGateController(sim))
+    if (sim.useControl) sim.insertEventWithZeroDelay(new PIGateController(sim))
     sim.insertEventWithDelayNew(sim.evaluate_dt)(new EvaluateState(sim))
   }
 }

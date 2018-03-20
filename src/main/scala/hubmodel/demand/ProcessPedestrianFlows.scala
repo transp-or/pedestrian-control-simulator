@@ -18,7 +18,7 @@ class ProcessPedestrianFlows(sim: SFGraphSimulator) extends Action {
     */
   override def execute(): Unit = {
     sim.eventLogger.trace("time=" + sim.currentTime + ": inserting pedestrian flows")
-    sim.pedestrianFlows.flowsNew
+    sim.pedestrianFlows.flows
       .foreach(flow => splitFractionsUniform(sim.conceptualNode2GraphNodes(flow.O), sim.conceptualNode2GraphNodes(flow.D), flow.f)
         .foreach(f => {sim.insertEventWithZeroDelay(new PedestrianGenerationOverInterval(
           f._1,

@@ -25,7 +25,7 @@ libraryDependencies ++= Seq(
   "transpor.tools" % "power-voronoi" % "1.0",
   "transpor.molyneaux" %% "scala-custom" % "1.0-SNAPSHOT",
   "transpor.tools" % "dxf-parser" % "1.0"
-  )
+)
 
 resolvers ++= Seq(
   "Typesafe Repo" at "http://repo.typesafe.com/typesafe/releases/"
@@ -44,3 +44,4 @@ distribution := {
   dataFolders.foreach(df => IO.copyDirectory(baseDirectory.value / df, baseDirectory.value / "distribution" / df))
   sourceDirectory.value / "main" / "resources" listFiles() filter (f => f.getAbsolutePath.takeRight(5) == ".conf") foreach (f => IO.copyFile(f, baseDirectory.value / "distribution" / f.getName))
 }
+

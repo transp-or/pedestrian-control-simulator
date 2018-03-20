@@ -1,11 +1,12 @@
 package hubmodel
 
-import hubmodel.demand.{PTInducedQueue, PedestrianFlows, ProcessPedestrianFlows, ProcessTimeTable, TimeTable}
+import hubmodel.demand.{CreatePedestrian, PTInducedQueue, PedestrianFlows, ProcessPedestrianFlows, ProcessTimeTable, TimeTable}
 import hubmodel.mgmt.EvaluateState
 import hubmodel.mvmtmodels._
 import hubmodel.route.UpdateRoutes
-import hubmodel.supply.{NodeID_New, NodeParent, ReadControlDevices, RouteGraph, SocialForceSpace, StartFlowGates, TrainID_New}
+import hubmodel.supply.{ControlDevices, NodeID_New, NodeParent, RouteGraph, SocialForceSpace, StartFlowGates, TrainID_New}
 import hubmodel.tools.RebuildTree
+import hubmodel.NewTimeNumeric.mkOrderingOps
 
 
 class SFGraphSimulator(override val startTime: NewTime,
@@ -17,8 +18,7 @@ class SFGraphSimulator(override val startTime: NewTime,
                        val graph: RouteGraph,
                        val timeTable: TimeTable,
                        val pedestrianFlows: PedestrianFlows,
-                       //val nodeNaming: NodeNaming,
-                       controlDevices: ReadControlDevices) extends PedestrianDES[PedestrianSim](startTime, finalTime) {
+                       val controlDevices: ControlDevices) extends PedestrianDES[PedestrianSim](startTime, finalTime) {
 
   /* checks whether a pedestrian has reach is next destination zone */
   def intermediateDestinationReached: PedestrianSim => Boolean = p => isInVertex(p.nextZone)(p.currentPositionNew)
@@ -28,16 +28,20 @@ class SFGraphSimulator(override val startTime: NewTime,
 
   println("Simulator configuration:")
 
+  /** Indicator wether the density should be measured */
+  val measureDensity: Boolean = controlDevices.monitoredAreas.nonEmpty && controlDevices.amws.isEmpty && controlDevices.binaryGates.isEmpty && controlDevices.flowGates.isEmpty
+  if (measureDensity) {println( " * measuring density")}
+
   /** Indicator whether flow gates are present */
-  val useFlowGates: Boolean = graph.flowGates.nonEmpty && controlDevices.monitoredAreas.nonEmpty
+  val useFlowGates: Boolean = controlDevices.flowGates.nonEmpty
   if (useFlowGates) {println( " * using flow gates")}
 
   /** Indicator whether binary gaets are present */
-  val useBinaryGates: Boolean = graph.binaryGates.nonEmpty && controlDevices.monitoredAreas.nonEmpty
+  val useBinaryGates: Boolean = controlDevices.binaryGates.nonEmpty
   if (useBinaryGates) {println( " * using binary gates")}
 
   /** Using control */
-  val useControl: Boolean = useFlowGates && useBinaryGates
+  val useControl: Boolean = useFlowGates || useBinaryGates
   if (useControl) {println( " * control strategies are used")}
 
   /** Indicator whether an m-tree is used to perform neighbour search */
@@ -71,6 +75,10 @@ class SFGraphSimulator(override val startTime: NewTime,
     }
   }
 
+  def insertMultiplePedestrians(eventCollection: Iterable[(String, String, NewTime)]): Unit = {
+    eventCollection.filter(ec => this.startTime <= ec._3 && ec._3 <= this.finalTime && ec._1 != "-1" && ec._2 != "-1").foreach(ec => this.eventList += new MyEvent(ec._3, new CreatePedestrian(graph.vertexMap(ec._1), graph.vertexMap(ec._2), this)))
+  }
+
 
 
 
@@ -82,6 +90,7 @@ class SFGraphSimulator(override val startTime: NewTime,
       sim.insertEventWithZeroDelay(new UpdateRoutes(sim))
       sim.insertEventWithZeroDelay(new NOMADOriginalModel(sim))
       if (sim.useControl) sim.insertEventWithZeroDelay(new EvaluateState(sim))
+      else if (sim.measureDensity && !sim.useControl) sim.insertEventWithZeroDelay(new EvaluateState(sim))
       if (sim.useFlowGates) sim.insertEventWithZeroDelay(new StartFlowGates(sim))
       if (sim.useTreeForNeighbourSearch) sim.insertEventWithDelayNew(new NewTime(0.0))(new RebuildTree(sim))
     }

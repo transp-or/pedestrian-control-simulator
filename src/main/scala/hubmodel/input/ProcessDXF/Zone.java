@@ -1,21 +1,47 @@
-package org.kabeja;
+package hubmodel.input.ProcessDXF;
 
 import org.kabeja.dxf.helpers.Point;
 
 import java.awt.geom.Path2D;
 
-public class Zone {
-    Point a,b,c,d;
+/**
+ * Representation of a zone in the CAD file. These zones are used by the route choice model for computing the route
+ * of the pedestrians. The zones must be orthogonal rectangles for th ehub model (for the sake of simplicity).
+ */
+class Zone {
+
+    /**
+     * Corners of the zone. Must be a rectangle for the hub model.
+     */
+    private Point a,b,c,d;
+
+    /**
+     * As the question "is a point inside me ?" needs to be answered, the Path2D object is used.
+     */
     Path2D.Double polygon;
+
+    /**
+     * name of the zone
+     */
     String name;
 
-    // constructor
-    public Zone(Point a, Point b, Point c, Point d) {
+    /**
+     * Constructor. On creation, the Path2D object is created so that the assignment of the names can be performed.
+     *
+     * @param a a corner
+     * @param b a corner
+     * @param c a corner
+     * @param d a corner
+     */
+    Zone(Point a, Point b, Point c, Point d) {
+
+        // sets the four corner
         this.a = a;
         this.b = b;
         this.c = c;
         this.d = d;
 
+        // builds the Path2D object
         polygon = new Path2D.Double();
         polygon.moveTo(a.getX(), a.getY());
         polygon.lineTo(b.getX(), b.getY());
@@ -24,12 +50,26 @@ public class Zone {
         polygon.lineTo(a.getX(), a.getY());
     }
 
-    @Override
-    public String toString() {
-        return "[" + this.name + ", (" + a.getX() + ", " + a.getY() + "), ("  + b.getX() + ", " + b.getY() + "), (" + c.getX() + ", " + c.getY() + "), (" + d.getX() + ", " + d.getY() + ")]";
-    }
 
-    public String toJSON() {
+    /**
+     * Converts this object to JSON format for the hub model. Example:
+     *     {
+     *     "name": "a",
+     *     "x": 0.0,
+     *     "y": 0.0,
+     *     "x1": 47.71234866828081,
+     *     "y1": 247.8312348668281,
+     *     "x2": 47.71234866828078,
+     *     "y2": 188.6055690072639,
+     *     "x3": 113.466828087167,
+     *     "y3": 188.6055690072639,
+     *     "x4": 113.466828087167,
+     *     "y4": 247.8312348668281
+     *     }
+     *
+     * @return String with the object as JSON
+     */
+    String toJSON() {
         return "{" +
                 "\"name\": \"" + this.name.replace("{", "").replace("}", "") + "\"," +
                 "\"x\":" + 0.0 + "," +

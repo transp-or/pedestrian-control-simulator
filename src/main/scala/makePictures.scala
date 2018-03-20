@@ -40,7 +40,7 @@ object makePictures extends App {
   parser.parse(args, Config()) match {
 
     case Some(config) =>
-      val infraGraph = new GraphReader(config.graph.toString)
+      val infraGraph = new GraphReader(config.graph.toString, false, false, false, false)
       val parserCont = new ContinuousSpaceReader(config.walls.toString)
       val infraSF = parserCont.continuousSpace
 

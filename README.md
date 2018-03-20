@@ -1,4 +1,7 @@
----
+<!---
+uncomment the following section, by removing the <!> (but keep ---) to create pdf using pandoc.
+--->
+<!---
 title: Documentation for the \textit{hub model}
 author: Nicholas Molyneaux
 header-includes: |
@@ -8,10 +11,24 @@ header-includes: |
     \fancyhead[CO,CE]{Hub model doc}
     \fancyfoot[CO,CE]{TRANS-FORM}
     \fancyfoot[LE,RO]{\thepage}
----
+--->
 
 # Introduction #
+Welcome to the hub-model simulator ! This project is conducted within the scope of the TRANS-FORM project and a PhD
+thesis. The specification of the input formats for running the simulation and information on how to run the simulation
+can be found below. At this stage, a very brief summray of the key steps is provided:
+
+1. install scala and sbt
+2. download and publish locally the tools repository from https://github.com/NicholasMolyneaux/tools
+3. download and compile this project
+4. write the configuration file
+5. create the input files (infrastructure and demand)
+6. run the simulation
+
 # Input data #
+The input data is composed of two categories of files: the infrastructure specification and the deman specification.
+Detailed descriptions and examples of all of these files can be found in the following subsections.
+
 ## Infrastructure specification ##
 The infrastructure must be specified in two files, the first contains the collection of walls and the second
 contains the specification of the graph used for route choice with the management strategy specifications.
@@ -296,7 +313,63 @@ for running the simulations.
 ]
 ```
 # Running the simulation #
+The hub simulator is coded in Scala (https://www.scala-lang.org/) and the compilation/execution is managed by
+sbt (https://www.scala-sbt.org/). This combination makes the sharing of the code convient and the integration of packages
+simple thanks to the large database available at Maven (https://mvnrepository.com/). Therefore to be able to compile the
+hub-model one needs to install **scala** and **sbt**. 
 ## Dependencies ##
+The code depends on multiple mutliples, most of which can be automatically downloaded from maven thanks to sbt. There
+are a few libraries which have been developped in-house, meaning they cannot be downloaded automatically from maven. 
+These libraries are available on github (https://github.com/NicholasMolyneaux/tools). They can be compiled and packaged
+locally thanks to sbt as well.
+```sbtshell
+libraryDependencies ++= Seq(
+  "com.typesafe.play" %% "play-json" % "2.6.5",
+  "org.scalanlp" %% "breeze" % "0.13",
+  "org.scalanlp" %% "breeze-natives" % "0.13",
+  "org.jgrapht" % "jgrapht-core" % "1.0.1",
+  "com.github.scopt" %% "scopt" % "3.6.0",
+  "org.jcodec" % "jcodec-javase" % "0.2.0",
+  "com.typesafe" % "config" % "1.3.1",
+  "ch.qos.logback" % "logback-classic" % "1.2.3",
+  "com.typesafe.scala-logging" %% "scala-logging" % "3.7.2",
+  "org.scalactic" %% "scalactic" % "3.0.1",
+  "transpor.tools" % "power-voronoi" % "1.0",
+  "transpor.molyneaux" %% "scala-custom" % "1.0-SNAPSHOT",
+  "transpor.tools" % "dxf-parser" % "1.0"
+)
+
+resolvers ++= Seq(
+  "Typesafe Repo" at "http://repo.typesafe.com/typesafe/releases/"
+)
+```
+
 ## Configuration file ##
+In order to configure the simulations, a config file is used. This means the code doesn't have to be re-compiled for
+different scenarios. The library used for parsing the config file can be found here (https://github.com/lightbend/config).
+It is automatically included thanks to the build file used by sbt. The syntax is that of "HOCON" 
+(https://github.com/lightbend/config/blob/master/HOCON.md), a cleaned version of JSON. This configuration file must be
+ passed as a command line argument to the program. There are five main categories, each of which have multiple parameters: 
+
+* files: location of input files
+* sim: simulation parameters
+* output: selection of outputs to create
+* execution: parameters regarding the parallel execution
+* results-analysis: processing of the results
+
+The configuration file must be located in the following folder so that sbt can find it.
+```
+src/main/resources/
+```
 ## Execution ##
+The suggest way to run the simulations is to use sbt. This way, only the configuration needs to be passed to the program.
+Once running sbt, one needs to run the following command:
+```sbtshell
+run --conf configuration-file.conf
+```
+Naturally, the name of the configuration file can be changed. The outputs are placed in the same folder as the build.sbt
+file. So make sure that mulitple simulations have a different prefix (one of the parameters in the config file) to avoid
+deleting previous results.
+
+
  

@@ -193,7 +193,9 @@ case class PedestrianFlowPT_New(override val O: TrainID_New, override val D: Nod
 
 
 
-class PedestrianFlows(file: String, timeTable: TimeTable) {
+class PedestrianFlows(file: String,
+                      timeTable: TimeTable,
+                      useFlows: Boolean) {
   private val _pedestrianFlowData: ODFlowData = {
     val source: BufferedSource = scala.io.Source.fromFile(file)
     val input: JsValue = Json.parse(try source.mkString finally source.close)
@@ -204,20 +206,19 @@ class PedestrianFlows(file: String, timeTable: TimeTable) {
     }
   }
 
-  @deprecated
-  val flows: Vector[PedestrianFlow] = _pedestrianFlowData.flows
-
-  @deprecated
-  val PTflows: Vector[PTFlow] = _pedestrianFlowData.PTflows
-
-  val flowsNew: Iterable[PedestrianFlow_New] =
+  val flows: Iterable[PedestrianFlow_New] = if (useFlows) {
     _pedestrianFlowData.flows.map(f => PedestrianFlow_New(NodeID_New(f.O, f.O.toString), NodeID_New(f.D, f.D.toString), f.start, f.end, f.f))
+  } else {
+    Iterable()
+  }
 
-  val flowsPTInducedNew: Iterable[PedestrianFlowPT_New] =
+  val flowsPTInduced: Iterable[PedestrianFlowPT_New] = if (useFlows) {
     _pedestrianFlowData.PTflows.map(f => {
       PedestrianFlowPT_New(f.origin, f.destination, f.f)
     })
-
+  } else {
+    Iterable()
+  }
 }
 
 

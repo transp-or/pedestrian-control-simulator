@@ -5,4 +5,6 @@ package hubmodel.mgmt
   */
 trait Controller {
 
+  def computeDensity(): Unit
+
 }

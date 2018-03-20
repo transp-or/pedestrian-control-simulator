@@ -1,5 +1,39 @@
 {
   "location": "lausanne",
+  "trains": [
+    {
+      "id": "12217",
+      "type": "S21",
+      "track": 3,
+      "arrival-time": "07:05:00",
+      "departure-time": "07:07:00",
+      "capacity": 515
+    },
+    {
+      "id": "12218",
+      "type": "S2",
+      "track": 4,
+      "arrival-time": "07:06:00",
+      "departure-time": "07:08:00",
+      "capacity": 517
+    },
+    {
+      "id": "12317",
+      "type": "S3",
+      "track": 5,
+      "arrival-time": "07:05:00",
+      "departure-time": "07:07:00",
+      "capacity": 518
+    },
+    {
+      "id": "12318",
+      "type": "S3",
+      "track": 6,
+      "arrival-time": "07:04:00",
+      "departure-time": "07:08:00",
+      "capacity": 514
+    }
+  ],
   "track2nodes": [
     {
       "track": 1,
@@ -56,40 +90,6 @@
         "2",
         "4"
       ]
-    }
-  ],
-  "trains": [
-    {
-      "id": "12217",
-      "type": "S21",
-      "track": 3,
-      "arrival-time": "07:05:00",
-      "departure-time": "07:07:00",
-      "capacity": 515
-    },
-    {
-      "id": "12218",
-      "type": "S2",
-      "track": 4,
-      "arrival-time": "07:06:00",
-      "departure-time": "07:08:00",
-      "capacity": 517
-    },
-    {
-      "id": "12317",
-      "type": "S3",
-      "track": 5,
-      "arrival-time": "07:05:00",
-      "departure-time": "07:07:00",
-      "capacity": 518
-    },
-    {
-      "id": "12318",
-      "type": "S3",
-      "track": 6,
-      "arrival-time": "07:04:00",
-      "departure-time": "07:08:00",
-      "capacity": 514
     }
   ]
 }
