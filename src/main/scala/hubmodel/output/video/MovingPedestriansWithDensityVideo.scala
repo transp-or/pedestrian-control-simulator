@@ -61,7 +61,7 @@ class MovingPedestriansWithDensityVideo(outputFile: String,
 
   /** Function which returns an [[Ellipse2D]] to draw at a specific location
     *
-    * @return Function taing a [[Position]] and returning an [[Ellipse2D]] representing a pedestrian at a specific location
+    * @return Function taing a [[NewBetterPosition2D]] and returning an [[Ellipse2D]] representing a pedestrian at a specific location
     */
   def createDot: NewBetterPosition2D => Ellipse2D = createDot((mapHcoord, mapVcoord), dotSize)
 
@@ -136,7 +136,7 @@ class MovingPedestriansWithDensityVideo(outputFile: String,
       gateHistory.head._2
         .filter(!_._2)
         .map(og => (gateCollection(og._1).start, gateCollection(og._1).end))
-        .foreach(coords => gGates.drawLine(mapHcoord(coords._1(0)), mapVcoord(coords._1(1)), mapHcoord(coords._2(0)), mapVcoord(coords._2(1))))
+        .foreach(coords => gGates.drawLine(mapHcoord(coords._1.X), mapVcoord(coords._1.Y), mapHcoord(coords._2.X), mapVcoord(coords._2.Y)))
     }
 
     /** combine images into one */

@@ -2,7 +2,7 @@ package hubmodel.tools
 
 import breeze.linalg.DenseVector
 import breeze.numerics.{cos, pow, sqrt}
-import hubmodel.{NewBetterPosition2D, Position, generateUUID}
+import hubmodel.{NewBetterPosition2D}
 import myscala.math.vector.Vector2D
 
 class Hexagon(val center: NewBetterPosition2D, edgeLength: Double) extends MyCellComputationTrait {

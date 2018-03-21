@@ -62,9 +62,9 @@ class MyEdge(val startVertex: VertexRectangle, val endVertex: VertexRectangle) e
   }
 }
 
-abstract class MyEdgeWithGate(override val startVertex: VertexRectangle, override val endVertex: VertexRectangle, val start: Position, val end: Position, val monitoredArea: String) extends MyEdge(startVertex, endVertex) {
+abstract class MyEdgeWithGate(override val startVertex: VertexRectangle, override val endVertex: VertexRectangle, val start: NewBetterPosition2D, val end: NewBetterPosition2D, val monitoredArea: String) extends MyEdge(startVertex, endVertex) {
 
-  val width: Double = norm(end - start)
+  val width: Double = (end - start).norm
 
   // variable flow rate of the gate [pax/s]
   var flowRate: Double
@@ -121,7 +121,7 @@ abstract class MyEdgeWithGate(override val startVertex: VertexRectangle, overrid
   * @param start       one end of the gate
   * @param end         other end of the gate
   */
-class FlowGate(startVertex: VertexRectangle, endVertex: VertexRectangle, start: Position, end: Position, ma: String) extends MyEdgeWithGate(startVertex, endVertex, start, end, ma) {
+class FlowGate(startVertex: VertexRectangle, endVertex: VertexRectangle, start: NewBetterPosition2D, end: NewBetterPosition2D, ma: String) extends MyEdgeWithGate(startVertex, endVertex, start, end, ma) {
 
   // variable flow rate of the gate [pax/s]
   var flowRate = 0.5
@@ -165,8 +165,8 @@ class FlowGate(startVertex: VertexRectangle, endVertex: VertexRectangle, start: 
   */
 class BinaryGate(o: VertexRectangle,
                  d: VertexRectangle,
-                 start: Position,
-                 end: Position,
+                 start: NewBetterPosition2D,
+                 end: NewBetterPosition2D,
                  ma: String) extends MyEdgeWithGate(o, d, start, end, ma) {
 
 
@@ -254,6 +254,7 @@ class GraphReader(graphSpecificationFile: String,
                   useFlowGates: Boolean,
                   useBinarygates: Boolean,
                   useAMWs: Boolean,
+                  useFlowSep: Boolean,
                   measureDensity: Boolean) extends Infrastructure {
 
   override val location: String = "test"
@@ -269,7 +270,7 @@ class GraphReader(graphSpecificationFile: String,
         val vertexMap: Map[String, VertexRectangle] = v.map(v => v.name -> v).toMap
         val e: Iterable[MyEdge] = s.get.standardConnections.flatMap(c => c.conn.map(neigh => new MyEdge(vertexMap(c.node), vertexMap(neigh))))
         val fg: Iterable[FlowGate] = if (useFlowGates) {
-          s.get.flowGates.map(fg => new FlowGate(vertexMap(fg.o), vertexMap(fg.d), DenseVector(fg.start_pos_x, fg.start_pos_y), DenseVector(fg.end_pos_x, fg.end_pos_y), fg.area))
+          s.get.flowGates.map(fg => new FlowGate(vertexMap(fg.o), vertexMap(fg.d), Vector2D(fg.start_pos_x, fg.start_pos_x), Vector2D(fg.end_pos_x, fg.end_pos_y), fg.area))
         } else {
           Vector()
         }
@@ -279,12 +280,17 @@ class GraphReader(graphSpecificationFile: String,
           Vector()
         }
         val bg: Iterable[BinaryGate] = if (useBinarygates) {
-          s.get.binaryGates.map(bg => new BinaryGate(vertexMap(bg.o), vertexMap(bg.d), DenseVector(bg.s_x, bg.s_y), DenseVector(bg.e_x, bg.e_y), bg.area))
+          s.get.binaryGates.map(bg => new BinaryGate(vertexMap(bg.o), vertexMap(bg.d), Vector2D(bg.s_x, bg.s_y), Vector2D(bg.e_x, bg.e_y), bg.area))
         } else {
           Vector()
         }
         val monitoredAreas: Iterable[VertexRectangle] = if (measureDensity) {
           s.get.controlledAreas.map(ma => VertexRectangle(ma.name, new NewBetterPosition2D(ma.x1, ma.y1), new NewBetterPosition2D(ma.x2, ma.y2), new NewBetterPosition2D(ma.x3, ma.y3), new NewBetterPosition2D(ma.x4, ma.y4)))
+        } else {
+          Vector()
+        }
+        val flowSeparators: Iterable[FlowSeparator] = if (useFlowSep) {
+          s.get.flowSeparators.map(fs => new FlowSeparator())
         } else {
           Vector()
         }

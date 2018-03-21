@@ -4,6 +4,7 @@ package hubmodel {
     * Created by nicholas on 3/6/17.
     */
 
+  import myscala.math.vector.Vector2D
   import play.api.libs.functional.syntax._
   import play.api.libs.json.Reads.{min, minLength}
   import play.api.libs.json._
@@ -61,8 +62,8 @@ package hubmodel {
     -----------------------------------------------------------------------------------*/
 
     case class Doorway(comment: String, x1: Double, y1: Double, x2: Double, y2: Double) {
-      val startPoint: Position = breeze.linalg.DenseVector(x1, y1)
-      val endPoint: Position = breeze.linalg.DenseVector(x2, y2)
+      val startPoint: NewBetterPosition2D = new NewBetterPosition2D(x1, y1)
+      val endPoint: NewBetterPosition2D = new NewBetterPosition2D(x2, y2)
     }
 
     /** Reader for vector for a single Walls
@@ -95,8 +96,8 @@ package hubmodel {
       * @param y2 y coord of second point
       */
     case class Wall(comment: String, x1: Double, y1: Double, x2: Double, y2: Double, wallType: Int) {
-      val startPoint: Position = breeze.linalg.DenseVector(x1, y1)
-      val endPoint: Position = breeze.linalg.DenseVector(x2, y2)
+      val startPoint: NewBetterPosition2D = Vector2D(x1, y1)
+      val endPoint: NewBetterPosition2D = Vector2D(x2, y2)
     }
 
     /** Reader for vector for a single Walls
@@ -304,18 +305,75 @@ package hubmodel {
         (JsPath \ "y4").read[Double]
       ) (ControlAreas_JSON.apply _)
 
+
+    case class FlowLine_JSON(x1:Double, y1:Double, x2:Double, y2:Double)
+    implicit val FlowLine_JSONReads: Reads[FlowLine_JSON] = (
+      (JsPath \ "x1").read[Double] and
+        (JsPath \ "y1").read[Double] and
+        (JsPath \ "x2").read[Double] and
+        (JsPath \ "y2").read[Double]
+      ) (FlowLine_JSON.apply _)
+
+    case class SepOverrideZone_JSON(name: String,
+                                    x1: Vector[Double],
+                                    y1: Vector[Double],
+                                    x2: Vector[Double],
+                                    y2: Vector[Double],
+                                    x3: Vector[Double],
+                                    y3: Vector[Double],
+                                    x4: Vector[Double],
+                                    y4: Vector[Double])
+
+
+    implicit val SepOverrideZone_JSON_JSONReads: Reads[SepOverrideZone_JSON] = (
+      (JsPath \ "name").read[String] and
+        (JsPath \ "x1").read[Vector[Double]] and
+        (JsPath \ "y1").read[Vector[Double]] and
+        (JsPath \ "x2").read[Vector[Double]] and
+        (JsPath \ "y2").read[Vector[Double]] and
+        (JsPath \ "x3").read[Vector[Double]] and
+        (JsPath \ "y3").read[Vector[Double]] and
+        (JsPath \ "x4").read[Vector[Double]] and
+        (JsPath \ "y4").read[Vector[Double]]
+      ) (SepOverrideZone_JSON.apply _)
+
+    case class FlowSeparator_JSON(x1a:Double,
+                                  y1a:Double,
+                                  x1b:Double,
+                                  y1b:Double,
+                                  x2a:Double,
+                                  y2a:Double,
+                                  x2b:Double,
+                                  y2b:Double,
+                                  inf_1: Vector[FlowLine_JSON],
+                                  inf_2: Vector[FlowLine_JSON],
+                                  overZone_1: Vector[SepOverrideZone_JSON],
+                                  overZone_2: Vector[SepOverrideZone_JSON],
+                                  overConn: Vector[Connectivity_JSON]
+                            )
+    implicit val FlowSeparator_JSONReads: Reads[FlowSeparator_JSON] = (
+      (JsPath \ "x1a").read[Double] and
+        (JsPath \ "y1a").read[Double] and
+        (JsPath \ "x1b").read[Double] and
+        (JsPath \ "y1b").read[Double] and
+        (JsPath \ "x2a").read[Double] and
+        (JsPath \ "y2a").read[Double] and
+        (JsPath \ "x2b").read[Double] and
+        (JsPath \ "y2b").read[Double] and
+        (JsPath \ "inflow_lines_1").read[Vector[FlowLine_JSON]] and
+        (JsPath \ "inflow_lines_2").read[Vector[FlowLine_JSON]] and
+        (JsPath \ "overriden_zones_1").read[Vector[SepOverrideZone_JSON]] and
+        (JsPath \ "overriden_zones_2").read[Vector[SepOverrideZone_JSON]] and
+        (JsPath \ "overriden_connections").read[Vector[Connectivity_JSON]]
+      ) (FlowSeparator_JSON.apply _)
+
     case class ControlElementsParser(criticalZones: Vector[ControlAreas_JSON],
                                      amws: Vector[MovingWalkways_JSON],
                                      flowGates: Vector[FlowGates_JSON],
-                                     binaryGates: Vector[BinaryGates_JSON]
+                                     binaryGates: Vector[BinaryGates_JSON],
+                                     flowSeparators: Vector[FlowSeparator_JSON]
     )
 
-    implicit val ControlElementsParserWrites: Writes[ControlElementsParser] = (
-      (JsPath \ "controlled_areas").write[Vector[ControlAreas_JSON]] and
-        (JsPath \ "moving_walkways").write[Vector[MovingWalkways_JSON]] and
-        (JsPath \ "flow_gates").write[Vector[FlowGates_JSON]] and
-        (JsPath \ "binary_gates").write[Vector[BinaryGates_JSON]]
-      ) (unlift(ControlElementsParser.unapply))
 
     /** Writer for SF infrastructure specifications
       *
@@ -324,7 +382,8 @@ package hubmodel {
       (JsPath \ "controlled_areas").read[Vector[ControlAreas_JSON]] and
         (JsPath \ "moving_walkways").read[Vector[MovingWalkways_JSON]] and
         (JsPath \ "flow_gates").read[Vector[FlowGates_JSON]] and
-        (JsPath \ "binary_gates").read[Vector[BinaryGates_JSON]]
+        (JsPath \ "binary_gates").read[Vector[BinaryGates_JSON]] and
+        (JsPath \ "flow_separators").read[Vector[FlowSeparator_JSON]]
       ) (ControlElementsParser.apply _)
 
 
@@ -335,21 +394,10 @@ package hubmodel {
                                 flowGates: Vector[FlowGates_JSON],
                                 controlledAreas: Vector[ControlAreas_JSON],
                                 binaryGates: Vector[BinaryGates_JSON],
-                                movingWalkways: Vector[MovingWalkways_JSON]) extends Infrastructure
+                                movingWalkways: Vector[MovingWalkways_JSON],
+                                flowSeparators: Vector[FlowSeparator_JSON]
+                               ) extends Infrastructure
 
-    /** Reader for SF infrastructure specification
-      *
-      */
-    implicit val InfraGraphParserWrites: Writes[InfraGraphParser] = (
-      (JsPath \ "location").write[String] and
-        (JsPath \ "sublocation").write[String] and
-        (JsPath \ "nodes").write[Vector[NodeRouteGraph_JSON]] and
-        (JsPath \ "connectivity").write[Vector[Connectivity_JSON]] and
-        (JsPath \ "flow_gates").write[Vector[FlowGates_JSON]] and
-        (JsPath \ "controlled_areas").write[Vector[ControlAreas_JSON]] and
-        (JsPath \ "binary_gates").write[Vector[BinaryGates_JSON]] and
-        (JsPath \ "moving_walkways").write[Vector[MovingWalkways_JSON]]
-      ) (unlift(InfraGraphParser.unapply))
 
     /** Writer for SF infrastructure specifications
       *
@@ -362,7 +410,8 @@ package hubmodel {
         (JsPath \ "flow_gates").read[Vector[FlowGates_JSON]] and
         (JsPath \ "controlled_areas").read[Vector[ControlAreas_JSON]] and
         (JsPath \ "binary_gates").read[Vector[BinaryGates_JSON]] and
-        (JsPath \ "moving_walkways").read[Vector[MovingWalkways_JSON]]
+        (JsPath \ "moving_walkways").read[Vector[MovingWalkways_JSON]] and
+        (JsPath \ "flow_separators").read[Vector[FlowSeparator_JSON]]
       ) (InfraGraphParser.apply _)
 
 

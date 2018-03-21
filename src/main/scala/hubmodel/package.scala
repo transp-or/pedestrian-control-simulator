@@ -20,26 +20,25 @@ package object hubmodel {
   def distance(a: Vector3D, b: Vector3D): Double = scala.math.pow((b.X-a.X)*(b.X-a.X) + (b.Y-a.Y)*(b.Y-a.Y) + (b.Z-a.Z)*(b.Z-a.Z), 0.5)
 
 
-
   // Type representing a 2D position
-  @deprecated
-  type Position = breeze.linalg.DenseVector[Double]
+  //@deprecated
+  //type Position = breeze.linalg.DenseVector[Double]
 
   // Type representing a 2D direction
-  @deprecated
-  type Direction = breeze.linalg.DenseVector[Double]
+  //@deprecated
+  //type Direction = breeze.linalg.DenseVector[Double]
 
   // Type representing a 2D velocity
-  @deprecated
-  type Velocity = breeze.linalg.DenseVector[Double]
+  //@deprecated
+  //type Velocity = breeze.linalg.DenseVector[Double]
 
   // Type representing a 2D acceleration
-  @deprecated
-  type Acceleration = breeze.linalg.DenseVector[Double]
+  //@deprecated
+  //type Acceleration = breeze.linalg.DenseVector[Double]
 
   // Type representing a 2D force
-  @deprecated
-  type Force = breeze.linalg.DenseVector[Double]
+  //@deprecated
+  //type Force = breeze.linalg.DenseVector[Double]
 
 
   class NewTime(val value: Double) extends AnyVal {
@@ -165,7 +164,7 @@ package object hubmodel {
   }
 
 
-  /** Function to check whether a [[hubmodel.Position]] is inside a [[hubmodel.VertexRectangle]]. The default Vertex is a
+  /** Function to check whether a [[hubmodel.NewBetterPosition2D]] is inside a [[hubmodel.VertexRectangle]]. The default Vertex is a
     * plain rectangle, and hence this function checks whether the point is inside the rectangle. For more sophisticated
     * shapes, this function must be overriden.
     *

@@ -10,7 +10,7 @@ import scala.io.BufferedSource
   *
   * @param file CSV file containing the map. First column is String name and second column is Int name
   */
-class NodeNaming(file: String) {
+/*class NodeNaming(file: String) {
 
   case class String2Int(string: String, int: Int)
 
@@ -54,6 +54,6 @@ class NodeNaming(file: String) {
   //assert(string2IntMap.size == int2StringMap.size)
 
 
-}
+}*/
 
 

@@ -13,8 +13,8 @@ import scala.math.pow
 class SocialForceMollified(sim: SFGraphSimulator) extends SocialForceLike(sim) with Action {
 
   // set epsilon to 0.1
-  override protected def computeDirection(pos: Position, goal: Position): Direction = {
-    (goal - pos) / sqrt(pow(goal(0) - pos(0), 2) + pow(goal(1) - pos(1), 2) + 0.1 * 0.1)
+  override protected def computeDirection(pos: NewBetterPosition2D, goal: NewBetterPosition2D): NewBetterDirection2D = {
+    (goal - pos) / sqrt(pow(goal.X - pos.X, 2) + pow(goal.Y - pos.Y, 2) + 0.1 * 0.1)
   }
 
   /** Compute the force affecting the pedestrian. No need to pass pedestrian as argument as the function gets
@@ -23,17 +23,17 @@ class SocialForceMollified(sim: SFGraphSimulator) extends SocialForceLike(sim) w
     * @param pos point on the wall
     * @return force acting on the pedestrian from pos
     */
-  protected override def pedestrian2WallForce(ped: PedestrianSim, pos: Position): Force = {
+  protected override def pedestrian2WallForce(ped: PedestrianSim, pos: NewBetterPosition2D): NewBetterForce2D = {
     // set of parameters used for calculating the repulsive effects
     val A: Double = 20.1
     val B: Double = 0.25
     //val k1: Double = 1.2 * 100000.0
     //val k2: Double = 2.4 * 100000.0
 
-    val dir: Direction = (ped.currentPosition - pos) / breeze.linalg.norm(pos - ped.currentPosition)
-    val dirOrtho: Direction = DenseVector(-dir(1), dir(0))
+    val dir: NewBetterDirection2D = (ped.currentPositionNew - pos) / (pos - ped.currentPositionNew).norm
+    val dirOrtho: NewBetterDirection2D = dir.orthogonal
     dir * (
-      A * exp(-norm(ped.currentPosition - pos) / B)) /* +
+      A * exp((ped.currentPositionNew - pos).norm * -1 / B)) /* +
         k1 * max(0.0, ped.r - breeze.linalg.norm(ped.currentPosition - pos))
       ) +
       k2 * max(0.0, ped.r - breeze.linalg.norm(ped.currentPosition - pos)) * ped.currentVelocity.dot(dirOrtho) * dirOrtho*/
@@ -45,7 +45,7 @@ class SocialForceMollified(sim: SFGraphSimulator) extends SocialForceLike(sim) w
     * @param p2 pedestrian creating force
     * @return force acting on p1 created by p2
     */
-  protected override def pedestrian2PedestrianForce(p1: PedestrianSim, p2: PedestrianSim): Force = {
+  protected override def pedestrian2PedestrianForce(p1: PedestrianSim, p2: PedestrianSim): NewBetterForce2D = {
     val A: Double = 2.1 / 0.3
     val B: Double = 0.3
     val lambda: Double = 1.0
@@ -55,16 +55,16 @@ class SocialForceMollified(sim: SFGraphSimulator) extends SocialForceLike(sim) w
     //f * angleSightCoefficient(computeDirection(p1.currentPosition, p1.currentDestination), f)
     // angle of sight reduction
 
-    val dab: Direction = p1.currentPosition - p2.currentPosition
-    val yab: Direction = dt * p2.currentVelocity
-    val bab: Double = 0.5 * sqrt(pow(norm(dab) + norm(dab - yab), 2) - pow(norm(yab), 2))
+    val dab: NewBetterDirection2D = p1.currentPositionNew - p2.currentPositionNew
+    val yab: NewBetterDirection2D = p2.currentVelocityNew*dt
+    val bab: Double = 0.5 * sqrt(pow(dab.norm + (dab - yab).norm, 2) - pow((yab).norm, 2))
 
-    val desiredDirection: Direction = computeDirection(p1.currentPosition, p1.currentDestination)
-    val w: Double = lambda + (1.0 - lambda) * 0.5 * (1.0 + desiredDirection.dot(dab / norm(dab)))
-    println(dab, yab, bab, desiredDirection, desiredDirection.dot(dab / norm(dab)), exp(-bab / B), ((norm(dab) + norm(dab - yab)) / 2.0 * bab) * 0.5 * (dab / norm(dab) + (dab - yab) / norm(dab - yab)))
+    val desiredDirection: NewBetterDirection2D = computeDirection(p1.currentPositionNew, p1.currentDestinationNew)
+    val w: Double = lambda + (1.0 - lambda) * 0.5 * (1.0 + desiredDirection.dot(dab / (dab.norm)))
+    //println(dab, yab, bab, desiredDirection, desiredDirection.dot(dab / (dab.norm)), exp(-bab / B), ((norm(dab) + (dab - yab).norm) / 2.0 * bab) * 0.5 * (dab / dab.norm + (dab - yab) / (dab - yab).norm))
 
     // final force
-    A * exp(-bab / B) * ((norm(dab) + norm(dab - yab)) / 2.0 * bab) * 0.5 * (dab / norm(dab) + (dab - yab) / norm(dab - yab))
+    (dab / dab.norm + (dab - yab) / (dab - yab).norm)  * A * exp(-bab / B) * ((dab.norm + (dab - yab).norm) / 2.0 * bab) * 0.5
 
     /*
     val d21: Direction = p1.currentPosition-p2.currentPosition

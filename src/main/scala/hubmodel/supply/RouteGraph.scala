@@ -59,13 +59,4 @@ class RouteGraph(private val vertices: Vector[VertexRectangle],
     shortestPathBuilder.getPath(o, d).getVertexList.asScala.toList
   }
 
-  /** Creates a [[hubmodel.Position]] inside the specific [[hubmodel.VertexRectangle]] corresponding to the name passed as argument.
-    *
-    * @param node name of the [[hubmodel.VertexRectangle]] to generate a point inside
-    * @return [[hubmodel.Position]] uniformly sampled inside
-    */
-  /*def generateInZone(node: String): Position = {
-    val rand = breeze.stats.distributions.Uniform(0, 1).sample(2)
-    breeze.linalg.DenseVector(vertexMap(node).A(0) + rand(0) * (vertexMap(node).B(0) - vertexMap(node).A(0)), vertexMap(node).A(1) + rand(1) * (vertexMap(node).D(1) - vertexMap(node).A(1)))
-  }*/
 }

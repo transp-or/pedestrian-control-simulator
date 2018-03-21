@@ -54,8 +54,8 @@ class NOMADOriginalModel(sim: SFGraphSimulator) extends Action {
     * @return closest end point of the wall to the point
     */
   protected def getClosestEndPoint(point: NewBetterPosition2D, w: Wall): NewBetterPosition2D = {
-    if ((new NewBetterPosition2D(w.startPoint(0), w.startPoint(1)) - point).norm < (new NewBetterPosition2D(w.endPoint(0), w.endPoint(1)) - point).norm) new NewBetterPosition2D(w.startPoint(0), w.startPoint(1))
-    else new NewBetterPosition2D(w.endPoint(0), w.endPoint(1))
+    if ((w.startPoint - point).norm < (w.endPoint - point).norm) {w.startPoint}
+    else {w.endPoint}
   }
 
   /** Find the point used to compute the repulsive effects from the wall onto a pedestrian.

@@ -2,7 +2,7 @@ import breeze.linalg.DenseVector
 import breeze.numerics.cos
 import hubmodel.output.image.DrawCells
 import hubmodel.route.HexagonPotentialField
-import hubmodel.{NewBetterPosition2D, Position}
+import hubmodel.{NewBetterPosition2D}
 import myscala.math.vector.Vector2D
 import myscala.timeBlock
 

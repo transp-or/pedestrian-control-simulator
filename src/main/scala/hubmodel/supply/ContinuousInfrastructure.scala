@@ -2,7 +2,7 @@ package hubmodel.supply
 
 import java.awt.geom.Path2D
 
-import hubmodel.Position
+import hubmodel.{NewBetterPosition2D}
 import play.api.libs.json.{JsError, JsSuccess, JsValue, Json}
 
 import scala.io.BufferedSource
@@ -37,7 +37,7 @@ class SocialForceSpace(val walls: Vector[Wall]) extends Infrastructure with buil
   override val subLocation: String = "unused"
 
   override lazy val shellCollection: List[Shell] = buildShells(walls)
-  val isInsideWalkableArea: Position => Boolean = pos => super.isInsideWalkableSpace(pos)
+  val isInsideWalkableArea: NewBetterPosition2D => Boolean = pos => super.isInsideWalkableSpace(pos)
 }
 
 
@@ -58,10 +58,10 @@ trait buildClosedPolygon {
 
   def shellCollection: List[Shell]
 
-  class Shell(val shellType: Int, points: List[Position]) {
+  class Shell(val shellType: Int, points: List[NewBetterPosition2D]) {
     val polygon: Path2D = new Path2D.Double()
-    polygon.moveTo(points.head(0), points.head(1))
-    points.tail.foreach(p => polygon.lineTo(p(0), p(1)))
+    polygon.moveTo(points.head.X, points.head.Y)
+    points.tail.foreach(p => polygon.lineTo(p.X, p.Y))
     //polygon.closePath()
   }
 
@@ -93,7 +93,7 @@ trait buildClosedPolygon {
     }
   }*/
 
-  private def collectShells(p: Position, t: WallType, nodeSeq: List[Position], walls: Vector[Wall], shellSeq: List[Shell]): List[Shell] = {
+  private def collectShells(p: NewBetterPosition2D, t: WallType, nodeSeq: List[NewBetterPosition2D], walls: Vector[Wall], shellSeq: List[Shell]): List[Shell] = {
     if (p == nodeSeq.reverse.head && walls.isEmpty) {
       new Shell(t, nodeSeq) :: shellSeq
     }
@@ -121,7 +121,7 @@ trait buildClosedPolygon {
     collectShells(wallsFiltered.head.endPoint, wallsFiltered.head.wallType, List(wallsFiltered.head.startPoint), wallsFiltered.tail, List())
   }
 
-  def isInsideWalkableSpace(pos: Position): Boolean = {
-      shellCollection.filter(_.shellType == OUTERSHELL).forall(s => s.polygon.contains(pos(0),pos(1)))
+  def isInsideWalkableSpace(pos: NewBetterPosition2D): Boolean = {
+      shellCollection.filter(_.shellType == OUTERSHELL).forall(s => s.polygon.contains(pos.X,pos.Y))
   }
 }

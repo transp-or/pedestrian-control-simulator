@@ -27,12 +27,12 @@ class PedestrianSim(val oZone: VertexRectangle,
                     val dZone: VertexRectangle,
                     val freeFlowVel: Double,
                     val entryTime: NewTime,
-                    @deprecated var currentPosition: Position,
-                    var currentDestination: Position,
+                    var currentPosition: NewBetterPosition2D,
+                    var currentDestination: NewBetterPosition2D,
                     var route: List[VertexRectangle]) extends PedestrianTrait {
 
-  var currentPositionNew = new NewBetterPosition2D(currentPosition(0), currentPosition(1))
-  var currentDestinationNew: NewBetterPosition2D = new NewBetterPosition2D(currentDestination(0), currentDestination(1))
+  var currentPositionNew: NewBetterPosition2D = currentPosition//new NewBetterPosition2D(currentPosition(0), currentPosition(1))
+  var currentDestinationNew: NewBetterPosition2D = currentDestination//new NewBetterPosition2D(currentDestination(0), currentDestination(1))
 
   assert(freeFlowVel > 0.0, "Unacceptable free flow velocity")
 
@@ -46,7 +46,7 @@ class PedestrianSim(val oZone: VertexRectangle,
     * @param route     initial route
     */
   def this(oZone: VertexRectangle, dZone: VertexRectangle, entryTime: NewTime, posO: NewBetterPosition2D, posD: NewBetterPosition2D, route: List[VertexRectangle]) {
-    this(oZone, dZone, 1.34 + 0.0 * ThreadLocalRandom.current().nextGaussian(), entryTime, DenseVector(posO.X, posO.Y), DenseVector(posD.X, posD.Y), route)
+    this(oZone, dZone, 1.34 + 0.0 * ThreadLocalRandom.current().nextGaussian(), entryTime, posO, posD, route)
   }
 
   /*def this(oZone: VertexRectangle, dZone: VertexRectangle, entryTime: NewTime, posO: NewBetterPosition2D, posD: NewBetterPosition2D, route: List[VertexRectangle]) {
@@ -54,7 +54,7 @@ class PedestrianSim(val oZone: VertexRectangle,
   }*/
 
   /** current velocity, initialized to 0 */
-  var currentVelocity: Velocity = DenseVector(0.0, 0.0)
+  //var currentVelocity: Velocity = DenseVector(0.0, 0.0)
   var currentVelocityNew: NewBetterVelocity2D = new ZeroVector2D
 
   /** total travel time */
@@ -107,8 +107,7 @@ class PedestrianSim(val oZone: VertexRectangle,
   }
 
   def setCurrentDestination(pos: NewBetterPosition2D): Unit = {
-    this.currentDestination(0) = pos.X
-    this.currentDestination(1) = pos.Y
+    this.currentDestination = pos
     this.currentDestinationNew = pos
   }
 
@@ -122,10 +121,10 @@ class PedestrianSim(val oZone: VertexRectangle,
   }*/
 
   /* Position increment to be added at the next time interval */
-  var positionIncrement: Position = DenseVector(0.0, 0.0)
+  //var positionIncrement: Position = DenseVector(0.0, 0.0)
 
   /* Velocity increment to be added at the next time inteval */
-  var velocityIncrement: Velocity = DenseVector(0.0, 0.0)
+  //var velocityIncrement: Velocity = DenseVector(0.0, 0.0)
 
   /* Position increment to be added at the next time interval */
   var positionIncrementNew: NewBetterPosition2D = new ZeroVector2D

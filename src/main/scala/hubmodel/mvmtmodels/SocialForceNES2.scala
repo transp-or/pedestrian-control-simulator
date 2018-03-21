@@ -3,6 +3,7 @@ package hubmodel.mvmtmodels
 import breeze.linalg.{DenseVector, norm}
 import breeze.numerics.{exp, sqrt}
 import hubmodel._
+import myscala.math.vector.ZeroVector2D
 
 import scala.math.pow
 
@@ -18,17 +19,17 @@ class SocialForceNES2(sim: SFGraphSimulator) extends SocialForceLike(sim) with A
     * @param pos point on the wall
     * @return force acting on the pedestrian from pos
     */
-  protected override def pedestrian2WallForce(ped: PedestrianSim, pos: Position): Force = {
+  protected override def pedestrian2WallForce(ped: PedestrianSim, pos: NewBetterPosition2D): NewBetterForce2D = {
     // set of parameters used for calculating the repulsive effects
     val A: Double = 10.0 / 0.2
     val B: Double = 0.2
-    val dir: Direction = (ped.currentPosition - pos) / breeze.linalg.norm(pos - ped.currentPosition)
-    val dirOrtho: Direction = DenseVector(-dir(1), dir(0))
+    val dir: NewBetterDirection2D = (ped.currentPositionNew - pos) / (pos - ped.currentPositionNew).norm
+    val dirOrtho: NewBetterDirection2D = dir.orthogonal
     //dir*( A*exp((ped.r - breeze.linalg.norm(ped.currentPosition-pos))/B) )
-    DenseVector(0.0, 0.0)
+    new ZeroVector2D
   }
 
-  protected override def pedestrian2PedestrianForce(p1: PedestrianSim, p2: PedestrianSim): Force = {
+  protected override def pedestrian2PedestrianForce(p1: PedestrianSim, p2: PedestrianSim): NewBetterForce2D = {
 
     // parameters from original article (On modeling and evolutionary optimization of nonlinearly coupled pedestrian interactions)
     val A: Double = 3.6
@@ -44,17 +45,17 @@ class SocialForceNES2(sim: SFGraphSimulator) extends SocialForceLike(sim) with A
     //val tau: Double = 1.78 // [s]
 
     // vector from pedestrian2 pointing to pedestrian 1
-    val dab: Direction = p1.currentPosition - p2.currentPosition
-    val yab: Direction = dab - dt * (p2.currentVelocity - p1.currentVelocity)
-    val bab: Double = 0.5 * sqrt((pow(norm(dab) + norm(dab - yab), 2) - pow(norm(yab), 2)) / (1 + dt * norm(p1.currentVelocity)))
+    val dab: NewBetterDirection2D = p1.currentPositionNew - p2.currentPositionNew
+    val yab: NewBetterDirection2D = dab - (p2.currentVelocityNew - p1.currentVelocityNew) * dt
+    val bab: Double = 0.5 * sqrt((pow((dab.norm) + (dab - yab).norm, 2) - pow((yab.norm), 2)) / (1 + dt * (p1.currentVelocityNew.norm)))
 
     // angle of sight reduction
-    val desiredDirection: Direction = computeDirection(p1.currentPosition, p1.currentDestination)
-    val w: Double = lambda + (1.0 - lambda) * 0.5 * (1.0 + desiredDirection.dot(dab / norm(dab)))
+    val desiredDirection: NewBetterDirection2D = computeDirection(p1.currentPositionNew, p1.currentDestinationNew)
+    val w: Double = lambda + (1.0 - lambda) * 0.5 * (1.0 + desiredDirection.dot(dab / (dab.norm)))
     //println(dab, yab, bab, desiredDirection,desiredDirection.dot(dab/norm(dab)),  w, exp(-bab/B), ((norm(dab) + norm(dab-yab))/2.0*bab) * 0.5 * (dab/norm(dab) + (dab-yab)/norm(dab-yab)))
 
     // final force
-    w * A * exp(-bab / B) * dab / norm(dab)
+    dab / dab.norm * w * A * exp(-bab / B)
 
     // used by the interpretation of the model in (Social force model with explicit collision prediction)
     //val y12: Position = d21 - (p2.currentVelocity-p1.currentVelocity)*tau
