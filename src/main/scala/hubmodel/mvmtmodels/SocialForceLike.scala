@@ -1,10 +1,11 @@
 package hubmodel.mvmtmodels
 
-import breeze.linalg.{DenseVector, norm}
 import breeze.numerics.cos
+import hubmodel.DES.SFGraphSimulator
 import hubmodel._
-import hubmodel.supply.Wall
-import myscala.math.vector.{Vector2D, ZeroVector2D}
+import hubmodel.ped.PedestrianSim
+import hubmodel.supply.continuous.Wall
+import myscala.math.vector.ZeroVector2D
 
 abstract class SocialForceLike(sim: SFGraphSimulator) {
 
@@ -14,7 +15,7 @@ abstract class SocialForceLike(sim: SFGraphSimulator) {
     * @param goal target position
     * @return normalized direction
     */
-  protected def computeDirection(pos: NewBetterPosition2D, goal: NewBetterPosition2D): NewBetterDirection2D = {
+  protected def computeDirection(pos: Position, goal: Position): Direction = {
     (goal - pos) / (goal - pos).norm
   }
 
@@ -35,7 +36,7 @@ abstract class SocialForceLike(sim: SFGraphSimulator) {
     relax * (desiredVel - currentVel)
   }*/
 
-  protected def computeAcceleration(currentVel: NewBetterVelocity2D, desiredVel: NewBetterVelocity2D): NewBetterAcceleration2D = {
+  protected def computeAcceleration(currentVel: Velocity, desiredVel: Velocity): Acceleration = {
     val relax: Double = 1.0 // relaxation term of 0.5s = multiplication by 2.0 s^-1 from original model
     //val relax: Double = 1.19 // parameters from other optimization (Social force model with explicit collision prediction)
     //val relax = 3.2
@@ -49,9 +50,9 @@ abstract class SocialForceLike(sim: SFGraphSimulator) {
     * @param w   [[Wall]] onto which the point must be projectec
     * @return The projected point
     */
-  protected def computeProjection(pos: NewBetterPosition2D, w: Wall): NewBetterPosition2D = {
-    val AP: NewBetterPosition2D = pos - w.startPoint //breeze.linalg.DenseVector(pos(0) - w.x1, pos(1) - w.y1)
-    val AB: NewBetterPosition2D = w.endPoint - w.startPoint // breeze.linalg.DenseVector(w.x2 - w.x1, w.y2 - w.y1)
+  protected def computeProjection(pos: Position, w: Wall): Position = {
+    val AP: Position = pos - w.startPoint //breeze.linalg.DenseVector(pos(0) - w.x1, pos(1) - w.y1)
+    val AB: Position = w.endPoint - w.startPoint // breeze.linalg.DenseVector(w.x2 - w.x1, w.y2 - w.y1)
     AB * ((AB dot AP) / (AB dot AB)) + w.startPoint
 
   }
@@ -62,8 +63,8 @@ abstract class SocialForceLike(sim: SFGraphSimulator) {
     * @param w     wall
     * @return boolean whether indictating if the point is on the wall
     */
-  protected def isOnWall(point: NewBetterPosition2D, w: Wall): Boolean = {
-    ((w.x1 <= point.X && point.X <= w.x2) && (w.y1 <= point.Y && point.Y <= w.y2)) || ((w.x2 <= point.X && point.X <= w.x1) && (w.y2 <= point.Y && point.Y <= w.y1))
+  protected def isOnWall(point: Position, w: Wall): Boolean = {
+    ((w.startPoint.X <= point.X && point.X <= w.endPoint.X) && (w.startPoint.Y <= point.Y && point.Y <= w.endPoint.Y)) || ((w.endPoint.X <= point.X && point.X <= w.startPoint.X) && (w.endPoint.Y <= point.Y && point.Y <= w.startPoint.Y))
   }
 
   /** Finds the closest end point of a wall if the point is not on the wall
@@ -72,7 +73,7 @@ abstract class SocialForceLike(sim: SFGraphSimulator) {
     * @param w     wall to finds end from
     * @return closest end point of the wall to the point
     */
-  protected def getClosestEndPoint(point: NewBetterPosition2D, w: Wall): NewBetterPosition2D = {
+  protected def getClosestEndPoint(point: Position, w: Wall): Position = {
     if ((w.startPoint - point).norm < (w.endPoint - point).norm) {w.startPoint}
     else {w.endPoint}
   }
@@ -83,8 +84,8 @@ abstract class SocialForceLike(sim: SFGraphSimulator) {
     * @param w   wall to calculate repulsion from
     * @return position used to calculate repulsion
     */
-  protected def getClosestPoint(pos: NewBetterPosition2D, w: Wall): NewBetterPosition2D = {
-    val proj: NewBetterPosition2D = computeProjection(pos, w)
+  protected def getClosestPoint(pos: Position, w: Wall): Position = {
+    val proj: Position = computeProjection(pos, w)
     if (!isOnWall(proj, w)) getClosestEndPoint(pos, w)
     else proj
   }
@@ -96,7 +97,7 @@ abstract class SocialForceLike(sim: SFGraphSimulator) {
     * @param f direction of force
     * @return coefficient
     */
-  protected def angleSightCoefficient(d: NewBetterDirection2D, f: NewBetterForce2D): Double = {
+  protected def angleSightCoefficient(d: Direction, f: Force): Double = {
     if ((d dot f) >= f.norm * cos(100 * math.Pi / 180)) 1.0
     else 0.5
   }
@@ -109,7 +110,7 @@ abstract class SocialForceLike(sim: SFGraphSimulator) {
     * @param forceAcc force accumulator, initially zero
     * @return sum of forces acting on pedestrian
     */
-  protected def collectPedestrianRepulsionForces(p: PedestrianSim, pop: Iterable[PedestrianSim], forceAcc: NewBetterForce2D): NewBetterForce2D = {
+  protected def collectPedestrianRepulsionForces(p: PedestrianSim, pop: Iterable[PedestrianSim], forceAcc: Force): Force = {
     if (pop.isEmpty) forceAcc
     else if (pop.head == p) collectPedestrianRepulsionForces(p, pop.tail, forceAcc)
     else {
@@ -124,13 +125,13 @@ abstract class SocialForceLike(sim: SFGraphSimulator) {
     * @param forceAcc accumulator
     * @return the some of all the effects from the walls
     */
-  protected def collectWallRepulsionForces(ped: PedestrianSim, walls: Seq[Wall], forceAcc: NewBetterForce2D): NewBetterForce2D = {
+  protected def collectWallRepulsionForces(ped: PedestrianSim, walls: Seq[Wall], forceAcc: Force): Force = {
 
     // Collection of all the forces.
     // TODO: not collect all forces but only ones within distance and deal with doorways
     if (walls.isEmpty) forceAcc
     else {
-      val closestPoint = getClosestPoint(ped.currentPositionNew, walls.head)
+      val closestPoint = getClosestPoint(ped.currentPosition, walls.head)
       collectWallRepulsionForces(ped, walls.tail, forceAcc + pedestrian2WallForceNew(ped, closestPoint))
     }
   }
@@ -144,19 +145,19 @@ abstract class SocialForceLike(sim: SFGraphSimulator) {
 
 
     // desired direction
-    val currentDirection = computeDirection(p.currentPositionNew, p.currentDestinationNew)
+    val currentDirection = computeDirection(p.currentPosition, p.currentDestination)
 
     /** Attractive forces are composed of the will to reach the destination. */
-    val collectAttractiveForce: NewBetterForce2D = {
+    val collectAttractiveForce: Force = {
       //if (p.currentVelocity.exists(_.isNaN)) { enterDebugMethod }
       //assert(!computeAcceleration(p.currentVelocity, currentDirection * p.freeFlowVel).forall(_.isNaN), "acceleration is NaN: " + p.currentVelocity.toString() + ", " + currentDirection * p.freeFlowVel)
       //println(p.ID, p.freeFlowVel, p.currentVelocity, currentDirection)
-      computeAcceleration(p.currentVelocityNew, currentDirection * p.freeFlowVel)
+      computeAcceleration(p.currentVelocity, currentDirection * p.freeFlowVel)
     }
 
     /** Repulsive forces created by the walls and the other pedestrians. Requires access to the full population
       * stored in the simulation. */
-    val collectRepulsiveForces: NewBetterForce2D = {
+    val collectRepulsiveForces: Force = {
       //if (collectPedestrianRepulsionForces(p, sim.population.filterNot(ped => norm(p.currentPosition - ped.currentPosition) > 15.0), breeze.linalg.DenseVector(0.0, 0.0)).exists(_.isNaN)) { enterDebugMethod }
 
       collectWallRepulsionForces(p, sim.spaceSF.walls, new ZeroVector2D) +
@@ -170,13 +171,13 @@ abstract class SocialForceLike(sim: SFGraphSimulator) {
       p.travelTime = sim.currentTime - p.entryTime
 
       // collect forces
-      val force: NewBetterForce2D = collectAttractiveForce + collectRepulsiveForces
+      val force: Force = collectAttractiveForce + collectRepulsiveForces
       //println(p.ID, collectAttractiveForce, collectRepulsiveForces, force)
 
 
       // sets the increments in position and velocity for the pedestrian
-      p.velocityIncrementNew = force * sim.sf_dt.value
-      p.positionIncrementNew = (p.currentVelocityNew + p.velocityIncrementNew) * sim.sf_dt.value // (p.currentVelocity + p.velocityIncrement)
+      p.velocityIncrement = force * sim.sf_dt.value
+      p.positionIncrement = (p.currentVelocity + p.velocityIncrement) * sim.sf_dt.value // (p.currentVelocity + p.velocityIncrement)
 
       //println(p.velocityIncrementNew , p.positionIncrementNew)
     }
@@ -216,12 +217,12 @@ abstract class SocialForceLike(sim: SFGraphSimulator) {
 
   protected def insertNextEvent(): Unit
 
-  protected def pedestrian2PedestrianForce(p1: PedestrianSim, p2: PedestrianSim): NewBetterForce2D = new ZeroVector2D
+  protected def pedestrian2PedestrianForce(p1: PedestrianSim, p2: PedestrianSim): Force = new ZeroVector2D
 
-  protected def pedestrian2WallForce(ped: PedestrianSim, pos: NewBetterPosition2D): NewBetterForce2D = new ZeroVector2D
+  protected def pedestrian2WallForce(ped: PedestrianSim, pos: Position): Force = new ZeroVector2D
 
-  protected def pedestrian2PedestrianForceNew(p1: PedestrianSim, p2: PedestrianSim): NewBetterForce2D = new ZeroVector2D
+  protected def pedestrian2PedestrianForceNew(p1: PedestrianSim, p2: PedestrianSim): Force = new ZeroVector2D
 
-  protected def pedestrian2WallForceNew(ped: PedestrianSim, pos: NewBetterPosition2D): NewBetterForce2D = new ZeroVector2D
+  protected def pedestrian2WallForceNew(ped: PedestrianSim, pos: Position): Force = new ZeroVector2D
 
 }

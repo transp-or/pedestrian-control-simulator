@@ -1,5 +1,4 @@
-package hubmodel
-
+package hubmodel.DES
 
 /**
   * Parent to all actions which will appear in the DES.

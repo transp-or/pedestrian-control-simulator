@@ -5,9 +5,9 @@ import java.awt.{Color, Font, Graphics2D}
 import javax.imageio.ImageIO
 
 import hubmodel.output._
-import hubmodel.{NewBetterPosition2D, VertexRectangle}
+import hubmodel.{Position, Vertex}
 
-class DrawGraph(edges: Vector[(VertexRectangle, VertexRectangle)],
+class DrawGraph(edges: Vector[(Vertex, Vertex)],
                 filename: String = "",
                 mapFun: Option[(Double => Int, Double => Int)] = None,
                 imHeight: Option[Int] = None) {
@@ -40,7 +40,7 @@ class DrawGraph(edges: Vector[(VertexRectangle, VertexRectangle)],
     ImageIO.write(image, filename.split("\\.").last, new java.io.File(filename))
   }
 
-  def StructurePoints4Polygon(A: NewBetterPosition2D, B: NewBetterPosition2D, C: NewBetterPosition2D, D: NewBetterPosition2D, mapFun: (Double => Int, Double => Int)): (Array[Int], Array[Int], Int) = {
+  def StructurePoints4Polygon(A: Position, B: Position, C: Position, D: Position, mapFun: (Double => Int, Double => Int)): (Array[Int], Array[Int], Int) = {
     val xPoints = Array(mapFun._1(A.X), mapFun._1(B.X), mapFun._1(C.X), mapFun._1(D.X))
     val yPoints = Array(mapFun._2(A.Y), mapFun._2(B.Y), mapFun._2(C.Y), mapFun._2(D.Y))
     (xPoints, yPoints, 4)

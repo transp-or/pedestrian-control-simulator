@@ -1,64 +1,17 @@
-package hubmodel.supply
+package hubmodel.supply.continuous
 
 import java.awt.geom.Path2D
 
-import hubmodel.{NewBetterPosition2D}
-import play.api.libs.json.{JsError, JsSuccess, JsValue, Json}
-
-import scala.io.BufferedSource
-
-
-/** Reads the infrastructure specified in terms of walls, doors, etc.
-  *
-  * TODO: convert this class to a function
-  *
-  * @param file file where the infrastructure specification is located
-  */
-class ContinuousSpaceReader(file: String) {
-
-  val continuousSpace: SocialForceSpace = {
-    val source: BufferedSource = scala.io.Source.fromFile(file)
-    val input: JsValue = Json.parse(try source.mkString finally source.close)
-
-    input.validate[InfraSFParser] match {
-      case s: JsSuccess[InfraSFParser] => new SocialForceSpace(s.get.walls)
-      case e: JsError => throw new Error("Error while parsing SF infrastructre file: " + JsError.toJson(e).toString())
-    }
-  }
-}
-
-/** Container of all the data linked to the "real" representation of the infrastructure. All the data
-  * like the walls, location of doors, etc. is stored here.
-  *
-  * @param walls : Vector or [[hubmodel.supply.Wall]]
-  */
-class SocialForceSpace(val walls: Vector[Wall]) extends Infrastructure with buildClosedPolygon {
-  override val location: String = "unused"
-  override val subLocation: String = "unused"
-
-  override lazy val shellCollection: List[Shell] = buildShells(walls)
-  val isInsideWalkableArea: NewBetterPosition2D => Boolean = pos => super.isInsideWalkableSpace(pos)
-}
-
-
-class InfraSFWithDoor(val walls: Vector[Wall], val doors: Vector[Doorway]) extends Infrastructure  {
-  override val location: String = "unused"
-  override val subLocation: String = "unused"
-  //val walls: Vector[Wall] = infraRaw.walls // must be ordered collection
-  //val doors: Vector[Doorway] = infraRaw.doors
-
-  // check connectivity of walls and builds polygon
-  //val polygon: Path2D = buildPolygon(walls)
-}
+import hubmodel.Position
 
 /** Extension containing a function to build a closed [[java.awt.Polygon]] from the walls.
   * This is required to pave the space with hexagons, in the Guo2011 potential field approach.
   */
-trait buildClosedPolygon {
+trait BuildClosedPolygon {
 
   def shellCollection: List[Shell]
 
-  class Shell(val shellType: Int, points: List[NewBetterPosition2D]) {
+  class Shell(val shellType: Int, points: List[Position]) {
     val polygon: Path2D = new Path2D.Double()
     polygon.moveTo(points.head.X, points.head.Y)
     points.tail.foreach(p => polygon.lineTo(p.X, p.Y))
@@ -93,7 +46,7 @@ trait buildClosedPolygon {
     }
   }*/
 
-  private def collectShells(p: NewBetterPosition2D, t: WallType, nodeSeq: List[NewBetterPosition2D], walls: Vector[Wall], shellSeq: List[Shell]): List[Shell] = {
+  private def collectShells(p: Position, t: WallType, nodeSeq: List[Position], walls: Vector[Wall], shellSeq: List[Shell]): List[Shell] = {
     if (p == nodeSeq.reverse.head && walls.isEmpty) {
       new Shell(t, nodeSeq) :: shellSeq
     }
@@ -121,7 +74,7 @@ trait buildClosedPolygon {
     collectShells(wallsFiltered.head.endPoint, wallsFiltered.head.wallType, List(wallsFiltered.head.startPoint), wallsFiltered.tail, List())
   }
 
-  def isInsideWalkableSpace(pos: NewBetterPosition2D): Boolean = {
+  def isInsideWalkableSpace(pos: Position): Boolean = {
       shellCollection.filter(_.shellType == OUTERSHELL).forall(s => s.polygon.contains(pos.X,pos.Y))
   }
 }

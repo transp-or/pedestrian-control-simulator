@@ -1,13 +1,13 @@
 package hubmodel
 
-import java.awt.{Color, Graphics2D}
 import java.awt.image.BufferedImage
+import java.awt.{Color, Graphics2D}
 import java.io.File
 import javax.imageio.ImageIO
 
 import breeze.linalg.{max, min}
 import breeze.numerics.round
-import hubmodel.supply.Wall
+import hubmodel.supply.continuous.Wall
 
 /**
   * Created by nicholas on 6/11/17.
@@ -62,14 +62,14 @@ package object output {
   }
 
   def getBounds(walls: Iterable[Wall]): (Double, Double, Double, Double) = {
-    val minX: Double = walls.map(w => min(w.x1, w.x2)).min
-    val maxX: Double = walls.map(w => max(w.x1, w.x2)).max
-    val minY: Double = walls.map(w => min(w.y1, w.y2)).min
-    val maxY: Double = walls.map(w => max(w.y1, w.y2)).max
+    val minX: Double = walls.map(w => min(w.startPoint.X, w.endPoint.X)).min
+    val maxX: Double = walls.map(w => max(w.startPoint.X, w.endPoint.X)).max
+    val minY: Double = walls.map(w => min(w.startPoint.Y, w.endPoint.Y)).min
+    val maxY: Double = walls.map(w => max(w.startPoint.Y, w.endPoint.Y)).max
     (minX, minY, maxX, maxY)
   }
 
-  def getBounds(edges: Vector[(VertexRectangle, VertexRectangle)]): (Double, Double, Double, Double) = {
+  def getBounds(edges: Vector[(Vertex, Vertex)]): (Double, Double, Double, Double) = {
     val minX: Double = min(edges.map(e => min(min(e._1.A.X, e._1.B.X), min(e._1.C.X, e._1.D.X))))
     val minY: Double = min(edges.map(e => min(min(e._1.A.Y, e._1.B.Y), min(e._1.C.Y, e._1.D.Y))))
     val maxX: Double = max(edges.map(e => max(max(e._1.A.X, e._1.B.X), max(e._1.C.X, e._1.D.X))))

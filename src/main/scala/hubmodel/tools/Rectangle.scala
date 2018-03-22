@@ -1,22 +1,22 @@
 package hubmodel.tools
 
-import hubmodel.NewBetterPosition2D
+import hubmodel.Position
 import myscala.math.vector.Vector2D
 
-class Rectangle(val center: NewBetterPosition2D, hSide: Double, vSide: Double) extends MyCellComputationTrait {
+class Rectangle(val center: Position, hSide: Double, vSide: Double) extends MyCellComputationTrait {
 
-  val A: NewBetterPosition2D = center + Vector2D(-0.5*hSide, -0.5*vSide)
-  val B: NewBetterPosition2D = center + Vector2D(0.5*hSide, -0.5*vSide)
-  val C: NewBetterPosition2D = center + Vector2D(0.5*hSide, 0.5*vSide)
-  val D: NewBetterPosition2D = center + Vector2D(-0.5*hSide, 0.5*vSide)
-  val angles: List[NewBetterPosition2D] = List(A, B, C, D)
+  val A: Position = center + Vector2D(-0.5*hSide, -0.5*vSide)
+  val B: Position = center + Vector2D(0.5*hSide, -0.5*vSide)
+  val C: Position = center + Vector2D(0.5*hSide, 0.5*vSide)
+  val D: Position = center + Vector2D(-0.5*hSide, 0.5*vSide)
+  val angles: List[Position] = List(A, B, C, D)
   val area: Double = hSide*vSide
 
-  def isInside(pos: NewBetterPosition2D): Boolean = {
-    val AB: NewBetterPosition2D = B - A
-    val BC: NewBetterPosition2D = C - B
-    val AP: NewBetterPosition2D = pos - A
-    val BP: NewBetterPosition2D = pos - B
+  def isInside(pos: Position): Boolean = {
+    val AB: Position = B - A
+    val BC: Position = C - B
+    val AP: Position = pos - A
+    val BP: Position = pos - B
     if (0 <= (AB dot AP) && (AB dot AP) <= (AB dot AB) && 0 <= (BC dot BP) && (BC dot BP) <= (BC dot BC)) true
     else false
   }

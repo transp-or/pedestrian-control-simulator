@@ -1,6 +1,7 @@
-package hubmodel.supply
+package hubmodel.mgmt
 
 import hubmodel.VertexRectangle
+import hubmodel.supply.graph._
 import hubmodel.tools.ControlDevicesException
 
 

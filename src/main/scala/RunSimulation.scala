@@ -1,19 +1,23 @@
 import breeze.linalg.DenseVector
 import breeze.numerics.pow
 import com.typesafe.config.{Config, ConfigFactory}
+import hubmodel.DES.SFGraphSimulator
+import hubmodel._
 import hubmodel.demand.{PedestrianFlows, ReadDisaggDemand, TimeTable}
+import hubmodel.mgmt.ControlDevices
 import hubmodel.output.TRANSFORM.PopulationProcessing
 import hubmodel.output.image.{DrawGraph, DrawWalls, DrawWallsAndGraph}
 import hubmodel.output.video.MovingPedestriansWithDensityWithWallVideo
-import hubmodel.supply.{BinaryGate, ContinuousSpaceReader, ControlDevices, GraphReader}
-import hubmodel._
-import myscala.timeBlock
+import hubmodel.ped.PedestrianSim
+import hubmodel.supply.graph.{BinaryGate, GraphReader}
+import hubmodel.supply.continuous.{ContinuousSpaceReader, Wall}
 import myscala.math.stats.{ComputeStats, stats}
 import myscala.output.SeqOfSeqExtensions.SeqOfSeqWriter
 import myscala.output.SeqTuplesExtensions.SeqTuplesWriter
+import myscala.timeBlock
 
-import scala.collection.parallel.ForkJoinTaskSupport
 import scala.collection.JavaConverters._
+import scala.collection.parallel.ForkJoinTaskSupport
 
 /**
   * Runs the simulations based on the configuration file. This configuration file contains all the details regarding
@@ -105,11 +109,11 @@ object RunSimulation extends App {
   val fullImage = new DrawWallsAndGraph(infraSF.continuousSpace.walls, infraGraph.graph.standardEdges.map(e => (e.startVertex, e.endVertex)).toVector, config.getString("output.output_prefix") + "_wallsAndGraph.png")
 
   // Loads the start time, end time and time intervals
-  val simulationStartTime: NewTime = NewTime(config.getDouble("sim.start_time"))
-  val simulationEndTime: NewTime = NewTime(config.getDouble("sim.end_time"))
-  val socialForceInterval: NewTime = NewTime(config.getDouble("sim.sf_dt"))
-  val evaluationInterval: NewTime = NewTime(config.getDouble("sim.evaluate_dt"))
-  val rebuildTreeInterval: NewTime = NewTime(config.getDouble("sim.rebuild_tree_dt"))
+  val simulationStartTime: Time = Time(config.getDouble("sim.start_time"))
+  val simulationEndTime: Time = Time(config.getDouble("sim.end_time"))
+  val socialForceInterval: Time = Time(config.getDouble("sim.sf_dt"))
+  val evaluationInterval: Time = Time(config.getDouble("sim.evaluate_dt"))
+  val rebuildTreeInterval: Time = Time(config.getDouble("sim.rebuild_tree_dt"))
 
   // number of simulations to run
   val n: Int = config.getInt("sim.nb_runs")
@@ -123,7 +127,7 @@ object RunSimulation extends App {
   println("Running " + n + " simulations")
 
   // Container for the results from a simulation. This type chould be modified if the collectResults function is modified
-  type ResultsContainer = (Vector[PedestrianSim], List[(NewTime, Double)], List[(NewTime, Double)])
+  type ResultsContainer = (Vector[PedestrianSim], List[(Time, Double)], List[(Time, Double)])
 
   /** Used to extract the desired results from the simulator. Avoids keeping all information in memory.
     *
@@ -209,7 +213,7 @@ object RunSimulation extends App {
       gates.map(g => g.ID -> g).toMap,
       sim.gatesHistory.map(p => ((p._1.value*1).round.toInt, p._2)),
       sim.densityHistory.map(p => ((p._1.value*1).round.toInt, p._2)),
-      (simulationStartTime.value to simulationEndTime.value by config.getDouble("output.video_dt")).map(new NewTime(_))
+      (simulationStartTime.value to simulationEndTime.value by config.getDouble("output.video_dt")).map(new Time(_))
     )
 
 
@@ -267,8 +271,8 @@ object RunSimulation extends App {
     println("Processing results")
 
     // Collects times at which densities where measured
-    val densityTimes: Vector[NewTime] = results.head._2.unzip._1.toVector
-    val inflowTimes: Vector[NewTime] = results.head._3.unzip._1.toVector
+    val densityTimes: Vector[Time] = results.head._2.unzip._1.toVector
+    val inflowTimes: Vector[Time] = results.head._3.unzip._1.toVector
 
     // compute mean and variance of density
     val meanDensity: DenseVector[Double] = results.map(res => DenseVector(res._2.unzip._2.toArray)).foldLeft(DenseVector.fill(results.head._2.size)(0.0)) { (old: DenseVector[Double], n: DenseVector[Double]) => old + (n / results.size.toDouble) }
@@ -286,7 +290,7 @@ object RunSimulation extends App {
     // Collects then writes individual travel times with OD to csv
     if (config.getBoolean("output.write_travel_times")) results
       .zipWithIndex
-      .flatMap(r => r._1._1.map(p => (r._2, p.travelTime, p.oZone, p.dZone)))
+      .flatMap(r => r._1._1.map(p => (r._2, p.travelTime, p.origin, p.finalDestination)))
       .writeToCSV(
         config.getString("output.output_prefix") + "_travel_times_OD.csv",
         columnNames = Some(Vector("run", "travel_time", "origin_id", "destination_id")),
@@ -298,7 +302,7 @@ object RunSimulation extends App {
 
     // Computes the tt stats per OD passed in config file
     val ODPairsToAnalyse: Iterable[(String, String)] = config.getStringList("results-analysis.o_nodes").asScala.zip(config.getStringList("results-analysis.d_nodes").asScala).map(t => (t._1, t._2))
-    val TTOD: Iterable[(NewTime, VertexRectangle, VertexRectangle)] = results.flatMap(r => r._1.map(p => (p.travelTime, p.oZone, p.dZone)))
+    val TTOD: Iterable[(Time, Vertex, Vertex)] = results.flatMap(r => r._1.map(p => (p.travelTime, p.origin, p.finalDestination)))
     (for (od <- ODPairsToAnalyse) yield {
       flattenTuple(od._1, od._2, TTOD.filter(tod => tod._2.nameCompare(od._1) && tod._3.nameCompare(od._2)).map(_._1.value).stats)
     }).toVector.writeToCSV(config.getString("output.output_prefix") + "_travel_times_OD_stats.csv", columnNames=Some(Vector("O", "D", "size", "mean", "variance", "median", "min", "max")), rowNames=None)

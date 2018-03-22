@@ -4,11 +4,11 @@ import java.awt.image.BufferedImage
 import java.awt.{Color, Graphics2D}
 import javax.imageio.ImageIO
 
-import hubmodel.VertexRectangle
+import hubmodel.Vertex
 import hubmodel.output._
-import hubmodel.supply.Wall
+import hubmodel.supply.continuous.Wall
 
-class DrawWallsAndGraph(walls: Vector[Wall], edges: Vector[(VertexRectangle, VertexRectangle)], filename: String) {
+class DrawWallsAndGraph(walls: Vector[Wall], edges: Vector[(Vertex, Vertex)], filename: String) {
 
   val wallBounds: (Double, Double, Double, Double) = getBounds(walls)
   val graphBounds: (Double, Double, Double, Double) = getBounds(edges)

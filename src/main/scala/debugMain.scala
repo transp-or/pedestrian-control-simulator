@@ -1,8 +1,8 @@
 import breeze.linalg.DenseVector
 import breeze.numerics.cos
+import hubmodel.Position
 import hubmodel.output.image.DrawCells
 import hubmodel.route.HexagonPotentialField
-import hubmodel.{NewBetterPosition2D}
 import myscala.math.vector.Vector2D
 import myscala.timeBlock
 
@@ -151,7 +151,7 @@ object debugMain extends App {
   val radius: Double = 1.5
 
 
-  def insideSpace(p: NewBetterPosition2D): Boolean = {
+  def insideSpace(p: Position): Boolean = {
 
     val xMin1 = 0.0
     val xMax1 = 10.0

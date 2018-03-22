@@ -820,11 +820,11 @@
     {
       "o": "12",
       "d": "e",
-      "controlled_area": "piw_bottom_pl34",
-      "startPos_x": 51.255,
-      "startPos_y": 17.0,
-      "endPos_x": 54.940,
-      "endPos_y": 17.0
+      "start_pos_x": 51.255,
+      "start_pos_y": 17.0,
+      "end_pos_x": 54.940,
+      "end_pos_y": 17.0,
+      "controlled_area": "piw_bottom_pl34"
     }
   ],
   "moving_walkways": [

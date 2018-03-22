@@ -1,14 +1,12 @@
 package hubmodel.output.image
 
 import java.awt.image.BufferedImage
-import java.awt.{Color, Font, Graphics2D}
-import java.io.File
+import java.awt.{Color, Font, FontMetrics, Graphics2D}
 import javax.imageio.ImageIO
-import java.awt.FontMetrics
 
-import hubmodel.output.{IMAGE_WIDTH, computeImageHeightPixels, mapCoordAffine, createWhiteBackground}
 import hubmodel.output.video.Tools4Videos
-import hubmodel.tools.{MyCellComputationTrait, MyCellRepresentationTrait, MyCellTrait}
+import hubmodel.output.{createWhiteBackground, mapCoordAffine}
+import hubmodel.tools.MyCellTrait
 
 class DrawCells[T <: MyCellTrait](cells: Iterable[T], filename: String) extends Tools4Videos {
 

@@ -1,12 +1,13 @@
 package hubmodel.mgmt
 
-import hubmodel.{Action, SFGraphSimulator, isInVertex}
+import hubmodel.DES.{Action, SFGraphSimulator}
+import hubmodel.isInVertex
 import kn.uni.voronoitreemap.datastructure.OpenList
 import kn.uni.voronoitreemap.diagram.PowerDiagram
 import kn.uni.voronoitreemap.j2d.{PolygonSimple, Site}
+import myscala.math.vector.Vector2D
 
 import scala.collection.JavaConversions._
-import myscala.math.vector.{Vector2D}
 
 /**
   * Created by nicholas on 5/13/17.
@@ -21,14 +22,14 @@ class EvaluateState(sim: SFGraphSimulator) extends Action with Controller {
 
   def computeDensity(): Unit = {
     // computes the number of people inside the zone(s) to control.
-    val paxInZone: Int = sim.population.count(ped => isInVertex(sim.criticalArea.head)(ped.currentPositionNew))
+    val paxInZone: Int = sim.population.count(ped => isInVertex(sim.criticalArea.head)(ped.currentPosition))
     //sim.densityHistory.append((sim.currentTime, paxInZone/sim.criticalArea.head.area))
     // voronoin density
     if (paxInZone > 0) {
       try {
         val voronoi: PowerDiagram = new PowerDiagram()
         val stupidList: OpenList = new OpenList()
-        sim.population.map(p => new Site(p.currentPositionNew.X, p.currentPositionNew.Y)).foreach(stupidList.add)
+        sim.population.map(p => new Site(p.currentPosition.X, p.currentPosition.Y)).foreach(stupidList.add)
         voronoi.setSites(stupidList)
         val box: PolygonSimple = new PolygonSimple
         box.add(sim.criticalArea.head.A.X, sim.criticalArea.head.A.Y)
@@ -41,8 +42,8 @@ class EvaluateState(sim: SFGraphSimulator) extends Action with Controller {
         )
       } catch {
         case e: Exception => {
-          sim.errorLogger.warn("sim-time=" + sim.currentTime + "exception when computing voronoi diagram, using standard density! " + sim.population.size + " people in sim and " + sim.population.count(p => isInVertex(sim.criticalArea.head)(p.currentPositionNew)) + " in box")
-          sim.densityHistory.append((sim.currentTime, sim.population.count(p => isInVertex(sim.criticalArea.head)(p.currentPositionNew)).toDouble / sim.criticalArea.head.area))
+          sim.errorLogger.warn("sim-time=" + sim.currentTime + "exception when computing voronoi diagram, using standard density! " + sim.population.size + " people in sim and " + sim.population.count(p => isInVertex(sim.criticalArea.head)(p.currentPosition)) + " in box")
+          sim.densityHistory.append((sim.currentTime, sim.population.count(p => isInVertex(sim.criticalArea.head)(p.currentPosition)).toDouble / sim.criticalArea.head.area))
         }
       }
     }

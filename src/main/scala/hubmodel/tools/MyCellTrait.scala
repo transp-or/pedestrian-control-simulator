@@ -2,14 +2,14 @@ package hubmodel.tools
 
 import java.awt.Color
 
-import hubmodel.NewBetterPosition2D
+import hubmodel.Position
 
 trait MyCellComputationTrait {
-  def center: NewBetterPosition2D
+  def center: Position
   def area: Double
-  def angles: List[NewBetterPosition2D]
+  def angles: List[Position]
   def numberAngles: Int = angles.size
-  def isInside(p: NewBetterPosition2D): Boolean
+  def isInside(p: Position): Boolean
 }
 
 trait MyCellRepresentationTrait{

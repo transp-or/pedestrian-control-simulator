@@ -6,8 +6,9 @@ package hubmodel.demand
 
 import java.util.concurrent.ThreadLocalRandom
 
+import hubmodel.DES.{Action, SFGraphSimulator}
+import hubmodel._
 import hubmodel.supply.NodeID
-import hubmodel.{Action, NewTime, SFGraphSimulator, VertexRectangle}
 
 /** Extension of [[Action]] which will insert a [[CreatePedestrian]] actions based on a Poisson distribution for
   * the creation times.
@@ -16,18 +17,18 @@ import hubmodel.{Action, NewTime, SFGraphSimulator, VertexRectangle}
   * @param end          end time of the pedestrian creation
   * @param numberPeople number of people to create
   */
-class PedestrianGenerationOverInterval(o: VertexRectangle, d: VertexRectangle, start: NewTime, end: NewTime, numberPeople: Int, sim: SFGraphSimulator) extends Action {
+class PedestrianGenerationOverInterval(o: Vertex, d: Vertex, start: Time, end: Time, numberPeople: Int, sim: SFGraphSimulator) extends Action {
 
   /** Poisson distribution
     *
     * @param duration     endTime - startTime
     * @param numberPeople number of start times to generate
-    * @return Vector of [[NewTime]] corresponding to the arrival times inside the zone
+    * @return Vector of [[Time]] corresponding to the arrival times inside the zone
     */
-  def poissonProcessIterator(duration: Double, numberPeople: Double): Iterator[NewTime] = {
+  def poissonProcessIterator(duration: Double, numberPeople: Double): Iterator[Time] = {
     val rate: Double = numberPeople / duration
     var t: Double = -math.log(ThreadLocalRandom.current.nextDouble(0.0, 1.0)/rate)
-    Iterator.continually{ t = t - math.log(ThreadLocalRandom.current.nextDouble(0.0,1.0))/rate; t}.takeWhile(v => v < duration).map(new NewTime(_))
+    Iterator.continually{ t = t - math.log(ThreadLocalRandom.current.nextDouble(0.0,1.0))/rate; t}.takeWhile(v => v < duration).map(new Time(_))
   }
 
 

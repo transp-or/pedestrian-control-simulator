@@ -1,9 +1,10 @@
 package hubmodel.mgmt
 
 import breeze.linalg.{max, min}
+import hubmodel.DES.{Action, SFGraphSimulator}
 import hubmodel.NewTimeNumeric.mkOrderingOps
-import hubmodel.supply.FlowGate
-import hubmodel.{Action, NewTime, SFGraphSimulator}
+import hubmodel.Time
+import hubmodel.supply.graph.FlowGate
 
 class PIGateController(sim: SFGraphSimulator) extends Action {
 
@@ -11,7 +12,7 @@ class PIGateController(sim: SFGraphSimulator) extends Action {
     gates.map(g => g -> totalInflow / gates.size).toMap
   }
 
-  def computeReleaseTimes(rate: Double, maxTime: NewTime, currentTime: NewTime, acc: List[NewTime]): List[NewTime] = {
+  def computeReleaseTimes(rate: Double, maxTime: Time, currentTime: Time, acc: List[Time]): List[Time] = {
     if (currentTime >= maxTime) acc
     else computeReleaseTimes(rate, maxTime, currentTime.addDouble(1.0 / rate), currentTime.addDouble(1.0 / rate) :: acc)
   }
@@ -30,7 +31,7 @@ class PIGateController(sim: SFGraphSimulator) extends Action {
       fg.flowRate = min(fg.width * 1.5, fg.width * (totalInflow / sim.controlDevices.flowGates.size))
       // when execution of release pedestrian takes place, if flow rate is 0 then the event will never happen. Hence manually insert one to restart flow gates.
       if (fg.flowRate > 0.0) {
-        computeReleaseTimes(fg.flowRate, sim.evaluate_dt, NewTime(0.0), List()).foreach(t => sim.insertEventWithDelayNew(t)(new fg.ReleasePedestrian(sim)))
+        computeReleaseTimes(fg.flowRate, sim.evaluate_dt, Time(0.0), List()).foreach(t => sim.insertEventWithDelayNew(t)(new fg.ReleasePedestrian(sim)))
       }
       /*else {
         sim.insertEventWithDelay(1.0 / min(fg.width * 1.5, fg.width * (totalInflow / sim.graph.flowGates.size)))(new fg.ReleasePedestrian(sim))

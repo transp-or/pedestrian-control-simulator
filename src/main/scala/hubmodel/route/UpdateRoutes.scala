@@ -1,6 +1,7 @@
 package hubmodel.route
 
-import hubmodel.{Action, SFGraphSimulator, VertexRectangle}
+import hubmodel.DES.{Action, SFGraphSimulator}
+import hubmodel.Vertex
 
 
 /**
@@ -24,7 +25,7 @@ import hubmodel.{Action, SFGraphSimulator, VertexRectangle}
 class UpdateRoutes(sim: SFGraphSimulator) extends Action {
   override def execute(): Unit = {
     sim.population.filter(sim.intermediateDestinationReached).filterNot(_.isWaiting).foreach(p => {
-      val newRoute: List[VertexRectangle] = sim.graph.getShortestPath(p.nextZone, p.dZone).tail
+      val newRoute: List[Vertex] = sim.graph.getShortestPath(p.nextZone, p.finalDestination).tail
       if (sim.closedEdges.exists(ce => ce._1 == p.nextZone && ce._2 == newRoute.head)) {
         p.setCurrentDestination(p.nextZone.uniformSamplePointInside)
       } else {

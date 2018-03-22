@@ -6,7 +6,7 @@ import java.awt.{Color, Graphics2D}
 import java.io.File
 
 import breeze.numerics.floor
-import hubmodel.NewTime
+import hubmodel.Time
 import hubmodel.output.{mapCoordAffine, verticalMirrorTransformation}
 import org.jcodec.api.awt.AWTSequenceEncoder
 
@@ -15,7 +15,7 @@ import scala.collection.immutable.NumericRange
 class KPIEvolutionOverTime(outputFile: String,
                            size: (Int, Int),
                            fps: Int,
-                           var data: collection.mutable.ArrayBuffer[(NewTime, Double)],
+                           var data: collection.mutable.ArrayBuffer[(Time, Double)],
                            times2Show: Range) extends Tools4Videos {
 
   val borderSpacing: Int = 40

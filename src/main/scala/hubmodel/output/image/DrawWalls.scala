@@ -5,7 +5,7 @@ import java.awt.{Color, Font, Graphics2D}
 import javax.imageio.ImageIO
 
 import hubmodel.output._
-import hubmodel.supply.Wall
+import hubmodel.supply.continuous.Wall
 
 class DrawWalls(walls: Vector[Wall],
                 filename: String = "",
@@ -43,10 +43,10 @@ class DrawWalls(walls: Vector[Wall],
 
   def draw(gImage: Graphics2D, verticalMirrorTransformation: Int => Int): Unit = {
     walls.foreach(w => gImage.drawLine(
-      mappingFunctions._1(w.x1),
-      verticalMirrorTransformation(mappingFunctions._2(w.y1)),
-      mappingFunctions._1(w.x2),
-      verticalMirrorTransformation(mappingFunctions._2(w.y2)))
+      mappingFunctions._1(w.startPoint.X),
+      verticalMirrorTransformation(mappingFunctions._2(w.startPoint.Y)),
+      mappingFunctions._1(w.endPoint.X),
+      verticalMirrorTransformation(mappingFunctions._2(w.endPoint.Y)))
     )
   }
 
@@ -56,8 +56,8 @@ class DrawWalls(walls: Vector[Wall],
     gImage.setFont(newFont)
     walls.foreach(w => gImage.drawString(
       w.comment,
-      (mappingFunctions._1(w.x1) + mappingFunctions._1(w.x2)) / 2,
-      verticalMirrorTransformation((mappingFunctions._2(w.y1) + mappingFunctions._2(w.y2)) / 2)))
+      (mappingFunctions._1(w.startPoint.X) + mappingFunctions._1(w.endPoint.X)) / 2,
+      verticalMirrorTransformation((mappingFunctions._2(w.startPoint.Y) + mappingFunctions._2(w.endPoint.Y)) / 2)))
   }
 
 }

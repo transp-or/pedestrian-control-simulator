@@ -1,6 +1,6 @@
 package hubmodel.demand
 
-import hubmodel.NewTime
+import hubmodel.Time
 import play.api.libs.json.{JsError, JsSuccess, JsValue, Json}
 
 import scala.io.BufferedSource
@@ -18,6 +18,6 @@ class ReadDisaggDemand(fileName: String) {
     }
   }
 
-  val pedestrians: Iterable[(String, String, NewTime)] = this._pedestrians.map(p => (p.oZone, p.dZone, NewTime(p.entryTime)))
+  val pedestrians: Iterable[(String, String, Time)] = this._pedestrians.map(p => (p.oZone, p.dZone, Time(p.entryTime)))
 
 }

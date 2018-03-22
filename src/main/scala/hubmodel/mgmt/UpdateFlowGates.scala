@@ -1,13 +1,13 @@
 package hubmodel.mgmt
 
-import hubmodel.{Action, SFGraphSimulator}
+import hubmodel.DES.{Action, SFGraphSimulator}
 
 
 /**
   * Created by nicholas on 5/13/17.
   */
 
-/** Moves the [[hubmodel.supply.BinaryGate]] positions. Based on the function measuring the state of the system, this Class
+/** Moves the [[hubmodel.supply.graph.BinaryGate]] positions. Based on the function measuring the state of the system, this Class
   * will chnage the positions of the gates.
   *
   * @param sim simulation environment

@@ -2,7 +2,7 @@ package hubmodel.demand
 
 import java.time.LocalTime
 
-import hubmodel.NewTime
+import hubmodel.Time
 import hubmodel.supply.{NodeID, NodeID_New, NodeParent, ODID, TrackID, TrackID_New, TrainID, TrainID_New}
 //import pedtrack.StringImprovements
 import play.api.libs.json.{JsError, JsSuccess, JsValue, Json}
@@ -168,8 +168,8 @@ class TimeTable(file: String) {
   * @param f     number of people
   */
 case class PedestrianFlow(O: String, D: String, private val _start: LocalTime, private val _end: LocalTime, f: Double){
-  val start: NewTime = new NewTime(_start.toSecondOfDay)
-  val end: NewTime = new NewTime(_end.toSecondOfDay)
+  val start: Time = new Time(_start.toSecondOfDay)
+  val end: Time = new Time(_end.toSecondOfDay)
 }
 
 case class PTFlow(private val _origin: String, private val _destination: String, f: Double){
@@ -185,7 +185,7 @@ abstract class PedestrianFlow_New_Parent(val O: NodeParent, val D: NodeParent, v
   override def toString: NodeID = "(" + O + ", " + D + ", " + f + ")"
 }
 
-case class PedestrianFlow_New(override val O: NodeID_New, override val D: NodeParent, start: NewTime, end: NewTime, override val f: Double) extends PedestrianFlow_New_Parent(O, D, f) {
+case class PedestrianFlow_New(override val O: NodeID_New, override val D: NodeParent, start: Time, end: Time, override val f: Double) extends PedestrianFlow_New_Parent(O, D, f) {
   override def toString: NodeID = "(" + O + ", " + D + ", " + f + ", " + this.start + ", " + this.end + ")"
 }
 

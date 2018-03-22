@@ -2,12 +2,12 @@ package hubmodel.route
 
 import java.awt.Color
 
-import breeze.linalg.DenseVector
-import breeze.numerics.{cos, pow, sqrt}
+import hubmodel.DES.{Action, PedestrianDES}
 import hubmodel._
+import hubmodel.ped.PedestrianSim
 import hubmodel.tools.{Hexagon, MyCellTrait}
 
-case class HexagonPotentialField(c: NewBetterPosition2D, sideLength: Double) extends  Hexagon(c, sideLength) with MyCellTrait{ //}, conn: List[String]) {
+case class HexagonPotentialField(c: Position, sideLength: Double) extends  Hexagon(c, sideLength) with MyCellTrait{ //}, conn: List[String]) {
   /*val ID: String = generateUUID
   val A: Position = center + edgeLength * DenseVector(-cos(30 * math.Pi / 180.0), sqrt(1 - pow(cos(30 * math.Pi / 180.0), 2)))
   val B: Position = A + edgeLength * DenseVector(0.0, -1.0)

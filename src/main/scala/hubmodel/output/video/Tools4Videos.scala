@@ -1,12 +1,10 @@
 package hubmodel.output.video
 
+import java.awt.Graphics2D
 import java.awt.geom.Ellipse2D
-import java.awt.image.BufferedImage
-import java.awt.{Color, Graphics2D}
 
 import breeze.numerics.floor
-import hubmodel.output.border
-import hubmodel.{NewBetterPosition2D, NewTime}
+import hubmodel.{Position, Time}
 
 /**
   * Collection of various tools for formatting data, drawing elements and mapping coordinates.
@@ -21,7 +19,7 @@ trait Tools4Videos {
     * @param hist original data formatted as List[(Time, Position)]
     * @return reformating of data as List[(Time, List[Position])]
     */
-  def mergeListsByTime(hist: List[(NewTime, NewBetterPosition2D)]): List[(NewTime, List[NewBetterPosition2D])] = {
+  def mergeListsByTime(hist: List[(Time, Position)]): List[(Time, List[Position])] = {
     hist.groupBy(_._1).map { case (k, v) => (k, v.map(_._2)) }.toList
   }
 
@@ -37,7 +35,7 @@ trait Tools4Videos {
     * @param pos     position to draw the dot
     * @return an ellipse2D object to draw using the fill method from[[Graphics2D]]
     */
-  def createDot(mappingFunctions: (Double => Int, Double => Int), size: Double)(pos: NewBetterPosition2D): Ellipse2D = {
+  def createDot(mappingFunctions: (Double => Int, Double => Int), size: Double)(pos: Position): Ellipse2D = {
     new Ellipse2D.Double(mappingFunctions._1(pos.X), mappingFunctions._2(pos.Y), size, size)
   }
 

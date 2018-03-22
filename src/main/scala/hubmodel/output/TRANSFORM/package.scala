@@ -3,7 +3,8 @@ package hubmodel.output
 import java.io.{BufferedWriter, File, FileWriter}
 
 import hubmodel.NewTimeNumeric.mkOrderingOps
-import hubmodel.{NewTime, PedestrianTrait}
+import hubmodel.Time
+import hubmodel.ped.PedestrianTrait
 import myscala.math.stats.{Quantiles, computeQuantiles}
 import play.api.libs.json.{JsValue, Json, Writes}
 
@@ -11,11 +12,11 @@ package object TRANSFORM {
 
   implicit class PopulationProcessing[T <: PedestrianTrait](pop: Iterable[T]) {
 
-    def computeTT4TRANSFORM(quantiles: Seq[Double], startTime: NewTime, endTime: NewTime, fileName: String, startDay: String = "1970-01-01", endDay: String = "2100-12-31"): Unit = {
+    def computeTT4TRANSFORM(quantiles: Seq[Double], startTime: Time, endTime: Time, fileName: String, startDay: String = "1970-01-01", endDay: String = "2100-12-31"): Unit = {
       val res: collection.mutable.Map[(String, String), collection.mutable.ArrayBuffer[Double]] = collection.mutable.Map()
       pop.foreach(p => {
         if (p.entryTime >= startTime || p.exitTime <= endTime) {
-          res.getOrElseUpdate((p.oZone.name, p.dZone.name), collection.mutable.ArrayBuffer()).append(p.travelTime.value)
+          res.getOrElseUpdate((p.origin.name, p.finalDestination.name), collection.mutable.ArrayBuffer()).append(p.travelTime.value)
         }
       })
       val file = new File(fileName)

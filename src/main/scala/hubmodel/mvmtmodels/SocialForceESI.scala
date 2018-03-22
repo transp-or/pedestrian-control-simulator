@@ -1,8 +1,9 @@
 package hubmodel.mvmtmodels
 
-import breeze.linalg.{DenseVector, norm}
 import breeze.numerics.{exp, sqrt}
+import hubmodel.DES.{Action, SFGraphSimulator}
 import hubmodel._
+import hubmodel.ped.PedestrianSim
 
 import scala.math.pow
 
@@ -18,17 +19,17 @@ class SocialForceESI(sim: SFGraphSimulator) extends SocialForceLike(sim) with Ac
     * @param pos point on the wall
     * @return force acting on the pedestrian from pos
     */
-  protected override def pedestrian2WallForce(ped: PedestrianSim, pos: NewBetterPosition2D): NewBetterForce2D = {
+  protected override def pedestrian2WallForce(ped: PedestrianSim, pos: Position): Force = {
     // set of parameters used for calculating the repulsive effects
     val A: Double = 10.0 / 0.2
     val B: Double = 0.2
     //val k1: Double = 1.2 * 100000.0
     //val k2: Double = 2.4 * 100000.0
 
-    val dir: NewBetterDirection2D = (ped.currentPositionNew - pos) / (pos - ped.currentPositionNew).norm
-    val dirOrtho: NewBetterDirection2D = dir.orthogonal
+    val dir: Direction = (ped.currentPosition - pos) / (pos - ped.currentPosition).norm
+    val dirOrtho: Direction = dir.orthogonal
     dir * (
-      A * exp((ped.currentPositionNew - pos).norm * -1 / B)) /* +
+      A * exp((ped.currentPosition - pos).norm * -1 / B)) /* +
         k1 * max(0.0, ped.r - breeze.linalg.norm(ped.currentPosition - pos))
       ) +
       k2 * max(0.0, ped.r - breeze.linalg.norm(ped.currentPosition - pos)) * ped.currentVelocity.dot(dirOrtho) * dirOrtho*/
@@ -40,7 +41,7 @@ class SocialForceESI(sim: SFGraphSimulator) extends SocialForceLike(sim) with Ac
     * @param p2 pedestrian creating force
     * @return force acting on p1 created by p2
     */
-  protected override def pedestrian2PedestrianForce(p1: PedestrianSim, p2: PedestrianSim): NewBetterForce2D = {
+  protected override def pedestrian2PedestrianForce(p1: PedestrianSim, p2: PedestrianSim): Force = {
     val A: Double = 1.52
     val B: Double = 0.21
     val lambda: Double = 1.0
@@ -50,12 +51,12 @@ class SocialForceESI(sim: SFGraphSimulator) extends SocialForceLike(sim) with Ac
     //f * angleSightCoefficient(computeDirection(p1.currentPosition, p1.currentDestination), f)
     // angle of sight reduction
 
-    val dab: NewBetterDirection2D = p1.currentPositionNew - p2.currentPositionNew
-    val yab: NewBetterDirection2D = p2.currentVelocityNew * dt
+    val dab: Direction = p1.currentPosition - p2.currentPosition
+    val yab: Direction = p2.currentVelocity * dt
     val bab: Double = 0.5 * sqrt(pow(dab.norm + (dab - yab).norm, 2) - pow((yab.norm), 2))
     //println(norm(dab), bab, exp((-bab) / B), exp((p1.r + p2.r - bab) / B), (norm(dab) + norm(dab - yab)) / (4.0 * bab), norm((dab / norm(dab) + (dab - yab) / norm(dab - yab))))
 
-    val desiredDirection: NewBetterDirection2D = computeDirection(p1.currentPositionNew, p1.currentDestinationNew)
+    val desiredDirection: Direction = computeDirection(p1.currentPosition, p1.currentDestination)
     val w: Double = lambda + (1.0 - lambda) * 0.5 * (1.0 + desiredDirection.dot(dab / (dab.norm)))
     //println(dab, yab, bab, desiredDirection,desiredDirection.dot(dab/norm(dab)), exp(-bab/B), ((norm(dab) + norm(dab-yab))/2.0*bab) * 0.5 * (dab/norm(dab) + (dab-yab)/norm(dab-yab)))
 

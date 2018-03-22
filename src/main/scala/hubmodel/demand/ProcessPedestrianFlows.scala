@@ -4,7 +4,7 @@ package hubmodel.demand
   * Created by nicholas on 5/12/17.
   */
 
-import hubmodel.{Action, SFGraphSimulator}
+import hubmodel.DES.{Action, SFGraphSimulator}
 
 /** Insert the arrivals of all vehicle in the event list. The trains variables stored in the simulation is the
   * variable which is used.

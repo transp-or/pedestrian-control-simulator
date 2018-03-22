@@ -4,12 +4,13 @@ import java.awt.geom._
 import java.awt.image.BufferedImage
 import java.awt.{BasicStroke, Color, Graphics2D}
 import java.io.File
-import javax.imageio.ImageIO
 
-import hubmodel.output.createBackgroundFromImage
 import breeze.numerics.floor
+import hubmodel.DES.PedestrianDES
 import hubmodel._
-import hubmodel.supply.BinaryGate
+import hubmodel.output.createBackgroundFromImage
+import hubmodel.ped.PedestrianSim
+import hubmodel.supply.graph.BinaryGate
 import org.jcodec.api.awt.AWTSequenceEncoder
 
 
@@ -61,9 +62,9 @@ class MovingPedestriansWithDensityVideo(outputFile: String,
 
   /** Function which returns an [[Ellipse2D]] to draw at a specific location
     *
-    * @return Function taing a [[NewBetterPosition2D]] and returning an [[Ellipse2D]] representing a pedestrian at a specific location
+    * @return Function taing a [[Position]] and returning an [[Ellipse2D]] representing a pedestrian at a specific location
     */
-  def createDot: NewBetterPosition2D => Ellipse2D = createDot((mapHcoord, mapVcoord), dotSize)
+  def createDot: Position => Ellipse2D = createDot((mapHcoord, mapVcoord), dotSize)
 
   /** Horizontal mapping of coordinates
     *
@@ -78,11 +79,11 @@ class MovingPedestriansWithDensityVideo(outputFile: String,
   def mapVcoord: Double => Int = mapCoordLinear(bkgdImageSizeMeters._2, canvasHeight)
 
   // formatting of the data: aggregation by times of the positions.
-  val population2TimePositionList: List[(NewTime, List[NewBetterPosition2D])] = mergeListsByTime(pop.flatMap(_.getHistoryPosition).toList).sortBy(_._1)
+  val population2TimePositionList: List[(Time, List[Position])] = mergeListsByTime(pop.flatMap(_.getHistoryPosition).toList).sortBy(_._1)
   // List of times with corresponding ellipses to draw. For each time, the list of ellipses coreespond to the pedestrians.
 
   //println(population2TimePositionList.map(_._1).toVector.sorted)
-  var timeEllipses: Vector[(NewTime, List[Ellipse2D])] = population2TimePositionList.filter(pair => times2Show.exists(t => math.abs(t - pair._1.value) <= math.pow(10,-5))).map(p => (p._1, p._2.map(createDot))).toVector
+  var timeEllipses: Vector[(Time, List[Ellipse2D])] = population2TimePositionList.filter(pair => times2Show.exists(t => math.abs(t - pair._1.value) <= math.pow(10,-5))).map(p => (p._1, p._2.map(createDot))).toVector
   //println(population2TimePositionList.filter(pair => times2Show.contains(pair._1)).map(_._1).sorted)
 
   // Image to use for combining all the different components: the bkgd image, the dots, the monitored areas, the gates, etc.

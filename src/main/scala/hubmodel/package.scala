@@ -2,6 +2,7 @@ import java.io.{BufferedWriter, File, FileWriter}
 import java.util.concurrent.ThreadLocalRandom
 
 import breeze.numerics.{floor, round}
+import hubmodel.ped.PedestrianTrait
 import myscala.math.vector.{Vector2D, Vector3D}
 
 /**
@@ -10,43 +11,22 @@ import myscala.math.vector.{Vector2D, Vector3D}
 
 package object hubmodel {
 
-  type NewBetterPosition2D = Vector2D
-  type NewBetterDirection2D = Vector2D
-  type NewBetterVelocity2D = Vector2D
-  type NewBetterAcceleration2D = Vector2D
-  type NewBetterForce2D = Vector2D
+  type Position = Vector2D
+  type Direction = Vector2D
+  type Velocity = Vector2D
+  type Acceleration = Vector2D
+  type Force = Vector2D
 
   def distance(a: Vector2D, b: Vector2D): Double = scala.math.pow((b.X-a.X)*(b.X-a.X) + (b.Y-a.Y)*(b.Y-a.Y), 0.5)
   def distance(a: Vector3D, b: Vector3D): Double = scala.math.pow((b.X-a.X)*(b.X-a.X) + (b.Y-a.Y)*(b.Y-a.Y) + (b.Z-a.Z)*(b.Z-a.Z), 0.5)
 
 
-  // Type representing a 2D position
-  //@deprecated
-  //type Position = breeze.linalg.DenseVector[Double]
+  class Time(val value: Double) extends AnyVal {
 
-  // Type representing a 2D direction
-  //@deprecated
-  //type Direction = breeze.linalg.DenseVector[Double]
-
-  // Type representing a 2D velocity
-  //@deprecated
-  //type Velocity = breeze.linalg.DenseVector[Double]
-
-  // Type representing a 2D acceleration
-  //@deprecated
-  //type Acceleration = breeze.linalg.DenseVector[Double]
-
-  // Type representing a 2D force
-  //@deprecated
-  //type Force = breeze.linalg.DenseVector[Double]
-
-
-  class NewTime(val value: Double) extends AnyVal {
-
-    def + (m: NewTime): NewTime = new NewTime(this.value + m.value)
-    def addDouble (m: Double): NewTime = new NewTime(this.value + m)
-    def - (m: NewTime): NewTime = new NewTime(this.value - m.value)
-    def abs: NewTime = new NewTime(java.lang.Math.abs(this.value))
+    def + (m: Time): Time = new Time(this.value + m.value)
+    def addDouble (m: Double): Time = new Time(this.value + m)
+    def - (m: Time): Time = new Time(this.value - m.value)
+    def abs: Time = new Time(java.lang.Math.abs(this.value))
 
     def asReadable: String = {
       val hours: Int = floor(value / 3600.0).toInt
@@ -67,18 +47,18 @@ package object hubmodel {
 
   }
 
-  object NewTime {
-    def apply(value: Double): NewTime = new NewTime(value)
+  object Time {
+    def apply(value: Double): Time = new Time(value)
 
-    def fromDouble(v: Double): NewTime = {new NewTime(v)}
+    def fromDouble(v: Double): Time = {new Time(v)}
 
-    implicit def orderingByValue: Ordering[NewTime] = {
+    implicit def orderingByValue: Ordering[Time] = {
       Ordering.by(t => t.value)
     }
   }
 
-  object NewTimeNumeric extends Ordering[NewTime] {
-    def compare(x: NewTime, y: NewTime): Int = x.value compare y.value
+  object NewTimeNumeric extends Ordering[Time] {
+    def compare(x: Time, y: Time): Int = x.value compare y.value
   }
 
   /** Generation of a UUID. This can be used to generate unique identifiers for objects.
@@ -86,6 +66,26 @@ package object hubmodel {
     * @return UUID formatted as a String
     */
   def generateUUID: String = java.util.UUID.randomUUID.toString
+
+
+  trait Vertex {
+    def name: String
+    val ID: String
+    def center: Position
+    def area: Double
+    def isInside(pos: Position): Boolean
+    def uniformSamplePointInside: Position
+    def equalsID(other: Any): Boolean
+    override def equals(other: Any): Boolean
+    override def hashCode: Int
+    override def toString: String
+    def nameCompare(n: String): Boolean
+    def A: Position
+    def B: Position
+    def C: Position
+    def D: Position
+
+  }
 
   /** Representation of a vertex, or cell. This is used for representing vertices in the graph specification
     * and can be extend to manage any sort cell or zone. This specification is that of rectangles with vertical
@@ -98,32 +98,32 @@ package object hubmodel {
     * @param C    top right
     * @param D    top left
     */
-  final case class VertexRectangle(name: String, A: NewBetterPosition2D, B: NewBetterPosition2D, C: NewBetterPosition2D, D: NewBetterPosition2D) {
+  case class VertexRectangle(name: String, A: Position, B: Position, C: Position, D: Position) extends Vertex {
 
     // unique identifier
     val ID: String = generateUUID
 
     // center of the rectangle
-    val center: NewBetterPosition2D = A + (B - A)*0.5 + (D - A)*0.5
+    val center: Position = A + (B - A)*0.5 + (D - A)*0.5
 
     // area of the associated zone
     val area: Double = (B - A).norm * (D - A).norm
 
     /** Is the point inside the vertex ?
       *
-      * @param pos [[NewBetterPosition2D]] to check
+      * @param pos [[Position]] to check
       * @return boolean indicating if the point is inside the vertex.
       */
-    def isInside(pos: NewBetterPosition2D): Boolean = {
-      val AB: NewBetterPosition2D = B - A
-      val BC: NewBetterPosition2D = C - B
-      val AP: NewBetterPosition2D = pos - A
-      val BP: NewBetterPosition2D = pos - B
+    def isInside(pos: Position): Boolean = {
+      val AB: Position = B - A
+      val BC: Position = C - B
+      val AP: Position = pos - A
+      val BP: Position = pos - B
       if (0 <= (AB dot AP) && (AB dot AP) <= (AB dot AB) && 0 <= (BC dot BP) && (BC dot BP) <= (BC dot BC)) true
       else false
     }
 
-    def uniformSamplePointInside: NewBetterPosition2D = {
+    def uniformSamplePointInside: Position = {
       Vector2D(ThreadLocalRandom.current.nextDouble(A.X+0.1, B.X-0.1), ThreadLocalRandom.current.nextDouble(A.Y+0.1, D.Y-0.1))
     }
 
@@ -163,8 +163,66 @@ package object hubmodel {
     def nameCompare(n: String): Boolean = this.name == n
   }
 
+  class VertexRectangleModifiable(val name: String,
+                                  private val _A: (Position, Position),
+                                  private val _B: (Position, Position),
+                                  private val _C: (Position, Position),
+                                  private val _D: (Position, Position)) extends Vertex {
 
-  /** Function to check whether a [[hubmodel.NewBetterPosition2D]] is inside a [[hubmodel.VertexRectangle]]. The default Vertex is a
+    def getMovableCorners: ((Position, Position),(Position, Position),(Position, Position),(Position, Position)) = {
+      (this._A, this._B, this._C, this._D)
+    }
+
+    var A: Position = (_A._1 + _A._2) * 0.5
+    var B: Position = (_B._1 + _B._2) * 0.5
+    var C: Position = (_C._1 + _C._2) * 0.5
+    var D: Position = (_D._1 + _D._2) * 0.5
+    val center: Position = A + (B - A)*0.5 + (D - A)*0.5
+
+    def updatePositions(fraction: Double): Unit = {
+      this.A = this._A._1 + (this._A._2 - this._A._1) * fraction
+      this.B = this._B._1 + (this._B._2 - this._B._1) * fraction
+      this.C = this._C._1 + (this._C._2 - this._C._1) * fraction
+      this.D = this._D._1 + (this._D._2 - this._D._1) * fraction
+    }
+
+    val ID: String = generateUUID
+    def area: Double = (B - A).norm * (D - A).norm
+
+    def isInside(pos: Position): Boolean = {
+      val AB: Position = B - A
+      val BC: Position = C - B
+      val AP: Position = pos - A
+      val BP: Position = pos - B
+      if (0 <= (AB dot AP) && (AB dot AP) <= (AB dot AB) && 0 <= (BC dot BP) && (BC dot BP) <= (BC dot BC)) true
+      else false
+    }
+
+    def uniformSamplePointInside: Position = {
+      Vector2D(ThreadLocalRandom.current.nextDouble(A.X+0.1, B.X-0.1), ThreadLocalRandom.current.nextDouble(A.Y+0.1, D.Y-0.1))
+    }
+
+    def equalsID(other: Any): Boolean = {
+      other match {
+        case that: VertexRectangle => this.ID == that.ID
+        case _ => false
+      }
+    }
+    override def equals(other: Any): Boolean =
+      other match {
+        case that: VertexRectangleModifiable => this._A == that._A && this._B == that._B && this._C == that._C && this._D == that._D
+        case _ => false
+      }
+
+    override def hashCode: Int =  (this._A, this._B, this._C, this._D).##
+
+    override def toString: String = this.name + ", " + this.A + ", " + this.B + ", " + this.C + ", " + this.D
+    def nameCompare(n: String): Boolean = this.name == n
+
+  }
+
+
+  /** Function to check whether a [[hubmodel.Position]] is inside a [[hubmodel.VertexRectangle]]. The default Vertex is a
     * plain rectangle, and hence this function checks whether the point is inside the rectangle. For more sophisticated
     * shapes, this function must be overriden.
     *
@@ -172,11 +230,11 @@ package object hubmodel {
     * @param pos position ot check
     * @return boolean indicating if the point is inside the vertex
     */
-  def isInVertex(v: VertexRectangle)(pos: NewBetterPosition2D): Boolean = {
-    val AB: NewBetterPosition2D = v.B - v.A
-    val BC: NewBetterPosition2D = v.C - v.B
-    val AP: NewBetterPosition2D = pos - v.A
-    val BP: NewBetterPosition2D = pos - v.B
+  def isInVertex(v: Vertex)(pos: Position): Boolean = {
+    val AB: Position = v.B - v.A
+    val BC: Position = v.C - v.B
+    val AP: Position = pos - v.A
+    val BP: Position = pos - v.B
     if (0 <= (AB dot AP) && (AB dot AP) <= (AB dot AB) && 0 <= (BC dot BP) && (BC dot BP) <= (BC dot BC)) true
     else false
   }

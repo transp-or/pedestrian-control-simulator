@@ -1,11 +1,5 @@
 package hubmodel.supply
 
-import play.api.libs.functional.syntax._
-import play.api.libs.json.Reads._
-import play.api.libs.json._
-
-import scala.io.BufferedSource
-
 /** Container for storing the maps of node names from ints to strings ance vice versa
   *
   * @param file CSV file containing the map. First column is String name and second column is Int name

@@ -138,7 +138,7 @@ package hubmodel {
                                   TRAIN INDUCED FLOWS (TINF)
     -----------------------------------------------------------------------------------*/
     // assuming uniform access distribution
-    def splitFractionsUniform(arrNodes: Iterable[VertexRectangle], depNodes: Iterable[VertexRectangle], totalFlow: Double): Iterable[(VertexRectangle, VertexRectangle, Double)] = {
+    def splitFractionsUniform(arrNodes: Iterable[Vertex], depNodes: Iterable[Vertex], totalFlow: Double): Iterable[(Vertex, Vertex, Double)] = {
       val perm = for {// all permutations of two lists of nodes
         a <- arrNodes
         b <- depNodes
