@@ -5,9 +5,9 @@ import java.awt.{Color, Font, FontMetrics, Graphics2D}
 import javax.imageio.ImageIO
 
 import hubmodel.output.{createBackgroundFromImage, mapCoordAffine}
-import hubmodel.tools.MyCellTrait
+import hubmodel.tools.cells.{NewVertexPlotting}
 
-class DrawCellsOverImage[T <: MyCellTrait](
+class DrawCellsOverImage[T <: NewVertexPlotting](
                           bkgdImage: Option[String],
                           bkgdImageSizeMeters: (Double, Double, Double, Double),
                           cells: Iterable[T],
@@ -52,9 +52,9 @@ class DrawCellsOverImage[T <: MyCellTrait](
 
   cells.foreach(h => {
     gcleanCanvas.setColor(h.scalarToColor)
-    gcleanCanvas.fillPolygon(h.xCoords.map(mapHcoord), h.yCoords.map(mapVcoord), h.numberAngles)
+    gcleanCanvas.fillPolygon(h.xCoords.map(mapHcoord), h.yCoords.map(mapVcoord), h.numberCorners)
     gcleanCanvas.setColor(Color.BLACK)
-    gcleanCanvas.drawPolygon(h.xCoords.map(mapHcoord), h.yCoords.map(mapVcoord), h.numberAngles)
+    gcleanCanvas.drawPolygon(h.xCoords.map(mapHcoord), h.yCoords.map(mapVcoord), h.numberCorners)
     val w: Int = gcleanCanvas.getFontMetrics.stringWidth(h.stringToShow) / 2
     if (w.toDouble > 0.85 * mapHcoord(h.horizontalMaxTextWidth)) {
       val currentFont = gcleanCanvas.getFont

@@ -6,9 +6,9 @@ import javax.imageio.ImageIO
 
 import hubmodel.output.video.Tools4Videos
 import hubmodel.output.{createWhiteBackground, mapCoordAffine}
-import hubmodel.tools.MyCellTrait
+import hubmodel.tools.cells.NewVertexPlotting
 
-class DrawCells[T <: MyCellTrait](cells: Iterable[T], filename: String) extends Tools4Videos {
+class DrawCells[T <: NewVertexPlotting](cells: Iterable[T], filename: String) extends Tools4Videos {
 
   val xMin: Double = cells.flatMap(_.xCoords).min
   val xMax: Double = cells.flatMap(_.xCoords).max
@@ -51,9 +51,9 @@ class DrawCells[T <: MyCellTrait](cells: Iterable[T], filename: String) extends 
 
   cells.foreach(h => {
     gcleanCanvas.setColor(h.scalarToColor)
-    gcleanCanvas.fillPolygon(h.xCoords.map(mapHcoord), h.yCoords.map(mapVcoord), h.numberAngles)
+    gcleanCanvas.fillPolygon(h.xCoords.map(mapHcoord), h.yCoords.map(mapVcoord), h.numberCorners)
     gcleanCanvas.setColor(Color.BLACK)
-    gcleanCanvas.drawPolygon(h.xCoords.map(mapHcoord), h.yCoords.map(mapVcoord), h.numberAngles)
+    gcleanCanvas.drawPolygon(h.xCoords.map(mapHcoord), h.yCoords.map(mapVcoord), h.numberCorners)
     val w: Int = gcleanCanvas.getFontMetrics.stringWidth(h.stringToShow) / 2
     if (w.toDouble > 0.85 * mapHcoord(h.horizontalMaxTextWidth)) {
       val currentFont = gcleanCanvas.getFont

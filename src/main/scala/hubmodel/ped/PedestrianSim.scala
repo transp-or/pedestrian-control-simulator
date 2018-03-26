@@ -4,6 +4,7 @@ import java.util.concurrent.ThreadLocalRandom
 
 import breeze.numerics.round
 import hubmodel._
+import hubmodel.tools.cells.RectangularVertexTrait
 import myscala.math.vector.ZeroVector2D
 
 
@@ -22,11 +23,11 @@ import myscala.math.vector.ZeroVector2D
   * @param currentDestination intermediate destination point (next target)
   * @param route              initial route
   */
-class PedestrianSim(val origin: Vertex,
-                    val finalDestination: Vertex,
+class PedestrianSim(val origin: RectangularVertexTrait,
+                    val finalDestination: RectangularVertexTrait,
                     val freeFlowVel: Double,
                     val entryTime: Time,
-                    var route: List[Vertex]) extends PedestrianTrait {
+                    var route: List[RectangularVertexTrait]) extends PedestrianTrait {
 
   /** current position of the pedestrian */
   var currentPosition: Position = origin.uniformSamplePointInside
@@ -56,7 +57,7 @@ class PedestrianSim(val origin: Vertex,
   val freedFrom: scala.collection.mutable.ArrayBuffer[String] = scala.collection.mutable.ArrayBuffer()
 
   /** target zone */
-  var nextZone: Vertex = route.head
+  var nextZone: RectangularVertexTrait = route.head
 
   /* Position increment to be added at the next time interval */
   var positionIncrement: Position = new ZeroVector2D
@@ -157,7 +158,7 @@ class PedestrianSim(val origin: Vertex,
     * @param posO      current position (general point)
     * @param route     initial route
     */
-  def this(oZone: Vertex, dZone: Vertex, entryTime: Time, posO: Position, route: List[Vertex]) {
+  def this(oZone: RectangularVertexTrait, dZone: RectangularVertexTrait, entryTime: Time, posO: Position, route: List[RectangularVertexTrait]) {
     this(oZone, dZone, 1.34 + 0.0 * ThreadLocalRandom.current().nextGaussian(), entryTime, route)
     this.currentPosition = posO
   }

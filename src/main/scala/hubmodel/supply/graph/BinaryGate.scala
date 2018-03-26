@@ -1,6 +1,7 @@
 package hubmodel.supply.graph
 
-import hubmodel.{Position, VertexRectangle}
+import hubmodel.tools.cells.RectangularVertexTrait
+import hubmodel.{Position}
 
 /** Object to model gates controlling the flow of pedestrians
   *
@@ -9,8 +10,8 @@ import hubmodel.{Position, VertexRectangle}
   * @param start    one end of the gate (used for visualization)
   * @param end      other end of the gate (used for visualization)
   */
-class BinaryGate(o: VertexRectangle,
-                 d: VertexRectangle,
+class BinaryGate(o: RectangularVertexTrait,
+                 d: RectangularVertexTrait,
                  start: Position,
                  end: Position,
                  ma: String) extends MyEdgeWithGate(o, d, start, end, ma) {

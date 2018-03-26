@@ -1,13 +1,15 @@
-package hubmodel.mvmtmodels
+package hubmodel.mvmtmodels.NOMAD
 
 import breeze.linalg.max
 import hubmodel.DES.{Action, SFGraphSimulator}
 import hubmodel._
 import hubmodel.ped.PedestrianSim
 import hubmodel.supply.continuous.Wall
+import hubmodel.tools.cells.isInVertex
 import myscala.math.vector.{Vector2D, ZeroVector2D}
 
-class NOMADModel(sim: SFGraphSimulator) extends Action {
+
+class NOMADOriginalModel(sim: SFGraphSimulator) extends Action {
 
 
   /** Computes the direction based on the current position and the target position
@@ -72,13 +74,25 @@ class NOMADModel(sim: SFGraphSimulator) extends Action {
   }
 
   protected def obstacleInteractionAcceleration(p: PedestrianSim, w: Wall): Acceleration = {
-    val shy: Double = 1.0 // whats is the value of this parameter ?
-    val aW: Double = -1.0 * 10.0 // multiplication by -1 to take into account the negative sign
+    val shy: Double = 0.35 // whats is the value of this parameter ?
+    val aW: Double = -1.0 * 5.0 // multiplication by -1 to take into account the negative sign
     val p2wall: Vector2D = getClosestPoint(p.currentPosition, w) - p.currentPosition
     val d: Double = p2wall.norm
-    if (d > shy) new ZeroVector2D
-    else if (d <= 0.5 * shy) p2wall.normalized * aW
-    else p2wall.normalized * 2.0 * (1.0 - d / shy) * aW
+    if (p.r - d > 0.0){
+      val k0: Double = -p.k0//-1000.0
+      val k1: Double = -p.k1//1000.0
+      //p2wall.normalized * max(math.pow(10,-5), p.r - d) * k0 + p2wall.orthogonal.dot(p.currentVelocityNew) * max(math.pow(10,-5), p.r - d) * k1
+      p2wall.normalized * (p.r - d) * k0
+      p2wall.orthogonal * (-p.k1 * (p.r - d) * p.currentVelocity.dot(p2wall.orthogonal)) - p2wall.normalized * p.k0
+    } else {
+      val factor: Double = math.min(1.0, 1.0 - (d - p.r - shy) / shy)
+      if (factor > 0.0) {p2wall.normalized * factor * aW}
+      else new ZeroVector2D
+    }
+
+    /*if (d > shy) new ZeroVector2D
+    else if (d <= 0.5 * shy) p2wall.normalize * aW
+    else p2wall.normalize * (1.0 - (d-shy) / shy) * aW*/
   }
 
   private def projectOntoMe(me: Vector2D, that: Vector2D): Vector2D = {
@@ -86,11 +100,11 @@ class NOMADModel(sim: SFGraphSimulator) extends Action {
   }
 
   private def computePedestrianInteraction(p: PedestrianSim, that: PedestrianSim): Acceleration = {
-    val a0: Double = -1.0 * 2.02 // multiplication by -1 to take into account the negative sign
-    val r0: Double = 1.24
-    val a1: Double = -1.0 * 7.08 // multiplication by -1 to take into account the negative sign
-    val r1: Double = 0.69
-    val anticipationTime: Double = 0.53
+    val a0: Double = -1.0 * p.a0//10.0//2.02 // multiplication by -1 to take into account the negative sign
+    val r0: Double = p.r0//0.16//1.24
+    val a1: Double = -1.0 * p.a1//10.0//7.08 // multiplication by -1 to take into account the negative sign
+    val r1: Double = p.r1//0.16//0.69
+    val anticipationTime: Double = 0.5
 
     val (pPos, thatPos) = if (p.currentVelocity.dot(that.currentVelocity) > 0.0) { // don't need to normalize as sign is of interest
       (p.currentPosition, that.currentPosition)
@@ -98,38 +112,31 @@ class NOMADModel(sim: SFGraphSimulator) extends Action {
       (p.currentPosition + p.currentVelocity * anticipationTime, that.currentPosition + that.currentVelocity * anticipationTime)
     }
     val vecBetweenPeds: Vector2D = thatPos - pPos
-    val distanceBetweenPeds: Double = max(vecBetweenPeds.norm, 0.0*(p.r + that.r))
+    val distanceBetweenPeds: Double = max(vecBetweenPeds.norm, math.pow(10,-5))
 
     //if (p.currentVelocityNew.norm > 0.0 && ((p.currentPositionNew - that.currentPositionNew).norm <= (p.r + that.r) )) {
-    val delta: Double = (p.r + that.r) - (p.currentPosition - that.currentPosition).norm
-    val k0: Double = -1000.0
-    val k1: Double = 1000.0
-
-    val smoothingPar1: Double = -0.5
-    val smoothingPar2: Double = 10.0
-    val smoothingPar3: Double = 1.0
-
+    val delta: Double = math.max((p.r + that.r) - (p.currentPosition - that.currentPosition).norm, math.pow(10,-5))
+    val k0: Double = -p.k0//-1000.0
+    val k1: Double = p.k1//1000.0
 
     val tmpOrthogonalDirectionCloseRange: Direction = new Direction((that.currentPosition - p.currentPosition).Y, (that.currentPosition - p.currentPosition).X * -1.0).normalized
     val orthogonalDirectionCloseRange: Direction = if (tmpOrthogonalDirectionCloseRange.dot(p.currentVelocity) < 0.0) {tmpOrthogonalDirectionCloseRange * -1.0} else {tmpOrthogonalDirectionCloseRange}
 
     //(that.currentPositionNew - p.currentPositionNew).normalize * k0 * delta + orthogonalDirection*(that.currentVelocityNew.norm - p.currentVelocityNew.norm) * k1 * delta
-      if (p.currentVelocity.norm > 0.0 && p.currentVelocity.dot(vecBetweenPeds) > 0.0) {
+      if (p.currentVelocity.norm > 0.0 && p.currentVelocity.dot(vecBetweenPeds) < 0.0) {
         val orthogonalDirection: Direction = projectOntoMe(new Direction(p.currentVelocity.Y, p.currentVelocity.X * -1.0).normalized, vecBetweenPeds).normalized
-        val lateralDistance: Double = max(projectOntoMe(orthogonalDirection, vecBetweenPeds).norm,0.0)
+        val lateralDistance: Double = max(projectOntoMe(orthogonalDirection, vecBetweenPeds).norm, math.pow(10,-5))
         val f = (that.currentPosition - p.currentPosition).normalized * a0 * math.exp(-distanceBetweenPeds / r0) + orthogonalDirection * a1 * math.exp(-distanceBetweenPeds * lateralDistance / r1) +
-          (p.currentPosition - that.currentPosition).normalized * smoothingPar3*math.exp(smoothingPar2*delta + smoothingPar1) + (projectOntoMe(orthogonalDirectionCloseRange, that.currentVelocity).norm - projectOntoMe(orthogonalDirectionCloseRange, p.currentVelocity).norm) * smoothingPar3*math.exp(smoothingPar2*delta + smoothingPar1)
+          (that.currentPosition - p.currentPosition).normalized * delta*k0 + (projectOntoMe(orthogonalDirectionCloseRange, that.currentVelocity).norm - projectOntoMe(orthogonalDirectionCloseRange, p.currentVelocity).norm) * delta*k1
         //println("in front:", sim.currentTime, p.ID, that.ID, distanceBetweenPeds, f)
         f
       } else {
         val f = (that.currentPosition - p.currentPosition).normalized * a0 * math.exp(-distanceBetweenPeds / r0) +
-          (p.currentPosition - that.currentPosition).normalized * smoothingPar3*math.exp(smoothingPar2*delta + smoothingPar1) + (projectOntoMe(orthogonalDirectionCloseRange, that.currentVelocity).norm - projectOntoMe(orthogonalDirectionCloseRange, p.currentVelocity).norm) * smoothingPar3*math.exp(smoothingPar2*delta + smoothingPar1)
+          (that.currentPosition - p.currentPosition).normalized * delta*k0 + (projectOntoMe(orthogonalDirectionCloseRange, that.currentVelocity).norm - projectOntoMe(orthogonalDirectionCloseRange, p.currentVelocity).norm) * delta*k1
         //println("behind:",  sim.currentTime, p.ID, that.ID, distanceBetweenPeds, f)
         f
       }
   }
-
-//100*exp(5.0*x+2.0)
 
   protected def computePedestrianIncrements(p: PedestrianSim): Unit = {
 
@@ -175,21 +182,29 @@ class NOMADModel(sim: SFGraphSimulator) extends Action {
       ped.addHistory(sim.currentTime)
     }) // transformation of pedestrian objects
 
-
-    sim.processCompletedPedestrian(sim.finalDestinationReached)
     // adds the pedestrians who reach the final destination to the completed list
+    sim.processCompletedPedestrian(sim.finalDestinationReached)
+
     //sim.concatenate2PopulationCompleted(sim.population.filter(sim.finalDestinationReached))
 
-    // removes the pedestrians which reached their final destination from the population and sets their "completed" flag to true
+    // removes the pedestrians whic reached their final destination from the population
     //sim.removeFromPopulation(sim.finalDestinationReached)
+    sim.rebuildMTree()
 
     // enqueues pedestrians in the waiting zones if gating is used
-    if (sim.useFlowGates) sim.population.foreach(sim.graph.enqueueInWaitingZone)
+    if (sim.useFlowGates) {
+      sim.controlDevices.flowGates.foreach(fg => {
+        sim.population
+          .filter(p => p.nextZone == fg.endVertex && !fg.pedestrianQueue.contains(p) && !p.freedFrom.contains(fg.ID) && isInVertex(fg.startVertex)(p.currentPosition) )
+          .foreach(p => sim.insertEventWithZeroDelay(new fg.EnqueuePedestrian(p, sim)))
+      })
+    }
+
 
     // inserts next event
     insertNextEvent()
   }
 
-  protected def insertNextEvent(): Unit = sim.insertEventWithDelayNew(sim.sf_dt)(new NOMADModel(sim))
+  protected def insertNextEvent(): Unit = sim.insertEventWithDelayNew(sim.sf_dt)(new NOMADOriginalModel(sim))
 
 }

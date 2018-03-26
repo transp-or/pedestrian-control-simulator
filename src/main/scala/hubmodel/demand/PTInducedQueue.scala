@@ -2,9 +2,9 @@ package hubmodel.demand
 
 import java.util.concurrent.ThreadLocalRandom
 
-import hubmodel.Vertex
+import hubmodel.tools.cells.RectangularVertexTrait
 
-class PTInducedQueue(val id: Vertex) {
+class PTInducedQueue(val id: RectangularVertexTrait) {
 
   private val _queue: collection.mutable.ArrayBuffer[CreatePedestrian] = collection.mutable.ArrayBuffer()
 

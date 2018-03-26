@@ -11,6 +11,7 @@ import hubmodel.output.{createWhiteBackground, getBounds, mapCoordAffine}
 import hubmodel.ped.PedestrianSim
 import hubmodel.supply.continuous.Wall
 import hubmodel.supply.graph.BinaryGate
+import hubmodel.tools.cells.RectangularVertexTrait
 import org.jcodec.api.awt.AWTSequenceEncoder
 
 /** Creates a video showing the movement of individual pedestrians with the critical zones in which the density is
@@ -34,7 +35,7 @@ class MovingPedestriansWithDensityWithWallVideo(outputFile: String,
                                                 walls: Iterable[Wall],
                                                 fps: Int,
                                                 pop: Vector[PedestrianSim],
-                                                criticalAreaInput: List[Vertex],
+                                                criticalAreaInput: List[RectangularVertexTrait],
                                                 gateCollection: Map[String, BinaryGate],
                                                 var gateHistory: scala.collection.mutable.ArrayBuffer[(Int, List[(String, Boolean)])],
                                                 var densityMeasurements: collection.mutable.ArrayBuffer[(Int, Double)],
@@ -111,7 +112,7 @@ class MovingPedestriansWithDensityWithWallVideo(outputFile: String,
 
     val box: BufferedImage = new BufferedImage(canvasWidth, canvasHeight, BufferedImage.TYPE_4BYTE_ABGR)
     if (densityMeasurements.nonEmpty && criticalAreaInput.nonEmpty) {
-      val criticalArea: Vertex = criticalAreaInput.head
+      val criticalArea: RectangularVertexTrait = criticalAreaInput.head
       val gBox: Graphics2D = box.createGraphics()
       if (densityMeasurements.head._2 >= 2.17) gBox.setColor(new Color(153, 0, 0, 25))
       else if (densityMeasurements.head._2 > 1.08) gBox.setColor(new Color(255, 0, 0, 25))

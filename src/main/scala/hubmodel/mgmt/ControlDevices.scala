@@ -1,13 +1,13 @@
 package hubmodel.mgmt
 
-import hubmodel.VertexRectangle
 import hubmodel.supply.graph._
 import hubmodel.tools.ControlDevicesException
+import hubmodel.tools.cells.RectangularVertexTrait
 
 
 class ControlDevices(graph: GraphReader) {
 
-  val (monitoredAreas, amws, flowGates, binaryGates): (Iterable[VertexRectangle], Iterable[MovingWalkway], Iterable[FlowGate], Iterable[BinaryGate]) = {
+  val (monitoredAreas, amws, flowGates, binaryGates): (Iterable[RectangularVertexTrait], Iterable[MovingWalkway], Iterable[FlowGate], Iterable[BinaryGate]) = {
     (
       graph.monitoredAreas,
       graph.amws,

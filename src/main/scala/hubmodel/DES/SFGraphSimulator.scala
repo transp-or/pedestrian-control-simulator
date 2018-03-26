@@ -4,14 +4,14 @@ import hubmodel.NewTimeNumeric.mkOrderingOps
 import hubmodel._
 import hubmodel.demand.{CreatePedestrian, PTInducedQueue, PedestrianFlows, ProcessPedestrianFlows, ProcessTimeTable, TimeTable}
 import hubmodel.mgmt.{ControlDevices, EvaluateState}
-import hubmodel.mvmtmodels._
+import hubmodel.mvmtmodels.NOMAD.NOMADOriginalModel
+import hubmodel.mvmtmodels.{RebuildTree, _}
 import hubmodel.ped.PedestrianSim
 import hubmodel.route.UpdateRoutes
 import hubmodel.supply.continuous.ContinuousSpace
 import hubmodel.supply.graph.{RouteGraph, StartFlowGates}
 import hubmodel.supply.{NodeID_New, NodeParent, TrainID_New}
-import hubmodel.tools.RebuildTree
-
+import hubmodel.tools.cells.{RectangularVertexTrait, isInVertex}
 
 class SFGraphSimulator(override val startTime: Time,
                        override val finalTime: Time,
@@ -54,16 +54,16 @@ class SFGraphSimulator(override val startTime: Time,
 
 
   /** KPIs */
-  val criticalArea: List[Vertex] = controlDevices.monitoredAreas.toList
+  val criticalArea: List[RectangularVertexTrait] = controlDevices.monitoredAreas.toList
   //List(VertexCell("CriticalZone1", DenseVector(50.0, 10.720), DenseVector( 56.0, 10.720), DenseVector( 56.0, 16.800), DenseVector( 50.0, 16.800)))
   //val criticalArea: List[Vertex] = List(Vertex("CriticalZone1", DenseVector(51.5, 10.72), DenseVector(80.40, 10.72), DenseVector(80.40, 16.80), DenseVector(51.50, 16.80)))
   val densityHistory: collection.mutable.ArrayBuffer[(Time, Double)] = collection.mutable.ArrayBuffer((startTime, 0.0))
   val inflowHistory: collection.mutable.ArrayBuffer[(Time, Double)] = collection.mutable.ArrayBuffer((startTime, 0.0))
 
-  val closedEdges: scala.collection.mutable.HashSet[(Vertex, Vertex)] = scala.collection.mutable.HashSet()
+  val closedEdges: scala.collection.mutable.HashSet[(RectangularVertexTrait, RectangularVertexTrait)] = scala.collection.mutable.HashSet()
   val gatesHistory: collection.mutable.ArrayBuffer[(Time, List[(String, Boolean)])] = collection.mutable.ArrayBuffer()
 
-  val PTInducedFlows: collection.mutable.Map[Vertex, PTInducedQueue] = collection.mutable.Map()
+  val PTInducedFlows: collection.mutable.Map[RectangularVertexTrait, PTInducedQueue] = collection.mutable.Map()
 
   /** Takes a conceptual node (train or on foot) and returns the set of "real" nodes (the ones used by the graph)
     * in which the pedestrians must be created.
@@ -71,7 +71,7 @@ class SFGraphSimulator(override val startTime: Time,
     * @param conceptualNode node representing the train or the pedestrian zone
     * @return iterable in which the pedestrians will be created
     */
-  def conceptualNode2GraphNodes(conceptualNode: NodeParent): Iterable[Vertex] = {
+  def conceptualNode2GraphNodes(conceptualNode: NodeParent): Iterable[RectangularVertexTrait] = {
     conceptualNode match {
       case x: TrainID_New => this.timeTable.train2NodesNew(x).map(n => this.graph.vertexMap(n.ID))
       case x: NodeID_New => Iterable(this.graph.vertexMap(x.ID))

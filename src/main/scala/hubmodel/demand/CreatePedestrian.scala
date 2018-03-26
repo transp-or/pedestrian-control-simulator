@@ -4,11 +4,12 @@ import breeze.numerics.pow
 import hubmodel.DES.{Action, SFGraphSimulator}
 import hubmodel._
 import hubmodel.ped.PedestrianSim
+import hubmodel.tools.cells.RectangularVertexTrait
 
 /**
   * Creates a pedestrian. A new pedestrian will be added when this event is executed.
   */
-class CreatePedestrian(o: Vertex, d: Vertex, sim: SFGraphSimulator) extends Action {
+class CreatePedestrian(o: RectangularVertexTrait, d: RectangularVertexTrait, sim: SFGraphSimulator) extends Action {
 
   /**
     * Inserts a new pedestrian. The characteristics of this pedestrian are sampled on creation.

@@ -2,6 +2,7 @@ package hubmodel.demand
 
 import hubmodel.DES.{Action, SFGraphSimulator}
 import hubmodel._
+import hubmodel.tools.cells.RectangularVertexTrait
 
 class TrainArrival(train: Train, sim: SFGraphSimulator) extends Action {
 
@@ -14,7 +15,7 @@ class TrainArrival(train: Train, sim: SFGraphSimulator) extends Action {
   val totalDisembarkingFlows: Double = alightingFlows.foldRight(0.0)((f: PedestrianFlow_New_Parent, acc: Double) => acc + f.f)
   val durationDisembarking: Double = totalDisembarkingFlows/2.176 // 2*(2.7-1.1) * 0.68 theoretical maximum disembarking rate.
 
-  val flows: Iterable[(Vertex, Vertex, Double)] = alightingFlows.flatMap(f => splitFractionsUniform(sim.conceptualNode2GraphNodes(f.O), sim.conceptualNode2GraphNodes(f.D), f.f))
+  val flows: Iterable[(RectangularVertexTrait, RectangularVertexTrait, Double)] = alightingFlows.flatMap(f => splitFractionsUniform(sim.conceptualNode2GraphNodes(f.O), sim.conceptualNode2GraphNodes(f.D), f.f))
 
   override def execute(): Unit = {
     sim.eventLogger.trace("time=" + sim.currentTime + ": train arrival")

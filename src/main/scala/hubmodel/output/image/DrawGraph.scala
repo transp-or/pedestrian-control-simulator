@@ -5,9 +5,10 @@ import java.awt.{Color, Font, Graphics2D}
 import javax.imageio.ImageIO
 
 import hubmodel.output._
-import hubmodel.{Position, Vertex}
+import hubmodel.tools.cells.RectangularVertexTrait
+import hubmodel.{Position}
 
-class DrawGraph(edges: Vector[(Vertex, Vertex)],
+class DrawGraph(edges: Vector[(RectangularVertexTrait, RectangularVertexTrait)],
                 filename: String = "",
                 mapFun: Option[(Double => Int, Double => Int)] = None,
                 imHeight: Option[Int] = None) {

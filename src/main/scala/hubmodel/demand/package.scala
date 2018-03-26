@@ -16,6 +16,8 @@ import hubmodel.supply.NodeID
   */
 package hubmodel {
 
+  import hubmodel.tools.cells.RectangularVertexTrait
+
   package object demand {
 
     val string2LocalDateTime: String => LocalDateTime = str => LocalDateTime.parse(str, DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))
@@ -138,7 +140,7 @@ package hubmodel {
                                   TRAIN INDUCED FLOWS (TINF)
     -----------------------------------------------------------------------------------*/
     // assuming uniform access distribution
-    def splitFractionsUniform(arrNodes: Iterable[Vertex], depNodes: Iterable[Vertex], totalFlow: Double): Iterable[(Vertex, Vertex, Double)] = {
+    def splitFractionsUniform(arrNodes: Iterable[RectangularVertexTrait], depNodes: Iterable[RectangularVertexTrait], totalFlow: Double): Iterable[(RectangularVertexTrait, RectangularVertexTrait, Double)] = {
       val perm = for {// all permutations of two lists of nodes
         a <- arrNodes
         b <- depNodes

@@ -1,4 +1,4 @@
-package hubmodel.tools
+package hubmodel.mvmtmodels
 
 import hubmodel.DES.{Action, SFGraphSimulator}
 

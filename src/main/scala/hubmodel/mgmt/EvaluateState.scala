@@ -1,7 +1,7 @@
 package hubmodel.mgmt
 
 import hubmodel.DES.{Action, SFGraphSimulator}
-import hubmodel.isInVertex
+import hubmodel.tools.cells.isInVertex
 import kn.uni.voronoitreemap.datastructure.OpenList
 import kn.uni.voronoitreemap.diagram.PowerDiagram
 import kn.uni.voronoitreemap.j2d.{PolygonSimple, Site}

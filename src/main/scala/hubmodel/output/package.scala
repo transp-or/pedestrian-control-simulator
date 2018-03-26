@@ -8,6 +8,7 @@ import javax.imageio.ImageIO
 import breeze.linalg.{max, min}
 import breeze.numerics.round
 import hubmodel.supply.continuous.Wall
+import hubmodel.tools.cells.RectangularVertexTrait
 
 /**
   * Created by nicholas on 6/11/17.
@@ -69,7 +70,7 @@ package object output {
     (minX, minY, maxX, maxY)
   }
 
-  def getBounds(edges: Vector[(Vertex, Vertex)]): (Double, Double, Double, Double) = {
+  def getBounds(edges: Vector[(RectangularVertexTrait, RectangularVertexTrait)]): (Double, Double, Double, Double) = {
     val minX: Double = min(edges.map(e => min(min(e._1.A.X, e._1.B.X), min(e._1.C.X, e._1.D.X))))
     val minY: Double = min(edges.map(e => min(min(e._1.A.Y, e._1.B.Y), min(e._1.C.Y, e._1.D.Y))))
     val maxX: Double = max(edges.map(e => max(max(e._1.A.X, e._1.B.X), max(e._1.C.X, e._1.D.X))))

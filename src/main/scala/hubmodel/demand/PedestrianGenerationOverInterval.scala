@@ -9,6 +9,7 @@ import java.util.concurrent.ThreadLocalRandom
 import hubmodel.DES.{Action, SFGraphSimulator}
 import hubmodel._
 import hubmodel.supply.NodeID
+import hubmodel.tools.cells.RectangularVertexTrait
 
 /** Extension of [[Action]] which will insert a [[CreatePedestrian]] actions based on a Poisson distribution for
   * the creation times.
@@ -17,7 +18,7 @@ import hubmodel.supply.NodeID
   * @param end          end time of the pedestrian creation
   * @param numberPeople number of people to create
   */
-class PedestrianGenerationOverInterval(o: Vertex, d: Vertex, start: Time, end: Time, numberPeople: Int, sim: SFGraphSimulator) extends Action {
+class PedestrianGenerationOverInterval(o: RectangularVertexTrait, d: RectangularVertexTrait, start: Time, end: Time, numberPeople: Int, sim: SFGraphSimulator) extends Action {
 
   /** Poisson distribution
     *

@@ -2,9 +2,10 @@ package hubmodel.supply.graph
 
 import hubmodel.DES.{Action, SFGraphSimulator}
 import hubmodel.ped.PedestrianSim
-import hubmodel.{Position, Vertex}
+import hubmodel.tools.cells.RectangularVertexTrait
+import hubmodel.{Position}
 
-abstract class MyEdgeWithGate(override val startVertex: Vertex, override val endVertex: Vertex, val start: Position, val end: Position, val monitoredArea: String) extends MyEdge(startVertex, endVertex) {
+abstract class MyEdgeWithGate(override val startVertex: RectangularVertexTrait, override val endVertex: RectangularVertexTrait, val start: Position, val end: Position, val monitoredArea: String) extends MyEdge(startVertex, endVertex) {
 
   val width: Double = (end - start).norm
 

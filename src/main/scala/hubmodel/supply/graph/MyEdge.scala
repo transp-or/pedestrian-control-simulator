@@ -1,6 +1,7 @@
 package hubmodel.supply.graph
 
-import hubmodel.{Vertex, generateUUID}
+import hubmodel.tools.cells.RectangularVertexTrait
+import hubmodel.{generateUUID}
 import org.jgrapht.graph.DefaultWeightedEdge
 
 /** Representation of an edge used in the graph structure. Can be used as parent for advanced edges with gates.
@@ -8,7 +9,7 @@ import org.jgrapht.graph.DefaultWeightedEdge
   * @param startVertex vertex at origin
   * @param endVertex   vertex at destination
   */
-class MyEdge(val startVertex: Vertex, val endVertex: Vertex) extends DefaultWeightedEdge {
+class MyEdge(val startVertex: RectangularVertexTrait, val endVertex: RectangularVertexTrait) extends DefaultWeightedEdge {
 
   // ID of the edge
   val ID: String = generateUUID

@@ -1,8 +1,9 @@
 package hubmodel.supply.graph
 
-import hubmodel.{Position, Vertex}
+import hubmodel.tools.cells.RectangularVertexTrait
+import hubmodel.Position
 
-/** Extension of [[hubmodel.supply.MyEdge]] for the usage of "flow gates". The gates control the
+/** Extension of [[hubmodel.supply.MyEdgeWithGate]] for the usage of "flow gates". The gates control the
   * flow of pedestrians passing through them.
   *
   * TODO: A more realistic approach for the modeling of gates could be used to determine the maximum capacity.
@@ -12,7 +13,7 @@ import hubmodel.{Position, Vertex}
   * @param start       one end of the gate
   * @param end         other end of the gate
   */
-class FlowGate(startVertex: Vertex, endVertex: Vertex, start: Position, end: Position, ma: String) extends MyEdgeWithGate(startVertex, endVertex, start, end, ma) {
+class FlowGate(startVertex: RectangularVertexTrait, endVertex: RectangularVertexTrait, start: Position, end: Position, ma: String) extends MyEdgeWithGate(startVertex, endVertex, start, end, ma) {
 
   // variable flow rate of the gate [pax/s]
   var flowRate = 0.5

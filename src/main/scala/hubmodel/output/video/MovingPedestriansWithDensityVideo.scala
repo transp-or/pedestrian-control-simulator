@@ -11,6 +11,7 @@ import hubmodel._
 import hubmodel.output.createBackgroundFromImage
 import hubmodel.ped.PedestrianSim
 import hubmodel.supply.graph.BinaryGate
+import hubmodel.tools.cells.RectangularVertexTrait
 import org.jcodec.api.awt.AWTSequenceEncoder
 
 
@@ -38,7 +39,7 @@ class MovingPedestriansWithDensityVideo(outputFile: String,
                                         bkgdImageSizeMeters: (Double, Double),
                                         fps: Int,
                                         pop: Vector[PedestrianSim],
-                                        criticalAreaInput: List[VertexRectangle],
+                                        criticalAreaInput: List[RectangularVertexTrait],
                                         gateCollection: Map[String, BinaryGate],
                                         var gateHistory: scala.collection.mutable.ArrayBuffer[(Int, List[(String, Boolean)])],
                                         var densityMeasurements: collection.mutable.ArrayBuffer[(Int, Double)],
@@ -115,7 +116,7 @@ class MovingPedestriansWithDensityVideo(outputFile: String,
 
     val box: BufferedImage = new BufferedImage(canvasWidth, canvasHeight, BufferedImage.TYPE_4BYTE_ABGR)
     if (densityMeasurements.nonEmpty && criticalAreaInput.nonEmpty) {
-      val criticalArea: VertexRectangle = criticalAreaInput.head
+      val criticalArea: RectangularVertexTrait = criticalAreaInput.head
       val gBox: Graphics2D = box.createGraphics()
       if (densityMeasurements.head._2 >= 2.17) gBox.setColor(new Color(153, 0, 0, 25))
       else if (densityMeasurements.head._2 > 1.08) gBox.setColor(new Color(255, 0, 0, 25))
