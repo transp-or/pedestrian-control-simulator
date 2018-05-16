@@ -4,7 +4,6 @@ package hubmodel {
     * Created by nicholas on 3/6/17.
     */
 
-  import myscala.math.vector.Vector2D
   import play.api.libs.functional.syntax._
   import play.api.libs.json.Reads.{min, minLength}
   import play.api.libs.json._
@@ -14,28 +13,79 @@ package hubmodel {
     */
   package object supply {
 
-    abstract class NodeParent
+    abstract class NodeParent(val ID: String) {
+      def canEqual(a: Any): Boolean = a.isInstanceOf[NodeParent]
 
-    case class NodeID_New(ID: String, humanID: String) extends NodeParent {
-      def this(ID: String) = this(ID, ID)
-      override def toString: ODID = this.humanID
+      override def equals(that: Any): Boolean =
+        that match {
+          case that: NodeParent => that.canEqual(this) && this.hashCode == that.hashCode
+          case _ => false
+        }
+
+      override def hashCode: Int = { this.ID.hashCode }
     }
 
-    case class TrackID_New(ID: Int, humanID: String) extends NodeParent {
+    class NodeID_New(ID: String, humanID: String) extends NodeParent(ID) {
+      def this(ID: String) = this(ID, ID)
+
+      override def toString: ODIDOld = this.ID
+
+      override def canEqual(a: Any): Boolean = a.isInstanceOf[NodeID_New]
+      override def equals(that: Any): Boolean =
+        that match {
+          case that: NodeID_New => that.canEqual(this) && this.hashCode == that.hashCode
+          case _ => false
+        }
+
+      override def hashCode: Int = { this.ID.hashCode }
+    }
+
+    object NodeID_New {
+      def apply(id: String, humandID: String): NodeID_New = new NodeID_New(id, humandID)
+    }
+
+    class StopID_New(ID: Int, humanID: String) extends NodeParent(ID.toString) {
       def this(ID: Int) = this(ID, ID.toString)
-      override def toString: ODID = this.humanID
+
+      override def toString: ODIDOld = this.ID.toString
+
+      override def canEqual(a: Any): Boolean = a.isInstanceOf[StopID_New]
+      override def equals(that: Any): Boolean =
+        that match {
+          case that: StopID_New => that.canEqual(this) && this.hashCode == that.hashCode
+          case _ => false
+        }
+
+      override def hashCode: Int = { this.ID.hashCode }
     }
 
-    case class TrainID_New(ID: String, humanID: String) extends NodeParent {
+    object StopID_New {
+      def apply(id: Int, humandID: String): StopID_New = new StopID_New(id, humandID)
+    }
+
+    class TrainID_New(ID: String, humanID: String) extends NodeParent(ID) {
       def this(ID: String) = this(ID, ID)
-      override def toString: ODID = this.humanID
 
+      override def toString: ODIDOld = this.ID
+
+      override def canEqual(a: Any): Boolean = a.isInstanceOf[TrainID_New]
+      override def equals(that: Any): Boolean =
+        that match {
+          case that: TrainID_New => that.canEqual(this) && this.hashCode == that.hashCode
+          case _ => false
+        }
+
+      override def hashCode: Int = { this.ID.hashCode }
     }
 
-    type NodeID = String
-    type TrackID = Int
-    type TrainID = String
-    type ODID = String
+    object TrainID_New {
+      def apply(id: String, humandID: String): TrainID_New = new TrainID_New(id, humandID)
+    }
+
+    type NodeIDOld = String
+    type TrackIDOld = Int
+    type TrainIDOld = String
+    type ODIDOld = String
 
 
     /* ----------------------------------------------------------------------------------

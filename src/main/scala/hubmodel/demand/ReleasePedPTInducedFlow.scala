@@ -4,9 +4,9 @@ import java.util.concurrent.ThreadLocalRandom
 
 import hubmodel.DES.{Action, SFGraphSimulator}
 import hubmodel._
-import hubmodel.tools.cells.RectangularVertexTrait
+import hubmodel.tools.cells.Rectangle
 
-class ReleasePedPTInducedFlow(o: RectangularVertexTrait, sim: SFGraphSimulator) extends Action {
+class ReleasePedPTInducedFlow(o: Rectangle, sim: SFGraphSimulator) extends Action {
 
   override def execute(): Unit = {
     if (sim.PTInducedFlows(o).nonEmpty) {

@@ -13,7 +13,7 @@ class Zone {
     /**
      * Corners of the zone. Must be a rectangle for the hub model.
      */
-    private Point a,b,c,d;
+    private Point a, b, c, d;
 
     /**
      * As the question "is a point inside me ?" needs to be answered, the Path2D object is used.
@@ -53,19 +53,19 @@ class Zone {
 
     /**
      * Converts this object to JSON format for the hub model. Example:
-     *     {
-     *     "name": "a",
-     *     "x": 0.0,
-     *     "y": 0.0,
-     *     "x1": 47.71234866828081,
-     *     "y1": 247.8312348668281,
-     *     "x2": 47.71234866828078,
-     *     "y2": 188.6055690072639,
-     *     "x3": 113.466828087167,
-     *     "y3": 188.6055690072639,
-     *     "x4": 113.466828087167,
-     *     "y4": 247.8312348668281
-     *     }
+     * {
+     * "name": "a",
+     * "x": 0.0,
+     * "y": 0.0,
+     * "x1": 47.71234866828081,
+     * "y1": 247.8312348668281,
+     * "x2": 47.71234866828078,
+     * "y2": 188.6055690072639,
+     * "x3": 113.466828087167,
+     * "y3": 188.6055690072639,
+     * "x4": 113.466828087167,
+     * "y4": 247.8312348668281
+     * }
      *
      * @return String with the object as JSON
      */

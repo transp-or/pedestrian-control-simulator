@@ -19,7 +19,7 @@ class ProcessTimeTable(sim: SFGraphSimulator) extends Action {
     */
   override def execute(): Unit = {
     sim.eventLogger.trace("time=" + sim.currentTime + ": inserting vehicles")
-    sim.timeTable.trains.filter(t => t._2.arr.isDefined).foreach(t => sim.insertEventAtAbsolute(Time(t._2.arr.get.toSecondOfDay)) {
+    sim.timeTable.timeTable.filter(t => t._2.arr.isDefined).foreach(t => sim.insertEventAtAbsolute(t._2.arr.get) {
       new TrainArrival(t._2, sim)
     })
   }

@@ -4,7 +4,7 @@ import java.util.concurrent.ThreadLocalRandom
 
 import breeze.numerics.round
 import hubmodel._
-import hubmodel.tools.cells.RectangularVertexTrait
+import hubmodel.tools.cells.Rectangle
 import myscala.math.vector.ZeroVector2D
 
 
@@ -15,19 +15,19 @@ import myscala.math.vector.ZeroVector2D
 
 /** Pedestrian used for the disaggregate models and the network based route choice model.
   *
-  * @param origin              origin zone of the pedestrian
-  * @param finalDestination              destination zone of the pedestrian
+  * @param origin             origin zone of the pedestrian
+  * @param finalDestination   destination zone of the pedestrian
   * @param freeFlowVel        free flow speed of the individual
   * @param entryTime          entry time into the system
   * @param currentPosition    current position (general point)
   * @param currentDestination intermediate destination point (next target)
   * @param route              initial route
   */
-class PedestrianSim(val origin: RectangularVertexTrait,
-                    val finalDestination: RectangularVertexTrait,
+class PedestrianSim(val origin: Rectangle,
+                    val finalDestination: Rectangle,
                     val freeFlowVel: Double,
                     val entryTime: Time,
-                    var route: List[RectangularVertexTrait]) extends PedestrianTrait {
+                    var route: List[Rectangle]) extends PedestrianTrait {
 
   /** current position of the pedestrian */
   var currentPosition: Position = origin.uniformSamplePointInside
@@ -57,7 +57,7 @@ class PedestrianSim(val origin: RectangularVertexTrait,
   val freedFrom: scala.collection.mutable.ArrayBuffer[String] = scala.collection.mutable.ArrayBuffer()
 
   /** target zone */
-  var nextZone: RectangularVertexTrait = route.head
+  var nextZone: Rectangle = route.head
 
   /* Position increment to be added at the next time interval */
   var positionIncrement: Position = new ZeroVector2D
@@ -70,13 +70,18 @@ class PedestrianSim(val origin: RectangularVertexTrait,
   //                    AGENT-BASED PARAMETERS REQUIRED BY THE MICROSCOPIC MODELS
   // ******************************************************************************************
 
-  val r: Double = ThreadLocalRandom.current.nextDouble(0.2, 0.3)
-  val a0: Double = ThreadLocalRandom.current.nextDouble(8.0 , 12.0)
-  val r0: Double = ThreadLocalRandom.current.nextDouble(0.10, 0.6 )
-  val a1: Double = ThreadLocalRandom.current.nextDouble(8.0 , 12.0)
-  val r1: Double = ThreadLocalRandom.current.nextDouble(0.10, 0.6 )
-  val k0: Double = ThreadLocalRandom.current.nextDouble(800.0,1200.0)
-  val k1: Double = ThreadLocalRandom.current.nextDouble(800.0,1200.0)
+  val r: Double = ThreadLocalRandom.current.nextDouble(0.2, 0.25)
+  val a0: Double = ThreadLocalRandom.current.nextDouble(8.0, 10.0)
+  val r0: Double = ThreadLocalRandom.current.nextDouble(0.10, 0.5)
+  val a1: Double = ThreadLocalRandom.current.nextDouble(8.0, 10.0)
+  val r1: Double = ThreadLocalRandom.current.nextDouble(0.10, 0.5)
+  val k0: Double = ThreadLocalRandom.current.nextDouble(800.0, 1000.0)
+  val k1: Double = ThreadLocalRandom.current.nextDouble(800.0, 1000.0)
+  val ief: Double = ThreadLocalRandom.current.nextDouble(0.5, 6.0)
+  val ieb: Double = ThreadLocalRandom.current.nextDouble(0.5, 6.0)
+  val c0plus: Double = ThreadLocalRandom.current.nextDouble(0.7, 1.5)
+  val c0min: Double = ThreadLocalRandom.current.nextDouble(0.7, 1.5)
+
 
   // ******************************************************************************************
   //                              GETTER - SETTER METHODS
@@ -142,6 +147,7 @@ class PedestrianSim(val origin: RectangularVertexTrait,
       else if (str.isEmpty) innerPrint(hist.tail, refDate + "," + hist.head._1.asVisioSafe + ",0," + round(hist.head._2.X * 1000) + "," + round(hist.head._2.Y * 1000) + "," + this.ID.hashCode)
       else innerPrint(hist.tail, str + "\n" + refDate + "," + hist.head._1.asVisioSafe + ",0," + round(hist.head._2.X * 1000) + "," + round(hist.head._2.Y * 1000) + "," + this.ID.hashCode)
     }
+
     innerPrint(this._historyPosition, "")
   }
 
@@ -158,8 +164,8 @@ class PedestrianSim(val origin: RectangularVertexTrait,
     * @param posO      current position (general point)
     * @param route     initial route
     */
-  def this(oZone: RectangularVertexTrait, dZone: RectangularVertexTrait, entryTime: Time, posO: Position, route: List[RectangularVertexTrait]) {
-    this(oZone, dZone, 1.34 + 0.0 * ThreadLocalRandom.current().nextGaussian(), entryTime, route)
+  def this(oZone: Rectangle, dZone: Rectangle, entryTime: Time, posO: Position, route: List[Rectangle]) {
+    this(oZone, dZone, 1.0 + 0.2*ThreadLocalRandom.current().nextGaussian(), entryTime, route) // velocity taken from VS data
     this.currentPosition = posO
   }
 }

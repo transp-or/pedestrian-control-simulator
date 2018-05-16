@@ -1,12 +1,12 @@
-package hubmodel
 
+import hubmodel.Position
 import hubmodel.output.image.{DrawCells, DrawCellsOverImage}
-import hubmodel.tools.{MyCellTrait, Square}
+import hubmodel.tools.cells.{VertexPlotting, Square}
 import myscala.math.vector.Vector2D
 
 object PlotJapeneseFigure extends App {
 
-  class CellSpeedDev(c: Position, s: Double, v: Double, range: Double) extends Square(c, s) with MyCellTrait {
+  class CellSpeedDev(c: Position, s: Double, v: Double, range: Double) extends Square(c, s) with VertexPlotting {
 
     val scalarToShow: Double = v
     val horizontalMaxTextWidth: Double = s

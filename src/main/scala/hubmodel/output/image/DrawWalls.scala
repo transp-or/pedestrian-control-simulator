@@ -7,7 +7,7 @@ import javax.imageio.ImageIO
 import hubmodel.output._
 import hubmodel.supply.continuous.Wall
 
-class DrawWalls(walls: Vector[Wall],
+class DrawWalls(walls: Iterable[Wall],
                 filename: String = "",
                 mapFun: Option[(Double => Int, Double => Int)] = None,
                 private val imHeight: Option[Int] = None,
@@ -30,7 +30,7 @@ class DrawWalls(walls: Vector[Wall],
   }
 
   if (filename.length > 0) {
-    val image = new BufferedImage(IMAGE_WIDTH + 20, imageHeight + 20, BufferedImage.TYPE_4BYTE_ABGR)
+    val image: BufferedImage = new BufferedImage(IMAGE_WIDTH + 20, imageHeight + 20, BufferedImage.TYPE_4BYTE_ABGR)
     val verticalTransformation: Int => Int = verticalMirrorTransformation(image.getHeight)
     val gImage: Graphics2D = image.createGraphics()
     gImage.setColor(Color.WHITE)

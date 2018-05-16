@@ -25,7 +25,7 @@ class SocialForceESII(sim: SFGraphSimulator) extends SocialForceLike(sim) with A
     val B: Double = 0.5
 
     val dir: Direction = (ped.currentPosition - pos) / (pos - ped.currentPosition).norm
-    val dirOrtho: Direction = dir.orthogonal//DenseVector(-dir(1), dir(0))
+    val dirOrtho: Direction = dir.orthogonal //DenseVector(-dir(1), dir(0))
     dir * (A * exp((ped.currentPosition - pos).norm * -1 / B))
     //DenseVector(0.0,0.0)
   }

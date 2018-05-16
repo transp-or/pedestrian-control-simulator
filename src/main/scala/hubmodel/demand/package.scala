@@ -8,7 +8,7 @@ import scala.io.BufferedSource
 import java.time.format.DateTimeFormatter
 import java.time.{LocalDateTime, LocalTime}
 
-import hubmodel.supply.NodeID
+import hubmodel.supply.NodeIDOld
 
 
 /**
@@ -16,7 +16,12 @@ import hubmodel.supply.NodeID
   */
 package hubmodel {
 
-  import hubmodel.tools.cells.RectangularVertexTrait
+  import hubmodel.demand.transit.Vehicle
+  import hubmodel.demand.{PublicTransportSchedule, transit}
+  import hubmodel.input.JSONReaders.PublicTransportScheduleReader
+  import hubmodel.input.JSONReaders.TRANSFORM.{PedestrianCollectionReaderTF, Pedestrian_JSON_TF, PublicTransportScheduleReaderTF}
+  import hubmodel.supply.{NodeID_New, StopID_New, TrainID_New}
+  import hubmodel.tools.cells.Rectangle
 
   package object demand {
 
@@ -53,7 +58,7 @@ package hubmodel {
                                       TRAIN TIMETABLE
     -----------------------------------------------------------------------------------*/
 
-    implicit val trainReads: Reads[Train] = (
+    /*implicit val trainReads: Reads[transit.Train] = (
       (JsPath \ "id").read[String](minLength[String](1)) and
         (JsPath \ "type").read[String] and
         (JsPath \ "track").read[Int](min(0)) and
@@ -64,7 +69,7 @@ package hubmodel {
 
     implicit val trainTimeTableReads: Reads[TrainTimeTable] = (
       (JsPath \ "location").read[String](minLength[String](1)) and
-        (JsPath \ "trains").read[Vector[Train]]
+        (JsPath \ "trains").read[Vector[transit.Train]]
       ) (TrainTimeTable.apply _)
 
     implicit val Track2NodesReads: Reads[Track2Nodes] = (
@@ -75,7 +80,7 @@ package hubmodel {
     implicit val track2nodeMappingReads: Reads[Track2NodeMapping] = (
       (JsPath \ "location").read[String] and
         (JsPath \ "track2nodes").read[Vector[Track2Nodes]]
-      ) (Track2NodeMapping.apply _)
+      ) (Track2NodeMapping.apply _)*/
 
 
     /* ----------------------------------------------------------------------------------
@@ -140,7 +145,7 @@ package hubmodel {
                                   TRAIN INDUCED FLOWS (TINF)
     -----------------------------------------------------------------------------------*/
     // assuming uniform access distribution
-    def splitFractionsUniform(arrNodes: Iterable[RectangularVertexTrait], depNodes: Iterable[RectangularVertexTrait], totalFlow: Double): Iterable[(RectangularVertexTrait, RectangularVertexTrait, Double)] = {
+    def splitFractionsUniform(arrNodes: Iterable[Rectangle], depNodes: Iterable[Rectangle], totalFlow: Double): Iterable[(Rectangle, Rectangle, Double)] = {
       val perm = for {// all permutations of two lists of nodes
         a <- arrNodes
         b <- depNodes
@@ -156,24 +161,91 @@ package hubmodel {
                               DISAGRGEGATE PEDESTRIAN DEMAND
     -----------------------------------------------------------------------------------*/
 
-    case class PedestrianJSON(
-                             ID: String,
-                             oZone: String,
-                             dZone: String,
-                             entryTime: Double,
-                             exitTime: Double
+    case class Pedestrian_JSON(
+                               ID: String,
+                               oZone: String,
+                               dZone: String,
+                               entryTime: Double,
+                               exitTime: Double
                              )
 
-    implicit val PedestrianJSONReads: Reads[PedestrianJSON] = (
+    implicit val PedestrianJSONReads: Reads[Pedestrian_JSON] = (
       (JsPath \ "ID").read[String] and
         (JsPath \ "O").read[String] and
         (JsPath \ "D").read[String] and
         (JsPath \ "entryTime").read[Double] and
         (JsPath \ "exitTime").read[Double]
-      ) (PedestrianJSON.apply _)
+      ) (Pedestrian_JSON.apply _)
 
-    // closing Demand package
+
+
+
+
+  def readSchedule(fileName: String): PublicTransportSchedule = {
+
+    val source: BufferedSource = scala.io.Source.fromFile(fileName)
+    val input: JsValue = Json.parse(try source.mkString finally source.close)
+
+    input.validate[PublicTransportScheduleReader] match {
+      case s: JsSuccess[PublicTransportScheduleReader] => new PublicTransportSchedule(s.get.loc, s.get._timeTableInput.map(v => new Vehicle(TrainID_New(v.ID, ""), v.trainType, StopID_New(v.track, ""), v.arr, v.dep, v.capacity)))
+      case e: JsError => throw new Error("Error while parsing train timetable: " + JsError.toJson(e).toString())
+    }
   }
 
-  // closing HubModel.HubInput package
+    def readScheduleTF(fileName: String): PublicTransportSchedule = {
+
+      val source: BufferedSource = scala.io.Source.fromFile(fileName)
+      val input: JsValue = Json.parse(try source.mkString finally source.close)
+
+      input.validate[PublicTransportScheduleReaderTF] match {
+        case s: JsSuccess[PublicTransportScheduleReaderTF] => new PublicTransportSchedule(s.get.loc, s.get._timeTableInput.map(v => new Vehicle(TrainID_New(v.ID, ""), v.ID, StopID_New(v.stopID.toInt, ""), Some(v.arr), Some(v.dep), -1)))
+        case e: JsError => throw new Error("Error while parsing train timetable: " + JsError.toJson(e).toString())
+      }
+    }
+
+    def readDisaggDemand(fileName: String): Vector[(String, String, Time)] = {
+
+
+        val source: BufferedSource = scala.io.Source.fromFile(fileName)
+        val input: JsValue = Json.parse(try source.mkString finally source.close)
+
+        input.validate[Vector[Pedestrian_JSON]] match {
+          case s: JsSuccess[Vector[Pedestrian_JSON]] => s.get.map(p => (p.oZone, p.dZone, Time(p.entryTime)))
+          case e: JsError => throw new Error("Error while parsing disaggregate pedestrian: " + JsError.toJson(e).toString())
+        }
+    }
+
+    def readDisaggDemandTF(fileName: String): Vector[(String, String, Time)] = {
+
+
+      val source: BufferedSource = scala.io.Source.fromFile(fileName)
+      val input: JsValue = Json.parse(try source.mkString finally source.close)
+
+      input.validate[PedestrianCollectionReaderTF] match {
+        case s: JsSuccess[PedestrianCollectionReaderTF] => s.get.population.map(p => (p.oZone, p.dZone, Time(math.pow(10,8))))
+        case e: JsError => throw new Error("Error while parsing disaggregate pedestrian for TF: " + JsError.toJson(e).toString())
+      }
+    }
+
+    def readPedestrianFlows(file: String): (Iterable[PedestrianFlow_New], Iterable[PedestrianFlowPT_New]) = {
+
+      val _pedestrianFlowData: ODFlowData = {
+        val source: BufferedSource = scala.io.Source.fromFile(file)
+        val input: JsValue = Json.parse(try source.mkString finally source.close)
+
+        input.validate[ODFlowData] match {
+          case s: JsSuccess[ODFlowData] => s.get
+          case e: JsError => throw new Error("Error while parsing OF flow file: " + JsError.toJson(e).toString())
+        }
+      }
+
+      (
+        _pedestrianFlowData.flows.map(f => PedestrianFlow_New(NodeID_New(f.O, f.O.toString), NodeID_New(f.D, f.D.toString), f.start, f.end, f.f)),
+        _pedestrianFlowData.PTflows.map(f => { PedestrianFlowPT_New(f.origin, f.destination, f.f) })
+      )
+    }
+
+    // closing Demand package
+
+  }  // closing HubModel.HubInput package
 }

@@ -18,16 +18,18 @@ class ProcessPedestrianFlows(sim: SFGraphSimulator) extends Action {
     */
   override def execute(): Unit = {
     sim.eventLogger.trace("time=" + sim.currentTime + ": inserting pedestrian flows")
-    sim.pedestrianFlows.flows
+    sim.pedestrianFlows
       .foreach(flow => splitFractionsUniform(sim.conceptualNode2GraphNodes(flow.O), sim.conceptualNode2GraphNodes(flow.D), flow.f)
-        .foreach(f => {sim.insertEventWithZeroDelay(new PedestrianGenerationOverInterval(
-          f._1,
-          f._2,
-          flow.start,
-          flow.end,
-          math.round(f._3).toInt,
-          sim
-    ))}))
+        .foreach(f => {
+          sim.insertEventWithZeroDelay(new PedestrianGenerationOverInterval(
+            f._1,
+            f._2,
+            flow.start,
+            flow.end,
+            math.round(f._3).toInt,
+            sim
+          ))
+        }))
   }
 }
 

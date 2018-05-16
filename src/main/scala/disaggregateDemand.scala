@@ -2,7 +2,8 @@ import java.io.File
 import java.time.LocalTime
 
 import breeze.numerics.pow
-import hubmodel.demand.{SplitFractions, Train, TrainTimeTable}
+import hubmodel.demand.transit.Train
+import hubmodel.demand.{SplitFractions}
 import myscala.output.SeqOfSeqExtensions.SeqOfSeqWriter
 import org.scalactic.Tolerance._
 import org.scalactic.TypeCheckedTripleEquals._
@@ -31,7 +32,7 @@ object disaggregateDemand extends App {
     */
   case class Config(schedule: File = new File("."), outputFile: File = new File("."), lower: String = "", upper: String = "", verbose: Boolean = false)
 
-  val parser = new scopt.OptionParser[Config]("disaggregateDemand") {
+  /*val parser = new scopt.OptionParser[Config]("disaggregateDemand") {
     head("Disaggregation of pedestrian OD demand into station exit/entrances.")
 
     opt[File]('s', "schedule").required().valueName("<file>")
@@ -254,7 +255,7 @@ object disaggregateDemand extends App {
     inputParameters._2.toString,
     Option(ODMatrix.keys.flatMap(k => List(k._1.toString, k._2.toString)).toVector.distinct.sorted),
     Option("OD" +: ODMatrix.keys.flatMap(k => List(k._1.toString, k._2.toString)).toVector.distinct.sorted)
-  )
+  )*/
 }
 
 

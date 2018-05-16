@@ -1,7 +1,7 @@
 package hubmodel.supply.graph
 
 import hubmodel.DES.{Action, SFGraphSimulator}
-import hubmodel.tools.cells.RectangularVertexTrait
+import hubmodel.tools.cells.Rectangle
 
 /** Implementation of moving walkways as an edge. This will be used for the route choice aspects.
   *
@@ -9,7 +9,7 @@ import hubmodel.tools.cells.RectangularVertexTrait
   * @param endVertex   vertex at destination
   * @param capacity    capacity of the MV
   */
-class MovingWalkway(override val startVertex: RectangularVertexTrait, override val endVertex: RectangularVertexTrait, val capacity: Double) extends MyEdge(startVertex, endVertex) {
+class MovingWalkway(override val startVertex: Rectangle, override val endVertex: Rectangle, val capacity: Double) extends MyEdge(startVertex, endVertex) {
   val speed: Double = 2.0
 }
 

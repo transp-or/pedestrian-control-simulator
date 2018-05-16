@@ -3,14 +3,14 @@ import breeze.numerics.pow
 import com.typesafe.config.{Config, ConfigFactory}
 import hubmodel.DES.SFGraphSimulator
 import hubmodel._
-import hubmodel.demand.{PedestrianFlows, ReadDisaggDemand, TimeTable}
-import hubmodel.mgmt.ControlDevices
-import hubmodel.output.TRANSFORM.PopulationProcessing
+import hubmodel.demand.{PedestrianFlowPT_New, PedestrianFlow_New, ReadDisaggDemand, readDisaggDemand, readDisaggDemandTF, readPedestrianFlows, readSchedule, readScheduleTF}
+import hubmodel.output.TRANSFORM.PopulationProcessingTRANSFORM
 import hubmodel.output.image.{DrawGraph, DrawWalls, DrawWallsAndGraph}
 import hubmodel.output.video.MovingPedestriansWithDensityWithWallVideo
 import hubmodel.ped.PedestrianSim
-import hubmodel.supply.graph.{BinaryGate, GraphReader}
-import hubmodel.supply.continuous.{ContinuousSpaceReader, Wall}
+import hubmodel.supply.graph.{BinaryGate, readGraph, readStop2Vertex}
+import hubmodel.supply.continuous.ReadContinuousSpace
+import hubmodel.results.PopulationProcessing
 import myscala.math.stats.{ComputeStats, stats}
 import myscala.output.SeqOfSeqExtensions.SeqOfSeqWriter
 import myscala.output.SeqTuplesExtensions.SeqTuplesWriter
@@ -75,10 +75,10 @@ object RunSimulation extends App {
   println("Reading and creating initial data")
 
   // Builds the set of walls used by the Social force model
-  val infraSF = new ContinuousSpaceReader(config.getString("files.walls"))
+  val infraSF = new ReadContinuousSpace(config.getString("files.walls"))
 
   // Builds the graph used for route choice. This Graph is coposed of multiple different link types.
-  val infraGraph = new GraphReader(
+  val (routeGraph, controlDevices) = readGraph(
     config.getString("files.graph"),
     config.getBoolean("sim.use_flow_gates"),
     config.getBoolean("sim.use_binary_gates"),
@@ -87,26 +87,39 @@ object RunSimulation extends App {
     config.getBoolean("sim.measure_density")
   )
 
-  // Collects the control devices which have been read by the graph parser
-  val controlDevices = new ControlDevices(infraGraph)
 
   // Loads the train time table used to create demand from trains
-  val timeTable = new TimeTable(config.getString("files.timetable"))
-
-  // Loads the pedestrian flows. These are either exogenous to the trains (from outside) or flows originating from trains.
-  val flows =  new PedestrianFlows(config.getString("files.flows"), timeTable, config.getBoolean("sim.use_flows"))
-
-  // Loads the disaggregate pedestrian demand.
-  val disaggPopulation = if (config.getBoolean("sim.use_disaggregate_demand")) {
-    new ReadDisaggDemand(config.getString("files.disaggregate_demand"))
+  val (timeTable, stop2Vertex) = if (!config.getIsNull("files.timetable")) {
+    (readSchedule(config.getString("files.timetable")),
+      readStop2Vertex(config.getString("files.zones_to_vertices_map")))
+  } else if (!config.getIsNull("files.timetable_TF")) {
+    (readScheduleTF(config.getString("files.timetable_TF")),
+      readStop2Vertex(config.getString("files.zones_to_vertices_map")))
   } else {
-    null
+    throw new IllegalArgumentException("both time tables files are set to null in config file")
   }
 
-  // Creates images representing the walls, route graph and both overlaid. Used to visualize the input data.
-  val wallsImage = new DrawWalls(infraSF.continuousSpace.walls, config.getString("output.output_prefix") + "_wallsWithNames.png", showNames = true)
-  val graphImage = new DrawGraph(infraGraph.graph.standardEdges.map(e => (e.startVertex, e.endVertex)).toVector, config.getString("output.output_prefix") + "_graph.png")
-  val fullImage = new DrawWallsAndGraph(infraSF.continuousSpace.walls, infraGraph.graph.standardEdges.map(e => (e.startVertex, e.endVertex)).toVector, config.getString("output.output_prefix") + "_wallsAndGraph.png")
+  // Loads the pedestrian flows. These are either exogenous to the trains (from outside) or flows originating from trains.
+  val flows: (Iterable[PedestrianFlow_New], Iterable[PedestrianFlowPT_New]) = if (!config.getIsNull("files.flows") && config.getBoolean("sim.use_flows")) {
+    readPedestrianFlows(config.getString("files.flows"))
+  } else if (!config.getIsNull("files.flows_TF") && config.getBoolean("sim.use_flows")) {
+    readPedestrianFlows(config.getString("files.flows_TF"))
+  } else {
+    println(" * using only disaggregate pedestrian demand")
+    (Iterable(), Iterable())
+  }
+
+  //val flows =  new ReadPedestrianFlows(config.getString("files.flows"), config.getBoolean("sim.use_flows"))
+
+  // Loads the disaggregate pedestrian demand.
+  val disaggPopulation: Iterable[(String, String, Time)] = if (config.getIsNull("files.flows_TF") && !config.getIsNull("files.disaggregate_demand")) {
+    readDisaggDemand(config.getString("files.disaggregate_demand"))
+  } else if (config.getIsNull("files.disaggregate_demand") && !config.getIsNull("files.flows_TF")) {
+    readDisaggDemandTF(config.getString("files.flows_TF"))
+  } else {
+    println(" * using only standard pedestrian flows")
+    Iterable()
+  }
 
   // Loads the start time, end time and time intervals
   val simulationStartTime: Time = Time(config.getDouble("sim.start_time"))
@@ -159,9 +172,10 @@ object RunSimulation extends App {
       evaluate_dt = evaluationInterval,
       rebuildTreeInterval = Some(rebuildTreeInterval),
       spaceSF = infraSF.continuousSpace,
-      graph = infraGraph.graph,
+      graph = routeGraph,
       timeTable = timeTable,
-      pedestrianFlows = flows,
+      stop2Vertices = stop2Vertex,
+      flows = flows,
       controlDevices = controlDevices
     )
   }
@@ -174,8 +188,8 @@ object RunSimulation extends App {
     // create simulation
     val sim = createSimulation()
 
-    if (config.getBoolean("sim.use_disaggregate_demand")) {
-      sim.insertMultiplePedestrians(disaggPopulation.pedestrians)
+    if (disaggPopulation.nonEmpty) {
+      sim.insertMultiplePedestrians(disaggPopulation)
     }
 
     println("Running simulation for video...")
@@ -204,15 +218,21 @@ object RunSimulation extends App {
       (simulationStartTime to simulationEndTime by 0.2).toVector
     )*/
 
+    // Creates images representing the walls, route graph and both overlaid.
+    val wallsImage = new DrawWalls(sim.walls, config.getString("output.output_prefix") + "_wallsWithNames.png", showNames = true)
+    val graphImage = new DrawGraph(sim.graph.edges.map(e => (e.startVertex, e.endVertex)).toVector, config.getString("output.output_prefix") + "_graph.png")
+    val fullImage = new DrawWallsAndGraph(sim.walls, sim.graph.edges.map(e => (e.startVertex, e.endVertex)).toVector, config.getString("output.output_prefix") + "_wallsAndGraph.png")
+
+
     new MovingPedestriansWithDensityWithWallVideo(
       config.getString("output.output_prefix") + "_moving_pedestrians_walls.mp4",
-      sim.spaceSF.walls,
+      sim.walls,
       math.max((1.0 / config.getDouble("output.video_dt")).toInt, 1),
       sim.populationCompleted ++ sim.population,
       sim.criticalArea,
       gates.map(g => g.ID -> g).toMap,
-      sim.gatesHistory.map(p => ((p._1.value*1).round.toInt, p._2)),
-      sim.densityHistory.map(p => ((p._1.value*1).round.toInt, p._2)),
+      sim.gatesHistory.map(p => ((p._1.value * 1).round.toInt, p._2)),
+      sim.densityHistory.map(p => ((p._1.value * 1).round.toInt, p._2)),
       (simulationStartTime.value to simulationEndTime.value by config.getDouble("output.video_dt")).map(new Time(_))
     )
 
@@ -230,25 +250,27 @@ object RunSimulation extends App {
     * @return results collected from the simulation
     */
   def runAndCollect(simulator: SFGraphSimulator): ResultsContainer = {
-    if (config.getBoolean("sim.use_disaggregate_demand")) {
-      simulator.insertMultiplePedestrians(disaggPopulation.pedestrians)
+
+    if (disaggPopulation.nonEmpty) {
+      simulator.insertMultiplePedestrians(disaggPopulation)
     }
+
     timeBlock(simulator.run())
     collectResults(simulator)
   }
 
   // Runs the simulations in parallel or sequential based on the config file.
   val results: Vector[ResultsContainer] = {
-    if (config.getBoolean("output.make_video") && n == 0){
+    if (config.getBoolean("output.make_video") && n == 0) {
       Vector(runSimulationWithVideo())
     }
     else if (config.getBoolean("output.make_video") && n > 0 && runSimulationsInParallel) {
-      val simulationCollection: collection.parallel.ParSeq[SFGraphSimulator] = collection.parallel.ParSeq.fill(n-1)(createSimulation())
+      val simulationCollection: collection.parallel.ParSeq[SFGraphSimulator] = collection.parallel.ParSeq.fill(n - 1)(createSimulation())
       simulationCollection.tasksupport = new ForkJoinTaskSupport(new java.util.concurrent.ForkJoinPool(config.getInt("execution.threads")))
       simulationCollection.par.map(runAndCollect).seq.toVector :+ runSimulationWithVideo()
     }
     else if (config.getBoolean("output.make_video") && n > 0 && !runSimulationsInParallel) {
-      val simulationCollection: collection.immutable.Vector[SFGraphSimulator] = collection.immutable.Vector.fill(n-1)(createSimulation())
+      val simulationCollection: collection.immutable.Vector[SFGraphSimulator] = collection.immutable.Vector.fill(n - 1)(createSimulation())
       simulationCollection.map(runAndCollect).seq.toVector :+ runSimulationWithVideo()
     }
     else if (!config.getBoolean("output.make_video") && n > 0 && runSimulationsInParallel) {
@@ -298,16 +320,6 @@ object RunSimulation extends App {
       )
 
 
-    def flattenTuple[T: Numeric](t: (String, String, (Int, Double, Double, Double, T, T))): (String, String, Int, Double, Double, Double, T, T)  = (t._1, t._2, t._3._1, t._3._2, t._3._3, t._3._4, t._3._5, t._3._6)
-
-    // Computes the tt stats per OD passed in config file
-    val ODPairsToAnalyse: Iterable[(String, String)] = config.getStringList("results-analysis.o_nodes").asScala.zip(config.getStringList("results-analysis.d_nodes").asScala).map(t => (t._1, t._2))
-    val TTOD: Iterable[(Time, Vertex, Vertex)] = results.flatMap(r => r._1.map(p => (p.travelTime, p.origin, p.finalDestination)))
-    (for (od <- ODPairsToAnalyse) yield {
-      flattenTuple(od._1, od._2, TTOD.filter(tod => tod._2.nameCompare(od._1) && tod._3.nameCompare(od._2)).map(_._1.value).stats)
-    }).toVector.writeToCSV(config.getString("output.output_prefix") + "_travel_times_OD_stats.csv", columnNames=Some(Vector("O", "D", "size", "mean", "variance", "median", "min", "max")), rowNames=None)
-
-
     // writes densities to csv, first column is time, second column is mean, third column is var, then all individual densities
     if (config.getBoolean("output.write_densities")) (densityTimes +: meanDensity.toScalaVector() +: varianceDensity.toScalaVector() +: results.map(_._2.map(_._2).toVector))
       .writeToCSV(
@@ -315,7 +327,7 @@ object RunSimulation extends App {
         rowNames = None,
         columnNames = Some(Vector("time", "mean", "variance") ++ Vector.fill(results.size)("r").zipWithIndex.map(t => t._1 + t._2.toString)
         )
-    )
+      )
 
     // computes statistics on travel times and writes them
     if (config.getBoolean("output.write_tt_stats")) results.map(r => stats(r._1.map(p => p.travelTime.value))).writeToCSV(config.getString("output.output_prefix") + "_travel_times_stats.csv", rowNames = None, columnNames = Some(Vector("size", "mean", "variance", "median", "min", "max")))
@@ -325,15 +337,35 @@ object RunSimulation extends App {
   }
 
   if (!config.getBoolean("output.make_video") && config.getBoolean("output.write_trajectories_as_VS")) {
-    println("Writing VS to file")
+    println("Writing trajectories as VS to file")
     writePopulationTrajectories(results.head._1, config.getString("output.output_prefix") + "_simulation_trajectories.csv")
   }
+
+  /*{
+    val ODPairsToAnalyse: Iterable[(String, String)] = config.getStringList("results-analysis.o_nodes").asScala.zip(config.getStringList("results-analysis.d_nodes").asScala).map(t => (t._1, t._2))
+
+    def findInterval(t: Double, times: Vector[Double]): Int = {
+      times.indexWhere(_ > t)
+    }
+
+    def pedData: PedestrianSim => Double = ped => ped.travelTime.value
+
+    def pedWindows: PedestrianSim => Int = ped => findInterval(ped.entryTime.value, (simulationStartTime.value to simulationEndTime.value by 60.0).toVector)
+
+    def pedFilter: PedestrianSim => Boolean = ped => ODPairsToAnalyse.exists(_ == (ped.origin.name, ped.finalDestination.name))
+
+    results.foreach(r => {
+      val res = r._1.aggregateMetricByTimeWindow(pedFilter, pedData, pedWindows)
+      res.map( r => (r._1, r._2._1, r._2._2, r._2._3, r._2._4, r._2._5, r._2._6)).toVector.sortBy(_._1).writeToCSV(config.getString("output.output_prefix") + "-temporal-tt.csv")
+      println(res.map(_._2._2).stats)
+    })
+  }*/
 
   // ******************************************************************************************
   //                                  Processing for TRANS-FORM
   // ******************************************************************************************
 
   if (config.getBoolean("output.write_tt_4_transform")) {
-    results.flatten(_._1).computeTT4TRANSFORM(0.0.to(100.0).by(config.getDouble("output.write_tt_4_transform_quantile_interval")), simulationStartTime, simulationEndTime, config.getString("output.output_prefix") + "_" + config.getString("files.ped_walking_time_dist"))
+    results.flatten(_._1).computeTT4TRANSFORM(0.0.to(100.0).by(config.getDouble("output.write_tt_4_transform_quantile_interval")), simulationStartTime, simulationEndTime, config.getString("output.write_tt_4_transform_file_name"))
   }
 }

@@ -1,26 +1,27 @@
 package hubmodel.demand
 
+import hubmodel.demand.transit.Vehicle
 import hubmodel.DES.{Action, SFGraphSimulator}
 import hubmodel._
-import hubmodel.tools.cells.RectangularVertexTrait
+import hubmodel.tools.cells.Rectangle
 
-class TrainArrival(train: Train, sim: SFGraphSimulator) extends Action {
+class TrainArrival(train: Vehicle, sim: SFGraphSimulator) extends Action {
 
-  val alightingFlows: Iterable[PedestrianFlow_New_Parent] = sim.pedestrianFlows.flowsPTInduced.filter({
-    case f: PedestrianFlowPT_New => !sim.timeTable.isOnSamePlatform(f.O, f.D)
+  val alightingFlows: Iterable[PedestrianFlow_New_Parent] = sim.pedestrianFlowsPT.filter({
+    case f: PedestrianFlowPT_New => !sim.isOnSamePlatform(f.O, f.D)
     case _ => true
   })
 
 
   val totalDisembarkingFlows: Double = alightingFlows.foldRight(0.0)((f: PedestrianFlow_New_Parent, acc: Double) => acc + f.f)
-  val durationDisembarking: Double = totalDisembarkingFlows/2.176 // 2*(2.7-1.1) * 0.68 theoretical maximum disembarking rate.
+  val durationDisembarking: Double = totalDisembarkingFlows / 2.176 // 2*(2.7-1.1) * 0.68 theoretical maximum disembarking rate.
 
-  val flows: Iterable[(RectangularVertexTrait, RectangularVertexTrait, Double)] = alightingFlows.flatMap(f => splitFractionsUniform(sim.conceptualNode2GraphNodes(f.O), sim.conceptualNode2GraphNodes(f.D), f.f))
+  val flows: Iterable[(Rectangle, Rectangle, Double)] = alightingFlows.flatMap(f => splitFractionsUniform(sim.conceptualNode2GraphNodes(f.O), sim.conceptualNode2GraphNodes(f.D), f.f))
 
   override def execute(): Unit = {
     sim.eventLogger.trace("time=" + sim.currentTime + ": train arrival")
-
-    flows.foreach(flow => sim.insertEventWithZeroDelay {
+    (train.alightingPassengers.groupBy(str => str).flatMap(peds => splitFractionsUniform(sim.conceptualNode2GraphNodes(train.stop), sim.conceptualNode2GraphNodes(peds._1), peds._2.size)) ++ flows)
+      .foreach(flow => sim.insertEventWithZeroDelay {
       new PedestrianGeneration(flow._1, flow._2, new Time(0.0), math.round(flow._3).toInt, sim)
     })
   }

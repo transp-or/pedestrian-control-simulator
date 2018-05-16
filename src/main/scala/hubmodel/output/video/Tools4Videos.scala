@@ -12,7 +12,6 @@ import hubmodel.{Position, Time}
 trait Tools4Videos {
 
 
-
   /** Combines a List of (Time, Position) tuples into a List of (Time, List[Position]) tuples.
     * This makes drawing process easier.
     *
@@ -41,15 +40,12 @@ trait Tools4Videos {
 
   /** Mapping function for horizontal (width) coordinates
     *
-    * @param trueSize height in meters of the image
+    * @param trueSize  height in meters of the image
     * @param pixelSize height in pixels of the image
-    * @param coord    point to map
+    * @param coord     point to map
     * @return the position in pixels of the original coordinate
     */
-  def  mapCoordLinear(trueSize: Double, pixelSize: Int)(coord: Double): Int = floor(coord / trueSize * pixelSize).toInt
-
-
-
+  def mapCoordLinear(trueSize: Double, pixelSize: Int)(coord: Double): Int = floor(coord / trueSize * pixelSize).toInt
 
 
 }

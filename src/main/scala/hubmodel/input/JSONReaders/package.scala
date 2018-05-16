@@ -1,13 +1,73 @@
 package hubmodel.input
 
-import hubmodel.Position
-import myscala.math.vector.Vector2D
+
+import hubmodel.{Position, Time}
+import hubmodel.supply.{NodeIDOld, TrackIDOld}
 import play.api.libs.functional.syntax._
 import play.api.libs.json.Reads.minLength
 import play.api.libs.json._
 
 package object JSONReaders {
 
+
+  // ******************************************************************************************
+  //                   CASE CLASSES AND IMPLICIT CONVERSIONS FOR DEMAND READER
+  // ******************************************************************************************
+
+
+  /** Train object. CAPACITY SHOULD BE CHANGED FOR A TRAIN TYPE AT SOME POINT
+    *
+    * @param ID       unique identifier (String)
+    * @param track    track on which the train arrives
+    * @param arr      arrival time
+    * @param dep      departure time
+    * @param capacity max capacity of the train
+    */
+  private[JSONReaders] case class Vehicle_JSON(ID: String, trainType: String, track: Int, arr: Option[Time], dep: Option[Time], capacity: Int)
+
+  implicit val trainReads: Reads[Vehicle_JSON] = (
+    (JsPath \ "id").read[String](minLength[String](1)) and
+      (JsPath \ "type").read[String] and
+      (JsPath \ "track").read[Int] and
+      (JsPath \ "arrival-time").readNullable[Time] and
+      (JsPath \ "departure-time").readNullable[Time] and
+      (JsPath \ "capacity").read[Int]
+    ) (Vehicle_JSON.apply _)
+
+  /** Pairs of tracks and corresponding nodes
+    *
+    * @param track id of track, as [[TrackIDOld]]
+    * @param nodes Vector of [[NodeIDOld]]
+    */
+  private[JSONReaders] case class Track2Nodes_JSON(track: Int, nodes: Vector[NodeIDOld])
+
+  private[JSONReaders] case class Zone2Nodes_JSON(zone: Int, nodes: Vector[NodeIDOld])
+
+
+  implicit val Stop2NodesReads: Reads[Track2Nodes_JSON] = (
+    (JsPath \ "stop").read[Int] and
+      (JsPath \ "nodes").read[Vector[NodeIDOld]]
+    ) (Track2Nodes_JSON.apply _)
+
+  implicit val Zone2NodesReads: Reads[Zone2Nodes_JSON] = (
+    (JsPath \ "zone").read[Int] and
+      (JsPath \ "nodes").read[Vector[NodeIDOld]]
+    ) (Zone2Nodes_JSON.apply _)
+
+
+
+  /** Container for the track to nodes mapping
+    *
+    * @param loc                    location of this map
+    * @param Track2NodeMappingInput raw data
+    */
+  case class Track2NodeMapping_JSON(loc: String, Track2NodeMappingInput: Vector[Track2Nodes_JSON], WalkingZones2NodeMappingInput: Vector[Zone2Nodes_JSON])
+
+  implicit val track2nodeMappingReads: Reads[Track2NodeMapping_JSON] = (
+    (JsPath \ "location").read[String] and
+      (JsPath \ "stop2nodes").read[Vector[Track2Nodes_JSON]] and
+      (JsPath \ "zone2nodes").read[Vector[Zone2Nodes_JSON]]
+    ) (Track2NodeMapping_JSON.apply _)
 
 
   // ******************************************************************************************
@@ -142,16 +202,19 @@ package object JSONReaders {
     * @param y3   top right
     * @param x4   top left
     * @param y4   top left
+    * @param overridenZone name of the zone this zone replaces
+    *
     */
   private[JSONReaders] case class VertexOverride_JSON(name: String,
-                                 x1: Vector[Double],
-                                 y1: Vector[Double],
-                                 x2: Vector[Double],
-                                 y2: Vector[Double],
-                                 x3: Vector[Double],
-                                 y3: Vector[Double],
-                                 x4: Vector[Double],
-                                 y4: Vector[Double])
+                                                      x1: Vector[Double],
+                                                      y1: Vector[Double],
+                                                      x2: Vector[Double],
+                                                      y2: Vector[Double],
+                                                      x3: Vector[Double],
+                                                      y3: Vector[Double],
+                                                      x4: Vector[Double],
+                                                      y4: Vector[Double],
+                                                      overridenZone: String)
 
   /**
     * Reads the JSON structure into a [[VertexOverride_JSON]] object. No validation on arguments is done.
@@ -165,7 +228,8 @@ package object JSONReaders {
       (JsPath \ "x3").read[Vector[Double]] and
       (JsPath \ "y3").read[Vector[Double]] and
       (JsPath \ "x4").read[Vector[Double]] and
-      (JsPath \ "y4").read[Vector[Double]]
+      (JsPath \ "y4").read[Vector[Double]] and
+      (JsPath \ "overrides").read[String]
     ) (VertexOverride_JSON.apply _)
 
   /**
@@ -189,18 +253,18 @@ package object JSONReaders {
     * @param overConn   connections to override
     */
   private[JSONReaders] case class FlowSeparator_JSON(x1a: Double,
-                                y1a: Double,
-                                x1b: Double,
-                                y1b: Double,
-                                x2a: Double,
-                                y2a: Double,
-                                x2b: Double,
-                                y2b: Double,
-                                inf_1: Vector[FlowLine_JSON],
-                                inf_2: Vector[FlowLine_JSON],
-                                overZone_1: Vector[VertexOverride_JSON],
-                                overZone_2: Vector[VertexOverride_JSON],
-                                overConn: Vector[Connectivity_JSON])
+                                                     y1a: Double,
+                                                     x1b: Double,
+                                                     y1b: Double,
+                                                     x2a: Double,
+                                                     y2a: Double,
+                                                     x2b: Double,
+                                                     y2b: Double,
+                                                     inf_1: Vector[FlowLine_JSON],
+                                                     inf_2: Vector[FlowLine_JSON],
+                                                     overZone_1: Vector[VertexOverride_JSON],
+                                                     overZone_2: Vector[VertexOverride_JSON],
+                                                     overConn: Vector[Connectivity_JSON])
 
   /**
     * Reads the JSON structure into a [[FlowSeparator_JSON]] object. No validation on arguments is done.
@@ -233,10 +297,7 @@ package object JSONReaders {
     * @param x2 x coord of second point
     * @param y2 y coord of second point
     */
-  private[JSONReaders] case class Wall_JSON(comment: String, x1: Double, y1: Double, x2: Double, y2: Double, wallType: Int) {
-    //val startPoint: Position = Vector2D(x1, y1)
-    //val endPoint: Position = Vector2D(x2, y2)
-  }
+  private[JSONReaders] case class Wall_JSON(comment: String, x1: Double, y1: Double, x2: Double, y2: Double, wallType: Int)
 
   /**
     * Reads the JSON structure into a [[Wall_JSON]] object. No validation on arguments is done.
@@ -261,10 +322,10 @@ package object JSONReaders {
     * Definition of a doorway. These are integrated into the walls and influence the potential field.
     *
     * @param comment human readable unique name
-    * @param x1 x-coord of first end
-    * @param y1 y-coord of first end
-    * @param x2 x-coord of second end
-    * @param y2 y-coord of second end
+    * @param x1      x-coord of first end
+    * @param y1      y-coord of first end
+    * @param x2      x-coord of second end
+    * @param y2      y-coord of second end
     */
   case class Doorway_JSON(comment: String, x1: Double, y1: Double, x2: Double, y2: Double) {
     val startPoint: Position = new Position(x1, y1)
@@ -317,6 +378,7 @@ package object JSONReaders {
   // ******************************************************************************************
   //                   IMPLICIT CONVERSION TO ContinuousSpaceParserWithDoors object
   // ******************************************************************************************
+
   /**
     * Reads the JSON structure into a [[ContinuousSpaceParserWithDoors]] object. No validation on arguments is done.
     */
@@ -326,4 +388,14 @@ package object JSONReaders {
       (JsPath \ "walls").read[Vector[Wall_JSON]] and
       (JsPath \ "doorways").read[Vector[Doorway_JSON]]
     ) (ContinuousSpaceParserWithDoors.apply _)
+
+
+  // ******************************************************************************************
+  //                   IMPLICIT CONVERSION TO PublicTransportScheduleReader_Reads object
+  // ******************************************************************************************
+
+  implicit val PublicTransportScheduleReader_Reads: Reads[PublicTransportScheduleReader] = (
+    (JsPath \ "location").read[String](minLength[String](1)) and
+      (JsPath \ "trains").read[Vector[Vehicle_JSON]]
+    ) (PublicTransportScheduleReader.apply _)
 }

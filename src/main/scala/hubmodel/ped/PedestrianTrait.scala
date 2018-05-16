@@ -1,7 +1,7 @@
 package hubmodel.ped
 
 import hubmodel._
-import hubmodel.tools.cells.RectangularVertexTrait
+import hubmodel.tools.cells.Rectangle
 
 /**
   * Parent trait for different implementation of pedestrians. This can make functions more generic.
@@ -16,10 +16,10 @@ trait PedestrianTrait {
   val ID: String = generateUUID
 
   /** origin zone */
-  def origin: RectangularVertexTrait
+  def origin: Rectangle
 
   /** destination zone */
-  def finalDestination: RectangularVertexTrait
+  def finalDestination: Rectangle
 
   /** current position */
   def currentPosition: Position

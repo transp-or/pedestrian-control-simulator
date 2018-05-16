@@ -54,10 +54,14 @@ trait BuildClosedPolygon {
       collectShells(walls.head.endPoint, walls.head.wallType, List(walls.head.startPoint), walls.tail, new Shell(t, nodeSeq) :: shellSeq)
     }
     else {
+      println("else", p, nodeSeq)
+
       walls.find(w2 => w2.startPoint == p || w2.endPoint == p) match {
         case Some(connectingWall) => {
-          if (p == connectingWall.startPoint) collectShells(connectingWall.endPoint, t, connectingWall.endPoint :: nodeSeq, walls.filterNot(w2 => w2.startPoint == p || w2.endPoint == p), shellSeq)
-          else collectShells(connectingWall.startPoint, t, connectingWall.startPoint :: nodeSeq, walls.filterNot(w2 => w2.startPoint == p || w2.endPoint == p), shellSeq)
+          println(connectingWall)
+          if (p == connectingWall.startPoint) {println("second if");collectShells(connectingWall.endPoint, t, connectingWall.endPoint :: nodeSeq, walls.filterNot(w2 => w2.startPoint == p || w2.endPoint == p), shellSeq)}
+          else if (p == connectingWall.endPoint) {println("second else if");collectShells(connectingWall.startPoint, t, connectingWall.startPoint :: nodeSeq, walls.filterNot(w2 => w2.startPoint == p || w2.endPoint == p), shellSeq)}
+          else throw new Exception("wall has no connections: connectivity broken at " + p + ". Check wall coordinates !")
         }
         case None => throw new Exception("wall has no connections: connectivity broken at " + p + ". Check wall coordinates !")
       }
@@ -71,10 +75,10 @@ trait BuildClosedPolygon {
     */
   def buildShells(walls: Vector[Wall]): List[Shell] = {
     val wallsFiltered = walls.filterNot(_.wallType == SINGLELINE)
-    collectShells(wallsFiltered.head.endPoint, wallsFiltered.head.wallType, List(wallsFiltered.head.startPoint), wallsFiltered.tail, List())
+    collectShells(wallsFiltered.head.endPoint, wallsFiltered.head.wallType, List(wallsFiltered.head.endPoint, wallsFiltered.head.startPoint), wallsFiltered.tail, List())
   }
 
   def isInsideWalkableSpace(pos: Position): Boolean = {
-      shellCollection.filter(_.shellType == OUTERSHELL).forall(s => s.polygon.contains(pos.X,pos.Y))
+    shellCollection.filter(_.shellType == OUTERSHELL).forall(s => s.polygon.contains(pos.X, pos.Y))
   }
 }

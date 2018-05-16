@@ -10,7 +10,7 @@ import play.api.libs.json.{JsValue, Json, Writes}
 
 package object TRANSFORM {
 
-  implicit class PopulationProcessing[T <: PedestrianTrait](pop: Iterable[T]) {
+  implicit class PopulationProcessingTRANSFORM[T <: PedestrianTrait](pop: Iterable[T]) {
 
     def computeTT4TRANSFORM(quantiles: Seq[Double], startTime: Time, endTime: Time, fileName: String, startDay: String = "1970-01-01", endDay: String = "2100-12-31"): Unit = {
       val res: collection.mutable.Map[(String, String), collection.mutable.ArrayBuffer[Double]] = collection.mutable.Map()

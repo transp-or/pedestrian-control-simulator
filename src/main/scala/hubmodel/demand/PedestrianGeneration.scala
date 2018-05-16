@@ -8,8 +8,8 @@ import java.util.concurrent.ThreadLocalRandom
 
 import hubmodel.DES.{Action, SFGraphSimulator}
 import hubmodel._
-import hubmodel.supply.NodeID
-import hubmodel.tools.cells.RectangularVertexTrait
+import hubmodel.supply.NodeIDOld
+import hubmodel.tools.cells.Rectangle
 
 /** Extension of [[Action]] which will insert a [[CreatePedestrian]] actions based on a Poisson distribution for
   * the creation times.
@@ -18,7 +18,7 @@ import hubmodel.tools.cells.RectangularVertexTrait
   * @param end          end time of the pedestrian creation
   * @param numberPeople number of people to create
   */
-class PedestrianGeneration(o: RectangularVertexTrait, d: RectangularVertexTrait, start: Time, numberPeople: Int, sim: SFGraphSimulator) extends Action {
+class PedestrianGeneration(o: Rectangle, d: Rectangle, start: Time, numberPeople: Int, sim: SFGraphSimulator) extends Action {
 
   /** Poisson distribution
     *
@@ -28,8 +28,10 @@ class PedestrianGeneration(o: RectangularVertexTrait, d: RectangularVertexTrait,
     */
   def poissonProcessIterator(duration: Double, numberPeople: Double): Iterator[Time] = {
     val rate: Double = numberPeople / duration
-    var t: Double = -math.log(ThreadLocalRandom.current.nextDouble(0.0, 1.0)/rate)
-    Iterator.continually{ t = t - math.log(ThreadLocalRandom.current.nextDouble(0.0,1.0))/rate; t}.takeWhile(v => v < duration).map(new Time(_))
+    var t: Double = -math.log(ThreadLocalRandom.current.nextDouble(0.0, 1.0) / rate)
+    Iterator.continually {
+      t = t - math.log(ThreadLocalRandom.current.nextDouble(0.0, 1.0)) / rate; t
+    }.takeWhile(v => v < duration).map(new Time(_))
   }
 
 
@@ -43,13 +45,17 @@ class PedestrianGeneration(o: RectangularVertexTrait, d: RectangularVertexTrait,
     //poissonProcessIterator(end.value-start.value, numberPeople).foreach(t => {sim.insertEventWithDelayNew(add(start,t))(new CreatePedestrian(o, d, sim))})
     val tinfQueue: PTInducedQueue = sim.PTInducedFlows.getOrElseUpdate(o, new PTInducedQueue(o))
     if (tinfQueue.isEmpty) {
-      sim.insertEventWithDelayNew(new Time(-math.log(ThreadLocalRandom.current.nextDouble(0.0, 1.0) / sim.PTInducedFlows(o).rate))){new ReleasePedPTInducedFlow(o, sim)}
+      sim.insertEventWithDelayNew(new Time(-math.log(ThreadLocalRandom.current.nextDouble(0.0, 1.0) / sim.PTInducedFlows(o).rate))) {
+        new ReleasePedPTInducedFlow(o, sim)
+      }
     }
-    tinfQueue.appendPeds(Vector.fill(numberPeople){new CreatePedestrian(o,d,sim)})
+    tinfQueue.appendPeds(Vector.fill(numberPeople) {
+      new CreatePedestrian(o, d, sim)
+    })
     //arrivalTimes.
   }
 
-  override def toString: NodeID = this.o + ", " + this.d + ", " + this.start + ", " + this.numberPeople
+  override def toString: NodeIDOld = this.o + ", " + this.d + ", " + this.start + ", " + this.numberPeople
 }
 
 

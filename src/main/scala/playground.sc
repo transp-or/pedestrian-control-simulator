@@ -1,14 +1,8 @@
-
-
-/*import breeze.linalg.DenseVector
 import breeze.numerics.{cos, pow, sqrt}
 import hubmodel.{Position, generateUUID}
-
 import hubmodel.output.image.DrawCells
-import hubmodel.route.MyCell
-
-import scala.collection.SortedSet
-import scala.concurrent.Promise
+import hubmodel.Position
+import hubmodel.route.Guo2011.HexagonPotentialField
 
 /*case class MyCell(center: Position, edgeLength: Double){ //}, conn: List[String]) {
   val ID: String = generateUUID
@@ -28,7 +22,7 @@ import scala.concurrent.Promise
 
 
   def isInside(p: Position): Boolean = {
-    // https://stackoverflow.com/questions/5193331/is-a-point-inside-regular-hexagon
+    // https://stackoverflow.com/questions/5193331/is-a-point-inside-regular-HexagonPotentialField
     val d: Double = breeze.linalg.norm(p - center)
 
     if (d > edgeLength) return false
@@ -47,44 +41,45 @@ import scala.concurrent.Promise
   def yCoords: Array[Double] = Array(A(1), B(1), C(1), D(1), E(1), F(1))
 
 }
-
-object MyVertex {
+*/
+/*object MyVertex {
   implicit def orderingByPotential[A <: MyCell]: Ordering[A] = Ordering.by(v => v.potential)
 }
 */
 
-case class MyConnection(v: MyCell, c: List[MyCell])
+case class MyConnection(v: HexagonPotentialField, c: List[HexagonPotentialField])
 object MyConnection {
   implicit def orderingByPotential[A <: MyConnection]: Ordering[A] = Ordering.by(c => c.v.potential)
 }
 
+/*
+val a = new HexagonPotentialField(new Position(0.0,0.0), 2.0)//, List("b","c","d"))
+val b = new HexagonPotentialField(new Position(0.0,0.0), 2.0)//, List("a","e"))
+val c = new HexagonPotentialField(new Position(0.0,0.0), 2.0)//, List("a","d","h","f","g"))
+val d = new HexagonPotentialField(new Position(0.0,0.0), 2.0)//, List("a","i","c","h"))
+val e = new HexagonPotentialField(new Position(0.0,0.0), 2.0)//, List("b"))
+val f = new HexagonPotentialField(new Position(0.0,0.0), 2.0)//, List("c","g"))
+val g = new HexagonPotentialField(new Position(0.0,0.0), 2.0)//, List("c","f"))
+val h = new HexagonPotentialField(new Position(0.0,0.0), 2.0)//, List("i","d","c"))
+val i = new HexagonPotentialField(new Position(0.0,0.0), 2.0)//, List("d","h"))
+val j = new HexagonPotentialField(new Position(0.0,0.0), 2.0)//, List("d","h"))
+val k = new HexagonPotentialField(new Position(0.0,0.0), 2.0)//, List("d","h"))
+val l = new HexagonPotentialField(new Position(0.0,0.0), 2.0)//, List("d","h"))
+val m = new HexagonPotentialField(new Position(0.0,0.0), 2.0)//, List("d","h"))
+val n = new HexagonPotentialField(new Position(0.0,0.0), 2.0)//, List("d","h"))
+val o = new HexagonPotentialField(new Position(0.0,0.0), 2.0)//, List("d","h"))
+val p = new HexagonPotentialField(new Position(0.0,0.0), 2.0)//, List("d","h"))
+val q = new HexagonPotentialField(new Position(0.0,0.0), 2.0)//, List("d","h"))
+val r = new HexagonPotentialField(new Position(0.0,0.0), 2.0)//, List("d","h"))
+val s = new HexagonPotentialField(new Position(0.0,0.0), 2.0)//, List("d","h"))
+val t = new HexagonPotentialField(new Position(0.0,0.0), 2.0)//, List("d","h"))
+val u = new HexagonPotentialField(new Position(0.0,0.0), 2.0)//, List("d","h"))
+val v = new HexagonPotentialField(new Position(0.0,0.0), 2.0)//, List("d","h"))
+val w = new HexagonPotentialField(new Position(0.0,0.0), 2.0)//, List("d","h"))
+val x = new HexagonPotentialField(new Position(0.0,0.0), 2.0)//, List("d","h"))*/
+//val destination = new HexagonPotentialField(new Position(0.0,0.0), 2.0)
 
-/*val a = MyVertex("a", DenseVector(0.0,0.0), 2.0)//, List("b","c","d"))
-val b = MyVertex("b", DenseVector(0.0,0.0), 2.0)//, List("a","e"))
-val c = MyVertex("c", DenseVector(0.0,0.0), 2.0)//, List("a","d","h","f","g"))
-val d = MyVertex("d", DenseVector(0.0,0.0), 2.0)//, List("a","i","c","h"))
-val e = MyVertex("e", DenseVector(0.0,0.0), 2.0)//, List("b"))
-val f = MyVertex("f", DenseVector(0.0,0.0), 2.0)//, List("c","g"))
-val g = MyVertex("g", DenseVector(0.0,0.0), 2.0)//, List("c","f"))
-val h = MyVertex("h", DenseVector(0.0,0.0), 2.0)//, List("i","d","c"))
-val i = MyVertex("i", DenseVector(0.0,0.0), 2.0)//, List("d","h"))
-val j = MyVertex("j", DenseVector(0.0,0.0), 2.0)//, List("d","h"))
-val k = MyVertex("k", DenseVector(0.0,0.0), 2.0)//, List("d","h"))
-val l = MyVertex("l", DenseVector(0.0,0.0), 2.0)//, List("d","h"))
-val m = MyVertex("m", DenseVector(0.0,0.0), 2.0)//, List("d","h"))
-val n = MyVertex("n", DenseVector(0.0,0.0), 2.0)//, List("d","h"))
-val o = MyVertex("o", DenseVector(0.0,0.0), 2.0)//, List("d","h"))
-val p = MyVertex("p", DenseVector(0.0,0.0), 2.0)//, List("d","h"))
-val q = MyVertex("q", DenseVector(0.0,0.0), 2.0)//, List("d","h"))
-val r = MyVertex("r", DenseVector(0.0,0.0), 2.0)//, List("d","h"))
-val s = MyVertex("s", DenseVector(0.0,0.0), 2.0)//, List("d","h"))
-val t = MyVertex("t", DenseVector(0.0,0.0), 2.0)//, List("d","h"))
-val u = MyVertex("u", DenseVector(0.0,0.0), 2.0)//, List("d","h"))
-val v = MyVertex("v", DenseVector(0.0,0.0), 2.0)//, List("d","h"))
-val w = MyVertex("w", DenseVector(0.0,0.0), 2.0)//, List("d","h"))
-val x = MyVertex("x", DenseVector(0.0,0.0), 2.0)//, List("d","h"))
-val destination = MyVertex("dest", DenseVector(0.0,0.0), 2.0)
-
+/*
 f.pedAcc=3.0
 g.pedAcc=3.0
 c.pedAcc=3.0
@@ -103,9 +98,9 @@ val connections: List[MyConnection] = List(
   MyConnection(g, List(c,f)),
   MyConnection(h, List(i,d,c)),
   MyConnection(i, List(d,h))
-)
-
-val connections2: Map[MyVertex, List[MyVertex]] = Map(
+)*/
+/*
+val connections2: Map[HexagonPotentialField, List[HexagonPotentialField]] = Map(
   a -> List(b,c,d),
   b -> List(a,e),
   c -> List(a,d,h,f,g),
@@ -130,8 +125,8 @@ val connections2: Map[MyVertex, List[MyVertex]] = Map(
   v -> List(u,w),
   w -> List(x,v),
   x -> List(e,w)
-)
-*/
+)*/
+
 val xMin = 0.0
 val xMax = 100.0
 val yMin = 0.0
@@ -150,35 +145,35 @@ def insideSpace(p: Position): Boolean = {
   val xMax2 = 100.0
   val yMin2 = 7.0
   val yMax2 = 13.0
-  (p(0) >= xMin1 && p(0) <=xMax1 && p(1) >= yMin1 && p(1) <= yMax1) || (p(0) >= xMin2 && p(0) <=xMax2 && p(1) >= yMin2 && p(1) <= yMax2)
+  (p.X >= xMin1 && p.X <=xMax1 && p.Y >= yMin1 && p.Y <= yMax1) || (p.X >= xMin2 && p.X <=xMax2 && p.Y >= yMin2 && p.Y <= yMax2)
 }
 
 
-val hexagons: IndexedSeq[MyCell] = (for (
+val HexagonPotentialFields: IndexedSeq[HexagonPotentialField] = (for (
   x <- xMin to xMax by 2*radius*cos(30.0*math.Pi/180.0);
   y <- yMin to yMax by 3*radius)
   yield {
-    MyCell(DenseVector(x,y), radius)
-  }).filter(h => h.angles.exists(insideSpace)) ++ (for (
+    new HexagonPotentialField(new Position(x,y), radius)
+  }).filter(h => h.corners.exists(insideSpace)) ++ (for (
   x <- (xMin+radius*cos(30.0*math.Pi/180.0)) to xMax by 2*radius*cos(30.0*math.Pi/180.0);
   y <- yMin+1.5*radius to yMax by 3*radius)
   yield {
-    MyCell(DenseVector(x,y), radius)
-  }).filter(h => h.angles.exists(insideSpace))
-
-hexagons
-
-val connections2: Map[MyCell, List[MyCell]] = hexagons.map(h => h -> hexagons.filter(hin => breeze.linalg.norm(h.center - hin.center) < 1.01*2*radius*cos(30.0*math.Pi/180.0)).filterNot(h == _).toList).toMap
+    new HexagonPotentialField(new Position(x,y), radius)
+  }).filter(h => h.corners.exists(insideSpace))
 
 
-val doorwayPoints = (9.0 to 11.0 by 0.25).map(y => DenseVector(0.0,y))
 
-val finalCells: IndexedSeq[MyCell] = hexagons.filter(h => doorwayPoints.exists(h.isInside))
+val connections2: Map[HexagonPotentialField, List[HexagonPotentialField]] = HexagonPotentialFields.map(h => h -> HexagonPotentialFields.filter(hin => (h.center - hin.center).norm < 1.01*2*radius*cos(30.0*math.Pi/180.0)).filterNot(h == _).toList).toMap
 
 
-/*
+val doorwayPoints = (9.0 to 11.0 by 0.25).map(y => new Position(0.0,y))
+
+val finalCells: IndexedSeq[HexagonPotentialField] = HexagonPotentialFields.filter(h => doorwayPoints.exists(h.isInside))
+
+
+
 // static algortihm
-
+/*
 // block 1
 finalCells.foreach(_.stepsToFinal=1)
 var l: Int = 1
@@ -194,7 +189,7 @@ connections.filter(_.v.stepsToFinal==1).foreach(_.v.potential=1.0)
 l = 2
 while(l <= lMax) {
   connections.filter(_.v.stepsToFinal == l).foreach(p => {
-    val setCells: List[MyVertex] = p.c.filter(c => c.potential >= 0.0 && c.stepsToFinal == l - 1)
+    val setCells: List[HexagonPotentialField] = p.c.filter(c => c.potential >= 0.0 && c.stepsToFinal == l - 1)
     if (setCells.size == 1) {
       p.v.potential = setCells.head.potential + 1.0
     }
@@ -239,25 +234,23 @@ println(lCounter, connections2.map(conn => conn._1.ID + " pot=" + conn._1.potent
 //println(u.potential,v.potential,w.potential,x.potential,e.potential,b.potential,a.potential)
 //println(u.potential,t.potential,s.potential,r.potential,f.potential,c.potential,a.potential)
 
-val destination = MyCell(DenseVector(0.0,0.0), radius)
-val conn3: Map[MyCell, List[MyCell]] = connections2 + (destination -> finalCells.toList)
+val destination = new HexagonPotentialField(new Position(0.0,0.0), radius)
+val conn3: Map[HexagonPotentialField, List[HexagonPotentialField]] = connections2 + (destination -> finalCells.toList)
 
-def buildGraph(conn: (MyCell, List[MyCell]), connections: Map[MyCell, List[MyCell]], acc: List[(MyCell, MyCell)]): List[(MyCell, MyCell)] = {
+def buildGraph(conn: (HexagonPotentialField, List[HexagonPotentialField]), connections: Map[HexagonPotentialField, List[HexagonPotentialField]], acc: List[(HexagonPotentialField, HexagonPotentialField)]): List[(HexagonPotentialField, HexagonPotentialField)] = {
   if (connections.isEmpty) acc ++ conn._2.filter(_.potential >= conn._1.potential).map((_, conn._1))
   else buildGraph(connections.head, connections.tail, conn._2.filter(_.potential >= conn._1.potential).map((_, conn._1)) ++ acc)
 }
 
 val g = buildGraph(conn3.head, conn3.tail, List())
 
-println(hexagons.map(_.potential).mkString("\n"))
+println(HexagonPotentialFields.map(_.potential).mkString("\n"))
 
-new DrawCells(hexagons, "celltest.png", None, (xMax, yMax))
-
-
+new DrawCells(HexagonPotentialFields, "celltest.png")//, None, (xMax, yMax))
 
 
-*/
 
-val q = collection.mutable.Queue()
-println(q.contains("a"))
-q.dequeue()
+
+
+
+

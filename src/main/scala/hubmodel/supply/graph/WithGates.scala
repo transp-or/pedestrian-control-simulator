@@ -1,7 +1,7 @@
 package hubmodel.supply.graph
 
-import hubmodel.tools.cells.isInVertex
 import hubmodel.ped.PedestrianSim
+import hubmodel.tools.cells.isInVertex
 
 trait WithGates {
 

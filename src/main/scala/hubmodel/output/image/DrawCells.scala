@@ -5,68 +5,60 @@ import java.awt.{Color, Font, FontMetrics, Graphics2D}
 import javax.imageio.ImageIO
 
 import hubmodel.output.video.Tools4Videos
-import hubmodel.output.{createWhiteBackground, mapCoordAffine}
-import hubmodel.tools.cells.NewVertexPlotting
+import hubmodel.output._
+import hubmodel.tools.cells.VertexPlotting
 
-class DrawCells[T <: NewVertexPlotting](cells: Iterable[T], filename: String) extends Tools4Videos {
+class DrawCells[T <: VertexPlotting](cells: Iterable[T],
+                                     filename: String = "",
+                                     mapFun: Option[(Double => Int, Double => Int)] = None,
+                                     private val imHeight: Option[Int] = None
+                                    ) extends Tools4Videos {
 
-  val xMin: Double = cells.flatMap(_.xCoords).min
-  val xMax: Double = cells.flatMap(_.xCoords).max
-  val yMin: Double = cells.flatMap(_.yCoords).min
-  val yMax: Double = cells.flatMap(_.yCoords).max
-
-
-  val cleanCanvas: BufferedImage = createWhiteBackground((xMax-xMin, yMax - yMin))
-
-  //val IMAGE_HEIGHT: Int = computeImageHeightPixels(xMin, yMin, xMax, yMax)
-
-  val canvasWidth: Int = cleanCanvas.getWidth
-  val canvasHeight: Int = cleanCanvas.getHeight
-
-  /** Horizontal mapping of coordinates
-    *
-    * @return function taking a horizontal position and returning the position in pixels
-    */
-  def mapHcoord: Double => Int = mapCoordAffine(xMin, xMax, canvasWidth)
-
-  /** Vertical mapping of coordinates
-    *
-    * @return function taking a vertical position and returning the position in pixels
-    */
-  def mapVcoord: Double => Int = mapCoordAffine(yMin, yMax,canvasHeight)
-
-  val gcleanCanvas: Graphics2D = cleanCanvas.createGraphics()
-  gcleanCanvas.setColor(Color.BLACK)
-
-  val currentFont: Font = gcleanCanvas.getFont
-  //val newFont: Font = currentFont.deriveFont(currentFont.getSize * 1.5F)
-  //gcleanCanvas.setFont(newFont)
-
-
-  val metrics: FontMetrics = gcleanCanvas.getFontMetrics(currentFont)
-  // Determine the X coordinate for the text
-  // Determine the Y coordinate for the text (note we add the ascent, as in java 2d 0 is top of the screen)
-  // Set the font
-  // Draw the String
-
-  cells.foreach(h => {
-    gcleanCanvas.setColor(h.scalarToColor)
-    gcleanCanvas.fillPolygon(h.xCoords.map(mapHcoord), h.yCoords.map(mapVcoord), h.numberCorners)
-    gcleanCanvas.setColor(Color.BLACK)
-    gcleanCanvas.drawPolygon(h.xCoords.map(mapHcoord), h.yCoords.map(mapVcoord), h.numberCorners)
-    val w: Int = gcleanCanvas.getFontMetrics.stringWidth(h.stringToShow) / 2
-    if (w.toDouble > 0.85 * mapHcoord(h.horizontalMaxTextWidth)) {
-      val currentFont = gcleanCanvas.getFont
-      val newFont = currentFont.deriveFont(currentFont.getSize * 0.94.toFloat)
-      gcleanCanvas.setFont(newFont)
+  val mappingFunctions: (Double => Int, Double => Int) = mapFun match {
+    case None => {
+      val bounds = getBoundsVertex(cells)
+      computeMappingFunctions(bounds)
     }
-    gcleanCanvas.drawString(h.stringToShow, mapHcoord(h.center.X) - w, mapVcoord(h.center.Y))
-  })
+    case s: Some[(Double => Int, Double => Int)] => s.get
+  }
 
+  val imageHeight: Int = imHeight match {
+    case None => {
+      val bounds = getBoundsVertex(cells)
+      computeImageHeightPixels(bounds)
+    }
+    case s: Some[Int] => imHeight.get
+  }
 
   if (filename.length > 0) {
-    ImageIO.write(cleanCanvas, filename.split("\\.").last, new java.io.File(filename))
+    val image: BufferedImage = createWhiteBackgroundPixels((IMAGE_WIDTH + 20, imageHeight + 20))
+    val verticalTransformation: Int => Int = verticalMirrorTransformation(image.getHeight)
+    val gcleanCanvas: Graphics2D = image.createGraphics()
+    gcleanCanvas.setColor(Color.BLACK)
+    val currentFont: Font = gcleanCanvas.getFont
+    //val newFont: Font = currentFont.deriveFont(currentFont.getSize * 1.5F)
+    //gcleanCanvas.setFont(newFont)
+    val metrics: FontMetrics = gcleanCanvas.getFontMetrics(currentFont)
+    this.draw(gcleanCanvas, verticalTransformation)
+    ImageIO.write(image, filename.split("\\.").last, new java.io.File(filename))
   }
+
+  def draw(gImage: Graphics2D, verticalTransformation: Int => Int): Unit = {
+    cells.foreach(h => {
+      gImage.setColor(h.scalarToColor)
+      gImage.fillPolygon(h.xCoords.map(mappingFunctions._1), h.yCoords.map(mappingFunctions._2).map(verticalTransformation), h.numberCorners)
+      gImage.setColor(Color.BLACK)
+      gImage.drawPolygon(h.xCoords.map(mappingFunctions._1), h.yCoords.map(mappingFunctions._2).map(verticalTransformation), h.numberCorners)
+      val w: Int = gImage.getFontMetrics.stringWidth(h.stringToShow) / 2
+      if (w.toDouble > 0.85 * mappingFunctions._1(h.horizontalMaxTextWidth)) {
+        val currentFont = gImage.getFont
+        val newFont = currentFont.deriveFont(currentFont.getSize * 0.94.toFloat)
+        gImage.setFont(newFont)
+      }
+      gImage.drawString(h.stringToShow, mappingFunctions._1(h.center.X) - w, verticalTransformation(mappingFunctions._2(h.center.Y)))
+    })
+  }
+
 }
 
 

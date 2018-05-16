@@ -1,8 +1,8 @@
 import java.io.File
 
 import hubmodel.output.image.{DrawGraph, DrawWalls, DrawWallsAndGraph}
-import hubmodel.supply.continuous.ContinuousSpaceReader
-import hubmodel.supply.graph.GraphReader
+import hubmodel.supply.continuous.ReadContinuousSpace
+import hubmodel.supply.graph.readGraph
 
 
 object makePictures extends App {
@@ -41,8 +41,8 @@ object makePictures extends App {
   parser.parse(args, Config()) match {
 
     case Some(config) =>
-      val infraGraph = new GraphReader(config.graph.toString, false, false, false, false, false)
-      val parserCont = new ContinuousSpaceReader(config.walls.toString)
+      val infraGraph = readGraph(config.graph.toString, false, false, false, false, false)
+      val parserCont = new ReadContinuousSpace(config.walls.toString)
       val infraSF = parserCont.continuousSpace
 
       val prefixToAdd: String = {
@@ -51,8 +51,8 @@ object makePictures extends App {
       }
 
       val wallsImage = new DrawWalls(infraSF.walls, prefixToAdd + "wallImage.png", showNames = config.showWallNames)
-      val graphImage = new DrawGraph(infraGraph.graph.standardEdges.map(e => (e.startVertex, e.endVertex)).toVector, prefixToAdd + "graphImage.png")
-      val fullImage = new DrawWallsAndGraph(infraSF.walls, infraGraph.graph.standardEdges.map(e => (e.startVertex, e.endVertex)).toVector, prefixToAdd + "wallAndGraphImage.png")
+      val graphImage = new DrawGraph(infraGraph._1.edges.map(e => (e.startVertex, e.endVertex)).toVector, prefixToAdd + "graphImage.png")
+      val fullImage = new DrawWallsAndGraph(infraSF.walls, infraGraph._1.edges.map(e => (e.startVertex, e.endVertex)).toVector, prefixToAdd + "wallAndGraphImage.png")
 
     case None => println("Probably an error when passing the parameters, or an unknown parameter was given.")
   }

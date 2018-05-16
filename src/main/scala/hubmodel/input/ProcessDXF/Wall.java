@@ -15,8 +15,8 @@ class Wall {
 
     /**
      * Indicator whether the wall is part of the outside shell or not.
-     *  - 0 means outer shell
-     *  - 1 means inner wall
+     * - 0 means outer shell
+     * - 1 means inner wall
      */
     private int type = 0;
 
@@ -30,22 +30,22 @@ class Wall {
     Wall(Point a, Point b) {
         this.a = a;
         this.b = b;
-        if (this.a.getZ() != this.b.getZ()){
+        if (this.a.getZ() != this.b.getZ()) {
             throw new IllegalArgumentException("heights are different at each end of wall");
         }
-        this.type = (int)this.a.getZ();
+        this.type = (int) this.a.getZ();
     }
 
     /**
      * Converts the object to the JSON format used by the hub model. Example:
-     *
+     * <p>
      * {
-     *     "comment": "",
-     *     "x1": 0.0,
-     *     "y1": 0.0,
-     *     "x2": 1.0,
-     *     "y2": 1.0,
-     *     "type": 0
+     * "comment": "",
+     * "x1": 0.0,
+     * "y1": 0.0,
+     * "x2": 1.0,
+     * "y2": 1.0,
+     * "type": 0
      * }
      *
      * @return String with the object as JSON.

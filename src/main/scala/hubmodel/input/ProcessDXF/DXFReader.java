@@ -24,7 +24,9 @@ class DXFReader {
      *
      * @return DXFDocuement
      */
-    DXFDocument getDXFDocument() {return _document;}
+    DXFDocument getDXFDocument() {
+        return _document;
+    }
 
     /**
      * Constructor. First checks that the file can be opened, then opens it and reads the contents into a

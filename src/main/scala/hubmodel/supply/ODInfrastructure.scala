@@ -114,20 +114,20 @@ case class InfraODParser(location: String,
 class InfraODModel(infraRaw: InfraODParser, val nameMappings: NameConversions) extends Infrastructure {
   val location: String = infraRaw.location
   val subLocation: String = infraRaw.subLocation
-  val network: Map[Tuple2[NodeID, NodeID], Double] = {
-    val tmpNetwork: Map[Tuple2[NodeID, NodeID], Double] = infraRaw.connectionMatrix.map(od => (od.O, od.D) -> od.distance).toMap
-    val complementOfTmpNetwork: Map[Tuple2[NodeID, NodeID], Double] = for (pairs <- tmpNetwork if !tmpNetwork.keySet.contains(pairs._1.swap)) yield {
+  val network: Map[Tuple2[NodeIDOld, NodeIDOld], Double] = {
+    val tmpNetwork: Map[Tuple2[NodeIDOld, NodeIDOld], Double] = infraRaw.connectionMatrix.map(od => (od.O, od.D) -> od.distance).toMap
+    val complementOfTmpNetwork: Map[Tuple2[NodeIDOld, NodeIDOld], Double] = for (pairs <- tmpNetwork if !tmpNetwork.keySet.contains(pairs._1.swap)) yield {
       pairs._1.swap -> pairs._2
     }
     tmpNetwork ++ complementOfTmpNetwork
   }
 
-  val nodes: Vector[NodeID] = infraRaw.connectionMatrix.flatMap(od => List(od.O, od.D)).distinct
-  val nodeCapacity: Map[NodeID, Double] = infraRaw.nodeThroughput.map(v => v.ID -> v.throughput).toMap
-  val nodesWithCapacity: Vector[NodeID] = nodeCapacity.keys.toVector
-  val isCapacitated: NodeID => Boolean = node => this.nodesWithCapacity.contains(node)
-  val node2Platform: Map[NodeID, TrackID] = infraRaw.nodeToPlatformInput.map(x => x.node -> nameMappings.string2IntMap(x.plat)).toMap
-  val platform2Node: Map[TrackID, Iterable[NodeID]] = node2Platform.groupBy(_._2).mapValues(_.keys)
+  val nodes: Vector[NodeIDOld] = infraRaw.connectionMatrix.flatMap(od => List(od.O, od.D)).distinct
+  val nodeCapacity: Map[NodeIDOld, Double] = infraRaw.nodeThroughput.map(v => v.ID -> v.throughput).toMap
+  val nodesWithCapacity: Vector[NodeIDOld] = nodeCapacity.keys.toVector
+  val isCapacitated: NodeIDOld => Boolean = node => this.nodesWithCapacity.contains(node)
+  val node2Platform: Map[NodeIDOld, TrackIDOld] = infraRaw.nodeToPlatformInput.map(x => x.node -> nameMappings.string2IntMap(x.plat)).toMap
+  val platform2Node: Map[TrackIDOld, Iterable[NodeIDOld]] = node2Platform.groupBy(_._2).mapValues(_.keys)
   val track2platform: Map[Int, Int] = infraRaw.platform2Track.flatMap(p => p.tracks.map(t => t -> nameMappings.string2IntMap(p.platform))).toMap
 
   def isOnSamePlatform(trackA: Int, trackB: Int): Boolean = track2platform(trackA) == track2platform(trackB)
@@ -139,5 +139,5 @@ class InfraODModel(infraRaw: InfraODParser, val nameMappings: NameConversions) e
     else flowCritic
   }
 
-  val test: NodeID => Double = node => nodeCapacity(node)
+  val test: NodeIDOld => Double = node => nodeCapacity(node)
 }

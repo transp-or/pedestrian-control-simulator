@@ -1,8 +1,10 @@
-import breeze.linalg.DenseVector
+import RunSimulation.config
+import breeze.linalg.{DenseVector, min}
 import breeze.numerics.cos
 import hubmodel.Position
-import hubmodel.output.image.DrawCells
-import hubmodel.route.HexagonPotentialField
+import hubmodel.output.image.{DrawCells, DrawCellsAndWalls}
+import hubmodel.route.Guo2011.HexagonPotentialField
+import hubmodel.supply.continuous.ReadContinuousSpace
 import myscala.math.vector.Vector2D
 import myscala.timeBlock
 
@@ -144,13 +146,25 @@ object debugMain extends App {
     x -> List(e,w)
   )
   */
-  val xMin = 0.0
-  val xMax = 100.0
-  val yMin = 0.0
-  val yMax = 20.0
+  def buildGraph(conn: (HexagonPotentialField, List[HexagonPotentialField]), connections: Map[HexagonPotentialField, List[HexagonPotentialField]], acc: List[(HexagonPotentialField, HexagonPotentialField)]): List[(HexagonPotentialField, HexagonPotentialField)] = {
+    if (connections.isEmpty) acc ++ conn._2.filter(_.potential >= conn._1.potential).map((_, conn._1))
+    else buildGraph(connections.head, connections.tail, conn._2.filter(_.potential >= conn._1.potential).map((_, conn._1)) ++ acc)
+  }
+
+  val infraSF = new ReadContinuousSpace("piw-corridor/walls.json")
+
+def insideSpace: Position =>  Boolean = infraSF.continuousSpace.isInsideWalkableArea
+//  def insideSpace: Position =>  Boolean = i => true
+
+
+  val xMin = infraSF.continuousSpace.walls.map(w => Math.min(w.startPoint.X, w.endPoint.X)).min
+  val xMax = infraSF.continuousSpace.walls.map(w => Math.max(w.startPoint.X, w.endPoint.X)).max
+  val yMin = infraSF.continuousSpace.walls.map(w => Math.min(w.startPoint.Y, w.endPoint.Y)).min
+  val yMax = infraSF.continuousSpace.walls.map(w => Math.max(w.startPoint.Y, w.endPoint.Y)).max
   val radius: Double = 1.5
-
-
+println(xMin)
+  println(yMin)
+/*
   def insideSpace(p: Position): Boolean = {
 
     val xMin1 = 0.0
@@ -165,23 +179,23 @@ object debugMain extends App {
     val yMax2 = 13.0
 
     (p.X >= xMin1 && p.X <= xMax1 && p.Y >= yMin1 && p.Y <= yMax1) || (p.X >= xMin2 && p.X <= xMax2 && p.Y >= yMin2 && p.Y <= yMax2)
-  }
+  }*/
 
 
   val hexagons: IndexedSeq[HexagonPotentialField] = (for (
-    x <- xMin to xMax by 2 * radius * cos(30.0 * math.Pi / 180.0);
-    y <- yMin to yMax by 3 * radius)
+    x <- xMin to (xMax+radius) by 2 * radius * cos(30.0 * math.Pi / 180.0);
+    y <- yMin to (yMax+radius) by 3 * radius)
     yield {
-      HexagonPotentialField(Vector2D(x, y), radius)
-    }).filter(h => h.angles.exists(insideSpace)) ++ (for (
-    x <- (xMin + radius * cos(30.0 * math.Pi / 180.0)) to xMax by 2 * radius * cos(30.0 * math.Pi / 180.0);
-    y <- yMin + 1.5 * radius to yMax by 3 * radius)
+      new HexagonPotentialField(Vector2D(x, y), radius)
+    }).filter(h => h.corners.exists(insideSpace)) ++ (for (
+    x <- (xMin + radius * cos(30.0 * math.Pi / 180.0)) to (xMax+radius) by 2 * radius * cos(30.0 * math.Pi / 180.0);
+    y <- yMin + 1.5 * radius to (yMax+radius) by 3 * radius)
     yield {
-      HexagonPotentialField(Vector2D(x, y), radius)
-    }).filter(h => h.angles.exists(insideSpace))
+      new HexagonPotentialField(Vector2D(x, y), radius)
+    }).filter(h => h.corners.exists(insideSpace))
 
 
-  val connections2: Map[HexagonPotentialField, List[HexagonPotentialField]] = hexagons.map(h => h -> hexagons.filter(hin => (h.c - hin.c).norm < 1.01 * 2 * radius * cos(30.0 * math.Pi / 180.0)).filterNot(h == _).toList).toMap
+  val connections2: Map[HexagonPotentialField, List[HexagonPotentialField]] = hexagons.map(h => h -> hexagons.filter(hin => (h.center - hin.center).norm < 1.01 * 2 * radius * cos(30.0 * math.Pi / 180.0)).filterNot(h == _).toList).toMap
 
 
   val doorwayPoints = (9.0 to 11.0 by 0.25).map(y => DenseVector(0.0, y))
@@ -254,23 +268,18 @@ object debugMain extends App {
   //println(u.potential,v.potential,w.potential,x.potential,e.potential,b.potential,a.potential)
   //println(u.potential,t.potential,s.potential,r.potential,f.potential,c.potential,a.potential)
 
-  val destination = HexagonPotentialField(Vector2D(0.0, 0.0), radius)
+  val destination = new HexagonPotentialField(Vector2D(0.0, 0.0), radius)
   val conn3: Map[HexagonPotentialField, List[HexagonPotentialField]] = connections2 + (destination -> finalCells.toList)
 
-  def buildGraph(conn: (HexagonPotentialField, List[HexagonPotentialField]), connections: Map[HexagonPotentialField, List[HexagonPotentialField]], acc: List[(HexagonPotentialField, HexagonPotentialField)]): List[(HexagonPotentialField, HexagonPotentialField)] = {
-    if (connections.isEmpty) acc ++ conn._2.filter(_.potential >= conn._1.potential).map((_, conn._1))
-    else buildGraph(connections.head, connections.tail, conn._2.filter(_.potential >= conn._1.potential).map((_, conn._1)) ++ acc)
-  }
 
   val g = timeBlock {
     buildGraph(conn3.head, conn3.tail, List())
   }
+
   //println(g)
-
-
   //println(hexagons.map(_.potential).mkString("\n"))
 
-  new DrawCells(hexagons, "celltest.png")
+  new DrawCellsAndWalls(hexagons, infraSF.continuousSpace.walls, "celltest.png")
 
 }
 

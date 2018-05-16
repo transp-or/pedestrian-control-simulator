@@ -1,7 +1,7 @@
 package hubmodel.supply.graph
 
-import hubmodel.tools.cells.RectangularVertexTrait
 import hubmodel.Position
+import hubmodel.tools.cells.Rectangle
 
 /** Extension of [[hubmodel.supply.MyEdgeWithGate]] for the usage of "flow gates". The gates control the
   * flow of pedestrians passing through them.
@@ -13,7 +13,7 @@ import hubmodel.Position
   * @param start       one end of the gate
   * @param end         other end of the gate
   */
-class FlowGate(startVertex: RectangularVertexTrait, endVertex: RectangularVertexTrait, start: Position, end: Position, ma: String) extends MyEdgeWithGate(startVertex, endVertex, start, end, ma) {
+class FlowGate(startVertex: Rectangle, endVertex: Rectangle, start: Position, end: Position, ma: String) extends MyEdgeWithGate(startVertex, endVertex, start, end, ma) {
 
   // variable flow rate of the gate [pax/s]
   var flowRate = 0.5

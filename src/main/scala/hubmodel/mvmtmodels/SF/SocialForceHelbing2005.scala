@@ -24,7 +24,7 @@ class SocialForceHelbing2005(sim: SFGraphSimulator) extends SocialForceLike(sim)
     val B: Double = 0.1
 
     val ALimit: Double = 0
-    val BLimit: Double = 1.0//0.001
+    val BLimit: Double = 1.0 //0.001
 
     val dab: Direction = ped.currentPosition - pos
     val dabNorm: Double = dab.norm
@@ -49,13 +49,13 @@ class SocialForceHelbing2005(sim: SFGraphSimulator) extends SocialForceLike(sim)
     val lambda: Double = 0.75
 
     val dab: Direction = p1.currentPosition - p2.currentPosition
-    val dabNorm: Double = (dab+0.00005).norm//pow(dab(0)*dab(0)+dab(1)*dab(1)+0.0001,0.5)
+    val dabNorm: Double = (dab + 0.00005).norm //pow(dab(0)*dab(0)+dab(1)*dab(1)+0.0001,0.5)
 
 
     val desiredDirection: Direction = computeDirection(p1.currentPosition, p1.currentDestination)
     val w: Double = lambda + (1.0 - lambda) * 0.5 * (1.0 + desiredDirection.dot(dab / dabNorm))
     //w * A1 * exp((p1.r + p2.r - dabNorm) / B1) * (dab / dabNorm) + A2 * exp((p1.r + p2.r - dabNorm) / B2) * (dab / dabNorm)
-     (dab / dabNorm) * A2 * exp((p1.r + p2.r - dabNorm) / B2)
+    (dab / dabNorm) * A2 * exp((p1.r + p2.r - dabNorm) / B2)
   }
 
   protected def insertNextEvent(): Unit = sim.insertEventWithDelay(sim.sf_dt)(new SocialForceHelbing2005(sim))

@@ -2,7 +2,7 @@ package hubmodel.supply.graph
 
 import hubmodel.mgmt.FlowSeparator
 import hubmodel.ped.PedestrianSim
-import hubmodel.tools.cells.RectangularVertexTrait
+import hubmodel.tools.cells.{Rectangle}
 import org.jgrapht.alg.shortestpath.DijkstraShortestPath
 import org.jgrapht.graph.DefaultDirectedWeightedGraph
 
@@ -17,8 +17,8 @@ import scala.collection.JavaConverters._
   * @param standardEdges connections between each vertex. THIS SHOULD BE MYEDGES PROBABLY ?
   * @param flowGates     links on which there are flow gates
   */
-class RouteGraph(private val vertices: Vector[RectangularVertexTrait],
-                 val standardEdges: Iterable[MyEdge],
+class RouteGraph(private val vertices: Vector[Rectangle],
+                 private val standardEdges: Iterable[MyEdge],
                  flowGates: Iterable[FlowGate],
                  binaryGates: Iterable[BinaryGate],
                  movingWalkways: Iterable[MovingWalkway],
@@ -29,28 +29,33 @@ class RouteGraph(private val vertices: Vector[RectangularVertexTrait],
   }
 
   // Map from vertex names to the vertices themselves
-  val vertexMap: Map[String, RectangularVertexTrait] = vertices.map(v => v.name -> v).toMap
+  val vertexMap: Map[String, Rectangle] = vertices.map(v => v.name -> v).toMap ++
+    flowSeparators.flatMap(fs => fs.associatedZonesStart.map(oz => oz.name -> oz)).toMap ++
+    flowSeparators.flatMap(fs => fs.associatedZonesEnd.map(oz => oz.name -> oz)).toMap --
+    flowSeparators.flatMap(fs => fs.overridenZones)
 
   // building the graph
-  private val network: DefaultDirectedWeightedGraph[RectangularVertexTrait, MyEdge] = new DefaultDirectedWeightedGraph[RectangularVertexTrait, MyEdge](classOf[MyEdge])
-  vertices.foreach(v => network.addVertex(v))
-  val allEdges: Iterable[MyEdge] = standardEdges ++ flowGates ++ binaryGates ++ movingWalkways
+  private val network: DefaultDirectedWeightedGraph[Rectangle, MyEdge] = new DefaultDirectedWeightedGraph[Rectangle, MyEdge](classOf[MyEdge])
+  vertexMap.values.foreach(v => network.addVertex(v))
+  val edges: Set[MyEdge] = (standardEdges ++ flowGates ++ binaryGates ++ movingWalkways).toSet.
+    filterNot(e => flowSeparators.flatMap(_.overridenZones).toVector.contains(e.startVertex.name) || flowSeparators.flatMap(_.overridenZones).toVector.contains(e.endVertex.name)) ++
+    flowSeparators.flatMap(_.associatedConnectivity)
 
-  allEdges.foreach(e => {
+  edges.foreach(e => {
     network.addEdge(e.startVertex, e.endVertex, e)
     network.setEdgeWeight(e, e.length)
   })
 
   // object used to get the shortest path in the network
-  private var shortestPathBuilder: DijkstraShortestPath[RectangularVertexTrait, MyEdge] = new DijkstraShortestPath[RectangularVertexTrait, MyEdge](network)
+  private var shortestPathBuilder: DijkstraShortestPath[Rectangle, MyEdge] = new DijkstraShortestPath[Rectangle, MyEdge](network)
 
   /** Updates the cost of each edge in the graph based on the cost of the edges stored in the "edges" variable.
     * This method updates the cost of the edges before actually updating the graph object itslef.
     */
   def updateGraph(): Unit = {
-    allEdges.foreach(_.updateCost(1.0))
-    allEdges.foreach(e => network.setEdgeWeight(e, e.cost))
-    this.shortestPathBuilder = new DijkstraShortestPath[RectangularVertexTrait, MyEdge](network)
+    edges.foreach(_.updateCost(1.0))
+    edges.foreach(e => network.setEdgeWeight(e, e.cost))
+    this.shortestPathBuilder = new DijkstraShortestPath[Rectangle, MyEdge](network)
   }
 
   /** Uses to shortestPathBuilder to compute the shortest path between two vertices.
@@ -59,7 +64,7 @@ class RouteGraph(private val vertices: Vector[RectangularVertexTrait],
     * @param d destination node
     * @return the list if vertices representing the path
     */
-  def getShortestPath(o: RectangularVertexTrait, d: RectangularVertexTrait): List[RectangularVertexTrait] = {
+  def getShortestPath(o: Rectangle, d: Rectangle): List[Rectangle] = {
     shortestPathBuilder.getPath(o, d).getVertexList.asScala.toList
   }
 

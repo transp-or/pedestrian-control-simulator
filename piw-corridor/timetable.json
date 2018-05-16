@@ -5,91 +5,33 @@
       "id": "12217",
       "type": "S21",
       "track": 3,
-      "arrival-time": "07:05:00",
-      "departure-time": "07:07:00",
+      "arrival-time": "25320",
+      "departure-time": "25380",
       "capacity": 515
     },
     {
       "id": "12218",
       "type": "S2",
       "track": 4,
-      "arrival-time": "07:06:00",
-      "departure-time": "07:08:00",
+      "arrival-time": "25480",
+      "departure-time": "25600",
       "capacity": 517
     },
     {
       "id": "12317",
       "type": "S3",
       "track": 5,
-      "arrival-time": "07:05:00",
-      "departure-time": "07:07:00",
+      "arrival-time": "25400",
+      "departure-time": "25500",
       "capacity": 518
     },
     {
       "id": "12318",
       "type": "S3",
       "track": 6,
-      "arrival-time": "07:04:00",
-      "departure-time": "07:08:00",
+      "arrival-time": "25380",
+      "departure-time": "25550",
       "capacity": 514
-    }
-  ],
-  "track2nodes": [
-    {
-      "track": 1,
-      "nodes": [
-        "11",
-        "12"
-      ]
-    },
-    {
-      "track": 3,
-      "nodes": [
-        "9",
-        "10"
-      ]
-    },
-    {
-      "track": 4,
-      "nodes": [
-        "9",
-        "10"
-      ]
-    },
-    {
-      "track": 5,
-      "nodes": [
-        "7",
-        "8"
-      ]
-    },
-    {
-      "track": 6,
-      "nodes": [
-        "7",
-        "8"
-      ]
-    },
-    {
-      "track": 7,
-      "nodes": [
-        "5",
-        "6"
-      ]
-    },
-    {
-      "track": 8,
-      "nodes": [
-        "5",
-        "6"
-      ]
-    },
-    {
-      "track": 9,
-      "nodes": [
-        "2",
-        "4"
-      ]
     }
   ]
 }

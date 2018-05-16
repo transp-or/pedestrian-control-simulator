@@ -14,7 +14,6 @@ libraryDependencies ++= Seq(
   "com.typesafe.play" %% "play-json" % "2.6.5",
   "org.scalanlp" %% "breeze" % "0.13",
   "org.scalanlp" %% "breeze-natives" % "0.13",
-  //e"org.scala-lang" % "scala-swing" % "2.10+",
   "org.jgrapht" % "jgrapht-core" % "1.0.1",
   "com.github.scopt" %% "scopt" % "3.6.0",
   "org.jcodec" % "jcodec-javase" % "0.2.0",
@@ -36,12 +35,12 @@ resolvers ++= Seq(
 
 mainClass in(Compile, packageBin) := Some("RunSimulation")
 
-lazy val dataFolders = Array("test-case", "piw-corridor")
+lazy val dataFolders = Array("toy-integration-test")
 
 lazy val distribution = taskKey[Unit]("Copies all the required files and builds a standalone jar to distribute.")
 distribution := {
   IO.copyFile(assembly.value.getAbsoluteFile, baseDirectory.value.getAbsoluteFile / "distribution/hub-model.jar")
   dataFolders.foreach(df => IO.copyDirectory(baseDirectory.value / df, baseDirectory.value / "distribution" / df))
-  sourceDirectory.value / "main" / "resources" listFiles() filter (f => f.getAbsolutePath.takeRight(5) == ".conf") foreach (f => IO.copyFile(f, baseDirectory.value / "distribution" / f.getName))
+  sourceDirectory.value / "main" / "resources" listFiles() filter (f => f.getAbsolutePath.takeRight(9) == "test.conf") foreach (f => IO.copyFile(f, baseDirectory.value / "distribution" / f.getName))
 }
 

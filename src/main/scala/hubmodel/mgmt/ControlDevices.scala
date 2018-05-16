@@ -2,18 +2,14 @@ package hubmodel.mgmt
 
 import hubmodel.supply.graph._
 import hubmodel.tools.ControlDevicesException
-import hubmodel.tools.cells.RectangularVertexTrait
+import hubmodel.tools.cells.Rectangle
 
 
-class ControlDevices(graph: GraphReader) {
-
-  val (monitoredAreas, amws, flowGates, binaryGates): (Iterable[RectangularVertexTrait], Iterable[MovingWalkway], Iterable[FlowGate], Iterable[BinaryGate]) = {
-    (
-      graph.monitoredAreas,
-      graph.amws,
-      graph.flowGates,
-      graph.binaryGates)
-  }
+class ControlDevices(val monitoredAreas: Iterable[Rectangle],
+                     val amws: Iterable[MovingWalkway],
+                     val flowGates: Iterable[FlowGate],
+                     val binaryGates: Iterable[BinaryGate],
+                     val flowSeparators: Iterable[FlowSeparator]) {
 
   if (flowGates.nonEmpty && monitoredAreas.isEmpty) {
     throw new ControlDevicesException("flow gates present but no monitored area")

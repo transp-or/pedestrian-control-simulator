@@ -32,10 +32,11 @@ class EvaluateState(sim: SFGraphSimulator) extends Action with Controller {
         sim.population.map(p => new Site(p.currentPosition.X, p.currentPosition.Y)).foreach(stupidList.add)
         voronoi.setSites(stupidList)
         val box: PolygonSimple = new PolygonSimple
-        box.add(sim.criticalArea.head.A.X, sim.criticalArea.head.A.Y)
+        sim.criticalArea.head.corners.foreach(corner => box.add(corner.X, corner.Y))
+        /*box.add(sim.criticalArea.head.A.X, sim.criticalArea.head.A.Y)
         box.add(sim.criticalArea.head.B.X, sim.criticalArea.head.B.Y)
         box.add(sim.criticalArea.head.C.X, sim.criticalArea.head.C.Y)
-        box.add(sim.criticalArea.head.D.X, sim.criticalArea.head.D.Y)
+        box.add(sim.criticalArea.head.D.X, sim.criticalArea.head.D.Y)*/
         voronoi.setClipPoly(box)
         sim.densityHistory.append(
           (sim.currentTime, voronoi.computeDiagram().filter(s => isInVertex(sim.criticalArea.head)(Vector2D(s.x, s.y))).foldLeft(0.0)((acc: Double, n: Site) => acc + 1.0 / (paxInZone * n.getPolygon.getArea)))
@@ -61,7 +62,7 @@ class EvaluateState(sim: SFGraphSimulator) extends Action with Controller {
     sim.eventLogger.trace("sim-time=" + sim.currentTime + ": state evaluation")
     this.computeDensity()
     sim.eventLogger.trace("sim-time=" + sim.currentTime + ": number people inside critical area: " + sim.densityHistory.last._2)
-    if (sim.useControl) sim.insertEventWithZeroDelay(new PIGateController(sim))
+    if (sim.useControl) sim.insertEventWithZeroDelay(new DLQRGateController(sim))
     sim.insertEventWithDelayNew(sim.evaluate_dt)(new EvaluateState(sim))
   }
 }

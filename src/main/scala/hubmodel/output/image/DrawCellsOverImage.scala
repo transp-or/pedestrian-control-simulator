@@ -5,14 +5,14 @@ import java.awt.{Color, Font, FontMetrics, Graphics2D}
 import javax.imageio.ImageIO
 
 import hubmodel.output.{createBackgroundFromImage, mapCoordAffine}
-import hubmodel.tools.cells.{NewVertexPlotting}
+import hubmodel.tools.cells.VertexPlotting
 
-class DrawCellsOverImage[T <: NewVertexPlotting](
-                          bkgdImage: Option[String],
-                          bkgdImageSizeMeters: (Double, Double, Double, Double),
-                          cells: Iterable[T],
-                          fileName: String
-                        ) {
+class DrawCellsOverImage[T <: VertexPlotting](
+                                               bkgdImage: Option[String],
+                                               bkgdImageSizeMeters: (Double, Double, Double, Double),
+                                               cells: Iterable[T],
+                                               fileName: String
+                                             ) {
 
   val trueWidth: Double = bkgdImageSizeMeters._3 - bkgdImageSizeMeters._1
   val trueHeight: Double = bkgdImageSizeMeters._4 - bkgdImageSizeMeters._2
@@ -33,7 +33,7 @@ class DrawCellsOverImage[T <: NewVertexPlotting](
     *
     * @return function taking a vertical position and returning the position in pixels
     */
-  def mapVcoord: Double => Int = mapCoordAffine(bkgdImageSizeMeters._2, bkgdImageSizeMeters._4,canvasHeight)
+  def mapVcoord: Double => Int = mapCoordAffine(bkgdImageSizeMeters._2, bkgdImageSizeMeters._4, canvasHeight)
 
 
   val gcleanCanvas: Graphics2D = cleanCanvas.createGraphics()

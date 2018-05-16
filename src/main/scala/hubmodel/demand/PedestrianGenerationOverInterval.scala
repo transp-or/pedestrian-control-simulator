@@ -8,8 +8,8 @@ import java.util.concurrent.ThreadLocalRandom
 
 import hubmodel.DES.{Action, SFGraphSimulator}
 import hubmodel._
-import hubmodel.supply.NodeID
-import hubmodel.tools.cells.RectangularVertexTrait
+import hubmodel.supply.NodeIDOld
+import hubmodel.tools.cells.Rectangle
 
 /** Extension of [[Action]] which will insert a [[CreatePedestrian]] actions based on a Poisson distribution for
   * the creation times.
@@ -18,7 +18,7 @@ import hubmodel.tools.cells.RectangularVertexTrait
   * @param end          end time of the pedestrian creation
   * @param numberPeople number of people to create
   */
-class PedestrianGenerationOverInterval(o: RectangularVertexTrait, d: RectangularVertexTrait, start: Time, end: Time, numberPeople: Int, sim: SFGraphSimulator) extends Action {
+class PedestrianGenerationOverInterval(o: Rectangle, d: Rectangle, start: Time, end: Time, numberPeople: Int, sim: SFGraphSimulator) extends Action {
 
   /** Poisson distribution
     *
@@ -28,8 +28,10 @@ class PedestrianGenerationOverInterval(o: RectangularVertexTrait, d: Rectangular
     */
   def poissonProcessIterator(duration: Double, numberPeople: Double): Iterator[Time] = {
     val rate: Double = numberPeople / duration
-    var t: Double = -math.log(ThreadLocalRandom.current.nextDouble(0.0, 1.0)/rate)
-    Iterator.continually{ t = t - math.log(ThreadLocalRandom.current.nextDouble(0.0,1.0))/rate; t}.takeWhile(v => v < duration).map(new Time(_))
+    var t: Double = -math.log(ThreadLocalRandom.current.nextDouble(0.0, 1.0) / rate)
+    Iterator.continually {
+      t = t - math.log(ThreadLocalRandom.current.nextDouble(0.0, 1.0)) / rate; t
+    }.takeWhile(v => v < duration).map(new Time(_))
   }
 
 
@@ -40,11 +42,13 @@ class PedestrianGenerationOverInterval(o: RectangularVertexTrait, d: Rectangular
   override def execute(): Unit = {
     sim.eventLogger.trace("time=" + sim.currentTime + ": generating " + numberPeople + " pedestrians in interval " + start + ":" + end)
     //println((end-start).toLong, numberPeople, sim.randU, Vector())
-    poissonProcessIterator(end.value-start.value, numberPeople).foreach(t => {sim.insertEventAtAbsolute( start + t )(new CreatePedestrian(o, d, sim))})
+    poissonProcessIterator(end.value - start.value, numberPeople).foreach(t => {
+      sim.insertEventAtAbsolute(start + t)(new CreatePedestrian(o, d, sim))
+    })
     //arrivalTimes.
   }
 
-  override def toString: NodeID = this.o + ", " + this.d + ", " + this.start + ", " + this.end + ", " + this.numberPeople
+  override def toString: NodeIDOld = this.o + ", " + this.d + ", " + this.start + ", " + this.end + ", " + this.numberPeople
 }
 
 

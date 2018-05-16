@@ -1,13 +1,11 @@
-package hubmodel.route
+package hubmodel.route.Guo2011
 
 import java.awt.Color
 
-import hubmodel.DES.{Action, PedestrianDES}
 import hubmodel._
-import hubmodel.ped.PedestrianSim
-import hubmodel.tools.cells.{NewVertexHexagon, NewVertexPlotting}
+import hubmodel.tools.cells.{Hexagon, VertexPlotting}
 
-case class HexagonPotentialField(c: Position, sideLength: Double) extends  NewVertexHexagon(c, sideLength) with NewVertexPlotting { //}, conn: List[String]) {
+class HexagonPotentialField(c: Position, sideLength: Double) extends Hexagon(c, sideLength) with VertexPlotting { //}, conn: List[String]) {
   /*val ID: String = generateUUID
   val A: Position = center + edgeLength * DenseVector(-cos(30 * math.Pi / 180.0), sqrt(1 - pow(cos(30 * math.Pi / 180.0), 2)))
   val B: Position = A + edgeLength * DenseVector(0.0, -1.0)
@@ -35,7 +33,9 @@ case class HexagonPotentialField(c: Position, sideLength: Double) extends  NewVe
     else Color.WHITE
   }
 
-  def stringToShow: String = {this.pedAcc.toString + " / " + "%1.2f".format(this.potential)}
+  def stringToShow: String = {
+    this.pedAcc.toString + " / " + "%1.2f".format(this.potential)
+  }
 
   def horizontalMaxTextWidth: Double = this.sideLength
 
@@ -58,14 +58,5 @@ case class HexagonPotentialField(c: Position, sideLength: Double) extends  NewVe
   /*def xCoords: Array[Double] = Array(A(0), B(0), C(0), D(0), E(0), F(0))
 
   def yCoords: Array[Double] = Array(A(1), B(1), C(1), D(1), E(1), F(1))*/
-
-}
-
-class RouteGuo2011(sim: PedestrianDES[PedestrianSim]) extends Action {
-
-
-  override def execute(): Unit = {
-
-  }
 
 }

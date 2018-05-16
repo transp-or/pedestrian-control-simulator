@@ -74,8 +74,12 @@ abstract class SocialForceLike(sim: SFGraphSimulator) {
     * @return closest end point of the wall to the point
     */
   protected def getClosestEndPoint(point: Position, w: Wall): Position = {
-    if ((w.startPoint - point).norm < (w.endPoint - point).norm) {w.startPoint}
-    else {w.endPoint}
+    if ((w.startPoint - point).norm < (w.endPoint - point).norm) {
+      w.startPoint
+    }
+    else {
+      w.endPoint
+    }
   }
 
   /** Find the point used to compute the repulsive effects from the wall onto a pedestrian.
@@ -125,7 +129,7 @@ abstract class SocialForceLike(sim: SFGraphSimulator) {
     * @param forceAcc accumulator
     * @return the some of all the effects from the walls
     */
-  protected def collectWallRepulsionForces(ped: PedestrianSim, walls: Seq[Wall], forceAcc: Force): Force = {
+  protected def collectWallRepulsionForces(ped: PedestrianSim, walls: Iterable[Wall], forceAcc: Force): Force = {
 
     // Collection of all the forces.
     // TODO: not collect all forces but only ones within distance and deal with doorways
@@ -160,7 +164,7 @@ abstract class SocialForceLike(sim: SFGraphSimulator) {
     val collectRepulsiveForces: Force = {
       //if (collectPedestrianRepulsionForces(p, sim.population.filterNot(ped => norm(p.currentPosition - ped.currentPosition) > 15.0), breeze.linalg.DenseVector(0.0, 0.0)).exists(_.isNaN)) { enterDebugMethod }
 
-      collectWallRepulsionForces(p, sim.spaceSF.walls, new ZeroVector2D) +
+      collectWallRepulsionForces(p, sim.walls, new ZeroVector2D) +
         collectPedestrianRepulsionForces(p, sim.findNeighbours(p.ID, 5.0), new ZeroVector2D)
     }
 

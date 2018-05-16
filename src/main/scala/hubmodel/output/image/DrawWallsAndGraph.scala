@@ -6,15 +6,15 @@ import javax.imageio.ImageIO
 
 import hubmodel.output._
 import hubmodel.supply.continuous.Wall
-import hubmodel.tools.cells.RectangularVertexTrait
+import hubmodel.tools.cells.Rectangle
 
-class DrawWallsAndGraph(walls: Vector[Wall], edges: Vector[(RectangularVertexTrait, RectangularVertexTrait)], filename: String) {
+class DrawWallsAndGraph(walls: Iterable[Wall], edges: Vector[(Rectangle, Rectangle)], filename: String) {
 
   val wallBounds: (Double, Double, Double, Double) = getBounds(walls)
   val graphBounds: (Double, Double, Double, Double) = getBounds(edges)
   val trueXMin: Double = math.min(wallBounds._1, graphBounds._1)
-  val trueXMax: Double = math.max(wallBounds._3, graphBounds._3)
   val trueYMin: Double = math.min(wallBounds._2, graphBounds._2)
+  val trueXMax: Double = math.max(wallBounds._3, graphBounds._3)
   val trueYMax: Double = math.max(wallBounds._4, graphBounds._4)
 
   val IMAGE_HEIGHT: Int = computeImageHeightPixels((trueXMin, trueYMin, trueXMax, trueYMax))

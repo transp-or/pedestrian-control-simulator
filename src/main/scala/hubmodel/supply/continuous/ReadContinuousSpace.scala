@@ -12,7 +12,7 @@ import scala.io.BufferedSource
   *
   * @param file file where the infrastructure specification is located
   */
-class ContinuousSpaceReader(file: String) {
+class ReadContinuousSpace(file: String) {
 
   val continuousSpace: ContinuousSpace = {
     val source: BufferedSource = scala.io.Source.fromFile(file)

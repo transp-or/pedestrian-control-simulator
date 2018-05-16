@@ -11,9 +11,8 @@ import hubmodel._
 import hubmodel.output.createBackgroundFromImage
 import hubmodel.ped.PedestrianSim
 import hubmodel.supply.graph.BinaryGate
-import hubmodel.tools.cells.RectangularVertexTrait
+import hubmodel.tools.cells.Rectangle
 import org.jcodec.api.awt.AWTSequenceEncoder
-
 
 
 /** Creates a video showing the movement of individual pedestrians with the critical zones in which the density is
@@ -39,7 +38,7 @@ class MovingPedestriansWithDensityVideo(outputFile: String,
                                         bkgdImageSizeMeters: (Double, Double),
                                         fps: Int,
                                         pop: Vector[PedestrianSim],
-                                        criticalAreaInput: List[RectangularVertexTrait],
+                                        criticalAreaInput: List[Rectangle],
                                         gateCollection: Map[String, BinaryGate],
                                         var gateHistory: scala.collection.mutable.ArrayBuffer[(Int, List[(String, Boolean)])],
                                         var densityMeasurements: collection.mutable.ArrayBuffer[(Int, Double)],
@@ -50,7 +49,7 @@ class MovingPedestriansWithDensityVideo(outputFile: String,
 
   // Loads the background image which is used as the base image for all dimensions.
 
-    val cleanCanvas: BufferedImage = createBackgroundFromImage(bkgdImage, bkgdImageSizeMeters)
+  val cleanCanvas: BufferedImage = createBackgroundFromImage(bkgdImage, bkgdImageSizeMeters)
 
 
   val canvasWidth: Int = if (cleanCanvas.getWidth % 2 == 0) cleanCanvas.getWidth else cleanCanvas.getWidth + 1
@@ -84,7 +83,7 @@ class MovingPedestriansWithDensityVideo(outputFile: String,
   // List of times with corresponding ellipses to draw. For each time, the list of ellipses coreespond to the pedestrians.
 
   //println(population2TimePositionList.map(_._1).toVector.sorted)
-  var timeEllipses: Vector[(Time, List[Ellipse2D])] = population2TimePositionList.filter(pair => times2Show.exists(t => math.abs(t - pair._1.value) <= math.pow(10,-5))).map(p => (p._1, p._2.map(createDot))).toVector
+  var timeEllipses: Vector[(Time, List[Ellipse2D])] = population2TimePositionList.filter(pair => times2Show.exists(t => math.abs(t - pair._1.value) <= math.pow(10, -5))).map(p => (p._1, p._2.map(createDot))).toVector
   //println(population2TimePositionList.filter(pair => times2Show.contains(pair._1)).map(_._1).sorted)
 
   // Image to use for combining all the different components: the bkgd image, the dots, the monitored areas, the gates, etc.
@@ -103,20 +102,20 @@ class MovingPedestriansWithDensityVideo(outputFile: String,
     /** Draws dots representing pedestrians */
     val points: BufferedImage = new BufferedImage(canvasWidth, canvasHeight, BufferedImage.TYPE_4BYTE_ABGR)
     //if (timeEllipses.head._1 == times2Show(i)) {
-      val gPoints: Graphics2D = points.createGraphics()
-      gPoints.setColor(Color.RED)
-    timeEllipses.indexWhere(te => math.abs(times2Show(i) - te._1.value) < math.pow(10,-5)) match {
-      case a if a >= 0 =>timeEllipses(a)._2.foreach(p => gPoints.fill(p))
+    val gPoints: Graphics2D = points.createGraphics()
+    gPoints.setColor(Color.RED)
+    timeEllipses.indexWhere(te => math.abs(times2Show(i) - te._1.value) < math.pow(10, -5)) match {
+      case a if a >= 0 => timeEllipses(a)._2.foreach(p => gPoints.fill(p))
       case _ => {}
     }
-      //timeEllipses = timeEllipses.tail
+    //timeEllipses = timeEllipses.tail
     //}
 
     /** Draws colored boxes showing densities inside areas */
 
     val box: BufferedImage = new BufferedImage(canvasWidth, canvasHeight, BufferedImage.TYPE_4BYTE_ABGR)
     if (densityMeasurements.nonEmpty && criticalAreaInput.nonEmpty) {
-      val criticalArea: RectangularVertexTrait = criticalAreaInput.head
+      val criticalArea: Rectangle = criticalAreaInput.head
       val gBox: Graphics2D = box.createGraphics()
       if (densityMeasurements.head._2 >= 2.17) gBox.setColor(new Color(153, 0, 0, 25))
       else if (densityMeasurements.head._2 > 1.08) gBox.setColor(new Color(255, 0, 0, 25))
@@ -124,9 +123,10 @@ class MovingPedestriansWithDensityVideo(outputFile: String,
       else if (densityMeasurements.head._2 > 0.43) gBox.setColor(new Color(255, 255, 0, 25))
       else if (densityMeasurements.head._2 > 0.31) gBox.setColor(new Color(0, 255, 0, 25))
       else if (densityMeasurements.head._2 <= 0.31) gBox.setColor(new Color(0, 0, 255, 25))
-      gBox.fillRect(mapHcoord(criticalArea.A.X), mapVcoord(criticalArea.A.Y), mapHcoord(criticalArea.C.X) - mapHcoord(criticalArea.D.X), mapVcoord(criticalArea.D.Y) - mapVcoord(criticalArea.A.Y))
+      val areaCoords: (Position, Position, Position, Position) = (criticalArea.corners(0), criticalArea.corners(1), criticalArea.corners(2), criticalArea.corners(3))
+      gBox.fillRect(mapHcoord(areaCoords._1.X), mapVcoord(areaCoords._1.Y), mapHcoord(areaCoords._3.X) - mapHcoord(areaCoords._4.X), mapVcoord(areaCoords._4.Y) - mapVcoord(areaCoords._1.Y))
       gBox.setColor(Color.BLACK)
-      gBox.drawRect(mapHcoord(criticalArea.A.X), mapVcoord(criticalArea.A.Y), mapHcoord(criticalArea.C.X) - mapHcoord(criticalArea.D.X), mapVcoord(criticalArea.D.Y) - mapVcoord(criticalArea.A.Y))
+      gBox.drawRect(mapHcoord(areaCoords._1.X), mapVcoord(areaCoords._1.Y), mapHcoord(areaCoords._3.X) - mapHcoord(areaCoords._4.X), mapVcoord(areaCoords._4.Y) - mapVcoord(areaCoords._1.Y))
     }
 
     /** Draws gate states */

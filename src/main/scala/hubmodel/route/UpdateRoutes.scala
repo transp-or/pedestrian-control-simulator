@@ -1,7 +1,8 @@
 package hubmodel.route
 
+import breeze.linalg.norm
 import hubmodel.DES.{Action, SFGraphSimulator}
-import hubmodel.tools.cells.RectangularVertexTrait
+import hubmodel.tools.cells.Rectangle
 
 
 /**
@@ -25,7 +26,12 @@ import hubmodel.tools.cells.RectangularVertexTrait
 class UpdateRoutes(sim: SFGraphSimulator) extends Action {
   override def execute(): Unit = {
     sim.population.filter(sim.intermediateDestinationReached).filterNot(_.isWaiting).foreach(p => {
-      val newRoute: List[RectangularVertexTrait] = sim.graph.getShortestPath(p.nextZone, p.finalDestination).tail
+      /*val closestNode: Rectangle = sim.graph.vertexMap.values.map(r => (r, (r.center - p.currentPosition).norm)).minBy(_._2)._1
+      val newRoute: List[Rectangle] = {
+        val route: List[Rectangle] = sim.graph.getShortestPath(closestNode, p.finalDestination)
+        if (route.head.isInside(p.currentPosition)) route.tail else route
+      }*/
+      val newRoute: List[Rectangle] = sim.graph.getShortestPath(p.nextZone, p.finalDestination).tail
       if (sim.closedEdges.exists(ce => ce._1 == p.nextZone && ce._2 == newRoute.head)) {
         p.setCurrentDestination(p.nextZone.uniformSamplePointInside)
       } else {

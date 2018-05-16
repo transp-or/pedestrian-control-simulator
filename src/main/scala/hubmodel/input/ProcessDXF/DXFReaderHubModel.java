@@ -14,19 +14,18 @@ import java.util.List;
 /**
  * Parser for CAD files for the hub model. Extends the {@link DXFReader} class with methods for reading specific
  * layers and writing the contents in the JSON format for the hub model.
- *
+ * <p>
  * ==Usage==
  * {{{
- *            String fileName = "hub_test.dxf";
- *            String wallLayerID = "walls";
- *            String zoneLayerID = "zones";
- *            String graphLayerID = "graph";
- *
- *            DXFReaderHubModel dxf = new DXFReaderHubModel(fileName, wallLayerID, zoneLayerID, graphLayerID);
- *            dxf.writeWallsToFile("walls-test.json");
- *            dxf.writeGraphToFile("graph-test.json");
+ * String fileName = "hub_test.dxf";
+ * String wallLayerID = "walls";
+ * String zoneLayerID = "zones";
+ * String graphLayerID = "graph";
+ * <p>
+ * DXFReaderHubModel dxf = new DXFReaderHubModel(fileName, wallLayerID, zoneLayerID, graphLayerID);
+ * dxf.writeWallsToFile("walls-test.json");
+ * dxf.writeGraphToFile("graph-test.json");
  * }}}
- *
  */
 public class DXFReaderHubModel extends DXFReader {
 
@@ -49,9 +48,9 @@ public class DXFReaderHubModel extends DXFReader {
      * Constructor. The file name with the names of the three layers must be passed as arguments. On construction,
      * the layers are set.
      *
-     * @param fileName String with the name of the DXF file.
-     * @param wallLayerName String with the name of the wall layer.
-     * @param zoneLayerName String with the name of the zone layer.
+     * @param fileName       String with the name of the DXF file.
+     * @param wallLayerName  String with the name of the wall layer.
+     * @param zoneLayerName  String with the name of the zone layer.
      * @param graphLayerName String with the name of the grpah layer.
      */
     public DXFReaderHubModel(String fileName, String wallLayerName, String zoneLayerName, String graphLayerName) {
@@ -64,7 +63,7 @@ public class DXFReaderHubModel extends DXFReader {
 
     /**
      * Collects all the walls on the specific layer, then writes them to JSON text file.
-     *
+     * <p>
      * Three type of objects are scanned: {@link DXFConstants.ENTITY_TYPE_LWPOLYLINE},
      * {@link DXFConstants.ENTITY_TYPE_POLYLINE} and {@link DXFConstants.ENTITY_TYPE_LINE}. The polylines are then split
      * into individual {@link Wall}s, while the plain lines are directly converted to {@link Wall}. All the walls are
@@ -80,7 +79,7 @@ public class DXFReaderHubModel extends DXFReader {
         List<DXFLine> l_w = this.wallLayer.getDXFEntities(DXFConstants.ENTITY_TYPE_LINE);
 
         // initiliaze container for Wall objects
-        List<Wall> walls =  new ArrayList<>();
+        List<Wall> walls = new ArrayList<>();
 
         // Process LWPOLYLINE objects
         if (lwpl_w != null) {
@@ -114,9 +113,9 @@ public class DXFReaderHubModel extends DXFReader {
                 "  \"walls\": [";
 
         // appends all wall objects
-        for (int i =0; i < walls.size(); i++) {
+        for (int i = 0; i < walls.size(); i++) {
             str += walls.get(i).toJSON();
-            if (i != walls.size()-1) {
+            if (i != walls.size() - 1) {
                 str += ",";
             }
         }
@@ -130,22 +129,25 @@ public class DXFReaderHubModel extends DXFReader {
 
         // Writes file
         Path file = Paths.get(fileName);
-        try { Files.write(file, strA , Charset.forName("UTF-8")); }
-        catch (IOException e) {e.printStackTrace();}
+        try {
+            Files.write(file, strA, Charset.forName("UTF-8"));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     /**
      * Collects and combines the zones and graph before writing them to a file.
-     *
+     * <p>
      * On the zone layer, {@link DXFConstants.ENTITY_TYPE_LWPOLYLINE} and {@link DXFConstants.ENTITY_TYPE_POLYLINE}
      * objects are collected and {@link Zone} objects are built from them. Secondly, all
      * {@link DXFConstants.ENTITY_TYPE_MTEXT} objects are also collectd and used to name the nodes. The matching scheme
      * is the following: for each {@link DXFConstants.ENTITY_TYPE_MTEXT}, associate the text to the zone in which it
      * is located.
-     *
+     * <p>
      * On the graph layer, only {@link DXFConstants.ENTITY_TYPE_LINE} objects are searched for. Each of these is
      * converted to an {@link Edge} object. Once this is done, {@link Connections} objects are built from them.
-     *
+     * <p>
      * Finally, the zones and connections are written as JSON.
      *
      * @param fileName
@@ -155,7 +157,7 @@ public class DXFReaderHubModel extends DXFReader {
         List<DXFPolyline> lwpl_z = this.zoneLayer.getDXFEntities(DXFConstants.ENTITY_TYPE_LWPOLYLINE);
         List<DXFPolyline> pl_z = this.zoneLayer.getDXFEntities(DXFConstants.ENTITY_TYPE_POLYLINE);
         List<DXFMText> names_z = this.zoneLayer.getDXFEntities(DXFConstants.ENTITY_TYPE_MTEXT);
-        List<Zone> zones =  new ArrayList<>();
+        List<Zone> zones = new ArrayList<>();
         HashSet<String> zonesNames = new HashSet<>();
 
 
@@ -189,7 +191,7 @@ public class DXFReaderHubModel extends DXFReader {
             for (int i = 0; i < names_z.size(); i++) {
                 zonesNames.add(names_z.get(i).getText());
                 for (int j = 0; j < zones.size(); j++) {
-                    if (zones.get(j).polygon.contains(names_z.get(i).getInsertPoint().getX(), names_z.get(i).getInsertPoint().getY())){
+                    if (zones.get(j).polygon.contains(names_z.get(i).getInsertPoint().getX(), names_z.get(i).getInsertPoint().getY())) {
                         zones.get(j).name = names_z.get(i).getText();
                     }
                 }
@@ -197,7 +199,7 @@ public class DXFReaderHubModel extends DXFReader {
         }
 
         List<DXFLine> l_g = this.graphLayer.getDXFEntities(DXFConstants.ENTITY_TYPE_LINE);
-        List<Edge> edges =  new ArrayList<>();
+        List<Edge> edges = new ArrayList<>();
 
 
         if (l_g != null) {
@@ -205,10 +207,10 @@ public class DXFReaderHubModel extends DXFReader {
                 String o = "";
                 String d = "";
                 for (int j = 0; j < zones.size(); j++) {
-                    if (zones.get(j).polygon.contains(l_g.get(i).getStartPoint().getX(), l_g.get(i).getStartPoint().getY())){
+                    if (zones.get(j).polygon.contains(l_g.get(i).getStartPoint().getX(), l_g.get(i).getStartPoint().getY())) {
                         o = zones.get(j).name;
                     }
-                    if (zones.get(j).polygon.contains(l_g.get(i).getEndPoint().getX(), l_g.get(i).getEndPoint().getY())){
+                    if (zones.get(j).polygon.contains(l_g.get(i).getEndPoint().getX(), l_g.get(i).getEndPoint().getY())) {
                         d = zones.get(j).name;
                     }
                 }
@@ -217,13 +219,13 @@ public class DXFReaderHubModel extends DXFReader {
         }
 
 
-        List<Connections> connections =  new ArrayList<>();
-        for (String n: zonesNames) {
+        List<Connections> connections = new ArrayList<>();
+        for (String n : zonesNames) {
             connections.add(new Connections(n));
         }
 
-        for (Edge e: edges) {
-            for (Connections c: connections) {
+        for (Edge e : edges) {
+            for (Connections c : connections) {
                 if (c.origin.compareTo(e.O) == 0) {
                     c.conn.add(e.D);
                 }
@@ -233,18 +235,18 @@ public class DXFReaderHubModel extends DXFReader {
         String str = "{\"location\": \"lausanne\", \"sublocation\": \"test\",\"nodes\":[ ";
 
 
-        for (int i =0; i < zones.size(); i++) {
+        for (int i = 0; i < zones.size(); i++) {
             str += zones.get(i).toJSON();
-            if (i != zones.size()-1) {
+            if (i != zones.size() - 1) {
                 str += ",";
             }
         }
 
         str += "], \"connectivity\": [";
 
-        for (int i =0; i < connections.size(); i++) {
-             str += connections.get(i).toJSON();
-            if (i != connections.size()-1) {
+        for (int i = 0; i < connections.size(); i++) {
+            str += connections.get(i).toJSON();
+            if (i != connections.size() - 1) {
                 str += ",";
             }
         }
@@ -253,10 +255,13 @@ public class DXFReaderHubModel extends DXFReader {
         ArrayList<String> strA = new ArrayList<String>();
         strA.add(str);
         Path file = Paths.get(fileName);
-        try { Files.write(file, strA , Charset.forName("UTF-8")); }
-        catch (IOException e) {e.printStackTrace();}
+        try {
+            Files.write(file, strA, Charset.forName("UTF-8"));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
 
     }
 
 
-    }
+}

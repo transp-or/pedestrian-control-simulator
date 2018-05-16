@@ -57,7 +57,7 @@ class SocialForceMollified(sim: SFGraphSimulator) extends SocialForceLike(sim) w
     // angle of sight reduction
 
     val dab: Direction = p1.currentPosition - p2.currentPosition
-    val yab: Direction = p2.currentVelocity*dt
+    val yab: Direction = p2.currentVelocity * dt
     val bab: Double = 0.5 * sqrt(pow(dab.norm + (dab - yab).norm, 2) - pow((yab).norm, 2))
 
     val desiredDirection: Direction = computeDirection(p1.currentPosition, p1.currentDestination)
@@ -65,7 +65,7 @@ class SocialForceMollified(sim: SFGraphSimulator) extends SocialForceLike(sim) w
     //println(dab, yab, bab, desiredDirection, desiredDirection.dot(dab / (dab.norm)), exp(-bab / B), ((norm(dab) + (dab - yab).norm) / 2.0 * bab) * 0.5 * (dab / dab.norm + (dab - yab) / (dab - yab).norm))
 
     // final force
-    (dab / dab.norm + (dab - yab) / (dab - yab).norm)  * A * exp(-bab / B) * ((dab.norm + (dab - yab).norm) / 2.0 * bab) * 0.5
+    (dab / dab.norm + (dab - yab) / (dab - yab).norm) * A * exp(-bab / B) * ((dab.norm + (dab - yab).norm) / 2.0 * bab) * 0.5
 
     /*
     val d21: Direction = p1.currentPosition-p2.currentPosition

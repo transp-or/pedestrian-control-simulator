@@ -105,9 +105,9 @@ abstract class PedestrianDES[T <: PedestrianTrait](val startTime: Time,
     if (currentTime + delay <= finalTime) eventList += new MyEvent(currentTime + delay, action)
   }
 
-  def insertEventWithZeroDelay[U <: Action](action: U): Unit = { eventList += new MyEvent(currentTime, action) }
-
-
+  def insertEventWithZeroDelay[U <: Action](action: U): Unit = {
+    eventList += new MyEvent(currentTime, action)
+  }
 
 
   /** Inserts an event into the eventList at a specific time. No need for sorting as the PriorityQueue is always
@@ -148,13 +148,13 @@ abstract class PedestrianDES[T <: PedestrianTrait](val startTime: Time,
   }
 
   @deprecated
-  def removeFromPopulation(condition: T => Boolean): Unit = synchronized(_populationNew.retain((k,v) => {
+  def removeFromPopulation(condition: T => Boolean): Unit = synchronized(_populationNew.retain((k, v) => {
     v.reachedDestination = true
     !condition(v)
   }))
 
   def processCompletedPedestrian(condition: T => Boolean): Unit = {
-    val completedPeds: Map[String, T] = synchronized(this._populationNew.filter( kv => condition(kv._2) ) ).toMap
+    val completedPeds: Map[String, T] = synchronized(this._populationNew.filter(kv => condition(kv._2))).toMap
     completedPeds.values.foreach(_.reachedDestination = true)
     synchronized(completedPeds.keys.foreach(id => this._populationNew.remove(id)))
     synchronized(this._populationCompleted ++= completedPeds.values)
@@ -170,7 +170,7 @@ abstract class PedestrianDES[T <: PedestrianTrait](val startTime: Time,
   }
 
   def findNeighbours(id: String, r: Double): Iterable[T] = {
-    this.populationMTree.findInRange(id, this.ID2Position(id), r).filterNot(_ == id ).map(id => this._populationNew.getOrElse(id, throw new IndexOutOfBoundsException(id))).filterNot(_.reachedDestination)
+    this.populationMTree.findInRange(id, this.ID2Position(id), r).filterNot(_ == id).map(id => this._populationNew.getOrElse(id, throw new IndexOutOfBoundsException(id))).filterNot(_.reachedDestination)
   }
 
   def population: Iterable[T] = this._populationNew.values
@@ -284,8 +284,8 @@ abstract class PedestrianDES[T <: PedestrianTrait](val startTime: Time,
     while (this.eventList.nonEmpty) {
       val event = eventList.dequeue()
       this._currentTime = event.t
-      if (this._currentTime.value % 120.0 == 0){
-        print(" * simulation at " + this._currentTime +" sec\r")
+      if (this._currentTime.value % 120.0 == 0) {
+        print(" * simulation at " + this._currentTime + " sec\r")
       }
       event.action.execute()
     }
