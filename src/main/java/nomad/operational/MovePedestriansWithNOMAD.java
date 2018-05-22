@@ -8,7 +8,7 @@ import nl.tudelft.pedestrians.infrastructures.Server;
 import nl.tudelft.pedestrians.main.SimulationTime;
 import nl.tudelft.pedestrians.parameters.NOMAD;
 
-public class MovePedestrians {
+public class MovePedestriansWithNOMAD {
 
 
 
@@ -46,7 +46,7 @@ public class MovePedestrians {
 
 
     private double timeStep;
-    public MovePedestrians(int CurrentTime, int timeStep) {
+    public MovePedestriansWithNOMAD(int CurrentTime, int timeStep) {
 
         this.timeStep = timeStep;
 
@@ -67,7 +67,54 @@ public class MovePedestrians {
 
     }
 
-    public void movePedestriansExecution(int currentTime) {
+    public void step(int currentTime){
+
+        //System.out.println(currentTime);
+        // clear the original colour list
+        //pedestriansToChangeColour.clear();
+
+        // ask the congestion manager to step
+        //congestionManager.step();
+
+        // ask the pedestrians to step
+        for (Pedestrian pedestrian: this.pedestriansInSimulation) {
+
+/*			if (pedestrian.getSpeed().length()<0.2)
+				System.out.println(pedestrian.pedId);*/
+
+            // update all states from each pedestrian
+            pedestrian.step(currentTime);
+            // if the pedestrian is not going to exit
+            if (!pedestrian.isToExit()){
+                // then put him in one of the walking lists
+                this.insertPedInMoveList(pedestrian);
+            }
+            else
+                // put him in the exit list
+                this.pedestriansToExit.add(pedestrian);
+        }
+
+        // ask the appropriate graphic objects to change the pedestrians colours
+        //if (Pedestrian.isDynamicColour())this.changePedestriansColours(true);
+
+        // move the pedestrians
+        this.movePedestrians(currentTime);
+
+        // Remove the pedestrian from all the external lists after the pedestrians updated their state.
+        // This prevents conflict in the for (Pedestrian pedestrian: this.pedestriansInSimulation)
+        // that will occur during the step and cause error if a pedestrian is excluded during it.
+        for (Pedestrian pedestrian: this.pedestriansToExit){
+            this.exitPedestrianFromSimulation(pedestrian, currentTime);
+        }
+
+        // clear the lists for the next step
+        this.clearLists();
+
+        // once in a while compact the global lists
+        //this.compactLists();
+    }
+
+    public void movePedestrians(int currentTime) {
 
         // if it is variable step
         if (Pedestrian.isVariableStep()){
@@ -96,12 +143,11 @@ public class MovePedestrians {
             // move all pedestrians according to the simulation step
             walkPedestrians(this.pedestrianToMoveInCollision, this.isolatedTimeStepSeconds, currentTime);
             // if it is a parallel update then update the next position of pedestrians
-            if (Pedestrian.isParallel)
-                Pedestrian.updateParallel(this.pedestrianToMoveInCollision);
+            //if (Pedestrian.isParallel)
+            //    Pedestrian.updateParallel(this.pedestrianToMoveInCollision);
         }
 
         Pedestrian.updateAccelerations(this.pedestrianToMoveInCollision, this.timeStep/1000.0);
-
     }
 
     /**

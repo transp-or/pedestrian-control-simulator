@@ -1,12 +1,12 @@
 package hubmodel.DES
 
-import hubmodel.NewTimeNumeric.mkOrderingOps
+import hubmodel.TimeNumeric.mkOrderingOps
 import hubmodel._
 import hubmodel.demand.{CreatePedestrian, PTInducedQueue, PedestrianFlowPT_New, PedestrianFlow_New, ProcessPedestrianFlows, ProcessTimeTable, PublicTransportSchedule, ReadPedestrianFlows, Stop2Vertices}
 import hubmodel.mgmt.{ControlDevices, EvaluateState}
 import hubmodel.mvmtmodels.NOMAD.NOMADOriginalModel
 import hubmodel.mvmtmodels.RebuildTree
-import hubmodel.ped.PedestrianSim
+import hubmodel.ped.{PedestrianNOMAD, PedestrianSim}
 import hubmodel.route.UpdateRoutes
 import hubmodel.supply.continuous.{ContinuousSpace, Wall}
 import hubmodel.supply.graph.{RouteGraph, StartFlowGates, Stop2Vertex}
@@ -23,7 +23,7 @@ class SFGraphSimulator(override val startTime: Time,
                        val timeTable: PublicTransportSchedule,
                        val stop2Vertices: Stop2Vertex,
                        flows: (Iterable[PedestrianFlow_New], Iterable[PedestrianFlowPT_New]),
-                       val controlDevices: ControlDevices) extends PedestrianDES[PedestrianSim](startTime, finalTime) {
+                       val controlDevices: ControlDevices) extends PedestrianDES[PedestrianNOMAD](startTime, finalTime) {
 
   /* Stores the PT induced flows and the other flows separately*/
   val pedestrianFlows: Iterable[PedestrianFlow_New] = flows._1
