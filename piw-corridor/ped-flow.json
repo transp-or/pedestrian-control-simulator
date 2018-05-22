@@ -44,12 +44,12 @@
     {
       "origin": "T_12217",
       "destination": "S_13",
-      "flow": 120
+      "flow": 80
     },
     {
       "origin": "T_12217",
       "destination": "S_14",
-      "flow": 100
+      "flow": 60
     },
     {
       "origin": "T_12217",
@@ -59,12 +59,12 @@
     {
       "origin": "T_12218",
       "destination": "T_12217",
-      "flow": 100
+      "flow": 70
     },
     {
       "origin": "T_12218",
       "destination": "S_14",
-      "flow": 110
+      "flow": 50
     },
     {
       "origin": "T_12218",
@@ -79,7 +79,7 @@
     {
       "origin": "T_12317",
       "destination": "S_13",
-      "flow": 120
+      "flow": 50
     },
     {
       "origin": "T_12317",

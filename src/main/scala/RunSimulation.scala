@@ -284,6 +284,8 @@ object RunSimulation extends App {
     }
   }
 
+  println(results.map(_._1.size))
+
   // ******************************************************************************************
   //                           Processes and writes results to CSV
   // ******************************************************************************************
@@ -341,7 +343,7 @@ object RunSimulation extends App {
     writePopulationTrajectories(results.head._1, config.getString("output.output_prefix") + "_simulation_trajectories.csv")
   }
 
-  /*{
+  {
     val ODPairsToAnalyse: Iterable[(String, String)] = config.getStringList("results-analysis.o_nodes").asScala.zip(config.getStringList("results-analysis.d_nodes").asScala).map(t => (t._1, t._2))
 
     def findInterval(t: Double, times: Vector[Double]): Int = {
@@ -359,7 +361,7 @@ object RunSimulation extends App {
       res.map( r => (r._1, r._2._1, r._2._2, r._2._3, r._2._4, r._2._5, r._2._6)).toVector.sortBy(_._1).writeToCSV(config.getString("output.output_prefix") + "-temporal-tt.csv")
       println(res.map(_._2._2).stats)
     })
-  }*/
+  }
 
   // ******************************************************************************************
   //                                  Processing for TRANS-FORM

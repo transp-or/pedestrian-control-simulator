@@ -23,7 +23,8 @@ libraryDependencies ++= Seq(
   "org.scalactic" %% "scalactic" % "3.0.1",
   "transpor.tools" % "power-voronoi" % "1.0",
   "transpor.molyneaux" %% "scala-custom" % "1.0-SNAPSHOT",
-  "transpor.tools" % "dxf-parser" % "1.0"
+  "transpor.tools" % "dxf-parser" % "1.0",
+  "nl.tudelft.pedestrians" % "nomad" % "1.0"
 )
 
 resolvers ++= Seq(

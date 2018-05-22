@@ -13,7 +13,7 @@
       "id": "12218",
       "type": "S2",
       "track": 4,
-      "arrival-time": "25480",
+      "arrival-time": "25880",
       "departure-time": "25600",
       "capacity": 517
     },
@@ -21,7 +21,7 @@
       "id": "12317",
       "type": "S3",
       "track": 5,
-      "arrival-time": "25400",
+      "arrival-time": "25800",
       "departure-time": "25500",
       "capacity": 518
     },
