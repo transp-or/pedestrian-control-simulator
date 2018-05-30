@@ -197,6 +197,13 @@ object RunSimulation extends App {
     // execute simulation
     timeBlock(sim.run())
 
+    sim.populationCompleted.foreach(p => {
+      println(p.travelTime, p.travelDistance, p.travelDistance / p.travelTime.value)
+      if (p.travelDistance / p.travelTime.value > 1.2){
+        //println(p.getHistoryPosition.mkString("\n"))
+      }
+    })
+
     println("Making video of simulation, this can take some time...")
 
     val gates: List[BinaryGate] = List()

@@ -4,7 +4,7 @@ import hubmodel.TimeNumeric.mkOrderingOps
 import hubmodel._
 import hubmodel.demand.{CreatePedestrian, PTInducedQueue, PedestrianFlowPT_New, PedestrianFlow_New, ProcessPedestrianFlows, ProcessTimeTable, PublicTransportSchedule, ReadPedestrianFlows, Stop2Vertices}
 import hubmodel.mgmt.{ControlDevices, EvaluateState}
-import hubmodel.mvmtmodels.NOMAD.NOMADOriginalModel
+import hubmodel.mvmtmodels.NOMAD.{NOMADIntegrated, NOMADOriginalModel}
 import hubmodel.mvmtmodels.RebuildTree
 import hubmodel.ped.{PedestrianNOMAD, PedestrianSim}
 import hubmodel.route.UpdateRoutes
@@ -144,7 +144,7 @@ class SFGraphSimulator(override val startTime: Time,
       sim.insertEventWithZeroDelay(new ProcessTimeTable(sim))
       sim.insertEventWithZeroDelay(new ProcessPedestrianFlows(sim))
       sim.insertEventWithZeroDelay(new UpdateRoutes(sim))
-      sim.insertEventWithZeroDelay(new NOMADOriginalModel(sim))
+      sim.insertEventWithZeroDelay(new NOMADIntegrated(sim))
       if (sim.useControl) sim.insertEventWithZeroDelay(new EvaluateState(sim))
       else if (sim.measureDensity && !sim.useControl) sim.insertEventWithZeroDelay(new EvaluateState(sim))
       if (sim.useFlowGates) sim.insertEventWithZeroDelay(new StartFlowGates(sim))

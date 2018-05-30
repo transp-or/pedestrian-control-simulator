@@ -6,43 +6,15 @@
       "origin": "top",
       "destination": "bottom",
       "start": "00:00:00",
-      "end": "00:02:00",
-      "flow": 50
+      "end": "00:10:00",
+      "flow": 400
     },
     {
       "origin": "bottom",
       "destination": "top",
       "start": "00:00:00",
-      "end": "00:02:00",
-      "flow": 50
-    },
-    {
-      "origin": "bottom",
-      "destination": "top",
-      "start": "00:02:00",
-      "end": "00:04:00",
-      "flow": 100
-    },
-    {
-      "origin": "top",
-      "destination": "bottom",
-      "start": "00:02:00",
-      "end": "00:04:00",
-      "flow": 100
-    },
-    {
-      "origin": "top",
-      "destination": "bottom",
-      "start": "00:04:00",
-      "end": "00:06:00",
-      "flow": 180
-    },
-    {
-      "origin": "bottom",
-      "destination": "top",
-      "start": "00:04:00",
-      "end": "00:06:00",
-      "flow": 180
+      "end": "00:10:00",
+      "flow": 400
     }
   ]
 }

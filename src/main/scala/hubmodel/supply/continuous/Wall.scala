@@ -8,4 +8,6 @@ import hubmodel.Position
   * @param startPoint one end
   * @param endPoint   other end
   */
-case class Wall(comment: String, startPoint: Position, endPoint: Position, wallType: WallType)
+case class Wall(comment: String, startPoint: Position, endPoint: Position, wallType: WallType) {
+  val aw: Double = 10.0
+}

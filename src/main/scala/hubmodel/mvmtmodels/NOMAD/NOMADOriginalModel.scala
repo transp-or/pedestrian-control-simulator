@@ -95,10 +95,10 @@ class NOMADOriginalModel(sim: SFGraphSimulator) extends Action {
     if ( gpw > 0.0) {
       val k0: Double = -p.k0
       //-1000.0
-      val k1: Double = -p.k1 //1000.0
+      val k1: Double = -p.kappa //1000.0
       //p2wall.normalized * max(math.pow(10,-5), p.r - d) * k0 + p2wall.orthogonal.dot(p.currentVelocityNew) * max(math.pow(10,-5), p.r - d) * k1
       //p2wall.normalized * (p.r - d) * k0
-      p2wall.orthogonal * (-p.k1 * gpw * p.currentVelocity.dot(p2wall.orthogonal)) - p2wall.normalized * p.k0 * gpw
+      p2wall.orthogonal * (-p.kappa * gpw * p.currentVelocity.dot(p2wall.orthogonal)) - p2wall.normalized * p.k0 * gpw
     } else {
       val factor: Double = math.min(1.0, 1.0 - (-gpw - shy) / shy)
       if (factor > 0.0) {
@@ -195,7 +195,7 @@ class NOMADOriginalModel(sim: SFGraphSimulator) extends Action {
       val gpq2: Double = Math.max(gpq, math.pow(10,-5))
       val tpq: Vector2D = vecBetweenPeds2.orthogonal * vecBetweenPeds2.norm
       val dV: Vector2D = that.currentVelocity - p.currentVelocity
-      vecBetweenPeds2*(gpq2 * p.k0 * -1.0) + tpq * p.k1 * dV.dot(tpq) * gpq2
+      vecBetweenPeds2*(gpq2 * p.k0 * -1.0) + tpq * p.kappa * dV.dot(tpq) * gpq2
     }  else { // repell
       //println("repell")
 
