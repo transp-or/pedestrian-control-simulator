@@ -29,7 +29,7 @@ class NOMADIntegrated(sim: SFGraphSimulator) extends Action {
   val remainderInRangeSeconds: Double = 0.0 //this.isolatedTimeStepSeconds % this.rangeTimeStepSeconds // SimulationTime.convertSimTime(this.remainderInRangeMillis)
 
   //val collisionTimeStepMillis: Double = this.isolatedTimeStepMillis * 0.1 // NOMAD.defaults.IN_COLLISION_FRACTION.round
-  val collisionTimeStepSeconds: Double = this.rangeTimeStepSeconds * 0.1 // SimulationTime.convertSimTime(this.collisionTimeStepMillis)
+  val collisionTimeStepSeconds: Double = this.isolatedTimeStepSeconds * 0.1 // SimulationTime.convertSimTime(this.collisionTimeStepMillis)
   //val remainderInCollisionMillis: Double = this.isolatedTimeStepMillis % this.collisionTimeStepMillis
   val remainderInCollisionSeconds: Double = 0.0 //this.isolatedTimeStepSeconds % this.collisionTimeStepSeconds // SimulationTime.convertSimTime(this.remainderInCollisionMillis)
 
@@ -228,32 +228,21 @@ class NOMADIntegrated(sim: SFGraphSimulator) extends Action {
 
     })
     if (this.pedestrianToMoveInCollision.nonEmpty) {
-      //println("in collision")
       this.moveInCollisionStep()
     }
     else { // check the in range step
       if (this.pedestrianToMoveInRange.nonEmpty) { // if at least one is in range and the rest is at isolation or in range
         // then the smallest simulation step is in range
-        //println("in range")
         this.pedestrianToMoveInRange.foreach(p => println(p.currentPosition))
         this.moveInRangeStep()
       }
       else { // else move all pedestrians with the isolation step
-        //println("in isolation")
         this.pedestrianToMoveInIsolation.foreach(ped => {
           walkPedestrian(ped, getPedInLevelVicinity_3D(ped, sim.population), getClosestCoordinates3D(ped, sim.walls), this.isolatedTimeStepSeconds)
         })
       }
     }
 
-    /* if (this.pedestrianToMoveInCollision.nonEmpty) {
-       moveInCollisionStep(sim.currentTime.value)
-     } else if (this.pedestrianToMoveInRange.nonEmpty) {
-       moveInRangeStep(sim.currentTime.value)
-     } else this.pedestrianToMoveInIsolation.foreach(ped => {
-       walkPedestrian(ped, getPedInLevelVicinity_3D(ped, sim.population), getClosestCoordinates3D(ped, sim.walls), this.isolatedTimeStepSeconds)
-     })
- */
     sim.processCompletedPedestrian(sim.finalDestinationReached)
     //sim.population.foreach(ped => println(sim.currentTime, ped, ped.currentPosition))
     sim.rebuildMTree()
@@ -264,20 +253,15 @@ class NOMADIntegrated(sim: SFGraphSimulator) extends Action {
   def walkPedestrian(ped: PedestrianNOMAD, pedestrians: util.ArrayList[InfluenceAreaReturnPedData], obstacles: util.ArrayList[InfluenceAreaReturnObsData], dt: Double): Unit = {
     val acc: Vector3d = new Vector3d()
 
-    if (ped.currentVelocity.Y > 1.3) {
-      //println("debug")
-    }
     strayingAccelerationFixedTau(acc, new Vector3d(ped.currentVelocity.X, ped.currentVelocity.Y, 0.0), ped.freeFlowVel, new Vector3d(ped.desiredDirection.X, ped.desiredDirection.Y, 0.0), ped.tau)
 
     if (pedestrians != null && !pedestrians.isEmpty) {
-      //println("before" + acc)
       pedsRepellingPhysicalAcceleration(
         acc,
         ped,
         new Vector3d(ped.currentVelocity.X, ped.currentVelocity.Y, 0.0),
         pedestrians
       )
-      //println("after" + acc)
     }
 
     /*infrastructure repulsion */
@@ -444,17 +428,9 @@ class NOMADIntegrated(sim: SFGraphSimulator) extends Action {
       // (compressing each other)a
       //println("ped interaction")
       if (pedDistanceData.gpq >= 0) { // if they touch then calculate the compressing force in the normal and tangential directions
-        //if (math.abs(thisSpeed.x) > 1.0) {
-          //println("debug in physical ped, before" + pressure)
-        //}
-        //println(pedDistanceData.gpq)
-        if (pressure.x > 100 || pressure.y > 100) {
-          //println("stop")
-        }
+
         pedestrianPhysical(pressure, kappa, thisSpeed, k0, pedDistanceData)
-        if (pressure.x > 100 || pressure.y > 100) {
-          //println("stop")
-        }
+
         //println("debug in physical ped, after" + pressure)
         //System.out.println("compressing ped");
       }

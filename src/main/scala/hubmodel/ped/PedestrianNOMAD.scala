@@ -24,7 +24,7 @@ class PedestrianNOMAD(oZone: Rectangle, dZone: Rectangle, entryTime: Time, posO:
   val infAreaMaxExtObs: Double = 1.0
   var desiredDirection: Vector2D = new ZeroVector2D
   val tau: Double = 0.15
-  val isStochastic: Boolean = false
+  val isStochastic: Boolean = true
   val noise: Double = 0.0001
   var acceleration: Acceleration = new ZeroVector2D
   var nextPosition: Vector2D = new ZeroVector2D

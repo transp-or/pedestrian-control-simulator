@@ -7,14 +7,14 @@
       "destination": "bottom",
       "start": "00:00:00",
       "end": "00:10:00",
-      "flow": 400
+      "flow": 600
     },
     {
       "origin": "bottom",
       "destination": "top",
       "start": "00:00:00",
       "end": "00:10:00",
-      "flow": 400
+      "flow": 600
     }
   ]
 }
