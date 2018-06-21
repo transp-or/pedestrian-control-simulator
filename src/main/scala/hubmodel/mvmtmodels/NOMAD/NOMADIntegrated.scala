@@ -29,7 +29,7 @@ class NOMADIntegrated(sim: SFGraphSimulator) extends Action {
   val remainderInRangeSeconds: Double = 0.0 //this.isolatedTimeStepSeconds % this.rangeTimeStepSeconds // SimulationTime.convertSimTime(this.remainderInRangeMillis)
 
   //val collisionTimeStepMillis: Double = this.isolatedTimeStepMillis * 0.1 // NOMAD.defaults.IN_COLLISION_FRACTION.round
-  val collisionTimeStepSeconds: Double = this.isolatedTimeStepSeconds * 0.1 // SimulationTime.convertSimTime(this.collisionTimeStepMillis)
+  val collisionTimeStepSeconds: Double = this.rangeTimeStepSeconds * 0.1 // SimulationTime.convertSimTime(this.collisionTimeStepMillis)
   //val remainderInCollisionMillis: Double = this.isolatedTimeStepMillis % this.collisionTimeStepMillis
   val remainderInCollisionSeconds: Double = 0.0 //this.isolatedTimeStepSeconds % this.collisionTimeStepSeconds // SimulationTime.convertSimTime(this.remainderInCollisionMillis)
 
@@ -228,18 +228,18 @@ class NOMADIntegrated(sim: SFGraphSimulator) extends Action {
 
     })
     if (this.pedestrianToMoveInCollision.nonEmpty) {
-      println("in collision")
+      //println("in collision")
       this.moveInCollisionStep()
     }
     else { // check the in range step
       if (this.pedestrianToMoveInRange.nonEmpty) { // if at least one is in range and the rest is at isolation or in range
         // then the smallest simulation step is in range
-        println("in range")
+        //println("in range")
         this.pedestrianToMoveInRange.foreach(p => println(p.currentPosition))
         this.moveInRangeStep()
       }
       else { // else move all pedestrians with the isolation step
-        println("in isolation")
+        //println("in isolation")
         this.pedestrianToMoveInIsolation.foreach(ped => {
           walkPedestrian(ped, getPedInLevelVicinity_3D(ped, sim.population), getClosestCoordinates3D(ped, sim.walls), this.isolatedTimeStepSeconds)
         })
@@ -265,12 +265,19 @@ class NOMADIntegrated(sim: SFGraphSimulator) extends Action {
     val acc: Vector3d = new Vector3d()
 
     if (ped.currentVelocity.Y > 1.3) {
-      println("debug")
+      //println("debug")
     }
     strayingAccelerationFixedTau(acc, new Vector3d(ped.currentVelocity.X, ped.currentVelocity.Y, 0.0), ped.freeFlowVel, new Vector3d(ped.desiredDirection.X, ped.desiredDirection.Y, 0.0), ped.tau)
 
     if (pedestrians != null && !pedestrians.isEmpty) {
-      pedsRepellingPhysicalAcceleration(acc, ped, new Vector3d(ped.currentVelocity.X, ped.currentVelocity.Y, 0.0), pedestrians)
+      //println("before" + acc)
+      pedsRepellingPhysicalAcceleration(
+        acc,
+        ped,
+        new Vector3d(ped.currentVelocity.X, ped.currentVelocity.Y, 0.0),
+        pedestrians
+      )
+      //println("after" + acc)
     }
 
     /*infrastructure repulsion */
@@ -332,10 +339,10 @@ class NOMADIntegrated(sim: SFGraphSimulator) extends Action {
     //walkPedestrians(this.pedestrianToMoveInIsolation, this.isolatedTimeStepSeconds, currentTime)
     // for each in collision step
     var colStep = this.collisionTimeStepSeconds
-    var colCounter: Int = 1
-    var rangeCounter: Int = 1
+    //var colCounter: Int = 1
+    //var rangeCounter: Int = 1
     while ( {
-      colCounter <= 10 //colStep <= this.isolatedTimeStepSeconds
+      colStep < this.isolatedTimeStepSeconds //colStep <= this.isolatedTimeStepSeconds
     }) { // move the pedestrians in queues
       //movePedestriansInQueues(this.collisionTimeStepSeconds, currentTime)
       // ask the in collision pedestrians to perform the activity(walking included)
@@ -345,7 +352,7 @@ class NOMADIntegrated(sim: SFGraphSimulator) extends Action {
       })
       //walkPedestrians(this.pedestrianToMoveInCollision, this.collisionTimeStepSeconds, currentTime)
       // check if the range step is reached
-      if (colCounter % 2 == 0) {
+      if (colStep % this.rangeTimeStepSeconds == 0) {
         this.pedestrianToMoveInRange.foreach(ped => {
           walkPedestrian(ped, getPedInLevelVicinity_3D(ped, sim.population), getClosestCoordinates3D(ped, sim.walls), this.rangeTimeStepSeconds)
         })
@@ -364,7 +371,7 @@ class NOMADIntegrated(sim: SFGraphSimulator) extends Action {
         ped.currentVelocity = ped.nextVelocity
       })
       colStep += this.collisionTimeStepSeconds
-      colCounter += 1
+      //colCounter += 1
     }
     // after the in collision steps finished try to walk the residue
     // of the simulation step
@@ -437,10 +444,18 @@ class NOMADIntegrated(sim: SFGraphSimulator) extends Action {
       // (compressing each other)a
       //println("ped interaction")
       if (pedDistanceData.gpq >= 0) { // if they touch then calculate the compressing force in the normal and tangential directions
-        if (math.abs(thisSpeed.x) > 1.0) {
-          println("debug")
+        //if (math.abs(thisSpeed.x) > 1.0) {
+          //println("debug in physical ped, before" + pressure)
+        //}
+        //println(pedDistanceData.gpq)
+        if (pressure.x > 100 || pressure.y > 100) {
+          //println("stop")
         }
         pedestrianPhysical(pressure, kappa, thisSpeed, k0, pedDistanceData)
+        if (pressure.x > 100 || pressure.y > 100) {
+          //println("stop")
+        }
+        //println("debug in physical ped, after" + pressure)
         //System.out.println("compressing ped");
       }
       else { // else calculate the conventional repelling force
@@ -448,7 +463,10 @@ class NOMADIntegrated(sim: SFGraphSimulator) extends Action {
         // *** OLD ***
         //pedestrianRepell(acceleration, thisPedestrian, gpq, pedDistanceData);
         // *** NEW ***	// change the InfluenceAnisotropic too
+        //println("debug in repell ped, before: " + pressure)
         pedestrianRepellOpposing(pressure, radius, a0, r0, a1, r1, pedDistanceData)
+        //println("debug in repell ped, after:" + pressure)
+
       }
     }
   }
@@ -574,7 +592,7 @@ class NOMADIntegrated(sim: SFGraphSimulator) extends Action {
   }*/
 
 
-  def getPedInLevelVicinity_3D(thisPedestrian: PedestrianNOMAD, pedestrians: Iterable[PedestrianNOMAD] /*, obstacles: util.ArrayList[InfrastructureObject]*/): util.ArrayList[InfluenceAreaReturnPedData] = {
+  def getPedInLevelVicinity_3D_Ani(thisPedestrian: PedestrianNOMAD, pedestrians: Iterable[PedestrianNOMAD] /*, obstacles: util.ArrayList[InfrastructureObject]*/): util.ArrayList[InfluenceAreaReturnPedData] = {
     /** the vector pointing from the pedestrian to his neighbour */
     val dx = new Vector3d
     /** the projection of dx to the direction of the speed vector of the pedestrian */
@@ -633,6 +651,9 @@ class NOMADIntegrated(sim: SFGraphSimulator) extends Action {
           val tempDx = new Vector3d
           tempDx.x = otherX + otherVx * thisAT - thisX - thisVx * thisAT
           tempDx.y = otherY + otherVy * thisAT - thisY - thisVy * thisAT
+          if (tempDx.x > 100  || tempDx.y > 100) {
+            println("stop")
+          }
           //tempDx.z = 0.0;
           // check if the anticipated position did not switch and ended behind the other pedestrian
           val tempDxAlonpEp = GeometryUtils.dotxy(tempDx, dxn)
@@ -669,7 +690,7 @@ class NOMADIntegrated(sim: SFGraphSimulator) extends Action {
         //System.out.println("dpq: " + dpq + "  |  dx.length(): " + dx.length());
         // **** debugging *******//
         // normalize dx
-        dx.scale(1 / distance)
+        dx.scale(1.0 / distance)
         intersectCheck = true //isPrecise && !JTSUtils.intersects3D(obstacles, new Coordinate(thisX,thisY),  new Coordinate(otherX,otherY));
 
         // NEED TO DEAL CORRECLY WITH OBSTACLES NM
@@ -737,7 +758,18 @@ class NOMADIntegrated(sim: SFGraphSimulator) extends Action {
         // only try to calculate the perceived distance if both the coordinates are at least
         // equal to the maximum extension of the influence area
         if (Math.abs(dx.x) <= maxDist + otherRadius && Math.abs(dx.y) <= maxDist + otherRadius) {
-          setPedestriansData(thisX, thisY, thisVx, thisVy, thisRadius, thisIeb, thisIef, thisAT, thisC0min, thisC0plus, otherX, otherY, otherVx, otherVy, otherRadius, /*obstacles,*/ otherPedestrian, tempList)
+          setPedestriansData(
+            thisX, thisY,
+            thisVx, thisVy,
+            thisRadius,
+            thisIeb, thisIef,
+            thisAT,
+            thisC0min, thisC0plus,
+            otherX, otherY,
+            otherVx, otherVy,
+            otherRadius, /*obstacles,*/
+            otherPedestrian,
+            tempList)
         }
       }
     }
@@ -825,13 +857,13 @@ class NOMADIntegrated(sim: SFGraphSimulator) extends Action {
 
     //println(pedestrian.ID, Vector2D(nextSpeed.x * dt, nextSpeed.y * dt))
     if (math.abs(nextSpeed.x) > 0.2) {
-      println("debug speedy*dt", nextSpeed.y * dt)
+      //println("debug speed y*dt", nextSpeed.y * dt)
     }
     if (math.abs(nextSpeed.y) > 1.2) {
-      println("debug")
+      //println("debug")
     }
     pedestrian.nextVelocity = Vector2D(nextSpeed.x, nextSpeed.y)
-    pedestrian.nextPosition = pedestrian.currentPosition + Vector2D(nextSpeed.x * dt, nextSpeed.y * dt)
+    pedestrian.nextPosition = Vector2D(position.x, position.y) + Vector2D(nextSpeed.x * dt, nextSpeed.y * dt)
 
 
     if (pedestrian.currentVelocity.norm > 1.2) {
@@ -871,4 +903,71 @@ class NOMADIntegrated(sim: SFGraphSimulator) extends Action {
 
   protected def insertNextEvent(): Unit = sim.insertEventWithDelayNew(Time(this.isolatedTimeStepSeconds))(new NOMADIntegrated(sim))
 
+
+  def getPedInLevelVicinity_3D(thisPedestrian: PedestrianNOMAD, pedestrians: Iterable[PedestrianNOMAD]/*, obstacles: java.util.ArrayList[InfrastructureObject]*/): java.util.ArrayList[InfluenceAreaReturnPedData] = {
+
+    val tempList = new java.util.ArrayList[InfluenceAreaReturnPedData]
+    // for each pedestrian from the list
+    import scala.collection.JavaConversions._
+    for (otherPedestrian <- pedestrians) { //  check if the pedestrians are different.
+      //if (otherPedestrian.getName().compareToIgnoreCase(thisPedestrian.getName())!=0){
+      if (otherPedestrian.ID != thisPedestrian.ID) {
+        /*			Serge
+              dx = PEDarr.x - UNIT0 ## PEDarr[pp].x		; verschil vector tussen de voetgangers (bruto) PEDarr[pp] -> pedestrian p
+             rpq =  PEDarr.r + UNIT0 ## PEDarr[pp].r	    ; som van de stralen
+             dpq = (SQRT(TOTAL(dx * dx, 1)))			    ; bruto afstand voetganger p en q
+             spq = (dpq - rpq) > 0D0						; netto afstand voetganger p en q
+
+             ; Bepaal componenten van dx in longitudinale en laterale richting
+             dx_along_ep = TOTAL(dx * (UNIT0 ## ep[*,pp]),1)		; verschil vector langs ep (genormeerde snelheidsrichting)
+             dxn = (UNIT0 ## ep[*,pp]) * (UNIT2 # dx_along_ep) ; dx scale corrected
+             dxt = (dx - dxn)																	; the dx in the tangential direction
+
+             ; Bepaal of q voor of achter p zit GT -> greater then  LE -> less equal then
+             signpq = 1D0 * (dx_along_ep GT 0D0) - 1D0 * (dx_along_ep LE 0D0)
+
+             ; Bepaal de correcte waarde van cpq
+             cpq = cplus[pp] * (signpq GT 0D0) + cmin[pp] * (signpq LE 0D0)
+
+             ; Wijziging per 20/06/2001: toevoegen anisotropy e.d.
+             ; Bepaal per interacterende voetganger de cpq
+             dpq = SQRT(cpq * cpq * TOTAL(dxn * dxn,1) + TOTAL(dxt * dxt,1))*/
+        //				calculate the dx
+        val dx = new Vector3d
+        dx.x = otherPedestrian.currentPosition.X - thisPedestrian.currentPosition.X
+        dx.y = otherPedestrian.currentPosition.Y - thisPedestrian.currentPosition.Y
+        //dx.z = otherPedestrian.getPosition().z - thisPedestrian.getPosition().z;
+        //	dx.sub(pedestrian.getPosition3d(),_pedestrian.getPosition3d());
+        val dpq = GeometryUtils.lengthxy(dx)
+        // Immediately calculates if they are colliding
+        val gpq = thisPedestrian.getRadius + otherPedestrian.getRadius - GeometryUtils.lengthxy(dx)
+        // check if dpq is smaller then the max extent and
+        // if the pedestrian is not behind an obstacle and therefore not visible to _pedestrian
+        if (dpq < Math.max(0.0, Math.max(thisPedestrian.ief + 3 * 0.0, thisPedestrian.ieb + 3 * 0.0))) { //	&& !JTSUtils.intersects(obstacles, otherPedestrian.getPosition(), thisPedestrian.getPosition())
+          // if yes then add him and the necessary data to the return list
+          // *** these are not necessary for the isotropic influence area but they are needed to make
+          // the influence area general
+          //					calculate dxAlongEp	the projection of dx in the speed vector
+          val dxn = new Vector3d
+          val dxt = new Vector3d
+          dxn.x = thisPedestrian.currentVelocity.X
+          dxn.y = thisPedestrian.currentVelocity.Y
+          //this.dxn.z = thisPedestrian.getSpeed().z;
+          // if dxn is not zero then normalise to make dxn be ep[]
+          //if (GeometryUtils.lengthxy(dxn) != 0)
+          GeometryUtils.normalizexy(dxn)
+          val dxAlongEp = GeometryUtils.dotxy(dx, dxn)
+          //					scale dxn
+          dxn.scale(dxAlongEp)
+          dxt.x = dx.x
+          dxt.y = dx.y
+          //this.dxt.z = dx.z;
+          dxt.sub(dxn)
+          // *** these are not necessary for the isotropic influence area
+          tempList.add(new InfluenceAreaReturnPedData(null, new Vector3d(otherPedestrian.currentVelocity.X, otherPedestrian.currentVelocity.Y, 0.0), otherPedestrian.getRadius, dx, dxn, dxt, dpq, gpq, false, -1))
+        }
+      }
+    }
+    tempList
+  }
 }
