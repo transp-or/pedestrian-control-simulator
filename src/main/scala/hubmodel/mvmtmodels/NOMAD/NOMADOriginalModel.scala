@@ -118,16 +118,16 @@ class NOMADOriginalModel(sim: SFGraphSimulator) extends Action {
   }
 
   private def computePedestrianInteraction(p: PedestrianSim, that: PedestrianSim): Acceleration = {
-    val a0: Double = 1.0 * p.a0
+    val a0: Double = p.a0
     //10.0//2.02 // multiplication by -1 to take into account the negative sign
     val r0: Double = p.r0
     //0.16//1.24
-    val a1: Double = 1.0 * p.a1
+    val a1: Double = p.a1
     //10.0//7.08 // multiplication by -1 to take into account the negative sign
     val r1: Double = p.r1
     //0.16//0.69
     val anticipationTime: Double = 0.5
-
+/*
     val (pPos, thatPos) = if (p.currentVelocity.dot(that.currentVelocity) > 0.0) { // don't need to normalize as sign is of interest
       (p.currentPosition, that.currentPosition)
     } else {
@@ -162,7 +162,7 @@ class NOMADOriginalModel(sim: SFGraphSimulator) extends Action {
         (that.currentPosition - p.currentPosition).normalized * delta * k0 + (projectOntoMe(orthogonalDirectionCloseRange, that.currentVelocity).norm - projectOntoMe(orthogonalDirectionCloseRange, p.currentVelocity).norm) * delta * k1
       //println("behind:",  sim.currentTime, p.ID, that.ID, distanceBetweenPeds, f)
       f
-    }
+    }*/
 
     ////////////////////////
 

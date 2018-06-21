@@ -12,6 +12,11 @@ import play.api.libs.json._
 
 package object hubmodel {
 
+  /* pedestrian isolations */
+  val ISOLATED: Int = 0
+  val IN_RANGE: Int = 1
+  val IN_COLLISION: Int = 2
+
   type VehicleID = String
   type VertexID = String
   type StopID = String
@@ -71,7 +76,7 @@ package object hubmodel {
 
   }
 
-  object NewTimeNumeric extends Ordering[Time] {
+  object TimeNumeric extends Ordering[Time] {
     def compare(x: Time, y: Time): Int = x.value compare y.value
   }
 

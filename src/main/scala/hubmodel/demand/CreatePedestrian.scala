@@ -3,8 +3,8 @@ package hubmodel.demand
 import breeze.numerics.pow
 import hubmodel.DES.{Action, SFGraphSimulator}
 import hubmodel._
-import hubmodel.ped.PedestrianSim
-import hubmodel.tools.cells.{ Rectangle}
+import hubmodel.ped.{PedestrianNOMAD, PedestrianSim}
+import hubmodel.tools.cells.Rectangle
 
 /**
   * Creates a pedestrian. A new pedestrian will be added when this event is executed.
@@ -37,6 +37,6 @@ class CreatePedestrian(o: Rectangle, d: Rectangle, sim: SFGraphSimulator) extend
     }
 
     // inserts new pedestrian into population
-    sim.insertInPopulation(new PedestrianSim(o, d, sim.currentTime, generationPoint, route))
+    sim.insertInPopulation(new PedestrianNOMAD(o, d, sim.currentTime, generationPoint, route))
   }
 }

@@ -75,12 +75,13 @@ class PedestrianSim(val origin: Rectangle,
   val r0: Double = 0.16//ThreadLocalRandom.current.nextDouble(0.10, 0.5)
   val a1: Double = 1.67//ThreadLocalRandom.current.nextDouble(8.0, 10.0)
   val r1: Double = 0.013 // ThreadLocalRandom.current.nextDouble(0.10, 0.5)
-  val k0: Double = 10000//ThreadLocalRandom.current.nextDouble(800.0, 1000.0)
-  val kappa: Double = 10.0//ThreadLocalRandom.current.nextDouble(800.0, 1000.0)
+  val k0: Double = 1000//ThreadLocalRandom.current.nextDouble(800.0, 1000.0)
+  val kappa: Double = 1000.0//ThreadLocalRandom.current.nextDouble(800.0, 1000.0)
   val ief: Double = 3.0//ThreadLocalRandom.current.nextDouble(0.5, 6.0)
   val ieb: Double = 0.65//ThreadLocalRandom.current.nextDouble(0.5, 6.0)
   val c0plus: Double = 0.9//ThreadLocalRandom.current.nextDouble(0.7, 1.5)
   val c0min: Double = 0.9//ThreadLocalRandom.current.nextDouble(0.7, 1.5)
+
 
   // ******************************************************************************************
   //                              GETTER - SETTER METHODS
@@ -166,6 +167,7 @@ class PedestrianSim(val origin: Rectangle,
     */
   def this(oZone: Rectangle, dZone: Rectangle, entryTime: Time, posO: Position, route: List[Rectangle]) {
     this(oZone, dZone, 1.34 + 0.2*ThreadLocalRandom.current().nextGaussian(), entryTime, route) // velocity taken from VS data
+
     this.currentPosition = posO
   }
 }

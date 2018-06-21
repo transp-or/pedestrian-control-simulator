@@ -8,7 +8,7 @@ import java.io.{BufferedWriter, File, FileWriter}
 import java.util.concurrent.ThreadLocalRandom
 
 import ch.qos.logback.classic.{Level, Logger}
-import hubmodel.NewTimeNumeric.mkOrderingOps
+import hubmodel.TimeNumeric.mkOrderingOps
 import hubmodel.ped.PedestrianTrait
 import hubmodel.tools.Log
 import hubmodel.{Time, distance}

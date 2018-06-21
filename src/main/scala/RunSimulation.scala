@@ -199,6 +199,13 @@ object RunSimulation extends App {
     // execute simulation
     timeBlock(sim.run())
 
+    sim.populationCompleted.foreach(p => {
+      println(p.travelTime, p.travelDistance, p.travelDistance / p.travelTime.value)
+      if (p.travelDistance / p.travelTime.value > 1.2){
+        //println(p.getHistoryPosition.mkString("\n"))
+      }
+    })
+
     println("Making video of simulation, this can take some time...")
 
     val gates: List[BinaryGate] = List()
@@ -287,6 +294,8 @@ object RunSimulation extends App {
     }
   }
 
+  println(results.map(_._1.size))
+
   // ******************************************************************************************
   //                           Processes and writes results to CSV
   // ******************************************************************************************
@@ -350,6 +359,7 @@ object RunSimulation extends App {
   }
 
   if (!config.getStringList("results-analysis.o_nodes").isEmpty && !config.getStringList("results-analysis.d_nodes").isEmpty )
+
   {
     val ODPairsToAnalyse: Iterable[(String, String)] = config.getStringList("results-analysis.o_nodes").asScala.zip(config.getStringList("results-analysis.d_nodes").asScala).map(t => (t._1, t._2))
 
@@ -394,6 +404,7 @@ object RunSimulation extends App {
       rowNames = None, //Some((simulationStartTime.value to simulationEndTime.value by 5.0).map(_.toString)),
       columnNames = Some(Vector("time", "size", "mean", "variance", "median") ++ Vector.fill(results.size)("r").zipWithIndex.map(t => t._1 + t._2.toString))
     )
+
   }
 
   // ******************************************************************************************

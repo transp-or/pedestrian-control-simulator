@@ -2,7 +2,7 @@ package hubmodel.output
 
 import java.io.{BufferedWriter, File, FileWriter}
 
-import hubmodel.NewTimeNumeric.mkOrderingOps
+import hubmodel.TimeNumeric.mkOrderingOps
 import hubmodel.Time
 import hubmodel.ped.PedestrianTrait
 import myscala.math.stats.{Quantiles, computeQuantiles}

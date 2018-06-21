@@ -6,15 +6,15 @@
       "origin": "top",
       "destination": "bottom",
       "start": "00:00:00",
-      "end": "00:02:00",
-      "flow": 50
+      "end": "00:10:00",
+      "flow": 600
     },
     {
       "origin": "bottom",
       "destination": "top",
       "start": "00:00:00",
-      "end": "00:02:00",
-      "flow": 50
+      "end": "00:10:00",
+      "flow": 600
     }
   ]
 }
