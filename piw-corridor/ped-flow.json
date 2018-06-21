@@ -3,28 +3,28 @@
   "PTflows": [
     {
       "origin": "T_12318",
-      "destination": "T_12217",
-      "flow": 60
+      "destination": "T_14000",
+      "flow": 30
     },
     {
       "origin": "T_12318",
-      "destination": "T_12218",
+      "destination": "T_14001",
       "flow": 40
     },
     {
       "origin": "T_12218",
-      "destination": "T_12317",
-      "flow": 50
+      "destination": "T_14000",
+      "flow": 40
     },
     {
       "origin": "T_12318",
       "destination": "S_14",
-      "flow": 85
+      "flow": 40
     },
     {
       "origin": "T_12318",
       "destination": "S_13",
-      "flow": 60
+      "flow": 30
     },
     {
       "origin": "T_12318",
@@ -33,63 +33,63 @@
     },
     {
       "origin": "T_12217",
-      "destination": "T_12217",
-      "flow": 90
+      "destination": "T_14000",
+      "flow": 40
     },
     {
       "origin": "T_12217",
-      "destination": "T_12218",
-      "flow": 80
+      "destination": "T_14001",
+      "flow": 30
     },
     {
       "origin": "T_12217",
       "destination": "S_13",
-      "flow": 120
+      "flow": 40
     },
     {
       "origin": "T_12217",
       "destination": "S_14",
-      "flow": 100
+      "flow": 30
     },
     {
       "origin": "T_12217",
       "destination": "S_1",
-      "flow": 90
+      "flow": 35
     },
     {
       "origin": "T_12218",
-      "destination": "T_12217",
-      "flow": 100
+      "destination": "T_14000",
+      "flow": 30
     },
     {
       "origin": "T_12218",
       "destination": "S_14",
-      "flow": 110
+      "flow": 30
     },
     {
       "origin": "T_12218",
       "destination": "S_13",
-      "flow": 70
+      "flow": 35
     },
     {
       "origin": "T_12218",
       "destination": "S_1",
-      "flow": 80
+      "flow": 30
     },
     {
       "origin": "T_12317",
       "destination": "S_13",
-      "flow": 120
+      "flow": 30
     },
     {
       "origin": "T_12317",
       "destination": "S_14",
-      "flow": 95
+      "flow": 35
     },
     {
       "origin": "T_12317",
       "destination": "S_1",
-      "flow": 70
+      "flow": 30
     }
   ],
   "flows": [
@@ -98,28 +98,28 @@
       "destination": "14",
       "start": "07:00:00",
       "end": "08:00:00",
-      "flow": 180
+      "flow": 100
     },
     {
       "origin": "1",
       "destination": "13",
       "start": "07:00:00",
       "end": "08:00:00",
-      "flow": 180
+      "flow": 100
     },
     {
       "origin": "14",
       "destination": "1",
       "start": "07:00:00",
       "end": "08:00:00",
-      "flow": 180
+      "flow": 100
     },
     {
       "origin": "13",
       "destination": "1",
       "start": "07:00:00",
       "end": "08:00:00",
-      "flow": 180
+      "flow": 100
     }
   ]
 }

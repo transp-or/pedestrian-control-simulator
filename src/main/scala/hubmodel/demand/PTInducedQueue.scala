@@ -8,7 +8,7 @@ class PTInducedQueue(val id: Rectangle) {
 
   private val _queue: collection.mutable.ArrayBuffer[CreatePedestrian] = collection.mutable.ArrayBuffer()
 
-  var rate: Double = 1.5 // ped/s for a width of 2.7m.
+  var rate: Double = 1.8 // ped/s for a width of 2.7m.
 
   def isEmpty: Boolean = this._queue.isEmpty
 

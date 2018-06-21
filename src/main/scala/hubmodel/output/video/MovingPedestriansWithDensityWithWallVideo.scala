@@ -7,11 +7,12 @@ import java.io.File
 
 import hubmodel.DES.PedestrianDES
 import hubmodel._
+import hubmodel.mgmt.FlowSeparator
 import hubmodel.output.{createWhiteBackground, getBounds, mapCoordAffine}
 import hubmodel.ped.PedestrianSim
 import hubmodel.supply.continuous.Wall
 import hubmodel.supply.graph.BinaryGate
-import hubmodel.tools.cells.Rectangle
+import hubmodel.tools.cells.{DensityMeasuredArea, Rectangle}
 import org.jcodec.api.awt.AWTSequenceEncoder
 
 /** Creates a video showing the movement of individual pedestrians with the critical zones in which the density is
@@ -35,11 +36,12 @@ class MovingPedestriansWithDensityWithWallVideo(outputFile: String,
                                                 walls: Iterable[Wall],
                                                 fps: Int,
                                                 pop: Vector[PedestrianSim],
-                                                criticalAreaInput: List[Rectangle],
+                                                criticalAreaInput: Iterable[DensityMeasuredArea],
                                                 gateCollection: Map[String, BinaryGate],
                                                 var gateHistory: scala.collection.mutable.ArrayBuffer[(Int, List[(String, Boolean)])],
                                                 var densityMeasurements: collection.mutable.ArrayBuffer[(Int, Double)],
-                                                times2Show: IndexedSeq[Time]) extends Tools4Videos {
+                                                times2Show: IndexedSeq[Time],
+                                                flowSeparators: Iterable[FlowSeparator]) extends Tools4Videos {
 
 
   // asserts that more than one time is listed
@@ -111,19 +113,43 @@ class MovingPedestriansWithDensityWithWallVideo(outputFile: String,
     /** Draws colored boxes showing densities inside areas */
 
     val box: BufferedImage = new BufferedImage(canvasWidth, canvasHeight, BufferedImage.TYPE_4BYTE_ABGR)
-    if (densityMeasurements.nonEmpty && criticalAreaInput.nonEmpty) {
-      val criticalArea: Rectangle = criticalAreaInput.head
-      val gBox: Graphics2D = box.createGraphics()
-      if (densityMeasurements.head._2 >= 2.17) gBox.setColor(new Color(153, 0, 0, 25))
-      else if (densityMeasurements.head._2 > 1.08) gBox.setColor(new Color(255, 0, 0, 25))
-      else if (densityMeasurements.head._2 > 0.72) gBox.setColor(new Color(255, 128, 0, 25))
-      else if (densityMeasurements.head._2 > 0.43) gBox.setColor(new Color(255, 255, 0, 25))
-      else if (densityMeasurements.head._2 > 0.31) gBox.setColor(new Color(0, 255, 0, 25))
-      else if (densityMeasurements.head._2 <= 0.31) gBox.setColor(new Color(0, 0, 255, 25))
-      val areaCoords: (Position, Position, Position, Position) = (criticalArea.corners(0), criticalArea.corners(1), criticalArea.corners(2), criticalArea.corners(3))
-      gBox.fillRect(mapHcoord(areaCoords._1.X), mapVcoord(areaCoords._1.Y), mapHcoord(areaCoords._3.X) - mapHcoord(areaCoords._4.X), mapVcoord(areaCoords._4.Y) - mapVcoord(areaCoords._1.Y))
-      gBox.setColor(Color.BLACK)
-      gBox.drawRect(mapHcoord(areaCoords._1.X), mapVcoord(areaCoords._1.Y), mapHcoord(areaCoords._3.X) - mapHcoord(areaCoords._4.X), mapVcoord(areaCoords._4.Y) - mapVcoord(areaCoords._1.Y))
+    if (criticalAreaInput.nonEmpty) {
+      criticalAreaInput.foreach(criticalArea => {
+        if (criticalArea.densityHistory.head._1 == times2Show(i)) {
+          val gBox: Graphics2D = box.createGraphics()
+          if (criticalArea.densityHistory.head._2 >= 2.17) gBox.setColor(new Color(153, 0, 0, 25))
+          else if (criticalArea.densityHistory.head._2 > 1.08) gBox.setColor(new Color(255, 0, 0, 25))
+          else if (criticalArea.densityHistory.head._2 > 0.72) gBox.setColor(new Color(255, 128, 0, 25))
+          else if (criticalArea.densityHistory.head._2 > 0.43) gBox.setColor(new Color(255, 255, 0, 25))
+          else if (criticalArea.densityHistory.head._2 > 0.31) gBox.setColor(new Color(0, 255, 0, 25))
+          else if (criticalArea.densityHistory.head._2 <= 0.31) gBox.setColor(new Color(0, 0, 255, 25))
+          val areaCoords: (Position, Position, Position, Position) = (criticalArea.corners(0), criticalArea.corners(1), criticalArea.corners(2), criticalArea.corners(3))
+          gBox.fillRect(mapHcoord(areaCoords._1.X), mapVcoord(areaCoords._1.Y), mapHcoord(areaCoords._3.X) - mapHcoord(areaCoords._4.X), mapVcoord(areaCoords._4.Y) - mapVcoord(areaCoords._1.Y))
+          gBox.setColor(Color.BLACK)
+          gBox.drawRect(mapHcoord(areaCoords._1.X), mapVcoord(areaCoords._1.Y), mapHcoord(areaCoords._3.X) - mapHcoord(areaCoords._4.X), mapVcoord(areaCoords._4.Y) - mapVcoord(areaCoords._1.Y))
+          criticalArea.densityHistory.drop(1)
+        }
+      })
+    }
+
+
+    /** Draws flow separators */
+    val flowSepImage = new BufferedImage(canvasWidth, canvasHeight, BufferedImage.TYPE_4BYTE_ABGR)
+    if (flowSeparators.nonEmpty) {
+      val gFlowSepImage = flowSepImage.createGraphics()
+      flowSeparators.foreach( fg => {
+        fg.getPositionHistory.find(_._1 == times2Show(i)) match {
+          case Some(s) => {
+            gFlowSepImage.drawLine(
+              mapHcoord(s._2.X),
+              mapVcoord(s._2.Y),
+              mapHcoord(s._3.X),
+              mapVcoord(s._3.Y)
+            )
+          }
+          case _ => {}
+        }
+      })
     }
 
     /** Draws gate states */
@@ -147,6 +173,7 @@ class MovingPedestriansWithDensityWithWallVideo(outputFile: String,
 
     gCombine.drawImage(points, 0, 0, null)
     gCombine.drawImage(gates, 0, 0, null)
+    gCombine.drawImage(flowSepImage, 0, 0, null)
     gCombine.setColor(Color.BLACK)
     gCombine.drawString(times2Show(i).asReadable, 200, 50)
     if (densityMeasurements.nonEmpty) {

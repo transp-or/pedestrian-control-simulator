@@ -11,7 +11,7 @@ import hubmodel.route.UpdateRoutes
 import hubmodel.supply.continuous.{ContinuousSpace, Wall}
 import hubmodel.supply.graph.{RouteGraph, StartFlowGates, Stop2Vertex}
 import hubmodel.supply.{NodeID_New, NodeParent, StopID_New, TrainID_New}
-import hubmodel.tools.cells.{Rectangle, isInVertex}
+import hubmodel.tools.cells.{DensityMeasuredArea, Rectangle, isInVertex}
 
 class SFGraphSimulator(override val startTime: Time,
                        override val finalTime: Time,
@@ -28,6 +28,8 @@ class SFGraphSimulator(override val startTime: Time,
   /* Stores the PT induced flows and the other flows separately*/
   val pedestrianFlows: Iterable[PedestrianFlow_New] = flows._1
   val pedestrianFlowsPT: Iterable[PedestrianFlowPT_New] = flows._2
+
+  controlDevices.flowSeparators.foreach(_.initializePositionHistory(startTime))
 
   /* Access for the wall collection which is mostly contained in the SF infrastructrue file but some movable walls
   * are found in the graph infrastructure file */
@@ -73,7 +75,8 @@ class SFGraphSimulator(override val startTime: Time,
 
 
   /** KPIs */
-  val criticalArea: List[Rectangle] = controlDevices.monitoredAreas.toList
+  val criticalAreas: Map[String, DensityMeasuredArea] = controlDevices.monitoredAreas.map(zone => zone.name -> new DensityMeasuredArea(zone.name, zone.corners(0), zone.corners(1), zone.corners(2), zone.corners(3), startTime)).toMap
+
   //List(VertexCell("CriticalZone1", DenseVector(50.0, 10.720), DenseVector( 56.0, 10.720), DenseVector( 56.0, 16.800), DenseVector( 50.0, 16.800)))
   //val criticalArea: List[Vertex] = List(Vertex("CriticalZone1", DenseVector(51.5, 10.72), DenseVector(80.40, 10.72), DenseVector(80.40, 16.80), DenseVector(51.50, 16.80)))
   val densityHistory: collection.mutable.ArrayBuffer[(Time, Double)] = collection.mutable.ArrayBuffer((startTime, 0.0))

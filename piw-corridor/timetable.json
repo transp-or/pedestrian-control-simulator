@@ -13,16 +13,16 @@
       "id": "12218",
       "type": "S2",
       "track": 4,
-      "arrival-time": "25480",
-      "departure-time": "25600",
+      "arrival-time": "25600",
+      "departure-time": "25650",
       "capacity": 517
     },
     {
       "id": "12317",
       "type": "S3",
       "track": 5,
-      "arrival-time": "25400",
-      "departure-time": "25500",
+      "arrival-time": "255000",
+      "departure-time": "255200",
       "capacity": 518
     },
     {
@@ -31,6 +31,22 @@
       "track": 6,
       "arrival-time": "25380",
       "departure-time": "25550",
+      "capacity": 514
+    },
+    {
+      "id": "14000",
+      "type": "S3",
+      "track": 7,
+      "arrival-time": "25450",
+      "departure-time": "25550",
+      "capacity": 514
+    },
+    {
+      "id": "14001",
+      "type": "S3",
+      "track": 8,
+      "arrival-time": "253800",
+      "departure-time": "255050",
       "capacity": 514
     }
   ]

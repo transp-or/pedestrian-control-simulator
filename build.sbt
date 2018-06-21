@@ -1,7 +1,6 @@
 
-
 name := "hub-simulator"
-organization := "transpor.molyneaux"
+organization := "ch.epfl.transpor.pedestrians"
 version := "1.0-SNAPSHOT"
 scalaVersion := "2.12.4"
 fork in run := true

@@ -85,10 +85,10 @@ class NOMADOriginalModelV2(sim: SFGraphSimulator) extends Action {
     if (p.r - d > 0.0) {
       val k0: Double = -p.k0
       //-1000.0
-      val k1: Double = -p.k1 //1000.0
+      val k1: Double = -p.kappa //1000.0
       //p2wall.normalized * max(math.pow(10,-5), p.r - d) * k0 + p2wall.orthogonal.dot(p.currentVelocityNew) * max(math.pow(10,-5), p.r - d) * k1
       p2wall.normalized * (p.r - d) * k0
-      p2wall.orthogonal * (-p.k1 * (p.r - d) * p.currentVelocity.dot(p2wall.orthogonal)) - p2wall.normalized * p.k0
+      p2wall.orthogonal * (-p.kappa * (p.r - d) * p.currentVelocity.dot(p2wall.orthogonal)) - p2wall.normalized * p.k0
     } else {
       val factor: Double = math.min(1.0, 1.0 - (d - p.r - shy) / shy)
       if (factor > 0.0) {
@@ -129,7 +129,7 @@ class NOMADOriginalModelV2(sim: SFGraphSimulator) extends Action {
     val delta: Double = math.max((p.r + that.r) - (p.currentPosition - that.currentPosition).norm, math.pow(10, -5))
     val k0: Double = -p.k0
     //-1000.0
-    val k1: Double = p.k1 //1000.0
+    val k1: Double = p.kappa //1000.0
 
     val tmpOrthogonalDirectionCloseRange: Direction = new Direction((that.currentPosition - p.currentPosition).Y, (that.currentPosition - p.currentPosition).X * -1.0).normalized
     val orthogonalDirectionCloseRange: Direction = if (tmpOrthogonalDirectionCloseRange.dot(p.currentVelocity) < 0.0) {

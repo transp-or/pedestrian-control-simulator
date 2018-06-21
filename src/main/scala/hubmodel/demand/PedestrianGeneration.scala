@@ -49,7 +49,7 @@ class PedestrianGeneration(o: Rectangle, d: Rectangle, start: Time, numberPeople
         new ReleasePedPTInducedFlow(o, sim)
       }
     }
-    tinfQueue.appendPeds(Vector.fill(numberPeople) {
+    tinfQueue.appendPeds(Vector.fill((1.5*numberPeople).toInt) {
       new CreatePedestrian(o, d, sim)
     })
     //arrivalTimes.

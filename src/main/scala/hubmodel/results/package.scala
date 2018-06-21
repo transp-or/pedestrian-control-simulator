@@ -17,7 +17,7 @@ package object results {
       * @param windowFunc computes the index of the window in which the pedestrian belongs
       * @return map where the keys are the time intervals and the values the statstics of the metric
       */
-    def aggregateMetricByTimeWindow(filter: PedestrianSim => Boolean, pedFunc: PedestrianSim => Double, windowFunc: PedestrianSim => Int): Map[Int, (Int, Double, Double, Double, Double, Double)] = {
+    def aggregateMetricByTimeWindow(filter: PedestrianSim => Boolean, pedFunc: PedestrianSim => Double, windowFunc: PedestrianSim => Double): Map[Double, (Int, Double, Double, Double, Double, Double)] = {
       this.pop.filter(filter).groupBy(windowFunc).map(grouped => grouped._1 -> grouped._2.map(pedFunc).stats)
     }
 

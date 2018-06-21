@@ -1,3 +1,5 @@
+import java.util.concurrent.ThreadLocalRandom
+
 import breeze.linalg.DenseVector
 import breeze.numerics.pow
 import com.typesafe.config.{Config, ConfigFactory}
@@ -155,7 +157,7 @@ object RunSimulation extends App {
   def collectResults(simulator: SFGraphSimulator): ResultsContainer = {
     (
       simulator.populationCompleted,
-      simulator.densityHistory.toList,
+      simulator.criticalAreas("piw_bottom_pl34").densityHistory.toList,
       simulator.inflowHistory.toList
     )
   }
@@ -189,7 +191,7 @@ object RunSimulation extends App {
     val sim = createSimulation()
 
     if (disaggPopulation.nonEmpty) {
-      sim.insertMultiplePedestrians(disaggPopulation)
+      sim.insertMultiplePedestrians(disaggPopulation.filter({p => if (ThreadLocalRandom.current.nextDouble(0.0, 1.0) > 0.6 )true else false}))
     }
 
     println("Running simulation for video...")
@@ -219,7 +221,7 @@ object RunSimulation extends App {
     )*/
 
     // Creates images representing the walls, route graph and both overlaid.
-    val wallsImage = new DrawWalls(sim.walls, config.getString("output.output_prefix") + "_wallsWithNames.png", showNames = true)
+    val wallsImage = new DrawWalls(sim.walls, config.getString("output.output_prefix") + "_wallsWithNames.png", showNames = false)
     val graphImage = new DrawGraph(sim.graph.edges.map(e => (e.startVertex, e.endVertex)).toVector, config.getString("output.output_prefix") + "_graph.png")
     val fullImage = new DrawWallsAndGraph(sim.walls, sim.graph.edges.map(e => (e.startVertex, e.endVertex)).toVector, config.getString("output.output_prefix") + "_wallsAndGraph.png")
 
@@ -229,11 +231,12 @@ object RunSimulation extends App {
       sim.walls,
       math.max((1.0 / config.getDouble("output.video_dt")).toInt, 1),
       sim.populationCompleted ++ sim.population,
-      sim.criticalArea,
+      sim.criticalAreas.values,
       gates.map(g => g.ID -> g).toMap,
       sim.gatesHistory.map(p => ((p._1.value * 1).round.toInt, p._2)),
       sim.densityHistory.map(p => ((p._1.value * 1).round.toInt, p._2)),
-      (simulationStartTime.value to simulationEndTime.value by config.getDouble("output.video_dt")).map(new Time(_))
+      (simulationStartTime.value to simulationEndTime.value by config.getDouble("output.video_dt")).map(new Time(_)),
+      sim.controlDevices.flowSeparators
     )
 
 
@@ -252,7 +255,7 @@ object RunSimulation extends App {
   def runAndCollect(simulator: SFGraphSimulator): ResultsContainer = {
 
     if (disaggPopulation.nonEmpty) {
-      simulator.insertMultiplePedestrians(disaggPopulation)
+      simulator.insertMultiplePedestrians(disaggPopulation.filter({p => if (ThreadLocalRandom.current.nextDouble(0.0, 1.0) > 0.6 )true else false}) )
     }
 
     timeBlock(simulator.run())
@@ -321,13 +324,18 @@ object RunSimulation extends App {
 
 
     // writes densities to csv, first column is time, second column is mean, third column is var, then all individual densities
-    if (config.getBoolean("output.write_densities")) (densityTimes +: meanDensity.toScalaVector() +: varianceDensity.toScalaVector() +: results.map(_._2.map(_._2).toVector))
-      .writeToCSV(
-        config.getString("output.output_prefix") + "_densities.csv",
-        rowNames = None,
-        columnNames = Some(Vector("time", "mean", "variance") ++ Vector.fill(results.size)("r").zipWithIndex.map(t => t._1 + t._2.toString)
+    if (config.getBoolean("output.write_densities")) {
+      val densityStats = for (i <- densityTimes.indices) yield {
+        (for (j <- results.indices) yield {results(j)._2(i)._2}).toVector.stats
+      }
+      (densityTimes +: densityStats.map(_._4) +: meanDensity.toScalaVector() +: varianceDensity.toScalaVector() +: results.map(_._2.map(_._2).toVector))
+        .writeToCSV(
+          config.getString("output.output_prefix") + "_densities.csv",
+          rowNames = None,
+          columnNames = Some(Vector("time", "median", "mean", "variance") ++ Vector.fill(results.size)("r").zipWithIndex.map(t => t._1 + t._2.toString)
+          )
         )
-      )
+    }
 
     // computes statistics on travel times and writes them
     if (config.getBoolean("output.write_tt_stats")) results.map(r => stats(r._1.map(p => p.travelTime.value))).writeToCSV(config.getString("output.output_prefix") + "_travel_times_stats.csv", rowNames = None, columnNames = Some(Vector("size", "mean", "variance", "median", "min", "max")))
@@ -341,25 +349,52 @@ object RunSimulation extends App {
     writePopulationTrajectories(results.head._1, config.getString("output.output_prefix") + "_simulation_trajectories.csv")
   }
 
-  /*{
+  if (!config.getStringList("results-analysis.o_nodes").isEmpty && !config.getStringList("results-analysis.d_nodes").isEmpty )
+  {
     val ODPairsToAnalyse: Iterable[(String, String)] = config.getStringList("results-analysis.o_nodes").asScala.zip(config.getStringList("results-analysis.d_nodes").asScala).map(t => (t._1, t._2))
 
-    def findInterval(t: Double, times: Vector[Double]): Int = {
-      times.indexWhere(_ > t)
+    def findInterval(t: Double, times: Vector[Double]): Double = {
+      times(times.indexWhere(_ > t))
     }
 
-    def pedData: PedestrianSim => Double = ped => ped.travelTime.value
+    def pedData: PedestrianSim => Double = ped => ped.travelDistance / ped.travelTime.value
 
-    def pedWindows: PedestrianSim => Int = ped => findInterval(ped.entryTime.value, (simulationStartTime.value to simulationEndTime.value by 60.0).toVector)
+    def pedWindows: PedestrianSim => Double = ped => findInterval(ped.entryTime.value, (simulationStartTime.value to simulationEndTime.value by evaluationInterval.value).toVector)
 
     def pedFilter: PedestrianSim => Boolean = ped => ODPairsToAnalyse.exists(_ == (ped.origin.name, ped.finalDestination.name))
 
-    results.foreach(r => {
+    val speedByInteval: Vector[Vector[(Double, Double)]] = results.map(r => {
       val res = r._1.aggregateMetricByTimeWindow(pedFilter, pedData, pedWindows)
-      res.map( r => (r._1, r._2._1, r._2._2, r._2._3, r._2._4, r._2._5, r._2._6)).toVector.sortBy(_._1).writeToCSV(config.getString("output.output_prefix") + "-temporal-tt.csv")
-      println(res.map(_._2._2).stats)
+      (res.map( r => (r._1, r._2._2)).toVector ++ (simulationStartTime.value to simulationEndTime.value by evaluationInterval.value).filterNot(res.keySet.contains(_)).map(t => (t, Double.NaN))).sortBy(_._1)//
     })
-  }*/
+
+    val speedStats: IndexedSeq[(Double, (Int, Double, Double, Double, Double, Double))] = (for (i <- simulationStartTime.value to simulationEndTime.value by evaluationInterval.value) yield {
+      i -> (for (j <- results.indices if speedByInteval(j).exists(_._1 == i)) yield { speedByInteval(j).find(_._1 == i).get._2}).filterNot(_.isNaN).stats
+    }).sortBy(_._1)
+    (speedStats.map(_._1) +: speedStats.map(_._2._1) +: speedStats.map(_._2._2) +: speedStats.map(_._2._3) +:speedStats.map(_._2._4) +: speedByInteval.map(_.map(_._2))).writeToCSV(
+      config.getString("output.output_prefix") + "-mean-speed-per-time-interval.csv",
+      rowNames = None,
+        columnNames = Some(Vector("time", "size", "mean", "variance", "median") ++ Vector.fill(results.size)("r").zipWithIndex.map(t => t._1 + t._2.toString))
+      )
+
+
+    def pedData2: PedestrianSim => Double = ped => ped.travelTime.value
+
+    val ttByIntervals: IndexedSeq[IndexedSeq[(Double, Double)]] = results.map(r => {
+      val res = r._1.aggregateMetricByTimeWindow(pedFilter, pedData2, pedWindows)
+      (res.map( r => (r._1, r._2._2)).toVector ++ (simulationStartTime.value to simulationEndTime.value by evaluationInterval.value).filterNot(res.keySet.contains(_)).map(t => (t, Double.NaN))).sortBy(_._1)//
+    })
+
+    val ttStats: IndexedSeq[(Double, (Int, Double, Double, Double, Double, Double))] = (for (i <- simulationStartTime.value to simulationEndTime.value by evaluationInterval.value) yield {
+      i -> (for (j <- results.indices if ttByIntervals(j).exists(_._1 == i)) yield { ttByIntervals(j).find(_._1 == i).get._2}).filterNot(_.isNaN).stats
+    }).sortBy(_._1)
+
+    (ttStats.map(_._1) +: ttStats.map(d => d._2._1) +: ttStats.map(d => d._2._2) +: ttStats.map(d => d._2._3) +: ttStats.map(d => d._2._4) +: ttByIntervals.map(_.map(_._2))).writeToCSV(
+      config.getString("output.output_prefix") + "-mean-travel-time-per-time-interval.csv",
+      rowNames = None, //Some((simulationStartTime.value to simulationEndTime.value by 5.0).map(_.toString)),
+      columnNames = Some(Vector("time", "size", "mean", "variance", "median") ++ Vector.fill(results.size)("r").zipWithIndex.map(t => t._1 + t._2.toString))
+    )
+  }
 
   // ******************************************************************************************
   //                                  Processing for TRANS-FORM

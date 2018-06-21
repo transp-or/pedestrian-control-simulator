@@ -9,6 +9,7 @@ abstract class MyEdgeWithGate(override val startVertex: Rectangle, override val 
 
   val width: Double = (end - start).norm
 
+  println(start, end, width)
   // variable flow rate of the gate [pax/s]
   var flowRate: Double
 

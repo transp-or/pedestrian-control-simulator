@@ -46,7 +46,8 @@
   "flow_gates": [],
   "controlled_areas" :[],
   "binary_gates": [],
-  "moving_walkways": []
+  "moving_walkways": [],
+  "flow_separators": []
 }
 
 

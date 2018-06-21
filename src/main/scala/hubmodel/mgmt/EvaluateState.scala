@@ -21,38 +21,40 @@ import scala.collection.JavaConversions._
 class EvaluateState(sim: SFGraphSimulator) extends Action with Controller {
 
   def computeDensity(): Unit = {
-    // computes the number of people inside the zone(s) to control.
-    val paxInZone: Int = sim.population.count(ped => isInVertex(sim.criticalArea.head)(ped.currentPosition))
-    //sim.densityHistory.append((sim.currentTime, paxInZone/sim.criticalArea.head.area))
-    // voronoin density
-    if (paxInZone > 0) {
-      try {
-        val voronoi: PowerDiagram = new PowerDiagram()
-        val stupidList: OpenList = new OpenList()
-        sim.population.map(p => new Site(p.currentPosition.X, p.currentPosition.Y)).foreach(stupidList.add)
-        voronoi.setSites(stupidList)
-        val box: PolygonSimple = new PolygonSimple
-        sim.criticalArea.head.corners.foreach(corner => box.add(corner.X, corner.Y))
-        /*box.add(sim.criticalArea.head.A.X, sim.criticalArea.head.A.Y)
-        box.add(sim.criticalArea.head.B.X, sim.criticalArea.head.B.Y)
-        box.add(sim.criticalArea.head.C.X, sim.criticalArea.head.C.Y)
-        box.add(sim.criticalArea.head.D.X, sim.criticalArea.head.D.Y)*/
-        voronoi.setClipPoly(box)
-        sim.densityHistory.append(
-          (sim.currentTime, voronoi.computeDiagram().filter(s => isInVertex(sim.criticalArea.head)(Vector2D(s.x, s.y))).foldLeft(0.0)((acc: Double, n: Site) => acc + 1.0 / (paxInZone * n.getPolygon.getArea)))
-        )
-      } catch {
-        case e: Exception => {
-          sim.errorLogger.warn("sim-time=" + sim.currentTime + "exception when computing voronoi diagram, using standard density! " + sim.population.size + " people in sim and " + sim.population.count(p => isInVertex(sim.criticalArea.head)(p.currentPosition)) + " in box")
-          sim.densityHistory.append((sim.currentTime, sim.population.count(p => isInVertex(sim.criticalArea.head)(p.currentPosition)).toDouble / sim.criticalArea.head.area))
+
+    sim.criticalAreas.values.foreach(zone => {
+
+      // computes the number of people inside the zone(s) to control.
+      val paxInZone: Int = sim.population.count(ped => isInVertex(zone)(ped.currentPosition))
+
+      // voronoin density
+      if (paxInZone > 0) {
+        try {
+          val voronoi: PowerDiagram = new PowerDiagram()
+          val stupidList: OpenList = new OpenList()
+          sim.population.map(p => new Site(p.currentPosition.X, p.currentPosition.Y)).foreach(stupidList.add)
+          voronoi.setSites(stupidList)
+          val box: PolygonSimple = new PolygonSimple
+          zone.corners.foreach(corner => box.add(corner.X, corner.Y))
+          voronoi.setClipPoly(box)
+          zone.densityHistory.append(
+            (sim.currentTime, voronoi.computeDiagram().filter(s => isInVertex(zone)(Vector2D(s.x, s.y))).foldLeft(0.0)((acc: Double, n: Site) => acc + 1.0 / (paxInZone * n.getPolygon.getArea)))
+          )
+        } catch {
+          case e: Exception => {
+            sim.errorLogger.warn("sim-time=" + sim.currentTime + "exception when computing voronoi diagram, using standard density! " + sim.population.size + " people in sim and " + sim.population.count(p => isInVertex(zone)(p.currentPosition)) + " in box")
+            zone.densityHistory.append((sim.currentTime, sim.population.count(p => isInVertex(zone)(p.currentPosition)).toDouble / zone.area))
+          }
         }
       }
-    }
-    else {
-      sim.densityHistory.append(
-        (sim.currentTime, 0.0)
-      )
-    }
+      else {
+        zone.densityHistory.append(
+          (sim.currentTime, 0.0)
+        )
+      }
+
+    })
+
   }
 
   /** Method called by the simulation to perform the action. Here, the KPIs are evaluted.

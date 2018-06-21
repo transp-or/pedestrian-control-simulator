@@ -35,7 +35,7 @@ package object graph {
         val vertexMap: Map[String, Rectangle] = v.map(v => v.name -> v).toMap
         val e: Iterable[MyEdge] = s.get.standardConnections.flatMap(c => c.conn.map(neigh => new MyEdge(vertexMap(c.node), vertexMap(neigh))))
         val fg: Iterable[FlowGate] = if (useFlowGates) {
-          s.get.flowGates.map(fg => new FlowGate(vertexMap(fg.o), vertexMap(fg.d), Vector2D(fg.start_pos_x, fg.start_pos_x), Vector2D(fg.end_pos_x, fg.end_pos_y), fg.area))
+          s.get.flowGates.map(fg => new FlowGate(vertexMap(fg.o), vertexMap(fg.d), Vector2D(fg.start_pos_x, fg.start_pos_y), Vector2D(fg.end_pos_x, fg.end_pos_y), fg.area))
         } else {
           Vector()
         }
@@ -55,6 +55,26 @@ package object graph {
           Vector()
         }
         val flowSeparators: Iterable[FlowSeparator] = if (useFlowSep) {
+
+          // updates the vertex map to remove overriden nodes and add the new ones linked to the flow separators
+          val vertexMapUpdated: Map[String, Rectangle] = vertexMap --
+            s.get.flowSeparators.flatMap(_.overZone_1.map(_.overridenZone)) --
+            s.get.flowSeparators.flatMap(_.overZone_2.map(_.overridenZone)) ++
+            s.get.flowSeparators.flatMap(_.overZone_1.map(oz => oz.name -> new RectangleModifiable(
+              oz.name,
+              (Vector2D(oz.x1(0), oz.y1(0)), Vector2D(oz.x1(1), oz.y1(1))),
+              (Vector2D(oz.x2(0), oz.y2(0)), Vector2D(oz.x2(1), oz.y2(1))),
+              (Vector2D(oz.x3(0), oz.y3(0)), Vector2D(oz.x3(1), oz.y3(1))),
+              (Vector2D(oz.x4(0), oz.y4(0)), Vector2D(oz.x4(1), oz.y4(1)))
+            ))).toMap ++
+            s.get.flowSeparators.flatMap(_.overZone_2.map(oz => oz.name -> new RectangleModifiable(
+              oz.name,
+              (Vector2D(oz.x1(0), oz.y1(0)), Vector2D(oz.x1(1), oz.y1(1))),
+              (Vector2D(oz.x2(0), oz.y2(0)), Vector2D(oz.x2(1), oz.y2(1))),
+              (Vector2D(oz.x3(0), oz.y3(0)), Vector2D(oz.x3(1), oz.y3(1))),
+              (Vector2D(oz.x4(0), oz.y4(0)), Vector2D(oz.x4(1), oz.y4(1)))
+            ))).toMap
+
           s.get.flowSeparators.map(fs => {
             val oz_1: Iterable[RectangleModifiable] = fs.overZone_1.map(oz => new RectangleModifiable(
               oz.name,
@@ -71,7 +91,7 @@ package object graph {
               (Vector2D(oz.x4(0), oz.y4(0)), Vector2D(oz.x4(1), oz.y4(1)))
             ))
             val oldZones: Iterable[String] = fs.overZone_1.map(_.overridenZone) ++ fs.overZone_2.map(_.overridenZone)
-            val vertexMapUpdated: Map[String, Rectangle] = vertexMap -- oldZones ++ oz_1.map(oz => oz.name -> oz).toMap ++ oz_2.map(oz => oz.name -> oz).toMap
+
             new FlowSeparator(
               Vector2D(fs.x1a, fs.y1a),
               Vector2D(fs.x1b, fs.y1b),

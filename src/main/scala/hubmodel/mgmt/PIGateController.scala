@@ -20,7 +20,7 @@ class PIGateController(sim: SFGraphSimulator) extends Action {
   override def execute(): Unit = {
     sim.eventLogger.trace("time: " + sim.currentTime + ": updating flow gates using PI controller")
     val totalInflow: Double = max(0.1, min(3.0, sim.inflowHistory.last._2 - 0.6 * (sim.densityHistory.last._2 - sim.densityHistory.dropRight(1).last._2) + 0.32 * (1.0 - sim.densityHistory.last._2)))
-    //println("PI data @ "+ sim.currentTime + ", " + sim.densityHistory.last._2 + "," + (sim.densityHistory.last._2 - sim.densityHistory.dropRight(1).last._2) + ", " + (0.8 - sim.densityHistory.last._2) + ", " + totalInflow)
+    println("zone data @ "+ sim.currentTime + ", " + sim.densityHistory.last._2)
 
     sim.inflowHistory.append((sim.currentTime, totalInflow))
     val flowGatesTotalWidth: Double = sim.controlDevices.flowGates.foldLeft(0.0) { (o: Double, n: FlowGate) => o + n.width }

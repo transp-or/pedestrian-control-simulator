@@ -70,18 +70,17 @@ class PedestrianSim(val origin: Rectangle,
   //                    AGENT-BASED PARAMETERS REQUIRED BY THE MICROSCOPIC MODELS
   // ******************************************************************************************
 
-  val r: Double = ThreadLocalRandom.current.nextDouble(0.2, 0.25)
-  val a0: Double = ThreadLocalRandom.current.nextDouble(8.0, 10.0)
-  val r0: Double = ThreadLocalRandom.current.nextDouble(0.10, 0.5)
-  val a1: Double = ThreadLocalRandom.current.nextDouble(8.0, 10.0)
-  val r1: Double = ThreadLocalRandom.current.nextDouble(0.10, 0.5)
-  val k0: Double = ThreadLocalRandom.current.nextDouble(800.0, 1000.0)
-  val k1: Double = ThreadLocalRandom.current.nextDouble(800.0, 1000.0)
-  val ief: Double = ThreadLocalRandom.current.nextDouble(0.5, 6.0)
-  val ieb: Double = ThreadLocalRandom.current.nextDouble(0.5, 6.0)
-  val c0plus: Double = ThreadLocalRandom.current.nextDouble(0.7, 1.5)
-  val c0min: Double = ThreadLocalRandom.current.nextDouble(0.7, 1.5)
-
+  val r: Double = ThreadLocalRandom.current.nextDouble(0.2, 0.3)
+  val a0: Double = 10//ThreadLocalRandom.current.nextDouble(8.0, 10.0)
+  val r0: Double = 0.16//ThreadLocalRandom.current.nextDouble(0.10, 0.5)
+  val a1: Double = 1.67//ThreadLocalRandom.current.nextDouble(8.0, 10.0)
+  val r1: Double = 0.013 // ThreadLocalRandom.current.nextDouble(0.10, 0.5)
+  val k0: Double = 10000//ThreadLocalRandom.current.nextDouble(800.0, 1000.0)
+  val kappa: Double = 10.0//ThreadLocalRandom.current.nextDouble(800.0, 1000.0)
+  val ief: Double = 3.0//ThreadLocalRandom.current.nextDouble(0.5, 6.0)
+  val ieb: Double = 0.65//ThreadLocalRandom.current.nextDouble(0.5, 6.0)
+  val c0plus: Double = 0.9//ThreadLocalRandom.current.nextDouble(0.7, 1.5)
+  val c0min: Double = 0.9//ThreadLocalRandom.current.nextDouble(0.7, 1.5)
 
   // ******************************************************************************************
   //                              GETTER - SETTER METHODS
@@ -108,6 +107,7 @@ class PedestrianSim(val origin: Rectangle,
     * The increments are set by the [[hubmodel.mvmtmodels.SocialForceESI]] model.
     */
   def move(): Unit = {
+    this.travelDistance += positionIncrement.norm
     this.currentPosition = this.currentPosition + positionIncrement
     this.positionIncrement = new ZeroVector2D
     this.currentVelocity = boundVelocity(this.currentVelocity + velocityIncrement)
@@ -165,7 +165,7 @@ class PedestrianSim(val origin: Rectangle,
     * @param route     initial route
     */
   def this(oZone: Rectangle, dZone: Rectangle, entryTime: Time, posO: Position, route: List[Rectangle]) {
-    this(oZone, dZone, 1.0 + 0.2*ThreadLocalRandom.current().nextGaussian(), entryTime, route) // velocity taken from VS data
+    this(oZone, dZone, 1.34 + 0.2*ThreadLocalRandom.current().nextGaussian(), entryTime, route) // velocity taken from VS data
     this.currentPosition = posO
   }
 }
