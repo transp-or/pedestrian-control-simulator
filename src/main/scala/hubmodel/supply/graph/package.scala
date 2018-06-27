@@ -3,7 +3,8 @@ package hubmodel.supply
 import hubmodel.Position
 import hubmodel.demand.{Stop2Vertices, Track2NodeMapping}
 import hubmodel.input.JSONReaders.{InfraGraphParser, Track2NodeMapping_JSON}
-import hubmodel.mgmt.{ControlDevices, FlowLine, FlowSeparator}
+import hubmodel.mgmt.flowsep.{FlowLine, FlowSeparator}
+import hubmodel.mgmt.ControlDevices
 import hubmodel.tools.cells.{Rectangle, RectangleModifiable}
 import myscala.math.vector.Vector2D
 import play.api.libs.json.{JsError, JsSuccess, JsValue, Json}

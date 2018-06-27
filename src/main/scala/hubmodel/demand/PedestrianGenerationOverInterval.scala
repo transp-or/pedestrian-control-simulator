@@ -48,7 +48,7 @@ class PedestrianGenerationOverInterval(o: Rectangle, d: Rectangle, start: Time, 
     //arrivalTimes.
   }
 
-  override def toString: NodeIDOld = this.o + ", " + this.d + ", " + this.start + ", " + this.end + ", " + this.numberPeople
+  //override def toString: NodeIDOld = this.o + ", " + this.d + ", " + this.start + ", " + this.end + ", " + this.numberPeople
 }
 
 

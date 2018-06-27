@@ -7,11 +7,11 @@ import hubmodel.DES.SFGraphSimulator
 import hubmodel._
 import hubmodel.demand.{PedestrianFlowPT_New, PedestrianFlow_New, ReadDisaggDemand, readDisaggDemand, readDisaggDemandTF, readPedestrianFlows, readSchedule, readScheduleTF}
 import hubmodel.output.TRANSFORM.PopulationProcessingTRANSFORM
-import hubmodel.output.image.{DrawGraph, DrawWalls, DrawWallsAndGraph}
+import hubmodel.output.image.{DrawControlDevicesAndWalls, DrawGraph, DrawWalls, DrawWallsAndGraph}
 import hubmodel.output.video.MovingPedestriansWithDensityWithWallVideo
 import hubmodel.ped.PedestrianSim
 import hubmodel.supply.graph.{BinaryGate, readGraph, readStop2Vertex}
-import hubmodel.supply.continuous.ReadContinuousSpace
+import hubmodel.supply.continuous.{MovableWall, ReadContinuousSpace}
 import hubmodel.results.PopulationProcessing
 import myscala.math.stats.{ComputeStats, stats}
 import myscala.output.SeqOfSeqExtensions.SeqOfSeqWriter
@@ -199,13 +199,6 @@ object RunSimulation extends App {
     // execute simulation
     timeBlock(sim.run())
 
-    sim.populationCompleted.foreach(p => {
-      println(p.travelTime, p.travelDistance, p.travelDistance / p.travelTime.value)
-      if (p.travelDistance / p.travelTime.value > 1.2){
-        //println(p.getHistoryPosition.mkString("\n"))
-      }
-    })
-
     println("Making video of simulation, this can take some time...")
 
     val gates: List[BinaryGate] = List()
@@ -231,11 +224,12 @@ object RunSimulation extends App {
     val wallsImage = new DrawWalls(sim.walls, config.getString("output.output_prefix") + "_wallsWithNames.png", showNames = false)
     val graphImage = new DrawGraph(sim.graph.edges.map(e => (e.startVertex, e.endVertex)).toVector, config.getString("output.output_prefix") + "_graph.png")
     val fullImage = new DrawWallsAndGraph(sim.walls, sim.graph.edges.map(e => (e.startVertex, e.endVertex)).toVector, config.getString("output.output_prefix") + "_wallsAndGraph.png")
+    val devicesImage = new DrawControlDevicesAndWalls(config.getString("output.output_prefix") + "_wallsWithDevices.png", sim.walls, sim.controlDevices)
 
 
     new MovingPedestriansWithDensityWithWallVideo(
       config.getString("output.output_prefix") + "_moving_pedestrians_walls.mp4",
-      sim.walls,
+      sim.walls.filterNot(_.isInstanceOf[MovableWall]),
       math.max((1.0 / config.getDouble("output.video_dt")).toInt, 1),
       sim.populationCompleted ++ sim.population,
       sim.criticalAreas.values,
@@ -251,6 +245,7 @@ object RunSimulation extends App {
       println("Writing trajectory data from video...")
       sim.writePopulationTrajectories(config.getString("output.output_prefix") + "_simulation_trajectories.csv")
     }*/
+
     collectResults(sim)
   }
 
@@ -267,6 +262,11 @@ object RunSimulation extends App {
 
     timeBlock(simulator.run())
     collectResults(simulator)
+  }
+
+  // Checks that the number of simulations to run is coherent
+  if (n == 0 && !config.getBoolean("output.make_video")) {
+    throw new IllegalArgumentException("No simulation to run ! Check parameters in config file.")
   }
 
   // Runs the simulations in parallel or sequential based on the config file.
@@ -294,11 +294,12 @@ object RunSimulation extends App {
     }
   }
 
-  println(results.map(_._1.size))
 
   // ******************************************************************************************
   //                           Processes and writes results to CSV
   // ******************************************************************************************
+
+
 
   if (config.getBoolean("output.write_travel_times") || config.getBoolean("output.write_densities") || config.getBoolean("output.write_tt_stats") || config.getBoolean("output.write_inflow")) {
 
@@ -386,7 +387,6 @@ object RunSimulation extends App {
       rowNames = None,
         columnNames = Some(Vector("time", "size", "mean", "variance", "median") ++ Vector.fill(results.size)("r").zipWithIndex.map(t => t._1 + t._2.toString))
       )
-
 
     def pedData2: PedestrianSim => Double = ped => ped.travelTime.value
 

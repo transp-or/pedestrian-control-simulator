@@ -24,6 +24,9 @@ trait PedestrianTrait {
   /** current position */
   def currentPosition: Position
 
+  /** previous position at the previous major timestep (sf_dt) */
+  var previousMajorPosition: Position = _
+
   /** total travel time */
   def travelTime: Time
 

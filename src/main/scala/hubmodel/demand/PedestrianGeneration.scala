@@ -55,7 +55,7 @@ class PedestrianGeneration(o: Rectangle, d: Rectangle, start: Time, numberPeople
     //arrivalTimes.
   }
 
-  override def toString: NodeIDOld = this.o + ", " + this.d + ", " + this.start + ", " + this.numberPeople
+  //override def toString: NodeIDOld = this.o + ", " + this.d + ", " + this.start + ", " + this.numberPeople
 }
 
 

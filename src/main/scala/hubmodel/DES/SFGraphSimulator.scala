@@ -29,7 +29,7 @@ class SFGraphSimulator(override val startTime: Time,
   val pedestrianFlows: Iterable[PedestrianFlow_New] = flows._1
   val pedestrianFlowsPT: Iterable[PedestrianFlowPT_New] = flows._2
 
-  controlDevices.flowSeparators.foreach(_.initializePositionHistory(startTime))
+  //controlDevices.flowSeparators.foreach(_.initializePositionHistory(startTime))
 
   /* Access for the wall collection which is mostly contained in the SF infrastructrue file but some movable walls
   * are found in the graph infrastructure file */
@@ -62,9 +62,9 @@ class SFGraphSimulator(override val startTime: Time,
   }
 
   /** Using control */
-  val useControl: Boolean = useFlowGates || useBinaryGates
-  if (useControl) {
-    println(" * control strategies are used")
+  val useGating: Boolean = useFlowGates || useBinaryGates
+  if (useGating) {
+    println(" * gating is used")
   }
 
   /** Indicator whether an m-tree is used to perform neighbour search */
@@ -73,6 +73,11 @@ class SFGraphSimulator(override val startTime: Time,
     println(" * using m-tree for neighbour search")
   }
 
+  /** Indicator whether flow separators are used */
+  val useFlowSep: Boolean = controlDevices.flowSeparators.nonEmpty
+  if (useFlowSep) {
+    println(" * using flow separators")
+  }
 
   /** KPIs */
   val criticalAreas: Map[String, DensityMeasuredArea] = controlDevices.monitoredAreas.map(zone => zone.name -> new DensityMeasuredArea(zone.name, zone.corners(0), zone.corners(1), zone.corners(2), zone.corners(3), startTime)).toMap
@@ -148,8 +153,8 @@ class SFGraphSimulator(override val startTime: Time,
       sim.insertEventWithZeroDelay(new ProcessPedestrianFlows(sim))
       sim.insertEventWithZeroDelay(new UpdateRoutes(sim))
       sim.insertEventWithZeroDelay(new NOMADIntegrated(sim))
-      if (sim.useControl) sim.insertEventWithZeroDelay(new EvaluateState(sim))
-      else if (sim.measureDensity && !sim.useControl) sim.insertEventWithZeroDelay(new EvaluateState(sim))
+      if (sim.useGating) sim.insertEventWithZeroDelay(new EvaluateState(sim))
+      else if (sim.measureDensity && !sim.useGating) sim.insertEventWithZeroDelay(new EvaluateState(sim))
       if (sim.useFlowGates) sim.insertEventWithZeroDelay(new StartFlowGates(sim))
       if (sim.useTreeForNeighbourSearch) sim.insertEventWithDelayNew(new Time(0.0))(new RebuildTree(sim))
     }

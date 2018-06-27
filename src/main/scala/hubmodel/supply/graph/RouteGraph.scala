@@ -1,8 +1,8 @@
 package hubmodel.supply.graph
 
-import hubmodel.mgmt.FlowSeparator
+import hubmodel.mgmt.flowsep.FlowSeparator
 import hubmodel.ped.PedestrianSim
-import hubmodel.tools.cells.{Rectangle}
+import hubmodel.tools.cells.Rectangle
 import org.jgrapht.alg.shortestpath.DijkstraShortestPath
 import org.jgrapht.graph.DefaultDirectedWeightedGraph
 

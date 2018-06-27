@@ -181,18 +181,29 @@ class NOMADIntegrated(sim: SFGraphSimulator) extends Action {
     */
   private def insertPedInMoveList(ped: PedestrianNOMAD): Unit = {
     //if (ped.isVariableStep)
-    /*if (ped.isolationTypePed == hubmodel.IN_COLLISION || ped.isolationTypeObs == hubmodel.IN_COLLISION) this.pedestrianToMoveInCollision.append(ped)
+    if (ped.isolationTypePed == hubmodel.IN_COLLISION || ped.isolationTypeObs == hubmodel.IN_COLLISION) this.pedestrianToMoveInCollision.append(ped)
     else if (ped.isolationTypePed == hubmodel.IN_RANGE || ped.isolationTypeObs == hubmodel.IN_RANGE) this.pedestrianToMoveInRange.append(ped)
-    else this.pedestrianToMoveInIsolation.append(ped)*/
+    else this.pedestrianToMoveInIsolation.append(ped)
     /*else { // if the time step is constant
       this.pedestrianToMoveInCollision.append(ped)
     }*/
-    this.pedestrianToMoveInCollision.append(ped)
+    //this.pedestrianToMoveInCollision.append(ped)
 
   }
 
 
   override def execute(): Unit = {
+
+    if (sim.useFlowSep) {
+      sim.controlDevices.flowSeparators.foreach(fs => {
+        fs.inflowLinesStart.foreach(fl => {
+          fl.collectPedestriansWhoCrossed(sim.population)
+        })
+        fs.inflowLinesEnd.foreach(fl => {
+          fl.collectPedestriansWhoCrossed(sim.population)
+        })
+      })
+    }
 
     sim.population.foreach(ped => {
 
@@ -221,12 +232,15 @@ class NOMADIntegrated(sim: SFGraphSimulator) extends Action {
         //if (this.isUpdateWalkingData)
         ped.travelDistance += (ped.currentPosition - ped.getHistoryPosition.last._2).norm
         ped.addHistory(sim.currentTime)
+        ped.previousMajorPosition = ped.currentPosition
 
         //ped.updatePreviousPositionAndSpeed(sim.currentTime)
         insertPedInMoveList(ped)
       }
 
     })
+
+
     if (this.pedestrianToMoveInCollision.nonEmpty) {
       this.moveInCollisionStep()
     }
@@ -294,6 +308,7 @@ class NOMADIntegrated(sim: SFGraphSimulator) extends Action {
       sim.population.foreach(ped => {
         ped.currentPosition = ped.nextPosition
         ped.currentVelocity = ped.nextVelocity
+        ped.addHistory(sim.currentTime + Time(rangeStep))
       })
       rangeStep += this.rangeTimeStepSeconds
       rangeCounter += 1
@@ -353,6 +368,7 @@ class NOMADIntegrated(sim: SFGraphSimulator) extends Action {
       sim.population.foreach(ped => {
         ped.currentPosition = ped.nextPosition
         ped.currentVelocity = ped.nextVelocity
+        ped.addHistory(sim.currentTime + Time(colStep))
       })
       colStep += this.collisionTimeStepSeconds
       //colCounter += 1

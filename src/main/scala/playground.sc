@@ -252,5 +252,5 @@ new DrawCells(HexagonPotentialFields, "celltest.png")//, None, (xMax, yMax))
 
 
 
-
+math.max(0.0, Double.NaN)
 

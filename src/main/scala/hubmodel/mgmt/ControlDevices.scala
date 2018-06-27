@@ -1,5 +1,6 @@
 package hubmodel.mgmt
 
+import hubmodel.mgmt.flowsep.FlowSeparator
 import hubmodel.supply.graph._
 import hubmodel.tools.ControlDevicesException
 import hubmodel.tools.cells.Rectangle

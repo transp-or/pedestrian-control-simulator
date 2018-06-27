@@ -42,6 +42,8 @@ class UpdateRoutes(sim: SFGraphSimulator) extends Action {
     })
     sim.insertEventWithDelayNew(sim.sf_dt)(new UpdateRoutes(sim))
   }
+
+  override def toString: String = "UpdateRoutes"
 }
 
 /*class UpdateGraph(sim: SFGraphSimulator) extends Action {

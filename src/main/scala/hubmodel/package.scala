@@ -17,6 +17,13 @@ package object hubmodel {
   val IN_RANGE: Int = 1
   val IN_COLLISION: Int = 2
 
+  /* PARAMETERS */
+
+  // Length in meters of the othogonal extension of the "near region" for flow lines. This shouls be larger than the
+  // maximum walking speed * the motion model clock (sf_dt) to ensure a pedestrian cannot "jump" over it. The larger the
+  // value of the parameter, the more pedestrians will be checked to see if they cross the line..
+  val FLOW_LINE_REGION_EXTENSION: Double = 3.0
+
   type VehicleID = String
   type VertexID = String
   type StopID = String

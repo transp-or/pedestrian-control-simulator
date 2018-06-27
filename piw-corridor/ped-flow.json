@@ -98,28 +98,28 @@
       "destination": "14",
       "start": "07:00:00",
       "end": "08:00:00",
-      "flow": 100
+      "flow": 2000
     },
     {
       "origin": "1",
       "destination": "13",
       "start": "07:00:00",
       "end": "08:00:00",
-      "flow": 100
+      "flow": 2000
     },
     {
       "origin": "14",
       "destination": "1",
       "start": "07:00:00",
       "end": "08:00:00",
-      "flow": 100
+      "flow": 2000
     },
     {
       "origin": "13",
       "destination": "1",
       "start": "07:00:00",
       "end": "08:00:00",
-      "flow": 100
+      "flow": 2000
     }
   ]
 }

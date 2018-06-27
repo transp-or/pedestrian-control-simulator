@@ -63,6 +63,8 @@ abstract class PedestrianDES[T <: PedestrianTrait](val startTime: Time,
       //else if (this.action.priority < that.action.priority) -1 // that has high priority.
       else 0
     }
+
+    override def toString: String = action.toString + " @ " + t
   }
 
   /** Ordering defined for the Event case class.
@@ -91,7 +93,7 @@ abstract class PedestrianDES[T <: PedestrianTrait](val startTime: Time,
     */
   @deprecated
   def insertEventWithDelay[U <: Action](delay: Time)(action: U): Unit = {
-    if ((currentTime + delay) <= finalTime) eventList += new MyEvent(currentTime + delay, action)
+    if ((this.currentTime + delay) <= finalTime) eventList += new MyEvent(this.currentTime + delay, action)
   }
 
   /** Inserts an event into the eventList after a given delay. No need for sorting as the PriorityQueue is always
@@ -102,11 +104,11 @@ abstract class PedestrianDES[T <: PedestrianTrait](val startTime: Time,
     * @param action the [[Action]] which must take place
     */
   def insertEventWithDelayNew[U <: Action](delay: Time)(action: U): Unit = {
-    if (currentTime + delay <= finalTime) eventList += new MyEvent(currentTime + delay, action)
+    if (this.currentTime + delay <= finalTime) eventList += new MyEvent(this.currentTime + delay, action)
   }
 
   def insertEventWithZeroDelay[U <: Action](action: U): Unit = {
-    eventList += new MyEvent(currentTime, action)
+    eventList += new MyEvent(this.currentTime, action)
   }
 
 

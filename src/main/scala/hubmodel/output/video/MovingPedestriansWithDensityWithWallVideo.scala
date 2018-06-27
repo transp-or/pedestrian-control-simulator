@@ -5,9 +5,10 @@ import java.awt.image.BufferedImage
 import java.awt.{BasicStroke, Color, Graphics2D}
 import java.io.File
 
+
 import hubmodel.DES.PedestrianDES
 import hubmodel._
-import hubmodel.mgmt.FlowSeparator
+import hubmodel.mgmt.flowsep.FlowSeparator
 import hubmodel.output.{createWhiteBackground, getBounds, mapCoordAffine}
 import hubmodel.ped.PedestrianSim
 import hubmodel.supply.continuous.Wall
@@ -42,6 +43,11 @@ class MovingPedestriansWithDensityWithWallVideo(outputFile: String,
                                                 var densityMeasurements: collection.mutable.ArrayBuffer[(Int, Double)],
                                                 times2Show: IndexedSeq[Time],
                                                 flowSeparators: Iterable[FlowSeparator]) extends Tools4Videos {
+
+  flowSeparators.foreach(fs => {
+    println(fs.ID, fs.startA, fs.endA)
+    println(fs.getFlowHistory.mkString("\n"))
+  })
 
 
   // asserts that more than one time is listed
@@ -138,8 +144,10 @@ class MovingPedestriansWithDensityWithWallVideo(outputFile: String,
     if (flowSeparators.nonEmpty) {
       val gFlowSepImage = flowSepImage.createGraphics()
       flowSeparators.foreach( fg => {
-        fg.getPositionHistory.find(_._1 == times2Show(i)) match {
+        fg.getPositionHistory.reverse.find(t => times2Show(i).value > t._1.value) match {
           case Some(s) => {
+            gFlowSepImage.setStroke(new BasicStroke(5))
+            gFlowSepImage.setColor(Color.BLACK)
             gFlowSepImage.drawLine(
               mapHcoord(s._2.X),
               mapVcoord(s._2.Y),

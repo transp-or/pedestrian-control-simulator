@@ -11,3 +11,5 @@ import hubmodel.Position
 case class Wall(comment: String, startPoint: Position, endPoint: Position, wallType: WallType) {
   val aw: Double = 10.0
 }
+
+class MovableWall(comm: String, s: Position, e: Position, t: WallType) extends Wall(comm, s, e, t)

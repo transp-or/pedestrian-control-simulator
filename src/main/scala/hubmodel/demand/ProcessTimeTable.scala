@@ -23,6 +23,8 @@ class ProcessTimeTable(sim: SFGraphSimulator) extends Action {
       new TrainArrival(t._2, sim)
     })
   }
+
+  override def toString: String = "ProcessTimeTable"
 }
 
 

@@ -31,6 +31,8 @@ class ProcessPedestrianFlows(sim: SFGraphSimulator) extends Action {
           ))
         }))
   }
+
+  override def toString: String = "ProcessPedestrianFlows"
 }
 
 

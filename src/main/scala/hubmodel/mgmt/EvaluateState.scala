@@ -27,7 +27,7 @@ class EvaluateState(sim: SFGraphSimulator) extends Action with Controller {
       // computes the number of people inside the zone(s) to control.
       val paxInZone: Int = sim.population.count(ped => isInVertex(zone)(ped.currentPosition))
 
-      // voronoin density
+      // voronoi density
       if (paxInZone > 0) {
         try {
           val voronoi: PowerDiagram = new PowerDiagram()
@@ -54,17 +54,37 @@ class EvaluateState(sim: SFGraphSimulator) extends Action with Controller {
       }
 
     })
-
   }
 
-  /** Method called by the simulation to perform the action. Here, the KPIs are evaluted.
+  /**
+    * Updates the positions of the flow separators based on the incoming flows.
+    */
+  def processIncomingFlows(): Unit = {
+    // TODO: Take into account limits and hysteresis loop
+    sim.controlDevices.flowSeparators.foreach(fs => {
+      //println(fs.inflowLinesStart.map(_.getPedestrianFlow).sum.toDouble, fs.inflowLinesEnd.map(_.getPedestrianFlow).sum.toDouble, fs.inflowLinesStart.map(_.getPedestrianFlow).sum.toDouble / fs.inflowLinesEnd.map(_.getPedestrianFlow).sum.toDouble)
+
+      fs.updateWallPosition(sim.currentTime)
+    })
+  }
+
+  /** Method called by the simulation to perform the action. Here, the KPIs are evaluated.
     *
     */
   override def execute(): Unit = {
     sim.eventLogger.trace("sim-time=" + sim.currentTime + ": state evaluation")
     this.computeDensity()
     sim.eventLogger.trace("sim-time=" + sim.currentTime + ": number people inside critical area: " + sim.densityHistory.last._2)
-    if (sim.useControl) sim.insertEventWithZeroDelay(new DLQRGateController(sim))
+    if (sim.useGating) { sim.insertEventWithZeroDelay(new DLQRGateController(sim)) }
+    if (sim.useFlowSep) {
+      processIncomingFlows()
+      sim.controlDevices.flowSeparators.foreach(fs => {
+        fs.inflowLinesStart.foreach(_.reinitialize())
+        fs.inflowLinesEnd.foreach(_.reinitialize())
+      })
+
+    }
     sim.insertEventWithDelayNew(sim.evaluate_dt)(new EvaluateState(sim))
   }
+
 }

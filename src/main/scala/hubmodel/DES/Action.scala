@@ -19,4 +19,7 @@ trait Action {
     * The method will modifiy some elements of the simulation.
     */
   def execute(): Unit
+
+  override def toString: String = this.getClass.getSimpleName
+
 }
