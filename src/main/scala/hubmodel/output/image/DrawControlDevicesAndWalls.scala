@@ -54,7 +54,11 @@ class DrawControlDevicesAndWalls(filename: String = "",
         )
 
         // draws near region
-        //gImage.drawPolygon(fl.nearRegion.corners.map(_.X).map(mappingFunctions._1).toArray, fl.nearRegion.corners.map(_.Y).map(mappingFunctions._2).map(verticalTransformation).toArray, 4)
+        gImage.drawPolygon(fl.nearRegion.corners.map(_.X).map(mappingFunctions._1).toArray, fl.nearRegion.corners.map(_.Y).map(mappingFunctions._2).map(verticalTransformation).toArray, 4)
+        println(fl.nearRegion.corners.map(_.X))
+        println(fl.nearRegion.corners.map(_.Y))
+        println(fl.nearRegion.corners.map(_.X).map(mappingFunctions._1).toArray.mkString("\t"))
+        println(fl.nearRegion.corners.map(_.Y).map(mappingFunctions._2).toArray.mkString("\t"))
 
         // draws inflow direction
         val inflowDirStart: Vector2D = fl.start + (fl.end-fl.start)*0.5 - (fl.end-fl.start).orthogonal*2.0*0.5

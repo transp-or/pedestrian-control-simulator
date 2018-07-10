@@ -1,0 +1,157 @@
+{
+  "location": "t-junction",
+  "sublocation": "none",
+  "nodes": [
+    {
+      "name": "left",
+      "x": 6.0,
+      "y": 12.5,
+      "x1": 0.4,
+      "y1": 0.4,
+      "x2": 2.4,
+      "y2": 0.4,
+      "x3": 2.4,
+      "y3": 4.6,
+      "x4": 0.4,
+      "y4": 4.6
+    },
+    {
+      "name": "right",
+      "x": 6.0,
+      "y": 12.5,
+      "x1": 32.6,
+      "y1": 0.4,
+      "x2": 34.6,
+      "y2": 0.4,
+      "x3": 34.6,
+      "y3": 4.6,
+      "x4": 32.6,
+      "y4": 4.6
+    },
+    {
+      "name": "top",
+      "x": 6.0,
+      "y": 12.5,
+      "x1": 16.4,
+      "y1": 12.6,
+      "x2": 18.6,
+      "y2": 12.6,
+      "x3": 18.6,
+      "y3": 14.6,
+      "x4": 16.4,
+      "y4": 14.6
+    },
+    {
+      "name": "junction",
+      "x": 6.0,
+      "y": 12.5,
+      "x1": 16.4,
+      "y1": 0.4,
+      "x2": 18.6,
+      "y2": 0.4,
+      "x3": 18.6,
+      "y3": 4.6,
+      "x4": 16.4,
+      "y4": 4.6
+    },
+    {
+      "name": "gate-top",
+      "x": 6.0,
+      "y": 12.5,
+      "x1": 16.4,
+      "y1": 6,
+      "x2": 18.6,
+      "y2": 6,
+      "x3": 18.6,
+      "y3": 6.9,
+      "x4": 16.4,
+      "y4": 6.9
+    },
+    {
+      "name": "gate-bottom",
+      "x": 6.0,
+      "y": 12.5,
+      "x1": 16.4,
+      "y1": 5,
+      "x2": 18.6,
+      "y2": 5,
+      "x3": 18.6,
+      "y3": 5.9,
+      "x4": 16.4,
+      "y4": 5.9
+    }
+  ],
+  "connectivity": [
+    {
+      "node": "right",
+      "connected_to": [
+        "junction"
+      ]
+    },
+    {
+      "node": "left",
+      "connected_to": [
+        "junction"
+      ]
+    },
+    {
+      "node": "top",
+      "connected_to": [
+        "gate-top"
+      ]
+    },
+    {
+      "node": "junction",
+      "connected_to": [
+        "gate-bottom",
+        "left",
+        "right"
+      ]
+    },
+    {
+      "node": "gate-top",
+      "connected_to": [
+        "gate-bottom",
+        "top"
+      ]
+    },
+    {
+      "node": "gate-bottom",
+      "connected_to": [
+        "junction",
+        "gate-top"
+      ]
+    }
+    ],
+  "flow_gates": [
+    {
+      "o": "gate-top",
+      "d": "gate-bottom",
+      "start_pos_x": 16,
+      "start_pos_y": 5.95,
+      "end_pos_x": 19,
+      "end_pos_y": 5.95,
+      "controlled_area": "junction-monitor",
+      "functional_form": "quadratic",
+      "functional_parameters": [2, -1.0, 0.0]
+    }
+  ],
+  "controlled_areas" :[
+    {
+      "name": "junction-monitor",
+      "x1": 16,
+      "y1": 0,
+      "x2": 19,
+      "y2": 0,
+      "x3": 19,
+      "y3": 5,
+      "x4": 16,
+      "y4": 5
+    }
+  ],
+  "binary_gates": [],
+  "moving_walkways": [],
+  "flow_separators": []
+}
+
+

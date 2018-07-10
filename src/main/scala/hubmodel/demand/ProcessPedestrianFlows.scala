@@ -5,6 +5,7 @@ package hubmodel.demand
   */
 
 import hubmodel.DES.{Action, SFGraphSimulator}
+import hubmodel.Time
 
 /** Insert the arrivals of all vehicle in the event list. The trains variables stored in the simulation is the
   * variable which is used.
@@ -27,6 +28,19 @@ class ProcessPedestrianFlows(sim: SFGraphSimulator) extends Action {
             flow.start,
             flow.end,
             math.round(f._3).toInt,
+            sim
+          ))
+        }))
+
+    sim.pedestrianFlowsFunction
+      .foreach(flow => splitFractionsUniform(sim.conceptualNode2GraphNodes(flow.O), sim.conceptualNode2GraphNodes(flow.D))
+        .foreach(f => {
+          sim.insertEventAtAbsolute(flow.start)(new PedestrianGenerationNonHomogeneousRate(
+            f._1,
+            f._2,
+            flow.start,
+            flow.end,
+            (t: Time) => flow.f(t)*f._3,
             sim
           ))
         }))

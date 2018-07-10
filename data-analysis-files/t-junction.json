@@ -1,0 +1,37 @@
+{
+  "id": "junction-monitor",
+  "x1": 15,
+  "y1": 0,
+  "x2": 20,
+  "y2": 0,
+  "x3": 20,
+  "y3": 5,
+  "x4": 15,
+  "y4": 5,
+  "flow_segments": [
+    {
+      "id": "from_top",
+      "x1": 20,
+      "y1": 5,
+      "x2": 15,
+      "y2": 5,
+      "inflow_type": "CONTROLLED"
+    },
+    {
+      "id": "from_left",
+      "x1": 15,
+      "y1": 5,
+      "x2": 15,
+      "y2": 1,
+      "inflow_type": "CONTROLLED"
+    },
+    {
+      "id": "from_right",
+      "x1": 20,
+      "y1": 0,
+      "x2": 20,
+      "y2": 5,
+      "inflow_type": "CONTROLLED"
+    }
+  ]
+}

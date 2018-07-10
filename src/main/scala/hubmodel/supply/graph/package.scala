@@ -5,7 +5,7 @@ import hubmodel.demand.{Stop2Vertices, Track2NodeMapping}
 import hubmodel.input.JSONReaders.{InfraGraphParser, Track2NodeMapping_JSON}
 import hubmodel.mgmt.flowsep.{FlowLine, FlowSeparator}
 import hubmodel.mgmt.ControlDevices
-import hubmodel.tools.cells.{Rectangle, RectangleModifiable}
+import hubmodel.tools.cells.{Rectangle, RectangleModifiable, Vertex}
 import myscala.math.vector.Vector2D
 import play.api.libs.json.{JsError, JsSuccess, JsValue, Json}
 
@@ -36,7 +36,11 @@ package object graph {
         val vertexMap: Map[String, Rectangle] = v.map(v => v.name -> v).toMap
         val e: Iterable[MyEdge] = s.get.standardConnections.flatMap(c => c.conn.map(neigh => new MyEdge(vertexMap(c.node), vertexMap(neigh))))
         val fg: Iterable[FlowGate] = if (useFlowGates) {
-          s.get.flowGates.map(fg => new FlowGate(vertexMap(fg.o), vertexMap(fg.d), Vector2D(fg.start_pos_x, fg.start_pos_y), Vector2D(fg.end_pos_x, fg.end_pos_y), fg.area))
+          s.get.flowGates.map(fg => fg.funcForm match {
+            case "quadratic" => new FlowGateFunctional(vertexMap(fg.o), vertexMap(fg.d), Vector2D(fg.start_pos_x, fg.start_pos_y), Vector2D(fg.end_pos_x, fg.end_pos_y), fg.area, {x: Double => math.max(0.0, fg.funcParam(0) + fg.funcParam(1)*x  + fg.funcParam(2)*x*x)} )
+            case "linear" => new FlowGateFunctional(vertexMap(fg.o), vertexMap(fg.d), Vector2D(fg.start_pos_x, fg.start_pos_y), Vector2D(fg.end_pos_x, fg.end_pos_y), fg.area, {x: Double => math.max(0.0, fg.funcParam(0) + fg.funcParam(1)*x)} )
+            case null => new FlowGate(vertexMap(fg.o), vertexMap(fg.d), Vector2D(fg.start_pos_x, fg.start_pos_y), Vector2D(fg.end_pos_x, fg.end_pos_y), fg.area)
+          })
         } else {
           Vector()
         }
@@ -102,7 +106,7 @@ package object graph {
               fs.inf_2.map(il => new FlowLine(Vector2D(il.x1, il.y1), Vector2D(il.x2, il.y2))),
               oz_1,
               oz_2,
-              fs.overConn.flatMap(c => c.conn.map(neigh => { new MyEdge(vertexMapUpdated(c.node), vertexMapUpdated(neigh))} )),
+              fs.overConn.collect({ case c if vertexMapUpdated.contains(c.node) => c.conn.collect({ case neigh if vertexMapUpdated.contains(neigh) =>  new MyEdge(vertexMapUpdated(c.node), vertexMapUpdated(neigh)) }) }).flatten,
               oldZones
             )
           }

@@ -1,0 +1,70 @@
+{
+  "location": "t-junction",
+  "sublocation": "none",
+  "walls": [
+    {
+      "comment": "left-end",
+      "x1": 0,
+      "y1": 0,
+      "x2": 0,
+      "y2": 5,
+      "type": 0
+    },
+    {
+      "comment": "left-top",
+      "x1": 0,
+      "y1": 5,
+      "x2": 16,
+      "y2": 5,
+      "type": 0
+    },
+    {
+      "comment": "t-left",
+      "x1": 16,
+      "y1": 5,
+      "x2": 16,
+      "y2": 15,
+      "type": 0
+    },
+    {
+      "comment": "t-top",
+      "x1": 16,
+      "y1": 15,
+      "x2": 19,
+      "y2": 15,
+      "type": 0
+    },
+    {
+      "comment": "t-right",
+      "x1": 19,
+      "y1": 15,
+      "x2": 19,
+      "y2": 5,
+      "type": 0
+    },
+    {
+      "comment": "right-top",
+      "x1": 19,
+      "y1": 5,
+      "x2": 35,
+      "y2": 5,
+      "type": 0
+    },
+    {
+      "comment": "right-end",
+      "x1": 35,
+      "y1": 5,
+      "x2": 35,
+      "y2": 0,
+      "type": 0
+    },
+    {
+      "comment": "bottom",
+      "x1": 35,
+      "y1": 0,
+      "x2": 0,
+      "y2": 0,
+      "type": 0
+    }
+  ]
+}

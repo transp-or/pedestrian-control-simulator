@@ -13,12 +13,7 @@ import hubmodel.tools.cells.Rectangle
   * @param start       one end of the gate
   * @param end         other end of the gate
   */
-class FlowGate(startVertex: Rectangle, endVertex: Rectangle, start: Position, end: Position, ma: String) extends MyEdgeWithGate(startVertex, endVertex, start, end, ma) {
-
-  // variable flow rate of the gate [pax/s]
-  var flowRate = 0.5
-
-
+class FlowGateFunctional(startVertex: Rectangle, endVertex: Rectangle, start: Position, end: Position, ma: String, val functionalForm: Double => Double) extends FlowGate(startVertex, endVertex, start, end, ma) {
 
   /** Checks whether another object equals this one
     *
@@ -27,7 +22,7 @@ class FlowGate(startVertex: Rectangle, endVertex: Rectangle, start: Position, en
     */
   override def equals(other: Any): Boolean =
     other match {
-      case that: FlowGate => super.equals() && that.canEqual(this) && this.start == that.start && this.end == that.end
+      case that: FlowGateFunctional => super.equals() && that.canEqual(this) && this.start == that.start && this.end == that.end
       case _ => false
     }
 
@@ -36,16 +31,7 @@ class FlowGate(startVertex: Rectangle, endVertex: Rectangle, start: Position, en
     * @param other
     * @return
     */
-  override def canEqual(other: Any): Boolean = other.isInstanceOf[FlowGate]
+  override def canEqual(other: Any): Boolean = other.isInstanceOf[FlowGateFunctional]
 
-
-  /** Definition of equality.
-    *
-    * @return Int representing the object
-    */
-  override def hashCode: Int = {
-    (super.hashCode, this.start, this.end).##
-  }
-
-  override def toString: String = "FlowGate: o: " + startVertex + ", d:" + endVertex
+  override def toString: String = "FlowGateFunctional: o: " + startVertex + ", d:" + endVertex
 }

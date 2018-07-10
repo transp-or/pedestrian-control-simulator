@@ -1,0 +1,49 @@
+{
+  "location": "corridor",
+  "PTflows": [],
+  "flows": [
+    {
+      "origin": "top",
+      "destination": "bottom",
+      "start": "00:00:00",
+      "end": "00:10:00",
+      "flow": 0
+    },
+    {
+      "origin": "bottom",
+      "destination": "top",
+      "start": "00:00:00",
+      "end": "00:10:00",
+      "flow": 0
+    }
+  ],
+  "function_flows": [
+    {
+      "origin": "bottom",
+      "destination": "top",
+      "linear": [
+        {
+          "start": "00:00:00",
+          "end": "00:02:00",
+          "rate_at_start": 0.1,
+          "rate_at_end": 3.1,
+          "slope": 0.025
+        },
+        {
+          "start": "00:02:05",
+          "end": "00:04:05",
+          "rate_at_start": 3.1,
+          "rate_at_end": 0.1,
+          "slope": -0.025
+        }
+      ],
+      "constant": [
+        {
+          "start": "00:02:00",
+          "end": "00:02:05",
+          "rate": 3.1
+        }
+      ]
+    }
+  ]
+}

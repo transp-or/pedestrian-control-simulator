@@ -162,8 +162,8 @@ def insideSpace: Position =>  Boolean = infraSF.continuousSpace.isInsideWalkable
   val yMin = infraSF.continuousSpace.walls.map(w => Math.min(w.startPoint.Y, w.endPoint.Y)).min
   val yMax = infraSF.continuousSpace.walls.map(w => Math.max(w.startPoint.Y, w.endPoint.Y)).max
   val radius: Double = 1.5
-println(xMin)
-  println(yMin)
+
+
 /*
   def insideSpace(p: Position): Boolean = {
 

@@ -7,6 +7,7 @@ import org.jgrapht.alg.shortestpath.DijkstraShortestPath
 import org.jgrapht.graph.DefaultDirectedWeightedGraph
 
 import scala.collection.JavaConverters._
+import scala.util.{Failure, Success, Try}
 
 /** Graph used for the computation of the route choice.
   *
@@ -65,7 +66,12 @@ class RouteGraph(private val vertices: Vector[Rectangle],
     * @return the list if vertices representing the path
     */
   def getShortestPath(o: Rectangle, d: Rectangle): List[Rectangle] = {
-    shortestPathBuilder.getPath(o, d).getVertexList.asScala.toList
+    Try(shortestPathBuilder.getPath(o, d)/*.getVertexList.asScala.toList*/) match {
+      case Success(s) => {
+        s.getVertexList.asScala.toList
+      }
+      case Failure(f) => throw f
+    }
   }
 
 }

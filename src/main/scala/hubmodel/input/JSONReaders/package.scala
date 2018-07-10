@@ -132,8 +132,10 @@ package object JSONReaders {
     * @param end_pos_x   x-coord of other physical end of the gate
     * @param end_pos_y   y-coord of other physical end of the gate
     * @param area        area behind the gate which is monitored
+    * @param funcForm    string giving the type of function form
+    * @param funcParam   the parameters of the functional form
     */
-  private[JSONReaders] case class FlowGates_JSON(o: String, d: String, start_pos_x: Double, start_pos_y: Double, end_pos_x: Double, end_pos_y: Double, area: String)
+  private[JSONReaders] case class FlowGates_JSON(o: String, d: String, start_pos_x: Double, start_pos_y: Double, end_pos_x: Double, end_pos_y: Double, area: String, funcForm: String, funcParam: Vector[Double])
 
   /**
     * Reads the JSON structure into a [[FlowGates_JSON]] object. No validation on arguments is done.
@@ -145,7 +147,9 @@ package object JSONReaders {
       (JsPath \ "start_pos_y").read[Double] and
       (JsPath \ "end_pos_x").read[Double] and
       (JsPath \ "end_pos_y").read[Double] and
-      (JsPath \ "controlled_area").read[String]
+      (JsPath \ "controlled_area").read[String] and
+      (JsPath \ "functional_form").read[String] and
+      (JsPath \ "functional_parameters").read[Vector[Double]]
     ) (FlowGates_JSON.apply _)
 
   /**

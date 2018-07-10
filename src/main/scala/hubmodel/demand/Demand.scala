@@ -3,10 +3,10 @@ package hubmodel.demand
 import java.time.LocalTime
 
 import hubmodel.Time
-import hubmodel.supply.{NodeIDOld, NodeID_New, NodeParent, ODIDOld, TrackIDOld, StopID_New, TrainIDOld, TrainID_New}
+import hubmodel.supply.{NodeIDOld, NodeID_New, NodeParent, ODIDOld, StopID_New, TrackIDOld, TrainIDOld, TrainID_New}
 //import pedtrack.StringImprovements
 import play.api.libs.json.{JsError, JsSuccess, JsValue, Json}
-
+import hubmodel.TimeNumeric.mkOrderingOps
 import scala.io.BufferedSource
 import scala.util.Try
 
@@ -173,6 +173,11 @@ case class PedestrianFlow(O: String, D: String, private val _start: LocalTime, p
   val end: Time = new Time(_end.toSecondOfDay)
 }
 
+case class PedestrianFlowFunction(O: String, D: String, constantFunctions: Vector[ConstantFunction], linearFunctions: Vector[LinearFunction])
+
+case class LinearFunction(start: LocalTime, end: LocalTime, rateAtStart: Double, rateAtEnd: Double, slope: Double)
+case class ConstantFunction(start: LocalTime, end: LocalTime, rate: Double)
+
 case class PTFlow(private val _origin: String, private val _destination: String, f: Double) {
   val origin: TrainID_New = if (_origin.charAt(0) == 'T') new TrainID_New(_origin.substring(2))
   else throw new IllegalArgumentException("Data in time table file is badly formatted: " + _origin.charAt(0) + " while T is expected. (" + _origin + ")")
@@ -190,11 +195,12 @@ case class PedestrianFlow_New(override val O: NodeID_New, override val D: NodePa
   override def toString: NodeIDOld = "(" + O + ", " + D + ", " + f + ", " + this.start + ", " + this.end + ")"
 }
 
+case class PedestrianFlowFunction_New(val O: NodeID_New, val D: NodeParent, val start: Time, val end: Time, val f: Time => Double)
+
 case class PedestrianFlowPT_New(override val O: TrainID_New, override val D: NodeParent, override val f: Double) extends PedestrianFlow_New_Parent(O, D, f)
 
-
+@deprecated
 class ReadPedestrianFlows(file: String, useFlows: Boolean) {
-
 
   private val _pedestrianFlowData: ODFlowData = if (useFlows) {
     val source: BufferedSource = scala.io.Source.fromFile(file)
@@ -223,4 +229,4 @@ class ReadPedestrianFlows(file: String, useFlows: Boolean) {
 
 
 //case class PassengerFlow(O: String, D: String, flow: Double)
-case class ODFlowData(loc: String, PTflows: Vector[PTFlow], flows: Vector[PedestrianFlow])
+case class ODFlowData(loc: String, PTflows: Vector[PTFlow], flows: Vector[PedestrianFlow], functionalFlows: Vector[PedestrianFlowFunction])

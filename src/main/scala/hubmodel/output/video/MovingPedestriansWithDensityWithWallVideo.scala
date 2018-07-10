@@ -5,11 +5,10 @@ import java.awt.image.BufferedImage
 import java.awt.{BasicStroke, Color, Graphics2D}
 import java.io.File
 
-
 import hubmodel.DES.PedestrianDES
 import hubmodel._
 import hubmodel.mgmt.flowsep.FlowSeparator
-import hubmodel.output.{createWhiteBackground, getBounds, mapCoordAffine}
+import hubmodel.output.{createWhiteBackground, getBounds, mapCoordAffine, verticalMirrorTransformation}
 import hubmodel.ped.PedestrianSim
 import hubmodel.supply.continuous.Wall
 import hubmodel.supply.graph.BinaryGate
@@ -44,12 +43,6 @@ class MovingPedestriansWithDensityWithWallVideo(outputFile: String,
                                                 times2Show: IndexedSeq[Time],
                                                 flowSeparators: Iterable[FlowSeparator]) extends Tools4Videos {
 
-  flowSeparators.foreach(fs => {
-    println(fs.ID, fs.startA, fs.endA)
-    println(fs.getFlowHistory.mkString("\n"))
-  })
-
-
   // asserts that more than one time is listed
   assert(times2Show.size > 0.0)
   println(" * writing " + times2Show.size + " frames at " + fps + " frames per second.")
@@ -67,18 +60,22 @@ class MovingPedestriansWithDensityWithWallVideo(outputFile: String,
   val canvasWidth: Int = cleanCanvas.getWidth
   val canvasHeight: Int = cleanCanvas.getHeight
 
+
   println(" * canvas size: width=" + canvasWidth + "px, height=" + canvasHeight + "px")
+
+  val verticalTransformation: Int => Int = verticalMirrorTransformation(cleanCanvas.getHeight)
 
   val wallsImage: BufferedImage = new BufferedImage(canvasWidth, canvasHeight, BufferedImage.TYPE_4BYTE_ABGR)
   val gWallsImage: Graphics2D = wallsImage.createGraphics()
   gWallsImage.setColor(Color.BLACK)
   walls.foreach(w => gWallsImage.drawLine(
     mapHcoord(w.startPoint.X),
-    mapVcoord(w.startPoint.Y),
+    verticalTransformation(mapVcoord(w.startPoint.Y)),
     mapHcoord(w.endPoint.X),
-    mapVcoord(w.endPoint.Y)
+    verticalTransformation(mapVcoord(w.endPoint.Y))
   )
   )
+
 
   // computes the siize of a dot (person in pixels)
   val dotSize: Double = (0.35 / widthMeters) * canvasWidth.toDouble
@@ -130,9 +127,9 @@ class MovingPedestriansWithDensityWithWallVideo(outputFile: String,
           else if (criticalArea.densityHistory.head._2 > 0.31) gBox.setColor(new Color(0, 255, 0, 25))
           else if (criticalArea.densityHistory.head._2 <= 0.31) gBox.setColor(new Color(0, 0, 255, 25))
           val areaCoords: (Position, Position, Position, Position) = (criticalArea.corners(0), criticalArea.corners(1), criticalArea.corners(2), criticalArea.corners(3))
-          gBox.fillRect(mapHcoord(areaCoords._1.X), mapVcoord(areaCoords._1.Y), mapHcoord(areaCoords._3.X) - mapHcoord(areaCoords._4.X), mapVcoord(areaCoords._4.Y) - mapVcoord(areaCoords._1.Y))
+          gBox.fillRect(mapHcoord(areaCoords._1.X), verticalTransformation(mapVcoord(areaCoords._1.Y)), mapHcoord(areaCoords._3.X) - mapHcoord(areaCoords._4.X), verticalTransformation(mapVcoord(areaCoords._4.Y) - mapVcoord(areaCoords._1.Y)))
           gBox.setColor(Color.BLACK)
-          gBox.drawRect(mapHcoord(areaCoords._1.X), mapVcoord(areaCoords._1.Y), mapHcoord(areaCoords._3.X) - mapHcoord(areaCoords._4.X), mapVcoord(areaCoords._4.Y) - mapVcoord(areaCoords._1.Y))
+          gBox.drawRect(mapHcoord(areaCoords._1.X), verticalTransformation(mapVcoord(areaCoords._1.Y)), mapHcoord(areaCoords._3.X) - mapHcoord(areaCoords._4.X), verticalTransformation(mapVcoord(areaCoords._4.Y) - mapVcoord(areaCoords._1.Y)))
           criticalArea.densityHistory.drop(1)
         }
       })
@@ -150,9 +147,9 @@ class MovingPedestriansWithDensityWithWallVideo(outputFile: String,
             gFlowSepImage.setColor(Color.BLACK)
             gFlowSepImage.drawLine(
               mapHcoord(s._2.X),
-              mapVcoord(s._2.Y),
+              verticalTransformation(mapVcoord(s._2.Y)),
               mapHcoord(s._3.X),
-              mapVcoord(s._3.Y)
+                verticalTransformation(mapVcoord(s._3.Y))
             )
           }
           case _ => {}
@@ -169,7 +166,7 @@ class MovingPedestriansWithDensityWithWallVideo(outputFile: String,
       gateHistory.head._2
         .filter(!_._2)
         .map(og => (gateCollection(og._1).start, gateCollection(og._1).end))
-        .foreach(coords => gGates.drawLine(mapHcoord(coords._1.X), mapVcoord(coords._1.Y), mapHcoord(coords._2.X), mapVcoord(coords._2.Y)))
+        .foreach(coords => gGates.drawLine(mapHcoord(coords._1.X), verticalTransformation(mapVcoord(coords._1.Y)), mapHcoord(coords._2.X), verticalTransformation(mapVcoord(coords._2.Y))))
     }
 
     val gCombine: Graphics2D = combine.createGraphics()
@@ -227,8 +224,7 @@ class MovingPedestriansWithDensityWithWallVideo(outputFile: String,
     *
     * @return Function taing a [[Position]] and returning an [[Ellipse2D]] representing a pedestrian at a specific location
     */
-  def createDot: Position => Ellipse2D = createDot((mapHcoord, mapVcoord), dotSize)
-
+  def createDot: Position => Ellipse2D = createDot((mapHcoord, (d: Double) => verticalTransformation(mapVcoord(d))), dotSize)
 
   /** combine images into one */
   /*def timeReadable(t: Double): String = {

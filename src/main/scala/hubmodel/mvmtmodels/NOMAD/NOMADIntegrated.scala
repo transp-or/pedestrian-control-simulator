@@ -2,12 +2,13 @@ package hubmodel.mvmtmodels.NOMAD
 
 import java.util
 import java.util.concurrent.ThreadLocalRandom
-import javax.vecmath.Vector3d
 
+import javax.vecmath.Vector3d
 import com.vividsolutions.jts.geom.Coordinate
 import hubmodel.DES.{Action, SFGraphSimulator}
 import hubmodel.ped.PedestrianNOMAD
 import hubmodel.supply.continuous.Wall
+import hubmodel.tools.cells.isInVertex
 import hubmodel.{Position, Time}
 import myscala.math.vector.Vector2D
 import nl.tudelft.pedestrians.agents.WalkingBehavior.{pedestrianPhysical, pedestrianRepellOpposing}
@@ -146,7 +147,7 @@ class NOMADIntegrated(sim: SFGraphSimulator) extends Action {
       // if the isolated time step is positive then add the current time
       p.isolationTimeObs = sim.currentTime.addDouble(isolationInterval).value
       //return the isolated type
-      p.isolationTypeObs = hubmodel.ISOLATED;
+      p.isolationTypeObs = hubmodel.ISOLATED
     }
 
 
@@ -180,10 +181,11 @@ class NOMADIntegrated(sim: SFGraphSimulator) extends Action {
     * @param pedestrian
     */
   private def insertPedInMoveList(ped: PedestrianNOMAD): Unit = {
+
     //if (ped.isVariableStep)
-    if (ped.isolationTypePed == hubmodel.IN_COLLISION || ped.isolationTypeObs == hubmodel.IN_COLLISION) this.pedestrianToMoveInCollision.append(ped)
-    else if (ped.isolationTypePed == hubmodel.IN_RANGE || ped.isolationTypeObs == hubmodel.IN_RANGE) this.pedestrianToMoveInRange.append(ped)
-    else this.pedestrianToMoveInIsolation.append(ped)
+    /*if (ped.isolationTypePed == hubmodel.IN_COLLISION || ped.isolationTypeObs == hubmodel.IN_COLLISION)*/ this.pedestrianToMoveInCollision.append(ped)
+    /*else if (ped.isolationTypePed == hubmodel.IN_RANGE || ped.isolationTypeObs == hubmodel.IN_RANGE) this.pedestrianToMoveInRange.append(ped)
+    else this.pedestrianToMoveInIsolation.append(ped)*/
     /*else { // if the time step is constant
       this.pedestrianToMoveInCollision.append(ped)
     }*/
@@ -240,32 +242,49 @@ class NOMADIntegrated(sim: SFGraphSimulator) extends Action {
 
     })
 
+    if (sim.population.size != (this.pedestrianToMoveInIsolation.size + this.pedestrianToMoveInRange.size + this.pedestrianToMoveInCollision.size)) {
+      throw new Exception("error in size of population lists")
+    }
+
 
     if (this.pedestrianToMoveInCollision.nonEmpty) {
       this.moveInCollisionStep()
-    }
-    else { // check the in range step
-      if (this.pedestrianToMoveInRange.nonEmpty) { // if at least one is in range and the rest is at isolation or in range
+    } else if (this.pedestrianToMoveInRange.nonEmpty) { // if at least one is in range and the rest is at isolation or in range
         // then the smallest simulation step is in range
-        this.pedestrianToMoveInRange.foreach(p => println(p.currentPosition))
+        //this.pedestrianToMoveInRange.foreach(p => println(p.currentPosition))
         this.moveInRangeStep()
-      }
-      else { // else move all pedestrians with the isolation step
+      } else { // else move all pedestrians with the isolation step
         this.pedestrianToMoveInIsolation.foreach(ped => {
           walkPedestrian(ped, getPedInLevelVicinity_3D(ped, sim.population), getClosestCoordinates3D(ped, sim.walls), this.isolatedTimeStepSeconds)
         })
       }
-    }
 
     sim.processCompletedPedestrian(sim.finalDestinationReached)
     //sim.population.foreach(ped => println(sim.currentTime, ped, ped.currentPosition))
     sim.rebuildMTree()
 
+    // enqueues pedestrians in the waiting zones if gating is used
+    if (sim.useFlowGates) {
+      sim.controlDevices.flowGates.foreach(fg => {
+        sim.population
+          .filter(p => p.nextZone == fg.endVertex && !fg.pedestrianQueue.contains(p) && !p.freedFrom.contains(fg.ID) && isInVertex(fg.startVertex)(p.currentPosition))
+          .foreach(p => sim.insertEventWithZeroDelay(new fg.EnqueuePedestrian(p, sim)))
+      })
+    }
+
     insertNextEvent()
   }
 
   def walkPedestrian(ped: PedestrianNOMAD, pedestrians: util.ArrayList[InfluenceAreaReturnPedData], obstacles: util.ArrayList[InfluenceAreaReturnObsData], dt: Double): Unit = {
+
+
+    if (sim.population.exists(ped => !sim.spaceSF.isInsideWalkableArea(ped.currentPosition))) {
+      val ped = sim.population.find(ped => !sim.spaceSF.isInsideWalkableArea(ped.currentPosition))
+    }
+
     val acc: Vector3d = new Vector3d()
+
+
 
     strayingAccelerationFixedTau(acc, new Vector3d(ped.currentVelocity.X, ped.currentVelocity.Y, 0.0), ped.freeFlowVel, new Vector3d(ped.desiredDirection.X, ped.desiredDirection.Y, 0.0), ped.tau)
 
@@ -308,6 +327,7 @@ class NOMADIntegrated(sim: SFGraphSimulator) extends Action {
       sim.population.foreach(ped => {
         ped.currentPosition = ped.nextPosition
         ped.currentVelocity = ped.nextVelocity
+        ped.travelDistance += (ped.currentPosition - ped.getHistoryPosition.last._2).norm
         ped.addHistory(sim.currentTime + Time(rangeStep))
       })
       rangeStep += this.rangeTimeStepSeconds
@@ -347,13 +367,11 @@ class NOMADIntegrated(sim: SFGraphSimulator) extends Action {
       // ask the in collision pedestrians to perform the activity(walking included)
       this.pedestrianToMoveInCollision.foreach(ped => {
         walkPedestrian(ped, getPedInLevelVicinity_3D(ped, sim.population), getClosestCoordinates3D(ped, sim.walls), this.collisionTimeStepSeconds)
-        sim.errorLogger.error(sim.currentTime.toString + ", " + ped.ID + ", " + ped.currentVelocity.toString())
       })
       //walkPedestrians(this.pedestrianToMoveInCollision, this.collisionTimeStepSeconds, currentTime)
       // check if the range step is reached
       if (colStep % this.rangeTimeStepSeconds == 0) {
         this.pedestrianToMoveInRange.foreach(ped => {
-          walkPedestrian(ped, getPedInLevelVicinity_3D(ped, sim.population), getClosestCoordinates3D(ped, sim.walls), this.rangeTimeStepSeconds)
         })
         //walkPedestrians(this.pedestrianToMoveInRange, this.rangeTimeStepSeconds, currentTime)
         rangeStep += this.rangeTimeStepSeconds
@@ -366,9 +384,10 @@ class NOMADIntegrated(sim: SFGraphSimulator) extends Action {
       }*/
 
       sim.population.foreach(ped => {
-        ped.currentPosition = ped.nextPosition
-        ped.currentVelocity = ped.nextVelocity
-        ped.addHistory(sim.currentTime + Time(colStep))
+          ped.currentPosition = ped.nextPosition
+          ped.currentVelocity = ped.nextVelocity
+          ped.travelDistance += (ped.currentPosition - ped.getHistoryPosition.last._2).norm
+          ped.addHistory(sim.currentTime + Time(colStep))
       })
       colStep += this.collisionTimeStepSeconds
       //colCounter += 1
@@ -617,9 +636,6 @@ class NOMADIntegrated(sim: SFGraphSimulator) extends Action {
       val otherSpeed = new Vector3d(otherVx, otherVy, 0)
       val distance = GeometryUtils.lengthxy(dx)
 
-      if (distance < 0.5) {
-        //println("debug")
-      }
 
       // Immediately calculates if they are colliding
       val gpq = thisRadius + otherRadius - distance
@@ -798,11 +814,6 @@ class NOMADIntegrated(sim: SFGraphSimulator) extends Action {
 
   def calculateNextPosition(acceleration: Vector3d, pressure: Vector3d, pedestrian: PedestrianNOMAD, /*obstaclesInVicinity: util.ArrayList[InfluenceAreaReturnObsData],*/ dt: Double, position: Coordinate, speed: Vector3d): Unit = { //-------- set the dynamic colours of pedestrians ----------------//
 
-    //println("called calculaten next position")
-    if (dt == this.rangeTimeStepSeconds) {
-      //println("debug")
-    }
-
     //Pedestrian.setDynamicColour(pedestrian, acceleration, pressure)
     //-------- add the accelerations ---------------//
     acceleration.x += pressure.x
@@ -847,20 +858,10 @@ class NOMADIntegrated(sim: SFGraphSimulator) extends Action {
     //** calculate the position **//
     // PEDarr.x + v1 * dt + 0.5 * dv1 * dt * dt
 
-    //println(pedestrian.ID, Vector2D(nextSpeed.x * dt, nextSpeed.y * dt))
-    if (math.abs(nextSpeed.x) > 0.2) {
-      //println("debug speed y*dt", nextSpeed.y * dt)
-    }
-    if (math.abs(nextSpeed.y) > 1.2) {
-      //println("debug")
-    }
     pedestrian.nextVelocity = Vector2D(nextSpeed.x, nextSpeed.y)
     pedestrian.nextPosition = Vector2D(position.x, position.y) + Vector2D(nextSpeed.x * dt, nextSpeed.y * dt)
 
 
-    if (pedestrian.currentVelocity.norm > 1.2) {
-      //println("debug")
-    }
     /*if (Pedestrian.isParallel) { // if it is parallel update
       // use the next speed and next position of the pedestrian
       // that will be updated only after the current step

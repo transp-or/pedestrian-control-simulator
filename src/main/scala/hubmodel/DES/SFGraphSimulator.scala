@@ -2,7 +2,7 @@ package hubmodel.DES
 
 import hubmodel.TimeNumeric.mkOrderingOps
 import hubmodel._
-import hubmodel.demand.{CreatePedestrian, PTInducedQueue, PedestrianFlowPT_New, PedestrianFlow_New, ProcessPedestrianFlows, ProcessTimeTable, PublicTransportSchedule, ReadPedestrianFlows, Stop2Vertices}
+import hubmodel.demand.{CreatePedestrian, PTInducedQueue, PedestrianFlowFunction_New, PedestrianFlowPT_New, PedestrianFlow_New, ProcessPedestrianFlows, ProcessTimeTable, PublicTransportSchedule, ReadPedestrianFlows, Stop2Vertices}
 import hubmodel.mgmt.{ControlDevices, EvaluateState}
 import hubmodel.mvmtmodels.NOMAD.{NOMADIntegrated, NOMADOriginalModel}
 import hubmodel.mvmtmodels.RebuildTree
@@ -18,16 +18,17 @@ class SFGraphSimulator(override val startTime: Time,
                        val sf_dt: Time,
                        val evaluate_dt: Time,
                        val rebuildTreeInterval: Option[Time],
-                       private val spaceSF: ContinuousSpace,
+                       val spaceSF: ContinuousSpace,
                        val graph: RouteGraph,
                        val timeTable: PublicTransportSchedule,
                        val stop2Vertices: Stop2Vertex,
-                       flows: (Iterable[PedestrianFlow_New], Iterable[PedestrianFlowPT_New]),
+                       flows: (Iterable[PedestrianFlow_New], Iterable[PedestrianFlowPT_New], Iterable[PedestrianFlowFunction_New]),
                        val controlDevices: ControlDevices) extends PedestrianDES[PedestrianNOMAD](startTime, finalTime) {
 
   /* Stores the PT induced flows and the other flows separately*/
   val pedestrianFlows: Iterable[PedestrianFlow_New] = flows._1
   val pedestrianFlowsPT: Iterable[PedestrianFlowPT_New] = flows._2
+  val pedestrianFlowsFunction: Iterable[PedestrianFlowFunction_New] = flows._3
 
   //controlDevices.flowSeparators.foreach(_.initializePositionHistory(startTime))
 
@@ -170,5 +171,31 @@ class SFGraphSimulator(override val startTime: Time,
     if (this.populationCompleted.nonEmpty) Some(this.populationCompleted.tail.foldLeft(this.populationCompleted.head.toVisioSafeFormat()) { (s: String, p: PedestrianSim) => s + "\n" + p.toVisioSafeFormat() })
     else None
   }
+
+  def getSetupArguments: (
+  Time,
+  Time,
+  Time,
+  Time,
+  Option[Time],
+  ContinuousSpace,
+  RouteGraph,
+  PublicTransportSchedule,
+  Stop2Vertex,
+  (Iterable[PedestrianFlow_New], Iterable[PedestrianFlowPT_New], Iterable[PedestrianFlowFunction_New]),
+  ControlDevices
+    ) = (
+  startTime,
+  finalTime,
+  sf_dt,
+  evaluate_dt,
+  rebuildTreeInterval,
+  spaceSF,
+  graph,
+  timeTable,
+  stop2Vertices,
+  flows,
+  controlDevices
+  )
 
 }

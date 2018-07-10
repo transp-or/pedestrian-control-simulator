@@ -32,6 +32,14 @@ class PedestrianSim(val origin: Rectangle,
   /** current position of the pedestrian */
   var currentPosition: Position = origin.uniformSamplePointInside
 
+  // ******************************************************************************************
+  //                                PRIVATE MEMBERS
+  // ******************************************************************************************
+
+  /** History of the pedestrians positions */
+  private var _historyPosition: Vector[(Time, Position)] = Vector((entryTime, currentPosition))
+
+
   /** intermediate destination of the pedestrian */
   var currentDestination: Position = route.head.uniformSamplePointInside
 
@@ -92,7 +100,9 @@ class PedestrianSim(val origin: Rectangle,
 
   /** Adds the current position (currentPosition) to the history */
   def addHistory(t: Time): Unit = {
-    _historyPosition = _historyPosition :+ (t, this.currentPosition)
+    //if (this.currentPosition != this._historyPosition.last._2) {
+      _historyPosition = _historyPosition :+ (t, this.currentPosition)
+    //}
   }
 
   def setCurrentDestination(pos: Position): Unit = {
@@ -115,12 +125,6 @@ class PedestrianSim(val origin: Rectangle,
     this.velocityIncrement = new ZeroVector2D
   }
 
-  // ******************************************************************************************
-  //                                PRIVATE MEMBERS
-  // ******************************************************************************************
-
-  /** History of the pedestrians positions */
-  private var _historyPosition: Vector[(Time, Position)] = Vector((entryTime, currentPosition))
 
 
   // ******************************************************************************************

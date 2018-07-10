@@ -24,6 +24,7 @@ libraryDependencies ++= Seq(
   "transpor.molyneaux" %% "scala-custom" % "1.0-SNAPSHOT",
   "transpor.tools" % "dxf-parser" % "1.0",
   "nl.tudelft.pedestrians" % "nomad" % "1.0",
+  "org.scala-lang.modules" %% "scala-parser-combinators" % "1.1.1"
 )
 
 // https://mvnrepository.com/artifact/org.j3d/aviatrix3d

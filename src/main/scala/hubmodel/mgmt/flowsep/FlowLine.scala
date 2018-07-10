@@ -4,23 +4,26 @@ import hubmodel.{FLOW_LINE_REGION_EXTENSION, Position}
 import hubmodel.ped.{PedestrianSim, PedestrianTrait, Population}
 import hubmodel.tools.cells.Rectangle
 
-class FlowLine(val start: Position, val end: Position) {
+class FlowLine(val start: Position, val end: Position, controlled: Int = 0) {
 
   // area in which to consider pedestrians for crossing line
-  val nearRegion: Rectangle = new Rectangle(
-    "nearRegion",
-    (end-start).orthogonal*FLOW_LINE_REGION_EXTENSION,
-    start - (end-start).orthogonal*FLOW_LINE_REGION_EXTENSION,
-    end + (end-start).orthogonal*FLOW_LINE_REGION_EXTENSION,
-    end - (end-start).orthogonal*FLOW_LINE_REGION_EXTENSION
-  )
+  val nearRegion: Rectangle = {
+
+    new Rectangle(
+      "nearRegion",
+      start - (end - start).orthogonal * FLOW_LINE_REGION_EXTENSION,
+      end - (end - start).orthogonal * FLOW_LINE_REGION_EXTENSION,
+      end + (end - start).orthogonal * FLOW_LINE_REGION_EXTENSION,
+      start + (end - start).orthogonal * FLOW_LINE_REGION_EXTENSION
+    )
+  }
 
   /**
     * Determines if a given pedestrian has changed sides during
     * @param ped pedestrian to check
     * @return boolean indicating if the ped did cross the line
     */
-  def crossesLine(ped: PedestrianTrait): Boolean = {
+  def crossesLineRight2Left(ped: PedestrianTrait): Boolean = {
     this.nearRegion.isInside(ped.currentPosition) && {
       // https://stackoverflow.com/questions/1560492/how-to-tell-whether-a-point-is-to-the-right-or-left-side-of-a-line/1560510#1560510
       if ( math.signum((end.X-start.X) * (ped.currentPosition.Y - start.Y) - (end.Y - start.Y)*(ped.currentPosition.X - start.X)) == 1 &&
@@ -37,7 +40,7 @@ class FlowLine(val start: Position, val end: Position) {
     * @param pop
     */
   def collectPedestriansWhoCrossed(pop: Population): Unit = {
-    pop.filter(this.crossesLine).foreach(ped => this.pedsCrossedInInterval.add(ped.ID))
+    pop.filter(this.crossesLineRight2Left).foreach(ped => this.pedsCrossedInInterval.add(ped.ID))
   }
 
   /**

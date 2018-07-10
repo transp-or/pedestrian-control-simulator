@@ -3,7 +3,7 @@ package hubmodel.mgmt.flowsep
 import hubmodel.supply.continuous.{MovableWall, SINGLELINE, Wall}
 import hubmodel.supply.graph.MyEdge
 import hubmodel.tools.cells.RectangleModifiable
-import hubmodel.{Position, Time, generateUUID}
+import hubmodel.{Position, Time, generateUUID, FLOW_SEPARATOR_UPDATE}
 
 class FlowSeparator(val startA: Position,
                     val startB: Position,
@@ -25,9 +25,13 @@ class FlowSeparator(val startA: Position,
 
   private val flowHistory: collection.mutable.ArrayBuffer[(Time, Int, Int)] = collection.mutable.ArrayBuffer()
 
+  private val fractionHistory: collection.mutable.ArrayBuffer[(Time, Double)] = collection.mutable.ArrayBuffer((Time(0.0), 0.5))
+
   def getPositionHistory: IndexedSeq[(Time, Position, Position)] = positionHistory.toVector
 
   def getFlowHistory: IndexedSeq[(Time, Int, Int)] = flowHistory.toVector
+
+  def getFractionHistory: IndexedSeq[(Time, Double)] = fractionHistory.toVector
 
 
   def initializePositionHistory(startTime: Time): Unit = {
@@ -46,11 +50,12 @@ class FlowSeparator(val startA: Position,
     else if (rawFrac > 0.9) 1.0
     else rawFrac
 
-
-    this.start = startA + (startB - startA) * frac
-    this.end = endA + (endB - endA) * frac
+    if ( math.abs(frac - this.fractionHistory.last._2)/this.fractionHistory.last._2 > FLOW_SEPARATOR_UPDATE) {
+      this.start = startA + (startB - startA) * frac
+      this.end = endA + (endB - endA) * frac
+    }
+    fractionHistory.append((time, frac))
     positionHistory.append((time, this.start, this.end))
-    println(this.ID, frac, start, end)
   }
 
   def getWall: Wall = {

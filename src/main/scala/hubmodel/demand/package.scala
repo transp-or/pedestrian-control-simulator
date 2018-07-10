@@ -22,6 +22,7 @@ package hubmodel {
   import hubmodel.input.JSONReaders.TRANSFORM.{PedestrianCollectionReaderTF, Pedestrian_JSON_TF, PublicTransportScheduleReaderTF}
   import hubmodel.supply.{NodeID_New, StopID_New, TrainID_New}
   import hubmodel.tools.cells.Rectangle
+  import hubmodel.TimeNumeric.mkOrderingOps
 
   package object demand {
 
@@ -102,11 +103,33 @@ package hubmodel {
         (JsPath \ "flow").read[Double](min(0.0))
       ) (PedestrianFlow.apply _)
 
+    implicit val LinearFunctionReads: Reads[LinearFunction] = (
+        (JsPath \ "start").read[LocalTime] and
+        (JsPath \ "end").read[LocalTime] and
+        (JsPath \ "rate_at_start").read[Double] and
+          (JsPath \ "rate_at_end").read[Double] and
+          (JsPath \ "slope").read[Double]
+      ) (LinearFunction.apply _)
+
+    implicit val ConstantFunctionReads: Reads[ConstantFunction] = (
+        (JsPath \ "start").read[LocalTime] and
+        (JsPath \ "end").read[LocalTime] and
+        (JsPath \ "rate").read[Double](min(0.0))
+      ) (ConstantFunction.apply _)
+
+    implicit val PedestrianFlowFunctionReads: Reads[PedestrianFlowFunction] = (
+      (JsPath \ "origin").read[String] and
+        (JsPath \ "destination").read[String] and
+        (JsPath \ "constant").read[Vector[ConstantFunction]] and
+        (JsPath \ "linear").read[Vector[LinearFunction]]
+      ) (PedestrianFlowFunction.apply _)
+
 
     implicit val ODFlowDataReads: Reads[ODFlowData] = (
       (JsPath \ "location").read[String] and
         (JsPath \ "PTflows").read[Vector[PTFlow]] and
-        (JsPath \ "flows").read[Vector[PedestrianFlow]]
+        (JsPath \ "flows").read[Vector[PedestrianFlow]] and
+        (JsPath \ "function_flows").read[Vector[PedestrianFlowFunction]]
       ) (ODFlowData.apply _)
 
     def readODFlowData(fileName: String): ODFlowData = {
@@ -154,6 +177,17 @@ package hubmodel {
         (a, b)
       }
       perm.map(p => (p._1, p._2, totalFlow / perm.size)) // split fractions over all permutations. Not realistic but a start
+    }
+
+    def splitFractionsUniform(arrNodes: Iterable[Rectangle], depNodes: Iterable[Rectangle]): Iterable[(Rectangle, Rectangle, Double)] = {
+      val perm = for {// all permutations of two lists of nodes
+        a <- arrNodes
+        b <- depNodes
+        if b != a
+      } yield {
+        (a, b)
+      }
+      perm.map(p => (p._1, p._2, 1.0 / perm.size)) // split fractions over all permutations. Not realistic but a start
     }
 
 
@@ -227,7 +261,7 @@ package hubmodel {
       }
     }
 
-    def readPedestrianFlows(file: String): (Iterable[PedestrianFlow_New], Iterable[PedestrianFlowPT_New]) = {
+    def readPedestrianFlows(file: String): (Iterable[PedestrianFlow_New], Iterable[PedestrianFlowPT_New], Iterable[PedestrianFlowFunction_New]) = {
 
       val _pedestrianFlowData: ODFlowData = {
         val source: BufferedSource = scala.io.Source.fromFile(file)
@@ -239,11 +273,64 @@ package hubmodel {
         }
       }
 
-      (
-        _pedestrianFlowData.flows.map(f => PedestrianFlow_New(NodeID_New(f.O, f.O.toString), NodeID_New(f.D, f.D.toString), f.start, f.end, f.f)),
-        _pedestrianFlowData.PTflows.map(f => { PedestrianFlowPT_New(f.origin, f.destination, f.f) })
-      )
-    }
+
+      abstract class PedestrianFlowFunction(val start: Time, val end: Time)
+
+      object PedestrianFlowFunctionOrdering extends Ordering[PedestrianFlowFunction] {
+        def compare(a: PedestrianFlowFunction, b: PedestrianFlowFunction): Int = hubmodel.TimeNumeric.compare(a.start, b.start)
+      }
+
+      case class LinearPedestrianFlow(s: Time, e: Time, rateAtStart: Double, rateAtEnd: Double, slope: Double) extends PedestrianFlowFunction(s, e) {
+        if (math.abs(rateAtStart + slope * (this.end - this.start).value - rateAtEnd) > math.pow(10,-5)) {
+          throw new IllegalArgumentException("Flow rate at end doesn't match computed flow rate ! " + (rateAtStart + slope * (this.end - this.start).value) + " != " + rateAtEnd)
+        }
+      }
+
+      case class ConstantPedestrianFlow(s: Time, e: Time, rate: Double) extends PedestrianFlowFunction(s, e) {
+        if (rate < 0.0) {
+          throw new IllegalArgumentException("Negative pedestrian flow rate !")
+        }
+      }
+
+
+      val flowsFunction: Iterable[PedestrianFlowFunction_New] = {
+        _pedestrianFlowData.functionalFlows.map(funcFlow => {
+          val functions: Iterable[PedestrianFlowFunction] = (funcFlow.constantFunctions.map(cf => ConstantPedestrianFlow(Time(cf.start.toSecondOfDay), Time(cf.end.toSecondOfDay), cf.rate)) ++
+            funcFlow.linearFunctions.map(lf => LinearPedestrianFlow(Time(lf.start.toSecondOfDay), Time(lf.end.toSecondOfDay), lf.rateAtStart, lf.rateAtEnd, lf.slope))).sorted(PedestrianFlowFunctionOrdering)
+          if (!functions.dropRight(1).zip(functions.tail).forall(pair => pair._1.end == pair._2.start)) {
+            throw new IllegalArgumentException("Gaps in flow functions !")
+          }
+
+          def flowRateFunction(t: Time): Double = {
+            functions.find(f => f.start <= t && t <= f.end) match {
+              case Some(f) => f match {
+                case l: LinearPedestrianFlow => {
+                  l.rateAtStart + (t-l.start).value * l.slope
+                }
+                case c: ConstantPedestrianFlow => {
+                  c.rate
+                }
+              }
+              case other => 0.0
+            }
+          }
+
+          val start: Time = Time((funcFlow.constantFunctions.map(_.start) ++ funcFlow.linearFunctions.map(_.start)).min.toSecondOfDay)
+          val end: Time = Time((funcFlow.constantFunctions.map(_.end) ++ funcFlow.linearFunctions.map(_.end)).max.toSecondOfDay)
+
+          PedestrianFlowFunction_New(NodeID_New(funcFlow.O, funcFlow.O.toString), NodeID_New(funcFlow.D, funcFlow.D.toString), start, end, flowRateFunction)
+
+        })
+      }
+
+        (
+          _pedestrianFlowData.flows.map(f => PedestrianFlow_New(NodeID_New(f.O, f.O.toString), NodeID_New(f.D, f.D.toString), f.start, f.end, f.f)),
+          _pedestrianFlowData.PTflows.map(f => {
+            PedestrianFlowPT_New(f.origin, f.destination, f.f)
+          }),
+          flowsFunction
+        )
+      }
 
     // closing Demand package
 
