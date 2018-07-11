@@ -5,7 +5,7 @@ import hubmodel.demand.{Stop2Vertices, Track2NodeMapping}
 import hubmodel.input.JSONReaders.{InfraGraphParser, Track2NodeMapping_JSON}
 import hubmodel.mgmt.flowsep.{FlowLine, FlowSeparator}
 import hubmodel.mgmt.ControlDevices
-import hubmodel.tools.cells.{Rectangle, RectangleModifiable, Vertex}
+import hubmodel.tools.cells.{DensityMeasuredArea, Rectangle, RectangleModifiable, Vertex}
 import myscala.math.vector.Vector2D
 import play.api.libs.json.{JsError, JsSuccess, JsValue, Json}
 
@@ -37,9 +37,9 @@ package object graph {
         val e: Iterable[MyEdge] = s.get.standardConnections.flatMap(c => c.conn.map(neigh => new MyEdge(vertexMap(c.node), vertexMap(neigh))))
         val fg: Iterable[FlowGate] = if (useFlowGates) {
           s.get.flowGates.map(fg => fg.funcForm match {
-            case "quadratic" => new FlowGateFunctional(vertexMap(fg.o), vertexMap(fg.d), Vector2D(fg.start_pos_x, fg.start_pos_y), Vector2D(fg.end_pos_x, fg.end_pos_y), fg.area, {x: Double => math.max(0.0, fg.funcParam(0) + fg.funcParam(1)*x  + fg.funcParam(2)*x*x)} )
-            case "linear" => new FlowGateFunctional(vertexMap(fg.o), vertexMap(fg.d), Vector2D(fg.start_pos_x, fg.start_pos_y), Vector2D(fg.end_pos_x, fg.end_pos_y), fg.area, {x: Double => math.max(0.0, fg.funcParam(0) + fg.funcParam(1)*x)} )
-            case null => new FlowGate(vertexMap(fg.o), vertexMap(fg.d), Vector2D(fg.start_pos_x, fg.start_pos_y), Vector2D(fg.end_pos_x, fg.end_pos_y), fg.area)
+            case Some(str) if str == "quadratic" => new FlowGateFunctional(vertexMap(fg.o), vertexMap(fg.d), Vector2D(fg.start_pos_x, fg.start_pos_y), Vector2D(fg.end_pos_x, fg.end_pos_y), fg.area, {x: Double => math.max(0.0, fg.funcParam.get(0) + fg.funcParam.get(1)*x  + fg.funcParam.get(2)*x*x)} )
+            case Some(str) if str == "linear" => new FlowGateFunctional(vertexMap(fg.o), vertexMap(fg.d), Vector2D(fg.start_pos_x, fg.start_pos_y), Vector2D(fg.end_pos_x, fg.end_pos_y), fg.area, {x: Double => math.max(0.0, fg.funcParam.get(0) + fg.funcParam.get(1)*x)} )
+            case None  => new FlowGate(vertexMap(fg.o), vertexMap(fg.d), Vector2D(fg.start_pos_x, fg.start_pos_y), Vector2D(fg.end_pos_x, fg.end_pos_y), fg.area)
           })
         } else {
           Vector()
@@ -54,8 +54,8 @@ package object graph {
         } else {
           Vector()
         }
-        val monitoredAreas: Iterable[Rectangle] = if (measureDensity) {
-          s.get.controlledAreas.map(ma => new Rectangle(ma.name, new Position(ma.x1, ma.y1), new Position(ma.x2, ma.y2), new Position(ma.x3, ma.y3), new Position(ma.x4, ma.y4)))
+        val monitoredAreas: Iterable[DensityMeasuredArea] = if (measureDensity) {
+          s.get.controlledAreas.map(ma => new DensityMeasuredArea(ma.name, new Position(ma.x1, ma.y1), new Position(ma.x2, ma.y2), new Position(ma.x3, ma.y3), new Position(ma.x4, ma.y4), ma.targetDensity))
         } else {
           Vector()
         }

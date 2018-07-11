@@ -135,7 +135,7 @@ package object JSONReaders {
     * @param funcForm    string giving the type of function form
     * @param funcParam   the parameters of the functional form
     */
-  private[JSONReaders] case class FlowGates_JSON(o: String, d: String, start_pos_x: Double, start_pos_y: Double, end_pos_x: Double, end_pos_y: Double, area: String, funcForm: String, funcParam: Vector[Double])
+  private[JSONReaders] case class FlowGates_JSON(o: String, d: String, start_pos_x: Double, start_pos_y: Double, end_pos_x: Double, end_pos_y: Double, area: String, funcForm: Option[String], funcParam: Option[Vector[Double]])
 
   /**
     * Reads the JSON structure into a [[FlowGates_JSON]] object. No validation on arguments is done.
@@ -148,8 +148,8 @@ package object JSONReaders {
       (JsPath \ "end_pos_x").read[Double] and
       (JsPath \ "end_pos_y").read[Double] and
       (JsPath \ "controlled_area").read[String] and
-      (JsPath \ "functional_form").read[String] and
-      (JsPath \ "functional_parameters").read[Vector[Double]]
+      (JsPath \ "functional_form").readNullable[String] and
+      (JsPath \ "functional_parameters").readNullable[Vector[Double]]
     ) (FlowGates_JSON.apply _)
 
   /**
@@ -289,6 +289,24 @@ package object JSONReaders {
       (JsPath \ "overriden_connections").read[Vector[Connectivity_JSON]]
     ) (FlowSeparator_JSON.apply _)
 
+  private[JSONReaders] case class MonitoredAreas_JSON(name: String, x1: Double, y1: Double, x2: Double, y2: Double, x3: Double, y3: Double, x4: Double, y4: Double, targetDensity: Double)
+
+  /**
+    * Reads a JSON structure into a [[Vertex_JSON]] object. No validation on the arguments is done.
+    */
+  implicit val MonitoredAreas_JSON_Reads: Reads[MonitoredAreas_JSON] = (
+    (JsPath \ "name").read[String] and
+      (JsPath \ "x1").read[Double] and
+      (JsPath \ "y1").read[Double] and
+      (JsPath \ "x2").read[Double] and
+      (JsPath \ "y2").read[Double] and
+      (JsPath \ "x3").read[Double] and
+      (JsPath \ "y3").read[Double] and
+      (JsPath \ "x4").read[Double] and
+      (JsPath \ "y4").read[Double] and
+      (JsPath \ "target_density").read[Double]
+    ) (MonitoredAreas_JSON.apply _)
+
 
   // ******************************************************************************************
   //                   CASE CLASSES AND IMPLICIT CONVERSIONS FOR CONTINUOUS SPACE
@@ -360,7 +378,7 @@ package object JSONReaders {
       (JsPath \ "nodes").read[Vector[Vertex_JSON]] and
       (JsPath \ "connectivity").read[Vector[Connectivity_JSON]] and
       (JsPath \ "flow_gates").read[Vector[FlowGates_JSON]] and
-      (JsPath \ "controlled_areas").read[Vector[Vertex_JSON]] and
+      (JsPath \ "controlled_areas").read[Vector[MonitoredAreas_JSON]] and
       (JsPath \ "binary_gates").read[Vector[FlowGates_JSON]] and
       (JsPath \ "moving_walkways").read[Vector[MovingWalkways_JSON]] and
       (JsPath \ "flow_separators").read[Vector[FlowSeparator_JSON]]

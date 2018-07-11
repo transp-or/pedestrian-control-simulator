@@ -3,10 +3,10 @@ package hubmodel.mgmt
 import hubmodel.mgmt.flowsep.FlowSeparator
 import hubmodel.supply.graph._
 import hubmodel.tools.ControlDevicesException
-import hubmodel.tools.cells.Rectangle
+import hubmodel.tools.cells.DensityMeasuredArea
 
 
-class ControlDevices(val monitoredAreas: Iterable[Rectangle],
+class ControlDevices(val monitoredAreas: Iterable[DensityMeasuredArea],
                      val amws: Iterable[MovingWalkway],
                      val flowGates: Iterable[FlowGate],
                      val binaryGates: Iterable[BinaryGate],

@@ -31,8 +31,8 @@ class DLQRGateController(sim: SFGraphSimulator) extends Action {
           fg.flowRate = fg.functionalForm(sim.criticalAreas(fg.monitoredArea).densityHistory.last._2)
         }
         case fg: FlowGate => {
-          val totalInflow: Double = max(0.1, min(5.0, 0.65 * (1.4 - sim.criticalAreas(fg.monitoredArea).densityHistory.last._2)))
-          println("PI data @ " + sim.currentTime + ", " + sim.criticalAreas(fg.monitoredArea).densityHistory.last._2 + ", " + totalInflow)
+          val totalInflow: Double = max(0.1, min(5.0, 0.65 * (sim.criticalAreas(fg.monitoredArea).targetDensity - sim.criticalAreas(fg.monitoredArea).densityHistory.last._2)))
+          //println("PI data @ " + sim.currentTime + ", " + sim.criticalAreas(fg.monitoredArea).densityHistory.last._2 + ", " + totalInflow)
           sim.criticalAreas(fg.monitoredArea).regulatorIntegralAction = sim.criticalAreas(fg.monitoredArea).regulatorIntegralAction + (1.0 - sim.densityHistory.last._2)
 
           fg.flowRate = min(fg.width * 1.5, fg.width * (totalInflow / sim.controlDevices.flowGates.count(_.monitoredArea == fg.monitoredArea)))

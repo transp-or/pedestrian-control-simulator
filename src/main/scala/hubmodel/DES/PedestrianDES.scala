@@ -144,22 +144,22 @@ abstract class PedestrianDES[T <: PedestrianTrait](val startTime: Time,
   private val _populationNew: collection.mutable.Map[String, T] = collection.mutable.Map()
 
   def insertInPopulation(p: T): Unit = {
-    synchronized(_populationNew += (p.ID -> p))
+    _populationNew += (p.ID -> p)
     this.populationMTree.insert(p.ID, p.currentPosition)
     this.ID2Position = this.ID2Position + (p.ID -> p.currentPosition)
   }
 
   @deprecated
-  def removeFromPopulation(condition: T => Boolean): Unit = synchronized(_populationNew.retain((k, v) => {
+  def removeFromPopulation(condition: T => Boolean): Unit = _populationNew.retain((k, v) => {
     v.reachedDestination = true
     !condition(v)
-  }))
+  })
 
   def processCompletedPedestrian(condition: T => Boolean): Unit = {
-    val completedPeds: Map[String, T] = synchronized(this._populationNew.filter(kv => condition(kv._2))).toMap
+    val completedPeds: Map[String, T] = this._populationNew.filter(kv => condition(kv._2)).toMap
     completedPeds.values.foreach(_.reachedDestination = true)
-    synchronized(completedPeds.keys.foreach(id => this._populationNew.remove(id)))
-    synchronized(this._populationCompleted ++= completedPeds.values)
+    completedPeds.keys.foreach(id => this._populationNew.remove(id))
+    this._populationCompleted ++= completedPeds.values
   }
 
   private var populationMTree: MTree[Vector2D] = new MTree(norm: (Vector2D, Vector2D) => Double)

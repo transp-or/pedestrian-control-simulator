@@ -11,15 +11,15 @@
           "start": "00:00:00",
           "end": "00:02:00",
           "rate_at_start": 0.1,
-          "rate_at_end": 1.66,
-          "slope": 0.013
+          "rate_at_end": 1.0,
+          "slope": 0.0075
         },
         {
           "start": "00:02:00",
           "end": "00:04:00",
-          "rate_at_start": 1.66,
+          "rate_at_start": 1.0,
           "rate_at_end": 0.1,
-          "slope": -0.013
+          "slope": -0.0075
         }
       ],
       "constant": [
@@ -38,15 +38,15 @@
           "start": "00:00:00",
           "end": "00:02:00",
           "rate_at_start": 0.1,
-          "rate_at_end": 1.66,
-          "slope": 0.013
+          "rate_at_end": 1.0,
+          "slope": 0.0075
         },
         {
           "start": "00:02:00",
           "end": "00:04:00",
-          "rate_at_start": 1.66,
+          "rate_at_start": 1.0,
           "rate_at_end": 0.1,
-          "slope": -0.013
+          "slope": -0.0075
         }
       ],
       "constant": [

@@ -2,7 +2,7 @@ package optimization.bruteforce
 
 import hubmodel.DES.SFGraphSimulator
 import hubmodel.mgmt.ControlDevices
-import hubmodel.{runAndCollect}
+import hubmodel.runAndCollect
 import hubmodel.supply.graph.FlowGateFunctional
 import myscala.math.stats.ComputeStats
 
@@ -11,12 +11,12 @@ import scala.collection.immutable.NumericRange
 
 class ParameterExploration(val referenceSimulator: SFGraphSimulator, runsPerPoint: Int) {
 
-  def exploreFlowGateFunctionalFormLinear(constantBounds: (Double, Double), linearBounds: (Double, Double)): Iterable[(Double, Double, (Int, Double, Double, Double, Double, Double))] = {
+  def exploreFlowGateFunctionalFormLinear(constantBounds: (Double, Double, Int), linearBounds: (Double, Double, Int)): Iterable[(Double, Double, (Int, Double, Double, Double, Double, Double))] = {
 
     val defaultParameters = referenceSimulator.getSetupArguments
 
-    val constantRange: NumericRange[Double] =  constantBounds._1 to constantBounds._2 by (constantBounds._2 - constantBounds._1)/5.0
-    val linearRange: NumericRange[Double] =  linearBounds._1 to linearBounds._2 by (linearBounds._2 - linearBounds._1)/5.0
+    val constantRange: NumericRange[Double] =  constantBounds._1 to constantBounds._2 by (constantBounds._2 - constantBounds._1)/constantBounds._3
+    val linearRange: NumericRange[Double] =  linearBounds._1 to linearBounds._2 by (linearBounds._2 - linearBounds._1)/linearBounds._3
 
     (for (i <- constantRange; j <-linearRange) yield {
 

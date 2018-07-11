@@ -21,7 +21,7 @@ case class InfraGraphParser(location: String,
                             nodes: Vector[Vertex_JSON],
                             standardConnections: Vector[Connectivity_JSON],
                             flowGates: Vector[FlowGates_JSON],
-                            controlledAreas: Vector[Vertex_JSON], // the controlled areas are the same as the zones
+                            controlledAreas: Vector[MonitoredAreas_JSON], // the controlled areas are the same as the zones
                             binaryGates: Vector[FlowGates_JSON], // binary gates are flow gates with only two states
                             movingWalkways: Vector[MovingWalkways_JSON],
                             flowSeparators: Vector[FlowSeparator_JSON]

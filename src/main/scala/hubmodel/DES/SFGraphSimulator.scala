@@ -81,7 +81,8 @@ class SFGraphSimulator(override val startTime: Time,
   }
 
   /** KPIs */
-  val criticalAreas: Map[String, DensityMeasuredArea] = controlDevices.monitoredAreas.map(zone => zone.name -> new DensityMeasuredArea(zone.name, zone.corners(0), zone.corners(1), zone.corners(2), zone.corners(3), startTime)).toMap
+  val criticalAreas: Map[String, DensityMeasuredArea] = controlDevices.monitoredAreas.map(zone => zone.name -> zone).toMap
+  criticalAreas.values.foreach(_.initializeContainers(this.startTime))
 
   //List(VertexCell("CriticalZone1", DenseVector(50.0, 10.720), DenseVector( 56.0, 10.720), DenseVector( 56.0, 16.800), DenseVector( 50.0, 16.800)))
   //val criticalArea: List[Vertex] = List(Vertex("CriticalZone1", DenseVector(51.5, 10.72), DenseVector(80.40, 10.72), DenseVector(80.40, 16.80), DenseVector(51.50, 16.80)))
