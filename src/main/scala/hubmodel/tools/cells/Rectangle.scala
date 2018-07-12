@@ -84,4 +84,5 @@ class Rectangle(val name: String, C1: Position, C2: Position, C3: Position, C4: 
   }
 
   override def toString: String = this.name
+
 }

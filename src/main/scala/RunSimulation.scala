@@ -105,6 +105,8 @@ object RunSimulation extends App {
     }
   }
 
+  println(results.flatMap(_._1.map(_.travelTime.value)).stats)
+
   if (config.getBoolean("output.write_travel_times") || config.getBoolean("output.write_densities") || config.getBoolean("output.write_tt_stats") ) {
 
     println("Processing results")

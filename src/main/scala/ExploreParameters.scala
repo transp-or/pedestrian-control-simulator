@@ -43,9 +43,9 @@ object ExploreParameters extends App {
   // Reads the file passed as argument
   val config: Config = ConfigFactory.load(confFile)
 
-  val parameterGridSearch: ParameterExploration = new ParameterExploration(createSimulation(config), config.getInt("sim.nb_runs"))
+  val parameterGridSearch: ParameterExploration = new ParameterExploration(createSimulation(config), config)
 
-  val results = parameterGridSearch.exploreFlowGateFunctionalFormLinear((2,8,6), (-5,0,10))
+  val results = parameterGridSearch.exploreFlowGateFunctionalFormLinear((0,5,5), (-3,0,5))
 
   results.map(r => (r._1, r._2, r._3._1, r._3._2, r._3._3, r._3._4, r._3._5, r._3._6)).toVector.writeToCSV(config.getString("output.output_prefix") + "_exploration-results.csv")
   new HeatMap(config.getString("output.output_prefix") + "_heatmap-mean-tt.png", results.map(r => (r._1, r._2, r._3._2)), "mean travel time", "constant", "linear")

@@ -51,5 +51,4 @@ abstract class MyEdgeWithGate(override val startVertex: Rectangle, override val 
       sim.eventLogger.trace("sim-time=" + sim.currentTime + ": enqueued pedestrian. Peds in queue=" + pedestrianQueue.size)
     }
   }
-
 }

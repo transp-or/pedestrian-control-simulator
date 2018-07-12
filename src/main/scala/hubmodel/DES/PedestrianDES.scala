@@ -275,7 +275,7 @@ abstract class PedestrianDES[T <: PedestrianTrait](val startTime: Time,
     * as specificities are likely to occur. The method should simply call the
     * [[GenericStartSim]] action with a delay of 0.
     *
-    * Once this is done, it should run throught the [[eventList]] and execute all events
+    * Once this is done, it should run through the [[eventList]] and execute all events
     * until the list is empty.
     */
   def genericRun(startEvent: GenericStartSim): Unit = {

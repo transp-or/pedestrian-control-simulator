@@ -62,4 +62,16 @@ class FlowSeparator(val startA: Position,
     new MovableWall("movable wall", this.start, this.end, SINGLELINE)
   }
 
+  override def clone(): FlowSeparator = new FlowSeparator(
+    this.startA,
+    this.startB,
+    this.endA,
+    this.endB,
+    this.inflowLinesStart.map(_.clone()),
+    this.inflowLinesEnd.map(_.clone()),
+    this.associatedZonesStart.map(_.clone()),
+    this.associatedZonesEnd.map(_.clone()),
+    this.associatedConnectivity.map(_.clone()),
+    this.overridenZones
+  )
 }

@@ -48,4 +48,8 @@ class BinaryGate(o: Rectangle,
   override def hashCode: Int = {
     (super.hashCode, this.start, this.end).##
   }
+
+  override def clone(): BinaryGate = new BinaryGate(
+    this.o, this.d, this.start, this.end, this.ma
+  )
 }

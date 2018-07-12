@@ -48,4 +48,8 @@ class FlowGate(startVertex: Rectangle, endVertex: Rectangle, start: Position, en
   }
 
   override def toString: String = "FlowGate: o: " + startVertex + ", d:" + endVertex
+
+  override def clone(): FlowGate = new FlowGate(
+    this.startVertex, this.endVertex, this.start, this.end, this.ma
+  )
 }

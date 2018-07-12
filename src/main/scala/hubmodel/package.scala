@@ -18,6 +18,7 @@ import play.api.libs.json.Reads._
 import play.api.libs.json._
 
 import scala.collection.parallel.ForkJoinTaskSupport
+import scala.concurrent.Future
 /**
   * Created by nicholas on 5/12/17.
   */
@@ -301,8 +302,7 @@ package object hubmodel {
     * @param simulator simulation to run
     * @return results collected from the simulation
     */
-  def runAndCollect(simulator: SFGraphSimulator): ResultsContainer = {
-
+  def runAndCollect(simulator: SFGraphSimulator): ResultsContainer=  {
     timeBlock(simulator.run())
     collectResults(simulator)
   }

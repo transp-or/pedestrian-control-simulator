@@ -11,6 +11,8 @@ import hubmodel.tools.cells.Rectangle
   */
 class MovingWalkway(override val startVertex: Rectangle, override val endVertex: Rectangle, val capacity: Double) extends MyEdge(startVertex, endVertex) {
   val speed: Double = 2.0
+
+  override def clone(): MovingWalkway = new MovingWalkway(this.startVertex, this.endVertex, this.capacity)
 }
 
 /** Initialisation of the flow gates. The is the event inserted into the [[SFGraphSimulator.StartSim]] event.

@@ -54,4 +54,8 @@ class FlowLine(val start: Position, val end: Position, controlled: Int = 0) {
     * This should be called at the start of each new time interval of the state evaluation.
     */
   def reinitialize(): Unit = this.pedsCrossedInInterval.clear()
+
+  override def clone(): FlowLine = new FlowLine(
+    this.start, this.end
+  )
 }

@@ -21,11 +21,13 @@ libraryDependencies ++= Seq(
   "com.typesafe.scala-logging" %% "scala-logging" % "3.7.2",
   "org.scalactic" %% "scalactic" % "3.0.1",
   "transpor.tools" % "power-voronoi" % "1.0",
-  "transpor.molyneaux" %% "scala-custom" % "1.0-SNAPSHOT",
+  "com.github.NicholasMolyneaux" %% "scala-custom" % "1.0.1",
   "transpor.tools" % "dxf-parser" % "1.0",
   "nl.tudelft.pedestrians" % "nomad" % "1.0",
   "org.scala-lang.modules" %% "scala-parser-combinators" % "1.1.1"
 )
+
+//resolvers += Opts.resolver.sonatypeReleases // add if needed
 
 // https://mvnrepository.com/artifact/org.j3d/aviatrix3d
 libraryDependencies += "org.j3d" % "aviatrix3d" % "3.0.0" pomOnly()

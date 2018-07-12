@@ -23,4 +23,14 @@ class ControlDevices(val monitoredAreas: Iterable[DensityMeasuredArea],
   if (flowGates.exists(fg => !monitoredAreas.map(_.name).toVector.contains(fg.monitoredArea))) {
     throw new ControlDevicesException("flow gate controlled area not found in list of monitored areas")
   }
+
+  override def clone: ControlDevices = {
+    new ControlDevices(
+      monitoredAreas.map(_.clone()),
+      amws,
+      flowGates.map(_.clone()),
+      binaryGates.map(_.clone()),
+      flowSeparators.map(_.clone())
+    )
+  }
 }

@@ -14,4 +14,8 @@ class DensityMeasuredArea(name: String, A: Position, B: Position, C: Position, D
   }
 
   var regulatorIntegralAction: Double = 0.0
+
+  override def clone(): DensityMeasuredArea = new DensityMeasuredArea(
+    name, A, B, C, D, targetDensity
+  )
 }

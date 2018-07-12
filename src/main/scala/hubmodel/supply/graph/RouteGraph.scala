@@ -1,5 +1,6 @@
 package hubmodel.supply.graph
 
+import hubmodel.mgmt.ControlDevices
 import hubmodel.mgmt.flowsep.FlowSeparator
 import hubmodel.ped.PedestrianSim
 import hubmodel.tools.cells.Rectangle
@@ -73,5 +74,9 @@ class RouteGraph(private val vertices: Vector[Rectangle],
       case Failure(f) => throw f
     }
   }
+
+  def clone(devices: ControlDevices): RouteGraph = new RouteGraph(
+    this.vertices,this.standardEdges, devices.flowGates,devices.binaryGates, devices.amws, devices.flowSeparators
+  )
 
 }
