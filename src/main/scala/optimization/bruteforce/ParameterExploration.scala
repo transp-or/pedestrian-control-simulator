@@ -15,7 +15,7 @@ import scala.util.{Failure, Success}
 
 class ParameterExploration(val referenceSimulator: SFGraphSimulator, config: Config) {
 
-  if (config.getInt("sim.nb_runs") < config.getInt("execution.threads") ) {
+  if (config.getInt("sim.nb_runs") < config.getInt("execution.threads")) {
     println("WARNING ! NUMBER OF RUNS SMALLER THAN NUMBER OF THREADS TO USE ! NOT EFFICIENT")
   }
 
@@ -23,34 +23,37 @@ class ParameterExploration(val referenceSimulator: SFGraphSimulator, config: Con
 
     val defaultParameters = referenceSimulator.getSetupArguments
 
-    val constantRange: NumericRange[Double] =  constantBounds._1 to constantBounds._2 by (constantBounds._2 - constantBounds._1)/constantBounds._3
-    val linearRange: NumericRange[Double] =  linearBounds._1 to linearBounds._2 by (linearBounds._2 - linearBounds._1)/linearBounds._3
+    val constantRange: NumericRange[Double] = constantBounds._1 to constantBounds._2 by (constantBounds._2 - constantBounds._1) / constantBounds._3
+    val linearRange: NumericRange[Double] = linearBounds._1 to linearBounds._2 by (linearBounds._2 - linearBounds._1) / linearBounds._3
 
-    for (i <- constantRange; j <-linearRange) yield {
-
-      val newDevices: ControlDevices = new ControlDevices(
-        defaultParameters._11.monitoredAreas.map(_.clone()),
-        defaultParameters._11.amws.map(_.clone()),
-        defaultParameters._11.flowGates.map(fg => new FlowGateFunctional(fg.startVertex, fg.endVertex, fg.start, fg.end, fg.monitoredArea, {x: Double => math.max(0.0, i + j*x)})),
-        defaultParameters._11.binaryGates.map(_.clone()),
-        defaultParameters._11.flowSeparators.map(_.clone())
-      )
+    for (i <- constantRange; j <- linearRange) yield {
 
       println("Running simulation with linear flow gate function: flowrate = " + i + " + " + j + "*density")
 
-      val simulationCollection: collection.parallel.ParSeq[SFGraphSimulator] = collection.parallel.ParSeq.fill(config.getInt("sim.nb_runs"))(new SFGraphSimulator(
-        defaultParameters._1,
-        defaultParameters._2,
-        defaultParameters._3,
-        defaultParameters._4,
-        defaultParameters._5,
-        defaultParameters._6,
-        defaultParameters._7.clone(newDevices),
-        defaultParameters._8,
-        defaultParameters._9,
-        defaultParameters._10,
-        newDevices
-      )
+      val simulationCollection: collection.parallel.ParSeq[SFGraphSimulator] = collection.parallel.ParSeq.fill(config.getInt("sim.nb_runs"))({
+
+        val newDevices: ControlDevices = new ControlDevices(
+          defaultParameters._11.monitoredAreas.map(_.clone()),
+          defaultParameters._11.amws.map(_.clone()),
+          defaultParameters._11.flowGates.map(fg => new FlowGateFunctional(fg.startVertex, fg.endVertex, fg.start, fg.end, fg.monitoredArea, { x: Double => math.max(0.0, i + j * x) })),
+          defaultParameters._11.binaryGates.map(_.clone()),
+          defaultParameters._11.flowSeparators.map(_.clone())
+        )
+
+        new SFGraphSimulator(
+          defaultParameters._1,
+          defaultParameters._2,
+          defaultParameters._3,
+          defaultParameters._4,
+          defaultParameters._5,
+          defaultParameters._6,
+          defaultParameters._7.clone(newDevices),
+          defaultParameters._8,
+          defaultParameters._9,
+          defaultParameters._10,
+          newDevices
+        )
+      }
       )
       simulationCollection.tasksupport = new ForkJoinTaskSupport(new java.util.concurrent.ForkJoinPool(config.getInt("execution.threads")))
       val ttStats = simulationCollection.par.map(runAndCollect).seq.toVector.flatMap(_._1.map(_.travelTime.value)).stats
