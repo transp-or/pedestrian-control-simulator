@@ -267,7 +267,9 @@ class NOMADIntegrated(sim: SFGraphSimulator) extends Action {
     if (sim.useFlowGates) {
       sim.controlDevices.flowGates.foreach(fg => {
         sim.population
-          .filter(p => p.nextZone == fg.endVertex && !fg.pedestrianQueue.contains(p) && !p.freedFrom.contains(fg.ID) && isInVertex(fg.startVertex)(p.currentPosition))
+          .filter(p => p.nextZone == fg.endVertex && !fg.pedestrianQueue.
+            contains(p) && !p.freedFrom.
+            contains(fg.ID) && isInVertex(fg.startVertex)(p.currentPosition))
           .foreach(p => sim.insertEventWithZeroDelay(new fg.EnqueuePedestrian(p, sim)))
       })
     }

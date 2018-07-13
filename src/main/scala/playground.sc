@@ -1,8 +1,7 @@
 
 import breeze.numerics.{cos, pow, sqrt}
-import hubmodel.{Position, generateUUID}
+import hubmodel.{Position, Time, generateUUID}
 import hubmodel.output.image.DrawCells
-import hubmodel.Position
 import hubmodel.route.Guo2011.HexagonPotentialField
 import play.api.libs.functional.~
 
@@ -250,7 +249,7 @@ println(HexagonPotentialFields.map(_.potential).mkString("\n"))
 
 new DrawCells(HexagonPotentialFields, "celltest.png")//, None, (xMax, yMax))
 
-
+/*
 
 import scala.math._
 import scala.util.parsing.combinator._
@@ -295,3 +294,10 @@ val formulaParser = new FormulaParser(
 println(formulaParser.evaluate("2+3*5x")) // 17.0
 println(formulaParser.evaluate("height*perimeter(radius)")) // 502.6548245743669
 println(formulaParser.evaluate("m/sqrt(1-v^2/c^2)"))  // 80.00000000003415
+*/
+def computeReleaseTimes(rate: Double, maxTime: Time, currentTime: Time, acc: List[Time]): List[Time] = {
+  if (currentTime.value >= maxTime.value) acc
+  else computeReleaseTimes(rate, maxTime, currentTime.addDouble(1.0 / rate), currentTime.addDouble(1.0 / rate) :: acc)
+}
+
+computeReleaseTimes(0.00001, Time(2.0), Time(0.0), List())
