@@ -13,7 +13,7 @@ class DLQRGateController(sim: SFGraphSimulator) extends Action {
   }
 
   def computeReleaseTimes(rate: Double, maxTime: Time, currentTime: Time, acc: List[Time]): List[Time] = {
-    if (currentTime >= maxTime) acc
+    if (currentTime.value >= maxTime.value) acc
     else computeReleaseTimes(rate, maxTime, currentTime.addDouble(1.0 / rate), currentTime.addDouble(1.0 / rate) :: acc)
   }
 
