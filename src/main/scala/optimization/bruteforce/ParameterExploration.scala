@@ -35,7 +35,7 @@ class ParameterExploration(val referenceSimulator: SFGraphSimulator, config: Con
         val newDevices: ControlDevices = new ControlDevices(
           defaultParameters._11.monitoredAreas.map(_.clone()),
           defaultParameters._11.amws.map(_.clone()),
-          defaultParameters._11.flowGates.map(fg => new FlowGateFunctional(fg.startVertex, fg.endVertex, fg.start, fg.end, fg.monitoredArea, { x: Double => math.max(0.0, i + j * x) })),
+          defaultParameters._11.flowGates.map(fg => new FlowGateFunctional(fg.startVertex, fg.endVertex, fg.start, fg.end, fg.monitoredArea, { x: Double => math.max(0.0000001, i + j * x) })),
           defaultParameters._11.binaryGates.map(_.clone()),
           defaultParameters._11.flowSeparators.map(_.clone())
         )

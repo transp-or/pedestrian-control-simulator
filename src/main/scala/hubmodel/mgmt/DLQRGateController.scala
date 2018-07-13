@@ -33,14 +33,22 @@ class DLQRGateController(sim: SFGraphSimulator) extends Action {
         case fg: FlowGate => {
           val totalInflow: Double = max(0.1, min(5.0, 0.65 * (sim.criticalAreas(fg.monitoredArea).targetDensity - sim.criticalAreas(fg.monitoredArea).densityHistory.last._2)))
           //println("PI data @ " + sim.currentTime + ", " + sim.criticalAreas(fg.monitoredArea).densityHistory.last._2 + ", " + totalInflow)
-          sim.criticalAreas(fg.monitoredArea).regulatorIntegralAction = sim.criticalAreas(fg.monitoredArea).regulatorIntegralAction + (1.0 - sim.densityHistory.last._2)
+          //sim.criticalAreas(fg.monitoredArea).regulatorIntegralAction = sim.criticalAreas(fg.monitoredArea).regulatorIntegralAction + (sim.criticalAreas(fg.monitoredArea).targetDensity - sim.densityHistory.last._2)
 
           fg.flowRate = min(fg.width * 1.5, fg.width * (totalInflow / sim.controlDevices.flowGates.count(_.monitoredArea == fg.monitoredArea)))
         }
       }
       // when execution of release pedestrian takes place, if flow rate is 0 then the event will never happen. Hence manually insert one to restart flow gates.
       if (fgGen.flowRate > 0.0) {
-        computeReleaseTimes(fgGen.flowRate, sim.evaluate_dt, Time(0.0), List()).foreach(t => sim.insertEventWithDelayNew(t)(new fgGen.ReleasePedestrian(sim)))
+        try {
+          computeReleaseTimes(fgGen.flowRate, sim.evaluate_dt, Time(0.0), List()).foreach(t => sim.insertEventWithDelayNew(t)(new fgGen.ReleasePedestrian(sim)))
+        } catch {
+          case f: Exception => {
+            println("error when computing insertion times: " + fgGen.flowRate)
+            throw f
+          }
+
+        }
       }
     })
   }
