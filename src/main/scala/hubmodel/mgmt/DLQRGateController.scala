@@ -6,15 +6,22 @@ import hubmodel.TimeNumeric.mkOrderingOps
 import hubmodel.Time
 import hubmodel.supply.graph.{FlowGate, FlowGateFunctional}
 
+import scala.annotation.tailrec
+
 class DLQRGateController(sim: SFGraphSimulator) extends Action {
 
   def allocateSupply(totalInflow: Double, gates: Vector[String]): Map[String, Double] = {
     gates.map(g => g -> totalInflow / gates.size).toMap
   }
 
-  def computeReleaseTimes(rate: Double, maxTime: Time, currentTime: Time, acc: List[Time]): List[Time] = {
-    if (currentTime.value >= maxTime.value) acc
-    else computeReleaseTimes(rate, maxTime, currentTime.addDouble(1.0 / rate), currentTime.addDouble(1.0 / rate) :: acc)
+  private def computeReleaseTimes(rate: Double, maxTime: Time): List[Time] = {
+
+    @tailrec
+    def inner(accum: List[Time]): List[Time] = {
+      if (accum.head >= maxTime) accum
+      else {inner(accum.head.addDouble(1.0/rate) :: accum)}
+    }
+    inner(List(Time(1.0/rate)))
   }
 
   override def execute(): Unit = {
@@ -38,18 +45,20 @@ class DLQRGateController(sim: SFGraphSimulator) extends Action {
           fg.flowRate = min(fg.width * 1.5, fg.width * (totalInflow / sim.controlDevices.flowGates.count(_.monitoredArea == fg.monitoredArea)))
         }
       }
+
       // when execution of release pedestrian takes place, if flow rate is 0 then the event will never happen. Hence manually insert one to restart flow gates.
       if (fgGen.flowRate > 0.0) {
         try {
-          computeReleaseTimes(fgGen.flowRate, sim.evaluate_dt, Time(0.0), List()).foreach(t => sim.insertEventWithDelayNew(t)(new fgGen.ReleasePedestrian(sim)))
+          sim.errorLogger.error("release times at: " + sim.currentTime + ", rate=" + fgGen.flowRate + ", times=" + computeReleaseTimes(fgGen.flowRate, sim.evaluate_dt))
+          computeReleaseTimes(fgGen.flowRate, sim.evaluate_dt).foreach(t => sim.insertEventWithDelayNew(t)(new fgGen.ReleasePedestrian(sim)))
         } catch {
           case f: Exception => {
             println("error when computing insertion times: " + fgGen.flowRate)
             throw f
           }
-
         }
       }
+
     })
   }
 }

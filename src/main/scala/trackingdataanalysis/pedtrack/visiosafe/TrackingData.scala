@@ -108,6 +108,8 @@ package visiosafe {
     override def hashCode: Int = {
       (this.A, this.B, this.C, this.D).##
     }
+
+    override def toString: String = "(" + this.A.toString() + ", " + this.B.toString() + ", " + this.C.toString() + ", " + this.D.toString() + ")"
   }
 
 

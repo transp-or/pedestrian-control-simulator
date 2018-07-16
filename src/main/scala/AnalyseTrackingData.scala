@@ -152,8 +152,9 @@ object AnalyseTrackingData extends App {
 
       val voronoiDensities = data.computeVoronoiDensity(mainZone, timesMiddles, box)
 
-      val accumulationDensities = data.computeAccumulationDensity(mainZone, timesMiddles)
 
+      val accumulationDensities = data.computeAccumulationDensity(mainZone, timesMiddles)
+      println(mainZone)
       println(accumulationDensities)
 
       /*val fitResults: (Double, Double, Double) = data.computeControllerParams(

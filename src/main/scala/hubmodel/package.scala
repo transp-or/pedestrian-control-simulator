@@ -233,7 +233,7 @@ package object hubmodel {
   // ******************************************************************************************
 
   // Container for the results from a simulation. This type chould be modified if the collectResults function is modified
-  type ResultsContainer = (Vector[PedestrianSim], Map[String, DensityMeasuredArea])
+  type ResultsContainer = (Vector[PedestrianSim], Map[String, DensityMeasuredArea], Vector[PedestrianSim])
 
   /** Used to extract the desired results from the simulator. Avoids keeping all information in memory.
     *
@@ -248,7 +248,8 @@ package object hubmodel {
   def collectResults(simulator: SFGraphSimulator): ResultsContainer = {
     (
       simulator.populationCompleted,
-      simulator.criticalAreas
+      simulator.criticalAreas,
+      simulator.population.toVector
     )
   }
 
