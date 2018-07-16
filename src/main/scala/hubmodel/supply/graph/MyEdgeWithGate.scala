@@ -13,7 +13,7 @@ abstract class MyEdgeWithGate(override val startVertex: Rectangle, override val 
   var flowRate: Double
 
   // The list of pedestrians which are waiting at the gate to be let through
-  val pedestrianQueue: scala.collection.mutable.Queue[PedestrianSim] = scala.collection.mutable.Queue[PedestrianSim]()
+  var pedestrianQueue: scala.collection.mutable.Queue[PedestrianSim] = scala.collection.mutable.Queue[PedestrianSim]()
 
   /** Event for releasing a pedestrian. This allows him to pass the gate. Each pedestrian contains state variables
     * indicating whether he is waiting or not. These are used by the other classes.

@@ -1,0 +1,55 @@
+{
+  "location": "t-junction",
+  "PTflows": [],
+  "flows": [],
+  "function_flows": [
+    {
+      "origin": "left",
+      "destination": "right",
+      "linear": [ ],
+      "constant": [
+        {
+          "start": "00:00:00",
+          "end": "00:05:00",
+          "rate": 0.6
+        }
+      ]
+    },
+    {
+      "origin": "right",
+      "destination": "left",
+      "linear": [ ],
+      "constant": [
+        {
+          "start": "00:00:00",
+          "end": "00:05:00",
+          "rate": 0.6
+        }
+      ]
+    },
+    {
+      "origin": "top",
+      "destination": "right",
+      "linear": [ ],
+      "constant": [
+        {
+          "start": "00:00:00",
+          "end": "00:05:00",
+          "rate": 0.9
+        }
+      ]
+    },
+    {
+      "origin": "top",
+      "destination": "left",
+      "linear": [],
+      "constant": [
+        {
+          "start": "00:00:00",
+          "end": "00:05:00",
+          "rate": 0.9
+        }
+      ]
+    }
+  ]
+}
