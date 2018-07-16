@@ -160,7 +160,7 @@ object RunSimulation extends App {
 
   if (config.getBoolean("output.write_trajectories_as_VS")) {
     println("Writing trajectories as VS to file")
-    writePopulationTrajectories(results.head._1, config.getString("output.output_prefix") + "_simulation_trajectories.csv")
+    writePopulationTrajectories(results.head._1++results.head._3, config.getString("output.output_prefix") + "_simulation_trajectories.csv")
   }
 
   // Analyse pedestrian data like travel time and walking speed by departure time interval.

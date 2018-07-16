@@ -16,7 +16,7 @@ import hubmodel.tools.cells.Rectangle
 class FlowGate(startVertex: Rectangle, endVertex: Rectangle, start: Position, end: Position, ma: String) extends MyEdgeWithGate(startVertex, endVertex, start, end, ma) {
 
   // variable flow rate of the gate [pax/s]
-  var flowRate = 0.5
+  var flowRate: Double = 0.5
 
 
 

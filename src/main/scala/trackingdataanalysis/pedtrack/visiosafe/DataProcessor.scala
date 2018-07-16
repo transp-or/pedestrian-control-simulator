@@ -116,7 +116,8 @@ abstract class DataProcessor(zoneFile: String, tolerance: Double) {
   }*/
 
   def linearInterpolationPosition(x1: (Double, Double), x2: (Double, Double), t1: Double, t2: Double, tDesired: Double): (Double, Double) = {
-    if (t1 < tDesired || tDesired > t2) {throw new IllegalArgumentException("desired time is outside of interval for linear interpolation")}
+    if (t1 > t2) { throw new IllegalArgumentException("t1 is larger than t2 ! t1=" + t1 + ", t2="+t2)}
+    else if (tDesired < t1 || t2 < tDesired) {throw new IllegalArgumentException("desired time is outside of interval for linear interpolation: " + t1 + ", " + t2 + ", " + tDesired)}
     val frac: Double = (tDesired - t1)/(t2-t1)
     (x1._1 + frac*(x2._1-x1._1), x1._2 + frac*(x2._2-x1._2))
   }
