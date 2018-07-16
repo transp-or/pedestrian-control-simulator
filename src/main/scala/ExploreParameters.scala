@@ -45,7 +45,11 @@ object ExploreParameters extends App {
 
   val parameterGridSearch: ParameterExploration = new ParameterExploration(createSimulation(config), config)
 
+<<<<<<< HEAD
   val results = parameterGridSearch.exploreFlowGateFunctionalFormLinear((-1,7,15), (-6,1,15))
+=======
+  val results = parameterGridSearch.exploreFlowGateFunctionalFormLinear((0,5,2), (-3,0,2))
+>>>>>>> 6e7c2c471d69d3b3c7585a8117a13458a3c9f99a
 
   results.map(r => (r._1, r._2, r._3._1, r._3._2, r._3._3, r._3._4, r._3._5, r._3._6)).toVector.writeToCSV(config.getString("output.output_prefix") + "_exploration-results.csv")
   new HeatMap(config.getString("output.output_prefix") + "_heatmap-mean-tt.png", results.map(r => (r._1, r._2, r._3._2)), "mean travel time", "constant", "linear")

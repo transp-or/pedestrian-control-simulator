@@ -37,8 +37,8 @@ package object graph {
         val e: Iterable[MyEdge] = s.get.standardConnections.flatMap(c => c.conn.map(neigh => new MyEdge(vertexMap(c.node), vertexMap(neigh))))
         val fg: Iterable[FlowGate] = if (useFlowGates) {
           s.get.flowGates.map(fg => fg.funcForm match {
-            case Some(str) if str == "quadratic" => new FlowGateFunctional(vertexMap(fg.o), vertexMap(fg.d), Vector2D(fg.start_pos_x, fg.start_pos_y), Vector2D(fg.end_pos_x, fg.end_pos_y), fg.area, {x: Double => math.max(0.0, fg.funcParam.get(0) + fg.funcParam.get(1)*x  + fg.funcParam.get(2)*x*x)} )
-            case Some(str) if str == "linear" => new FlowGateFunctional(vertexMap(fg.o), vertexMap(fg.d), Vector2D(fg.start_pos_x, fg.start_pos_y), Vector2D(fg.end_pos_x, fg.end_pos_y), fg.area, {x: Double => math.max(0.0, fg.funcParam.get(0) + fg.funcParam.get(1)*x)} )
+            case Some(str) if str == "quadratic" => new FlowGateFunctional(vertexMap(fg.o), vertexMap(fg.d), Vector2D(fg.start_pos_x, fg.start_pos_y), Vector2D(fg.end_pos_x, fg.end_pos_y), fg.area, {x: Double => math.min(10.0, math.max(0.0, fg.funcParam.get(0) + fg.funcParam.get(1)*x  + fg.funcParam.get(2)*x*x))} )
+            case Some(str) if str == "linear" => new FlowGateFunctional(vertexMap(fg.o), vertexMap(fg.d), Vector2D(fg.start_pos_x, fg.start_pos_y), Vector2D(fg.end_pos_x, fg.end_pos_y), fg.area, {x: Double => math.min(10.0, math.max(0.0, fg.funcParam.get(0) + fg.funcParam.get(1)*x))} )
             case None  => new FlowGate(vertexMap(fg.o), vertexMap(fg.d), Vector2D(fg.start_pos_x, fg.start_pos_y), Vector2D(fg.end_pos_x, fg.end_pos_y), fg.area)
           })
         } else {
