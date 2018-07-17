@@ -9,6 +9,8 @@ package object visualization {
                          xmin: Option[Double] = None,
                          xmax: Option[Double] = None,
                          ymin: Option[Double] = None,
-                         ymax: Option[Double] = None)
+                         ymax: Option[Double] = None,
+                         zmin: Option[Double] = None,
+                         zmax: Option[Double] = None)
 
 }

@@ -181,10 +181,10 @@ abstract class DrawingComponents(xBorderSpacing: Int, yBorderSpacing: Int, pixel
     })
   }
 
-  def drawHeatMap(graphics: Graphics2D, data: Iterable[(Double, Double, Double)], xInterval: (Double, Int), yInterval: (Double, Int)): Unit = {
+  def drawHeatMap(graphics: Graphics2D, data: Iterable[(Double, Double, Double)], xInterval: (Double, Int), yInterval: (Double, Int), minRange: Option[Double], maxRange: Option[Double]): Unit = {
 
     // define color map
-    def colorMapFunction(x: Double): Color = colorMap(data.map(_._3).min, data.map(_._3).max)(x)
+    def colorMapFunction(x: Double): Color = colorMap(if (minRange.isDefined) minRange.get else data.map(_._3).min, if (maxRange.isDefined) maxRange.get else data.map(_._3).max)(x)
 
     // compute width and height of cells
     val cellWidthPx: Int = (pixelCanvasSize._1 - yBorderSpacing*2)/xInterval._2
