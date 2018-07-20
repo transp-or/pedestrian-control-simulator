@@ -19,12 +19,15 @@ class ParameterExploration(val referenceSimulator: SFGraphSimulator, config: Con
     println("WARNING ! NUMBER OF RUNS SMALLER THAN NUMBER OF THREADS TO USE ! NOT EFFICIENT")
   }
 
-  def exploreFlowGateFunctionalFormLinear(constantBounds: (Double, Double, Int), linearBounds: (Double, Double, Int)): Iterable[(Double, Double, (Int, Double, Double, Double, Double, Double))] = {
+  def exploreFlowGateFunctionalFormLinear(constantBounds: (Double, Double, Int), linearBounds: (Double, Double, Int)): Iterable[(Double, Double, (Int, Double, Double, Double, Double, Double), (Int, Double, Double, Double, Double, Double))] = {
 
     val defaultParameters = referenceSimulator.getSetupArguments
 
     val constantRange: NumericRange[Double] = constantBounds._1 to constantBounds._2 by (constantBounds._2 - constantBounds._1) / constantBounds._3
     val linearRange: NumericRange[Double] = linearBounds._1 to linearBounds._2 by (linearBounds._2 - linearBounds._1) / linearBounds._3
+
+
+
 
     for (i <- constantRange; j <- linearRange) yield {
 
@@ -56,9 +59,12 @@ class ParameterExploration(val referenceSimulator: SFGraphSimulator, config: Con
       }
       )
       simulationCollection.tasksupport = new ForkJoinTaskSupport(new java.util.concurrent.ForkJoinPool(config.getInt("execution.threads")))
-      val ttStats = simulationCollection.par.map(runAndCollect).seq.toVector.flatMap(_._1.map(_.travelTime.value)).stats
+      val simulationResults = simulationCollection.par.map(runAndCollect).seq.toVector
+      val ttStats = simulationResults.flatMap(r => r._1.map(_.travelTime.value)).stats
+      val densityStats = simulationResults.flatMap(r => r._2.values.flatMap(_.densityHistory.map(_._2))).stats
 
-      (i, j, ttStats)
+
+      (i, j, ttStats, densityStats)
     }
 
   }

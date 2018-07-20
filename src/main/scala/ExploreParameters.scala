@@ -4,6 +4,7 @@ import optimization.bruteforce.ParameterExploration
 import hubmodel.createSimulation
 import myscala.output.SeqTuplesExtensions.SeqTuplesWriter
 import trackingdataanalysis.visualization.HeatMap
+import visualization.PlotOptions
 
 object ExploreParameters extends App {
 
@@ -44,17 +45,17 @@ object ExploreParameters extends App {
   val config: Config = ConfigFactory.load(confFile)
 
   val parameterGridSearch: ParameterExploration = new ParameterExploration(createSimulation(config), config)
-
-<<<<<<< HEAD
-  val results = parameterGridSearch.exploreFlowGateFunctionalFormLinear((-1,7,15), (-6,1,15))
-=======
-  val results = parameterGridSearch.exploreFlowGateFunctionalFormLinear((0,5,2), (-3,0,2))
->>>>>>> 6e7c2c471d69d3b3c7585a8117a13458a3c9f99a
+  
+  val results = parameterGridSearch.exploreFlowGateFunctionalFormLinear((0,6,18), (-6,0,18))
 
   results.map(r => (r._1, r._2, r._3._1, r._3._2, r._3._3, r._3._4, r._3._5, r._3._6)).toVector.writeToCSV(config.getString("output.output_prefix") + "_exploration-results.csv")
-  new HeatMap(config.getString("output.output_prefix") + "_heatmap-mean-tt.png", results.map(r => (r._1, r._2, r._3._2)), "mean travel time", "constant", "linear")
+  new HeatMap(config.getString("output.output_prefix") + "_heatmap-mean-tt.png", results.map(r => (r._1, r._2, r._3._2)), "mean travel time", "constant", "linear", PlotOptions(zmin=Some(27), zmax=Some(35)))
   new HeatMap(config.getString("output.output_prefix") + "_heatmap-variance-tt.png", results.map(r => (r._1, r._2, r._3._3)), "var travel time", "constant", "linear")
-  new HeatMap(config.getString("output.output_prefix") + "_heatmap-median-tt.png", results.map(r => (r._1, r._2, r._3._4)), "median travel time", "constant", "linear")
+  new HeatMap(config.getString("output.output_prefix") + "_heatmap-median-tt.png", results.map(r => (r._1, r._2, r._3._4)), "median travel time", "constant", "linear", PlotOptions(zmin=Some(27), zmax=Some(35)))
 
+
+  new HeatMap(config.getString("output.output_prefix") + "_heatmap-mean-density.png", results.map(r => (r._1, r._2, r._4._2)), "mean density", "constant", "linear", PlotOptions(zmin=Some(0.25), zmax=Some(3)))
+  new HeatMap(config.getString("output.output_prefix") + "_heatmap-variance-density.png", results.map(r => (r._1, r._2, r._4._3)), "var density", "constant", "linear")
+  new HeatMap(config.getString("output.output_prefix") + "_heatmap-median-density.png", results.map(r => (r._1, r._2, r._4._4)), "median density", "constant", "linear", PlotOptions(zmin=Some(0.25), zmax=Some(3)))
 
 }
