@@ -187,12 +187,18 @@ abstract class DrawingComponents(xBorderSpacing: Int, yBorderSpacing: Int, pixel
     def colorMapFunction(x: Double): Color = colorMap(if (minRange.isDefined) minRange.get else data.map(_._3).min, if (maxRange.isDefined) maxRange.get else data.map(_._3).max)(x)
 
     // compute width and height of cells
-    val cellWidthPx: Int = (pixelCanvasSize._1 - yBorderSpacing*2)/xInterval._2
+    val cellWidthPx: Int = (pixelCanvasSize._1 - 2*yBorderSpacing)/xInterval._2
     val cellHeightPx: Int = (pixelCanvasSize._2 - 2*yBorderSpacing)/yInterval._2
 
+    println(pixelCanvasSize)
+    println(xInterval)
+    println(yInterval)
+    println(cellHeightPx, cellWidthPx)
     // draw all cells
     for (d <- data) {
       graphics.setColor(colorMapFunction(d._3))
+      println(d._1, d._2, d._3)
+      println(xBorderSpacing + mapVCoord(d._2), xBorderSpacing + mapVCoord(d._2)+(0.5*cellHeightPx).toInt, verticalTransformation(xBorderSpacing + mapVCoord(d._2)+(0.5*cellHeightPx).toInt), cellHeightPx)
       graphics.fillRect(yBorderSpacing + mapHCoord(d._1)-(0.5*cellWidthPx).toInt, verticalTransformation(xBorderSpacing + mapVCoord(d._2)+(0.5*cellHeightPx).toInt), cellWidthPx, cellHeightPx)
     }
   }

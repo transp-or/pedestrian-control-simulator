@@ -2,8 +2,8 @@ package hubmodel.output
 
 import java.io.{BufferedWriter, File, FileWriter}
 
-import hubmodel.TimeNumeric.mkOrderingOps
 import hubmodel.Time
+import hubmodel.TimeNumeric.mkOrderingOps
 import hubmodel.ped.PedestrianTrait
 import myscala.math.stats.{Quantiles, computeQuantiles}
 import play.api.libs.json.{JsValue, Json, Writes}

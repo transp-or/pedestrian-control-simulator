@@ -2,9 +2,9 @@ package hubmodel.DES
 
 import hubmodel.TimeNumeric.mkOrderingOps
 import hubmodel._
-import hubmodel.demand.{CreatePedestrian, PTInducedQueue, PedestrianFlowFunction_New, PedestrianFlowPT_New, PedestrianFlow_New, ProcessPedestrianFlows, ProcessTimeTable, PublicTransportSchedule, ReadPedestrianFlows, Stop2Vertices}
+import hubmodel.demand.{CreatePedestrian, PTInducedQueue, PedestrianFlowFunction_New, PedestrianFlowPT_New, PedestrianFlow_New, ProcessPedestrianFlows, ProcessTimeTable, PublicTransportSchedule}
 import hubmodel.mgmt.{ControlDevices, EvaluateState}
-import hubmodel.mvmtmodels.NOMAD.{NOMADIntegrated, NOMADOriginalModel}
+import hubmodel.mvmtmodels.NOMAD.NOMADIntegrated
 import hubmodel.mvmtmodels.RebuildTree
 import hubmodel.ped.{PedestrianNOMAD, PedestrianSim}
 import hubmodel.route.UpdateRoutes
@@ -155,8 +155,7 @@ class SFGraphSimulator(override val startTime: Time,
       sim.insertEventWithZeroDelay(new ProcessPedestrianFlows(sim))
       sim.insertEventWithZeroDelay(new UpdateRoutes(sim))
       sim.insertEventWithZeroDelay(new NOMADIntegrated(sim))
-      if (sim.useGating) sim.insertEventWithZeroDelay(new EvaluateState(sim))
-      else if (sim.measureDensity && !sim.useGating) sim.insertEventWithZeroDelay(new EvaluateState(sim))
+      if (sim.useGating || sim.measureDensity || sim.useFlowSep || sim.useBinaryGates) sim.insertEventWithZeroDelay(new EvaluateState(sim))
       if (sim.useFlowGates) sim.insertEventWithZeroDelay(new StartFlowGates(sim))
       if (sim.useTreeForNeighbourSearch) sim.insertEventWithDelayNew(new Time(0.0))(new RebuildTree(sim))
     }

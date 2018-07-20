@@ -1,11 +1,10 @@
 package hubmodel.supply
 
 import hubmodel.Position
-import hubmodel.demand.{Stop2Vertices, Track2NodeMapping}
 import hubmodel.input.JSONReaders.{InfraGraphParser, Track2NodeMapping_JSON}
-import hubmodel.mgmt.flowsep.{FlowLine, FlowSeparator}
 import hubmodel.mgmt.ControlDevices
-import hubmodel.tools.cells.{DensityMeasuredArea, Rectangle, RectangleModifiable, Vertex}
+import hubmodel.mgmt.flowsep.{FlowLine, FlowSeparator}
+import hubmodel.tools.cells.{DensityMeasuredArea, Rectangle, RectangleModifiable}
 import myscala.math.vector.Vector2D
 import play.api.libs.json.{JsError, JsSuccess, JsValue, Json}
 
@@ -62,23 +61,25 @@ package object graph {
         val flowSeparators: Iterable[FlowSeparator] = if (useFlowSep) {
 
           // updates the vertex map to remove overriden nodes and add the new ones linked to the flow separators
-          val vertexMapUpdated: Map[String, Rectangle] = vertexMap --
-            s.get.flowSeparators.flatMap(_.overZone_1.map(_.overridenZone)) --
-            s.get.flowSeparators.flatMap(_.overZone_2.map(_.overridenZone)) ++
-            s.get.flowSeparators.flatMap(_.overZone_1.map(oz => oz.name -> new RectangleModifiable(
-              oz.name,
-              (Vector2D(oz.x1(0), oz.y1(0)), Vector2D(oz.x1(1), oz.y1(1))),
-              (Vector2D(oz.x2(0), oz.y2(0)), Vector2D(oz.x2(1), oz.y2(1))),
-              (Vector2D(oz.x3(0), oz.y3(0)), Vector2D(oz.x3(1), oz.y3(1))),
-              (Vector2D(oz.x4(0), oz.y4(0)), Vector2D(oz.x4(1), oz.y4(1)))
-            ))).toMap ++
-            s.get.flowSeparators.flatMap(_.overZone_2.map(oz => oz.name -> new RectangleModifiable(
-              oz.name,
-              (Vector2D(oz.x1(0), oz.y1(0)), Vector2D(oz.x1(1), oz.y1(1))),
-              (Vector2D(oz.x2(0), oz.y2(0)), Vector2D(oz.x2(1), oz.y2(1))),
-              (Vector2D(oz.x3(0), oz.y3(0)), Vector2D(oz.x3(1), oz.y3(1))),
-              (Vector2D(oz.x4(0), oz.y4(0)), Vector2D(oz.x4(1), oz.y4(1)))
-            ))).toMap
+          val vertexMapUpdated: Map[String, Rectangle] = {
+            vertexMap --
+              s.get.flowSeparators.flatMap(_.overZone_1.collect({ case oZone if oZone.overridenZone.isDefined => oZone.overridenZone.get })) --
+              s.get.flowSeparators.flatMap(_.overZone_2.collect({ case oZone if oZone.overridenZone.isDefined => oZone.overridenZone.get })) ++
+              s.get.flowSeparators.flatMap(_.overZone_1.map(oz => oz.name -> new RectangleModifiable(
+                oz.name,
+                (Vector2D(oz.x1(0), oz.y1(0)), Vector2D(oz.x1(1), oz.y1(1))),
+                (Vector2D(oz.x2(0), oz.y2(0)), Vector2D(oz.x2(1), oz.y2(1))),
+                (Vector2D(oz.x3(0), oz.y3(0)), Vector2D(oz.x3(1), oz.y3(1))),
+                (Vector2D(oz.x4(0), oz.y4(0)), Vector2D(oz.x4(1), oz.y4(1)))
+              ))).toMap ++
+              s.get.flowSeparators.flatMap(_.overZone_2.map(oz => oz.name -> new RectangleModifiable(
+                oz.name,
+                (Vector2D(oz.x1(0), oz.y1(0)), Vector2D(oz.x1(1), oz.y1(1))),
+                (Vector2D(oz.x2(0), oz.y2(0)), Vector2D(oz.x2(1), oz.y2(1))),
+                (Vector2D(oz.x3(0), oz.y3(0)), Vector2D(oz.x3(1), oz.y3(1))),
+                (Vector2D(oz.x4(0), oz.y4(0)), Vector2D(oz.x4(1), oz.y4(1)))
+              ))).toMap
+          }
 
           s.get.flowSeparators.map(fs => {
             val oz_1: Iterable[RectangleModifiable] = fs.overZone_1.map(oz => new RectangleModifiable(
@@ -95,7 +96,7 @@ package object graph {
               (Vector2D(oz.x3(0), oz.y3(0)), Vector2D(oz.x3(1), oz.y3(1))),
               (Vector2D(oz.x4(0), oz.y4(0)), Vector2D(oz.x4(1), oz.y4(1)))
             ))
-            val oldZones: Iterable[String] = fs.overZone_1.map(_.overridenZone) ++ fs.overZone_2.map(_.overridenZone)
+            val oldZones: Iterable[String] = fs.overZone_1.collect({case oZone if oZone.overridenZone.isDefined => oZone.overridenZone.get}) ++ fs.overZone_2.collect({case oZone if oZone.overridenZone.isDefined => oZone.overridenZone.get})
 
             new FlowSeparator(
               Vector2D(fs.x1a, fs.y1a),

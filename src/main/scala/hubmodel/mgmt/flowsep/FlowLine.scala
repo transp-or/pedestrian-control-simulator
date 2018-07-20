@@ -1,8 +1,8 @@
 package hubmodel.mgmt.flowsep
 
-import hubmodel.{FLOW_LINE_REGION_EXTENSION, Position}
-import hubmodel.ped.{PedestrianSim, PedestrianTrait, Population}
+import hubmodel.ped.{PedestrianTrait, Population}
 import hubmodel.tools.cells.Rectangle
+import hubmodel.{FLOW_LINE_REGION_EXTENSION, Position}
 
 class FlowLine(val start: Position, val end: Position, controlled: Int = 0) {
 

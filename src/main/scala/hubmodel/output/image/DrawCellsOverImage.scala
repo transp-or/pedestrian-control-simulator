@@ -2,10 +2,10 @@ package hubmodel.output.image
 
 import java.awt.image.BufferedImage
 import java.awt.{Color, Font, FontMetrics, Graphics2D}
-import javax.imageio.ImageIO
 
 import hubmodel.output.{createBackgroundFromImage, mapCoordAffine}
 import hubmodel.tools.cells.VertexPlotting
+import javax.imageio.ImageIO
 
 class DrawCellsOverImage[T <: VertexPlotting](
                                                bkgdImage: Option[String],

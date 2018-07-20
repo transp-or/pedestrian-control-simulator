@@ -8,7 +8,6 @@ import java.util.concurrent.ThreadLocalRandom
 
 import hubmodel.DES.{Action, SFGraphSimulator}
 import hubmodel._
-import hubmodel.supply.NodeIDOld
 import hubmodel.tools.cells.Rectangle
 
 /** Extension of [[Action]] which will insert a [[CreatePedestrian]] actions based on a Poisson distribution for

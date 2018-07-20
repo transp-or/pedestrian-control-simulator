@@ -25,7 +25,7 @@ package hubmodel {
       override def hashCode: Int = { this.ID.hashCode }
     }
 
-    class NodeID_New(ID: String, humanID: String) extends NodeParent(ID) {
+    class NodeID_New(ID: String, val humanID: String) extends NodeParent(ID) {
       def this(ID: String) = this(ID, ID)
 
       override def toString: ODIDOld = this.ID

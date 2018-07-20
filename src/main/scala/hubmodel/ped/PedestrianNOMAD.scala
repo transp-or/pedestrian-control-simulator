@@ -1,16 +1,8 @@
 package hubmodel.ped
 
-import java.util
-
-import hubmodel.{Acceleration, Direction, Position, Time}
-import hubmodel.TimeNumeric.mkOrderingOps
-import hubmodel.supply.continuous.Wall
 import hubmodel.tools.cells.Rectangle
+import hubmodel.{Acceleration, Direction, Position, Time}
 import myscala.math.vector.{Vector2D, ZeroVector2D}
-import nl.tudelft.pedestrians.agents.WalkingBehavior
-import nl.tudelft.pedestrians.collection.InfluenceAreaReturnPedData
-import nomad.operational.InfluenceAreaReturnObsData
-import javax.vecmath.Vector3d
 
 class PedestrianNOMAD(oZone: Rectangle, dZone: Rectangle, entryTime: Time, posO: Position, route: List[Rectangle]) extends PedestrianSim(oZone, dZone, entryTime, posO, route) {
 

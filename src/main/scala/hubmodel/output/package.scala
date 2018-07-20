@@ -3,12 +3,12 @@ package hubmodel
 import java.awt.image.BufferedImage
 import java.awt.{Color, Graphics2D}
 import java.io.File
-import javax.imageio.ImageIO
 
 import breeze.linalg.{max, min}
 import breeze.numerics.round
 import hubmodel.supply.continuous.Wall
-import hubmodel.tools.cells.{Rectangle, Vertex, VertexPlotting}
+import hubmodel.tools.cells.Vertex
+import javax.imageio.ImageIO
 
 /**
   * Created by nicholas on 6/11/17.

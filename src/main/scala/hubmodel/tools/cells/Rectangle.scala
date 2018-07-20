@@ -8,7 +8,7 @@ import myscala.math.vector.Vector2D
 class Rectangle(val name: String, C1: Position, C2: Position, C3: Position, C4: Position) extends Vertex {
 
   if (Vector(C1, C2, C3, C4).map(_.X).distinct.size != 2 || Vector(C1, C2, C3, C4).map(_.Y).distinct.size != 2){
-    throw new IllegalArgumentException("Corners of rectangle do not make orthogonal rectangle")
+    throw new IllegalArgumentException("Corners of rectangle do not make orthogonal rectangle ! + id=" + name)
   }
 
   val xMin: Double = Vector(C1, C2, C3, C4).map(_.X).min

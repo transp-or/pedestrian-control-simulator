@@ -40,8 +40,9 @@ class RouteGraph(private val vertices: Vector[Rectangle],
   private val network: DefaultDirectedWeightedGraph[Rectangle, MyEdge] = new DefaultDirectedWeightedGraph[Rectangle, MyEdge](classOf[MyEdge])
   vertexMap.values.foreach(v => network.addVertex(v))
   val edges: Set[MyEdge] = (standardEdges ++ flowGates ++ binaryGates ++ movingWalkways).toSet.
-    filterNot(e => flowSeparators.flatMap(_.overridenZones).toVector.contains(e.startVertex.name) || flowSeparators.flatMap(_.overridenZones).toVector.contains(e.endVertex.name)) ++
-    flowSeparators.flatMap(_.associatedConnectivity)
+    filterNot(e => flowSeparators.flatMap(_.associatedConnectivity.map(_.startVertex.name)).toVector.contains(e.startVertex.name)
+      || flowSeparators.flatMap(_.associatedConnectivity.map(_.startVertex.name)).toVector.contains(e.endVertex.name)
+      ) ++ flowSeparators.flatMap(_.associatedConnectivity)
 
   edges.foreach(e => {
     network.addEdge(e.startVertex, e.endVertex, e)

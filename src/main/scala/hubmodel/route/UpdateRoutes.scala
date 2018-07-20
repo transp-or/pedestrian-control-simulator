@@ -1,6 +1,5 @@
 package hubmodel.route
 
-import breeze.linalg.norm
 import hubmodel.DES.{Action, SFGraphSimulator}
 import hubmodel.tools.cells.Rectangle
 

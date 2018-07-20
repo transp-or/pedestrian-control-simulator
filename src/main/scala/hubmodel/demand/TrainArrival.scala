@@ -1,8 +1,8 @@
 package hubmodel.demand
 
-import hubmodel.demand.transit.Vehicle
 import hubmodel.DES.{Action, SFGraphSimulator}
 import hubmodel._
+import hubmodel.demand.transit.Vehicle
 import hubmodel.tools.cells.Rectangle
 
 class TrainArrival(train: Vehicle, sim: SFGraphSimulator) extends Action {

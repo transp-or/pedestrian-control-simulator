@@ -2,11 +2,11 @@ package hubmodel.output.image
 
 import java.awt.image.BufferedImage
 import java.awt.{Color, Font, FontMetrics, Graphics2D}
-import javax.imageio.ImageIO
 
-import hubmodel.output.video.Tools4Videos
 import hubmodel.output._
+import hubmodel.output.video.Tools4Videos
 import hubmodel.tools.cells.VertexPlotting
+import javax.imageio.ImageIO
 
 class DrawCells[T <: VertexPlotting](cells: Iterable[T],
                                      filename: String = "",

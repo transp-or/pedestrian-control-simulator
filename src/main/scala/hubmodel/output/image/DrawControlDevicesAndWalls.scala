@@ -1,13 +1,13 @@
 package hubmodel.output.image
 
 import java.awt.geom.AffineTransform
-import java.awt.{Color, Graphics2D}
 import java.awt.image.BufferedImage
-import javax.imageio.ImageIO
+import java.awt.{Color, Graphics2D}
 
 import hubmodel.mgmt.ControlDevices
 import hubmodel.output._
 import hubmodel.supply.continuous.Wall
+import javax.imageio.ImageIO
 import myscala.math.vector.Vector2D
 
 class DrawControlDevicesAndWalls(filename: String = "",

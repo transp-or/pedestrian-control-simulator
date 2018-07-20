@@ -1,7 +1,7 @@
 package hubmodel.demand.transit
 
+import hubmodel.Time
 import hubmodel.supply.{NodeParent, StopID_New, TrainID_New}
-import hubmodel.{Time, VehicleID}
 
 class Vehicle(val ID: TrainID_New, val trainType: String, val stop: StopID_New, val arr: Option[Time], val dep: Option[Time], val capacity: Int) {
 

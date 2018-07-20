@@ -2,11 +2,11 @@ package hubmodel.output.image
 
 import java.awt.image.BufferedImage
 import java.awt.{Color, Font, Graphics2D}
-import javax.imageio.ImageIO
 
 import hubmodel.Position
 import hubmodel.output._
-import hubmodel.tools.cells.{Rectangle}
+import hubmodel.tools.cells.Rectangle
+import javax.imageio.ImageIO
 
 class DrawGraph(edges: Vector[(Rectangle, Rectangle)],
                 filename: String = "",

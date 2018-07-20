@@ -47,12 +47,12 @@ import play.api.libs.functional.~
   implicit def orderingByPotential[A <: MyCell]: Ordering[A] = Ordering.by(v => v.potential)
 }
 */
-
+/*
 case class MyConnection(v: HexagonPotentialField, c: List[HexagonPotentialField])
 object MyConnection {
   implicit def orderingByPotential[A <: MyConnection]: Ordering[A] = Ordering.by(c => c.v.potential)
 }
-
+*/
 /*
 val a = new HexagonPotentialField(new Position(0.0,0.0), 2.0)//, List("b","c","d"))
 val b = new HexagonPotentialField(new Position(0.0,0.0), 2.0)//, List("a","e"))
@@ -127,7 +127,7 @@ val connections2: Map[HexagonPotentialField, List[HexagonPotentialField]] = Map(
   w -> List(x,v),
   x -> List(e,w)
 )*/
-
+/*
 val xMin = 0.0
 val xMax = 100.0
 val yMin = 0.0
@@ -171,7 +171,7 @@ val doorwayPoints = (9.0 to 11.0 by 0.25).map(y => new Position(0.0,y))
 
 val finalCells: IndexedSeq[HexagonPotentialField] = HexagonPotentialFields.filter(h => doorwayPoints.exists(h.isInside))
 
-
+*/
 
 // static algortihm
 /*
@@ -203,7 +203,7 @@ while(l <= lMax) {
 
 println(connections.map(_.v.potential))
 */
-
+/*
 // dynamic algorithm
 val tau: Double = 0.1
 val theta: Double = 0.9
@@ -248,7 +248,7 @@ val g = buildGraph(conn3.head, conn3.tail, List())
 println(HexagonPotentialFields.map(_.potential).mkString("\n"))
 
 new DrawCells(HexagonPotentialFields, "celltest.png")//, None, (xMax, yMax))
-
+*/
 /*
 
 import scala.math._
@@ -295,9 +295,11 @@ println(formulaParser.evaluate("2+3*5x")) // 17.0
 println(formulaParser.evaluate("height*perimeter(radius)")) // 502.6548245743669
 println(formulaParser.evaluate("m/sqrt(1-v^2/c^2)"))  // 80.00000000003415
 */
-def computeReleaseTimes(rate: Double, maxTime: Time, currentTime: Time, acc: List[Time]): List[Time] = {
-  if (currentTime.value >= maxTime.value) acc
-  else computeReleaseTimes(rate, maxTime, currentTime.addDouble(1.0 / rate), currentTime.addDouble(1.0 / rate) :: acc)
+
+case class tt(a: Int, b: Int){
+  override def hashCode(): Int = this.a.hashCode()
 }
 
-computeReleaseTimes(0.00001, Time(2.0), Time(0.0), List())
+
+
+val settest = Set(1,2,3,4)

@@ -82,7 +82,6 @@ class EvaluateState(sim: SFGraphSimulator) extends Action with Controller {
         fs.inflowLinesStart.foreach(_.reinitialize())
         fs.inflowLinesEnd.foreach(_.reinitialize())
       })
-
     }
     sim.insertEventWithDelayNew(sim.evaluate_dt)(new EvaluateState(sim))
   }
