@@ -3,12 +3,11 @@ package hubmodel.demand
 import java.time.LocalTime
 
 import hubmodel.Time
-import hubmodel.supply.{NodeIDOld, NodeID_New, NodeParent, ODIDOld, StopID_New, TrackIDOld, TrainIDOld, TrainID_New}
+import hubmodel.supply.{NodeIDOld, NodeID_New, NodeParent, ODIDOld, TrackIDOld, TrainID_New}
 //import pedtrack.StringImprovements
 import play.api.libs.json.{JsError, JsSuccess, JsValue, Json}
-import hubmodel.TimeNumeric.mkOrderingOps
+
 import scala.io.BufferedSource
-import scala.util.Try
 
 /* ----------------------------------------------------------------------------------
                                   TRACK TO NODE MAPPING

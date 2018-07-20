@@ -1,8 +1,8 @@
 package hubmodel.input
 
 
-import hubmodel.{Position, Time}
 import hubmodel.supply.{NodeIDOld, TrackIDOld}
+import hubmodel.{Position, Time}
 import play.api.libs.functional.syntax._
 import play.api.libs.json.Reads.minLength
 import play.api.libs.json._
@@ -218,7 +218,7 @@ package object JSONReaders {
                                                       y3: Vector[Double],
                                                       x4: Vector[Double],
                                                       y4: Vector[Double],
-                                                      overridenZone: String)
+                                                      overridenZone: Option[String])
 
   /**
     * Reads the JSON structure into a [[VertexOverride_JSON]] object. No validation on arguments is done.
@@ -233,7 +233,7 @@ package object JSONReaders {
       (JsPath \ "y3").read[Vector[Double]] and
       (JsPath \ "x4").read[Vector[Double]] and
       (JsPath \ "y4").read[Vector[Double]] and
-      (JsPath \ "overrides").read[String]
+      (JsPath \ "overrides").readNullable[String]
     ) (VertexOverride_JSON.apply _)
 
   /**

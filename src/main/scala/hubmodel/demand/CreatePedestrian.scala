@@ -3,7 +3,7 @@ package hubmodel.demand
 import breeze.numerics.pow
 import hubmodel.DES.{Action, SFGraphSimulator}
 import hubmodel._
-import hubmodel.ped.{PedestrianNOMAD, PedestrianSim}
+import hubmodel.ped.PedestrianNOMAD
 import hubmodel.tools.cells.Rectangle
 
 /**

@@ -12,7 +12,7 @@ import hubmodel.output.{createWhiteBackground, getBounds, mapCoordAffine, vertic
 import hubmodel.ped.PedestrianSim
 import hubmodel.supply.continuous.Wall
 import hubmodel.supply.graph.BinaryGate
-import hubmodel.tools.cells.{DensityMeasuredArea, Rectangle}
+import hubmodel.tools.cells.DensityMeasuredArea
 import org.jcodec.api.awt.AWTSequenceEncoder
 
 /** Creates a video showing the movement of individual pedestrians with the critical zones in which the density is

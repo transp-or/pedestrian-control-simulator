@@ -3,14 +3,12 @@ package optimization.bruteforce
 import com.typesafe.config.Config
 import hubmodel.DES.SFGraphSimulator
 import hubmodel.mgmt.ControlDevices
-import hubmodel.{ResultsContainer, createSimulation, runAndCollect}
+import hubmodel.{runAndCollect}
 import hubmodel.supply.graph.FlowGateFunctional
 import myscala.math.stats.ComputeStats
 
 import scala.collection.immutable.NumericRange
 import scala.collection.parallel.ForkJoinTaskSupport
-import scala.concurrent.Future
-import scala.util.{Failure, Success}
 
 
 class ParameterExploration(val referenceSimulator: SFGraphSimulator, config: Config) {

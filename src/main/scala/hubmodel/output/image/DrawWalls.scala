@@ -2,10 +2,10 @@ package hubmodel.output.image
 
 import java.awt.image.BufferedImage
 import java.awt.{Color, Font, Graphics2D}
-import javax.imageio.ImageIO
 
 import hubmodel.output._
 import hubmodel.supply.continuous.Wall
+import javax.imageio.ImageIO
 
 class DrawWalls(walls: Iterable[Wall],
                 filename: String = "",

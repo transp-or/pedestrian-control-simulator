@@ -4,36 +4,47 @@ import java.awt.{Color, Graphics2D}
 import java.awt.image.BufferedImage
 
 import visualization.PlotOptions
-import hubmodel.output.createWhiteBackground
 import javax.imageio.ImageIO
 
 class HeatMap(outputFile: String,
-              data: Iterable[(Double, Double, Double)],
+              rawData: Iterable[(Double, Double, Double)],
               label: String,
               xLabel: String,
               yLabel: String,
               opts: PlotOptions = PlotOptions()) extends DrawingComponents(opts.border2HorizontalAxis, opts.border2VerticalAxis, (opts.width, opts.height)) {
 
+  val data: Iterable[(Double, Double, Double)] = rawData.filterNot(_._3.isNaN)
+
   // finds the intervals in data
   val xInterval: Double = {
     val xCoordsDistinct: Vector[Double] = data.map(r => r._1).toVector.distinct.sorted
-    val distinctGaps: Vector[Double] = xCoordsDistinct.dropRight(1).zip(xCoordsDistinct.tail).map(t => (t._2 - t._1)).distinct
-    if (!distinctGaps.dropRight(1).zip(distinctGaps.tail).forall(t => math.abs(t._1 - t._2) < math.pow(10, -2))) {
-      println(distinctGaps)
-      throw new RuntimeException("Gaps in x direction of data for heatmap are not constant !")
+    xCoordsDistinct.size match {
+      case 0 => throw new RuntimeException("no data in x direction ! maybe only NaNs are present ?")
+      case 1 => xCoordsDistinct.head
+      case _ => {
+        val distinctGaps: Vector[Double] = xCoordsDistinct.dropRight(1).zip(xCoordsDistinct.tail).map(t => t._2 - t._1).distinct
+        if (!distinctGaps.dropRight(1).zip(distinctGaps.tail).forall(t => math.abs(t._1 - t._2) < math.pow(10, -3))) {
+          throw new RuntimeException("Gaps in x direction of data for heatmap are not constant ! distinctGaps = " + distinctGaps.mkString(", "))
+        }
+        distinctGaps(0)
+      }
     }
-      distinctGaps(0)
   }
 
    val yInterval: Double = {
-    val yCoordsDistinct: Vector[Double] = data.map(_._2).toVector.distinct.sorted
-    val distinctGaps: Vector[Double] = yCoordsDistinct.dropRight(1).zip(yCoordsDistinct.tail).map(t => math.round(100.0*(t._2 - t._1))).distinct.map(_/100.0)
-    if (distinctGaps.size != 1) {
-      println(distinctGaps)
-      throw new RuntimeException("Gaps in y direction of data for heatmap are not constant !")
-    }
-    distinctGaps(0)
-  }
+     val yCoordsDistinct: Vector[Double] = data.map(_._2).toVector.distinct.sorted
+     yCoordsDistinct.size match {
+       case 0 => throw new RuntimeException("no data in y direction ! maybe only NaNs are present ?")
+       case 1 => yCoordsDistinct.head
+       case _ => {
+         val distinctGaps: Vector[Double] = yCoordsDistinct.dropRight(1).zip(yCoordsDistinct.tail).map(t => t._2 - t._1).distinct
+         if (!distinctGaps.dropRight(1).zip(distinctGaps.tail).forall(t => math.abs(t._1 - t._2) < math.pow(10, -3))) {
+           throw new RuntimeException("Gaps in y direction of data for heatmap are not constant ! distinctGaps = " + distinctGaps.mkString(", "))
+         }
+         distinctGaps(0)
+       }
+     }
+   }
 
   // minimum and maximum of each axis
   val xMin: Double = data.map(_._1).min - 0.5*xInterval
@@ -49,8 +60,12 @@ class HeatMap(outputFile: String,
 
   // completes abstract classes by implementing the mapping functions
   override def mapHCoord: (Time) => Int = mapHcoordLinear(xMin, xMax, opts.width-opts.border2HorizontalAxis-opts.border2VerticalAxis)
-  override def mapVCoord: (Time) => Int = mapVcoordLinear(yMin, 1.2*yMax, opts.height-2*opts.border2HorizontalAxis)
+  override def mapVCoord: (Time) => Int = mapVcoordLinear(yMin, yMax, opts.height-2*opts.border2HorizontalAxis)
   override def verticalTransformation: Int => Int = verticalMirrorTransformation(canvas.getHeight)
+
+  println(xMin, xMax, yMin, yMax)
+  println(rawData.map(_._1).toVector.distinct.size, data.map(_._1).toVector.distinct.size)
+  println(rawData.map(_._2).toVector.distinct.size, data.map(_._2).toVector.distinct.size)
 
   drawAxisShifted(gCanvas, (xMin, yMin), Some(xMin+0.5*xInterval, xMax-0.5*xInterval, xInterval,xLabel), Some(yMin+0.5*yInterval, yMax-0.5*yInterval, yInterval,yLabel))
   drawHeatMap(gCanvas, data, (xInterval, data.map(_._1).toVector.distinct.size), (yInterval, data.map(_._2).toVector.distinct.size), opts.zmin, opts.zmax)

@@ -3,7 +3,7 @@ package hubmodel.mgmt.flowsep
 import hubmodel.supply.continuous.{MovableWall, SINGLELINE, Wall}
 import hubmodel.supply.graph.MyEdge
 import hubmodel.tools.cells.RectangleModifiable
-import hubmodel.{Position, Time, generateUUID, FLOW_SEPARATOR_UPDATE}
+import hubmodel.{FLOW_SEPARATOR_UPDATE, Position, Time, generateUUID}
 
 class FlowSeparator(val startA: Position,
                     val startB: Position,
@@ -50,10 +50,11 @@ class FlowSeparator(val startA: Position,
     else if (rawFrac > 0.9) 1.0
     else rawFrac
 
-    if ( math.abs(frac - this.fractionHistory.last._2)/this.fractionHistory.last._2 > FLOW_SEPARATOR_UPDATE) {
+    if ( math.abs(frac - this.fractionHistory.last._2)/this.fractionHistory.last._2 > FLOW_SEPARATOR_UPDATE ) {
       this.start = startA + (startB - startA) * frac
       this.end = endA + (endB - endA) * frac
     }
+
     fractionHistory.append((time, frac))
     positionHistory.append((time, this.start, this.end))
   }

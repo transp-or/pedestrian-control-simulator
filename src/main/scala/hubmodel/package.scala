@@ -1,6 +1,5 @@
 import java.io.{BufferedWriter, File, FileWriter}
 
-import RunSimulation.config
 import breeze.numerics.{floor, round}
 import com.typesafe.config.{Config, ConfigFactory}
 import hubmodel.DES.SFGraphSimulator
@@ -13,12 +12,8 @@ import hubmodel.supply.graph.{BinaryGate, Stop2Vertex, readGraph, readStop2Verte
 import hubmodel.tools.cells.DensityMeasuredArea
 import myscala.math.vector.{Vector2D, Vector3D}
 import myscala.timeBlock
-import play.api.libs.functional.syntax._
 import play.api.libs.json.Reads._
 import play.api.libs.json._
-
-import scala.collection.parallel.ForkJoinTaskSupport
-import scala.concurrent.Future
 /**
   * Created by nicholas on 5/12/17.
   */

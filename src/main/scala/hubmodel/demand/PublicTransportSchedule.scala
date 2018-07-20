@@ -1,12 +1,7 @@
 package hubmodel.demand
 
-import hubmodel.{StopID, VehicleID}
 import hubmodel.demand.transit.Vehicle
-import hubmodel.supply.{NodeIDOld, NodeID_New, NodeParent, TrackIDOld, StopID_New, TrainIDOld, TrainID_New}
-import play.api.libs.json.{JsError, JsSuccess, JsValue, Json}
-
-import scala.io.BufferedSource
-import scala.util.Try
+import hubmodel.supply.{StopID_New, TrainID_New}
 
 class PublicTransportSchedule(loc: String, _schedule: Vector[Vehicle]) {
   val vehicle2Stop: Map[TrainID_New, StopID_New] = _schedule.map (t => t.ID -> t.stop).toMap

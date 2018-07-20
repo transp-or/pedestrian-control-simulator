@@ -8,21 +8,18 @@ import scala.io.BufferedSource
 import java.time.format.DateTimeFormatter
 import java.time.{LocalDateTime, LocalTime}
 
-import hubmodel.supply.NodeIDOld
-
 
 /**
   * Created by nicholas on 3/8/17.
   */
 package hubmodel {
 
+  import hubmodel.TimeNumeric.mkOrderingOps
   import hubmodel.demand.transit.Vehicle
-  import hubmodel.demand.{PublicTransportSchedule, transit}
   import hubmodel.input.JSONReaders.PublicTransportScheduleReader
-  import hubmodel.input.JSONReaders.TRANSFORM.{PedestrianCollectionReaderTF, Pedestrian_JSON_TF, PublicTransportScheduleReaderTF}
+  import hubmodel.input.JSONReaders.TRANSFORM.{PedestrianCollectionReaderTF, PublicTransportScheduleReaderTF}
   import hubmodel.supply.{NodeID_New, StopID_New, TrainID_New}
   import hubmodel.tools.cells.Rectangle
-  import hubmodel.TimeNumeric.mkOrderingOps
 
   package object demand {
 

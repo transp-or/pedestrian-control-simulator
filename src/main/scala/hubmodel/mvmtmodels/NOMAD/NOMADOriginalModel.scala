@@ -1,9 +1,5 @@
 package hubmodel.mvmtmodels.NOMAD
 
-import java.util
-import java.util.ArrayList
-
-import breeze.linalg.max
 import hubmodel.DES.{Action, SFGraphSimulator}
 import hubmodel._
 import hubmodel.ped.PedestrianSim

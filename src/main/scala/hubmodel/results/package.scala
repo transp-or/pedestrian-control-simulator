@@ -1,6 +1,6 @@
 package hubmodel
 
-import hubmodel.ped.{PedestrianSim}
+import hubmodel.ped.PedestrianSim
 import hubmodel.tools.cells.Rectangle
 import myscala.math.stats.ComputeStats
 

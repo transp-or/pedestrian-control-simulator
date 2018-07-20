@@ -2,11 +2,11 @@ package hubmodel.output.image
 
 import java.awt.image.BufferedImage
 import java.awt.{Color, Graphics2D}
-import javax.imageio.ImageIO
 
 import hubmodel.output._
 import hubmodel.supply.continuous.Wall
 import hubmodel.tools.cells.Rectangle
+import javax.imageio.ImageIO
 
 class DrawWallsAndGraph(walls: Iterable[Wall], edges: Vector[(Rectangle, Rectangle)], filename: String) {
 

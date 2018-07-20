@@ -3,13 +3,13 @@ package hubmodel.mvmtmodels.NOMAD
 import java.util
 import java.util.concurrent.ThreadLocalRandom
 
-import javax.vecmath.Vector3d
 import com.vividsolutions.jts.geom.Coordinate
 import hubmodel.DES.{Action, SFGraphSimulator}
 import hubmodel.ped.PedestrianNOMAD
 import hubmodel.supply.continuous.Wall
 import hubmodel.tools.cells.isInVertex
 import hubmodel.{Position, Time}
+import javax.vecmath.Vector3d
 import myscala.math.vector.Vector2D
 import nl.tudelft.pedestrians.agents.WalkingBehavior.{pedestrianPhysical, pedestrianRepellOpposing}
 import nl.tudelft.pedestrians.collection.InfluenceAreaReturnPedData
@@ -903,7 +903,6 @@ class NOMADIntegrated(sim: SFGraphSimulator) extends Action {
 
     val tempList = new java.util.ArrayList[InfluenceAreaReturnPedData]
     // for each pedestrian from the list
-    import scala.collection.JavaConversions._
     for (otherPedestrian <- pedestrians) { //  check if the pedestrians are different.
       //if (otherPedestrian.getName().compareToIgnoreCase(thisPedestrian.getName())!=0){
       if (otherPedestrian.ID != thisPedestrian.ID) {
