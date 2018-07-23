@@ -7,14 +7,14 @@
       "destination": "bottom",
       "start": "00:00:00",
       "end": "00:05:00",
-      "flow": 600
+      "flow": 550
     },
     {
       "origin": "bottom",
       "destination": "top",
       "start": "00:00:00",
       "end": "00:05:00",
-      "flow": 600
+      "flow": 550
     }
   ],
   "function_flows": [ ]
