@@ -17,7 +17,7 @@ class FlowSensitivity(refSimulator: SFGraphSimulator, config: Config) {
 
     val defaultParameters = refSimulator.getSetupArguments
 
-    val sims = (for (i <- 0.0 to 1.0 by increments ; j <- 0.0 to 1.0 by increments; if i >= j ) yield {
+    val sims = (for (i <- 0.75 to 1.0 by increments ; j <- 0.75 to 1.0 by increments; if i >= j ) yield {
       Vector.fill(repetitions)({
 
         val newFlows = (

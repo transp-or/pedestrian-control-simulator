@@ -43,6 +43,8 @@ object ExploreSensitivityFlows extends App {
   // Reads the file passed as argument
   val config: Config = ConfigFactory.load(confFile)
 
+
+
   val flowRatioSensitivity: FlowSensitivity = new FlowSensitivity(createSimulation(config), config)
   val results = flowRatioSensitivity.varyOpposingFlows(1.0/10.0, config.getInt("sim.nb_runs"))
 

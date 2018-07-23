@@ -64,7 +64,6 @@ class EvaluateState(sim: SFGraphSimulator) extends Action with Controller {
     sim.controlDevices.flowSeparators.foreach(fs => {
       //println(fs.inflowLinesStart.map(_.getPedestrianFlow).sum.toDouble, fs.inflowLinesEnd.map(_.getPedestrianFlow).sum.toDouble, fs.inflowLinesStart.map(_.getPedestrianFlow).sum.toDouble / fs.inflowLinesEnd.map(_.getPedestrianFlow).sum.toDouble)
 
-      fs.updateWallPosition(sim.currentTime)
     })
   }
 
@@ -77,8 +76,10 @@ class EvaluateState(sim: SFGraphSimulator) extends Action with Controller {
     sim.eventLogger.trace("sim-time=" + sim.currentTime + ": number people inside critical area: " + sim.densityHistory.last._2)
     if (sim.useGating) { sim.insertEventWithZeroDelay(new DLQRGateController(sim)) }
     if (sim.useFlowSep) {
-      processIncomingFlows()
+      //processIncomingFlows()
       sim.controlDevices.flowSeparators.foreach(fs => {
+        fs.updateWallTargetPosition(sim.currentTime)
+        if ( !fs.movingWallEventIsInserted && fs.flowSeparatorNeedsToMove(sim.sf_dt) ) { sim.insertEventWithZeroDelay(new fs.MoveFlowSeperator(sim)) }
         fs.inflowLinesStart.foreach(_.reinitialize())
         fs.inflowLinesEnd.foreach(_.reinitialize())
       })
