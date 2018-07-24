@@ -10,15 +10,15 @@ import scala.collection.parallel.ForkJoinTaskSupport
 
 class FlowSensitivity(refSimulator: SFGraphSimulator, config: Config) {
 
-  def varyOpposingFlows(increments: Double, repetitions: Int): Map[(Double, Double), (Int, Double, Double, Double, Double, Double)] = {
+  def varyOpposingFlows(increments: Double): Map[(Double, Double), (Int, Double, Double, Double, Double, Double)] = {
 
-    if (increments<=0.0 || increments > 1.0) { throw new IllegalArgumentException("increment must be contained between 0.0 and 1.0 ! increments=" + increments) }
-    if (repetitions <=0) {throw new IllegalArgumentException("repetitions must be positive ! repetitions=" + repetitions) }
+    if (increments <= 0.0 || increments > 1.0) { throw new IllegalArgumentException("increment must be contained between 0.0 and 1.0 ! increments=" + increments) }
+    if (config.getInt("sim.nb_runs") <= 0) {throw new IllegalArgumentException("repetitions must be positive ! repetitions=" + config.getInt("sim.nb_runs")) }
 
     val defaultParameters = refSimulator.getSetupArguments
 
     val sims = (for (i <- 0.75 to 1.0 by increments ; j <- 0.75 to 1.0 by increments; if i >= j ) yield {
-      Vector.fill(repetitions)({
+      Vector.fill(config.getInt("sim.nb_runs"))({
 
         val newFlows = (
           defaultParameters._10._1.map(flow => {
@@ -29,6 +29,7 @@ class FlowSensitivity(refSimulator: SFGraphSimulator, config: Config) {
           defaultParameters._10._2,
           defaultParameters._10._3
         )
+
         val devices = defaultParameters._11.clone()
         (i, j, new SFGraphSimulator(
           defaultParameters._1,
@@ -47,9 +48,10 @@ class FlowSensitivity(refSimulator: SFGraphSimulator, config: Config) {
 
       })
    }).toVector.flatten.par
+
     sims.tasksupport = new ForkJoinTaskSupport(new java.util.concurrent.ForkJoinPool(config.getInt("execution.threads")))
     val simulationResults = sims.map(sim => (sim._1, sim._2, runAndCollect(sim._3))).seq.groupBy(tup => (tup._1, tup._2))
-    simulationResults.map(tu => (tu._1, tu._2.flatMap(r => r._3._1.map(_.travelTime.value)).stats))
+    simulationResults.map(tu => tu._1 -> tu._2.flatMap(r => r._3._1.map(_.travelTime.value)).stats)
   }
 
 
