@@ -46,7 +46,7 @@ object ExploreSensitivityFlows extends App {
 
 
   val flowRatioSensitivity: FlowSensitivity = new FlowSensitivity(createSimulation(config), config)
-  val results = flowRatioSensitivity.varyOpposingFlows(1.0/5.0)
+  val results = flowRatioSensitivity.varyOpposingFlows(1.0/2.0)
 
   results.map(r => (r._1._1, r._1._2, r._2._1, r._2._2, r._2._3, r._2._4, r._2._5, r._2._6)).toVector.writeToCSV(config.getString("output.output_prefix") + "_flow-sensitivity-results.csv")
 
