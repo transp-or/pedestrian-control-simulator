@@ -2,11 +2,11 @@
 name := "hub-simulator"
 organization := "ch.epfl.transpor.pedestrians"
 version := "1.0-SNAPSHOT"
-scalaVersion := "2.12.4"
+scalaVersion := "2.12.6"
 fork in run := true
 
 javaOptions in run ++= Seq(
-  "-Xms512M", "-Xmx14G", "-XX:+UseConcMarkSweepGC"
+  "-Xms4G", "-Xmx120G", "-XX:+UseConcMarkSweepGC"
 )
 
 libraryDependencies ++= Seq(

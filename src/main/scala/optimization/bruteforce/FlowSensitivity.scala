@@ -3,7 +3,9 @@ package optimization.bruteforce
 import com.typesafe.config.Config
 import hubmodel.DES.SFGraphSimulator
 import hubmodel.demand.PedestrianFlow_New
+import hubmodel.ped.PedestrianSim
 import hubmodel.runAndCollect
+import hubmodel.tools.cells.DensityMeasuredArea
 import myscala.math.stats.ComputeStats
 
 import scala.collection.parallel.ForkJoinTaskSupport
@@ -17,8 +19,8 @@ class FlowSensitivity(refSimulator: SFGraphSimulator, config: Config) {
 
     val defaultParameters = refSimulator.getSetupArguments
 
-    val sims = (for (i <- 0.0 to 1.0 by increments ; j <- 0.0 to 1.0 by increments; if i >= j ) yield {
-      Vector.fill(config.getInt("sim.nb_runs"))({
+    val sims: collection.parallel.ParSeq[(Double, Double, SFGraphSimulator)] = (for (i <- 0.0 to 1.0 by increments ; j <- 0.0 to 1.0 by increments; n <- 0 to config.getInt("sim.nb_runs"); if i >= j ) yield {
+      //Vector.fill(config.getInt("sim.nb_runs"))({
 
         val newFlows = (
           defaultParameters._10._1.map(flow => {
@@ -45,13 +47,13 @@ class FlowSensitivity(refSimulator: SFGraphSimulator, config: Config) {
           devices
           )
         )
-
-      })
-   }).flatten.par
+      //})
+   }).par
 
     sims.tasksupport = new ForkJoinTaskSupport(new java.util.concurrent.ForkJoinPool(config.getInt("execution.threads")))
-    val simulationResults = sims.map(sim => (sim._1, sim._2, runAndCollect(sim._3))).seq.groupBy(tup => (tup._1, tup._2))
-    simulationResults.map(tu => tu._1 -> tu._2.flatMap(r => r._3._1.map(_.travelTime.value)).stats)
+    val simulationResults: collection.parallel.ParSeq[(Double, Double, (Vector[PedestrianSim], Map[String, DensityMeasuredArea], Vector[PedestrianSim]))] = sims.map(sim => (sim._1, sim._2, runAndCollect(sim._3)))
+
+    simulationResults.seq.groupBy(tup => (tup._1, tup._2)).map(tu => tu._1 -> tu._2.flatMap(r => r._3._1.map(_.travelTime.value)).stats)
   }
 
 
