@@ -79,7 +79,7 @@ class EvaluateState(sim: SFGraphSimulator) extends Action with Controller {
       //processIncomingFlows()
       sim.controlDevices.flowSeparators.foreach(fs => {
         fs.updateWallTargetPosition(sim.currentTime)
-        println(!fs.movingWallEventIsInserted, fs.flowSeparatorNeedsToMove(sim.sf_dt))
+        //println(!fs.movingWallEventIsInserted, fs.flowSeparatorNeedsToMove(sim.sf_dt))
         if ( !fs.movingWallEventIsInserted && fs.flowSeparatorNeedsToMove(sim.sf_dt) ) { sim.insertEventWithZeroDelay(new fs.MoveFlowSeperator(sim)) }
         fs.inflowLinesStart.foreach(_.reinitialize())
         fs.inflowLinesEnd.foreach(_.reinitialize())
