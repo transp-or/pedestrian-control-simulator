@@ -33,5 +33,5 @@ class FlowGateFunctional(startVertex: Rectangle, endVertex: Rectangle, start: Po
     */
   override def canEqual(other: Any): Boolean = other.isInstanceOf[FlowGateFunctional]
 
-  override def toString: String = "FlowGateFunctional: o: " + startVertex + ", d:" + endVertex
+  override def toString: String = "FlowGateFunctional. ID=" + this.ID + ", o=" + startVertex + ", d=" + endVertex + ", cst=" + functionalForm(0.0) + ", slope=" + (functionalForm(1.0) - functionalForm(0.0))
 }

@@ -150,6 +150,9 @@ class SFGraphSimulator(override val startTime: Time,
 
   class StartSim(sim: SFGraphSimulator) extends super.GenericStartSim(sim) {
     override def execute(): Unit = {
+      sim.eventLogger.trace("Simulation components:")
+      if (sim.useFlowGates) {sim.eventLogger.trace(" * flow gates: " + sim.controlDevices.flowGates.map(_.toString).mkString("\n  * "))}
+      if (sim.useFlowSep) { sim.eventLogger.trace{" * flow separators: " + sim.controlDevices.flowSeparators.map(_.toString).mkString("\n  * ")} }
       sim.eventLogger.trace("sim-time=" + sim.currentTime + ": simulation started. dt=" + sim.sf_dt)
       sim.insertEventWithZeroDelay(new ProcessTimeTable(sim))
       sim.insertEventWithZeroDelay(new ProcessPedestrianFlows(sim))

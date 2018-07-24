@@ -46,7 +46,7 @@ class ParameterExploration(val referenceSimulator: SFGraphSimulator, config: Con
         )
         )
       })
-    }).toVector.flatten.par
+    }).flatten.par
 
       //println("Running simulation with linear flow gate function: flowrate = " + i + " + " + j + "*density")
     sims.tasksupport = new ForkJoinTaskSupport(new java.util.concurrent.ForkJoinPool(config.getInt("execution.threads")))

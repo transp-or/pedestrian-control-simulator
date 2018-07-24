@@ -34,13 +34,13 @@ abstract class PedestrianDES[T <: PedestrianTrait](val startTime: Time,
                                                    val finalTime: Time) {
 
   /** Randomly generated string to make unique logs */
-  val str: String = Random.alphanumeric take 10 mkString ""
+  private val ID: String = Random.alphanumeric take 10 mkString ""
 
   /** Log for keeping track of events */
-  val eventLogger: Logger = new Log("log-DES-events" + str, Level.TRACE).logger
+  val eventLogger: Logger = new Log("log-DES-events" + ID, Level.TRACE).logger
 
   /** Log for storing errors */
-  val errorLogger: Logger = new Log("log-DES-errors" + str, Level.TRACE).logger
+  val errorLogger: Logger = new Log("log-DES-errors" + ID, Level.TRACE).logger
 
   /** current time of the simulation */
   private var _currentTime: Time = startTime
@@ -279,17 +279,18 @@ abstract class PedestrianDES[T <: PedestrianTrait](val startTime: Time,
     * until the list is empty.
     */
   def genericRun(startEvent: GenericStartSim): Unit = {
-    println("Starting simulation")
+    println("Running simulation " + this.ID + "...")
     insertEventWithDelayNew(new Time(0.0)) {
       startEvent
     }
     while (this.eventList.nonEmpty) {
       val event = eventList.dequeue()
       this._currentTime = event.t
-      if (this._currentTime.value % 120.0 == 0) {
+      /*if (this._currentTime.value % 120.0 == 0) {
         print(" * simulation at " + this._currentTime + " sec\r")
-      }
+      }*/
       event.action.execute()
     }
+    println("simulation " + this.ID + " completed !")
   }
 }
