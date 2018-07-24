@@ -47,7 +47,7 @@ class FlowSensitivity(refSimulator: SFGraphSimulator, config: Config) {
         )
 
       })
-   }).toVector.flatten.par
+   }).flatten.par
 
     sims.tasksupport = new ForkJoinTaskSupport(new java.util.concurrent.ForkJoinPool(config.getInt("execution.threads")))
     val simulationResults = sims.map(sim => (sim._1, sim._2, runAndCollect(sim._3))).seq.groupBy(tup => (tup._1, tup._2))
