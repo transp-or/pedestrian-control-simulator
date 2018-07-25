@@ -4,7 +4,7 @@ import com.typesafe.config.Config
 import hubmodel.DES.SFGraphSimulator
 import hubmodel.mgmt.ControlDevices
 import hubmodel.ped.PedestrianSim
-import hubmodel.runAndCollect
+import hubmodel.{ResultsContainer, ResultsContainerNew, runAndCollect}
 import hubmodel.supply.graph.FlowGateFunctional
 import hubmodel.tools.cells.DensityMeasuredArea
 import myscala.math.stats.ComputeStats
@@ -52,8 +52,8 @@ class ParameterExploration(val referenceSimulator: SFGraphSimulator, config: Con
 
       //println("Running simulation with linear flow gate function: flowrate = " + i + " + " + j + "*density")
     sims.tasksupport = new ForkJoinTaskSupport(new java.util.concurrent.ForkJoinPool(config.getInt("execution.threads")))
-    val simulationResults: collection.parallel.ParSeq[(Double, Double, (Vector[PedestrianSim], Map[String, DensityMeasuredArea], Vector[PedestrianSim]))] = sims.map(sim => (sim._1, sim._2, runAndCollect(sim._3)))
-      simulationResults.seq.groupBy(tup => (tup._1, tup._2)).map(tu => tu._1 -> (tu._2.flatMap(r => r._3._1.map(_.travelTime.value)).stats, tu._2.flatMap(r => r._3._2.values.flatMap(_.densityHistory.map(_._2))).stats))
+    val simulationResults: collection.parallel.ParSeq[(Double, Double, ResultsContainerNew)] = sims.map(sim => (sim._1, sim._2, runAndCollect(sim._3)))
+      simulationResults.seq.filter(_._3.exitCode == 0).groupBy(tup => (tup._1, tup._2)).map(tu => tu._1 -> (tu._2.flatMap(r => r._3.completedPeds.map(_.travelTime.value)).stats, tu._2.flatMap(r => r._3.densityZones.values.flatMap(_.densityHistory.map(_._2))).stats))
       //val densityStats = simulationResults.map(tu => (tu._1, tu._2.flatMap(r => r._3._2.values.flatMap(_.densityHistory.map(_._2))).stats))
 
   }

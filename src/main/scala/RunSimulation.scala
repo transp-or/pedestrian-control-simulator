@@ -78,7 +78,7 @@ object RunSimulation extends App {
 
 
   // Runs the simulations in parallel or sequential based on the config file.
-  val results: Vector[ResultsContainer] = {
+  val results: Vector[ResultsContainerNew] = {
 
     println("Preparing " + n + " simulations")
 
@@ -105,7 +105,7 @@ object RunSimulation extends App {
     }
   }
 
-  println(results.flatMap(_._1.map(_.travelTime.value)).stats)
+  //println(results.flatMap(_.completedPeds.map(_.travelTime.value)).stats)
 
   if (config.getBoolean("output.write_travel_times") || config.getBoolean("output.write_densities") || config.getBoolean("output.write_tt_stats") ) {
 
@@ -113,7 +113,7 @@ object RunSimulation extends App {
 
     // Collects then writes individual travel times to csv
     if (config.getBoolean("output.write_travel_times")) results
-      .map(r => r._1.map(p => p.travelTime.value))
+      .map(r => r.completedPeds.map(p => p.travelTime.value))
       .writeToCSV(
         config.getString("output.output_prefix") + "_travel_times.csv",
         columnNames = Some(Vector.fill(results.size)("r").zipWithIndex.map(t => t._1 + t._2.toString)),
@@ -123,7 +123,7 @@ object RunSimulation extends App {
     // Collects then writes individual travel times with OD to csv
     if (config.getBoolean("output.write_travel_times")) results
       .zipWithIndex
-      .flatMap(r => r._1._1.map(p => (r._2, p.travelTime, p.origin, p.finalDestination)))
+      .flatMap(r => r._1.completedPeds.map(p => (r._2, p.travelTime, p.origin, p.finalDestination)))
       .writeToCSV(
         config.getString("output.output_prefix") + "_travel_times_OD.csv",
         columnNames = Some(Vector("run", "travel_time", "origin_id", "destination_id")),
@@ -131,18 +131,18 @@ object RunSimulation extends App {
       )
 
     // Collects times at which densities where measured
-    val densityTimes: Vector[Time] = results.head._2.head._2.densityHistory.unzip._1.toVector
+    val densityTimes: Vector[Time] = results.head.densityZones.head._2.densityHistory.unzip._1.toVector
 
      // writes densities to csv, first column is time, second column is mean, third column is var, then all individual densities
     if (config.getBoolean("output.write_densities") && config.getBoolean("sim.measure_density")) {
-      for (i <- results.head._2.keySet) {
+      for (i <- results.head.densityZones.keySet) {
         val densityStatsPerTime: Vector[(Int, Double, Double, Double, Double, Double)] = for (j <- densityTimes) yield {
-          (for (k <- results.map(_._2)) yield {
+          (for (k <- results.map(_.densityZones)) yield {
             k(i).densityHistory.find(_._1 == j).get._2
           }).stats
         }
 
-        val densities: Vector[ArrayBuffer[Double]] = results.map(_._2(i).densityHistory.map(_._2))
+        val densities: Vector[ArrayBuffer[Double]] = results.map(_.densityZones(i).densityHistory.map(_._2))
         (for (ii <- densityStatsPerTime.indices) yield {
           Vector(densityStatsPerTime(ii)._1, densityStatsPerTime(ii)._2, densityStatsPerTime(ii)._3, densityStatsPerTime(ii)._4,
             densityStatsPerTime(ii)._5, densityStatsPerTime(ii)._6) ++ densities.map(_(ii))
@@ -155,12 +155,12 @@ object RunSimulation extends App {
     }
 
     // computes statistics on travel times and writes them
-    if (config.getBoolean("output.write_tt_stats")) results.map(r => stats(r._1.map(p => p.travelTime.value))).writeToCSV(config.getString("output.output_prefix") + "_travel_times_stats.csv", rowNames = None, columnNames = Some(Vector("size", "mean", "variance", "median", "min", "max")))
+    if (config.getBoolean("output.write_tt_stats")) results.map(r => stats(r.completedPeds.map(p => p.travelTime.value))).writeToCSV(config.getString("output.output_prefix") + "_travel_times_stats.csv", rowNames = None, columnNames = Some(Vector("size", "mean", "variance", "median", "min", "max")))
   }
 
   if (config.getBoolean("output.write_trajectories_as_VS")) {
     println("Writing trajectories as VS to file")
-    writePopulationTrajectories(results.head._1++results.head._3, config.getString("output.output_prefix") + "_simulation_trajectories.csv")
+    writePopulationTrajectories(results.head.completedPeds++results.head.uncompletedPeds, config.getString("output.output_prefix") + "_simulation_trajectories.csv")
   }
 
   // Analyse pedestrian data like travel time and walking speed by departure time interval.
@@ -179,7 +179,7 @@ object RunSimulation extends App {
     def pedFilter: PedestrianSim => Boolean = ped => ODPairsToAnalyse.exists(_ == (ped.origin.name, ped.finalDestination.name))
 
     val speedByInteval: Vector[Vector[(Double, Double)]] = results.map(r => {
-      val res = r._1.aggregateMetricByTimeWindow(pedFilter, pedData, pedWindows)
+      val res = r.completedPeds.aggregateMetricByTimeWindow(pedFilter, pedData, pedWindows)
       (res.map( r => (r._1, r._2._2)).toVector ++ (simulationStartTime.value to simulationEndTime.value by evaluationInterval.value).filterNot(res.keySet.contains(_)).map(t => (t, Double.NaN))).sortBy(_._1)//
     })
 
@@ -195,7 +195,7 @@ object RunSimulation extends App {
     def pedData2: PedestrianSim => Double = ped => ped.travelTime.value
 
     val ttByIntervals: IndexedSeq[IndexedSeq[(Double, Double)]] = results.map(r => {
-      val res = r._1.aggregateMetricByTimeWindow(pedFilter, pedData2, pedWindows)
+      val res = r.completedPeds.aggregateMetricByTimeWindow(pedFilter, pedData2, pedWindows)
       (res.map( r => (r._1, r._2._2)).toVector ++ (simulationStartTime.value to simulationEndTime.value by evaluationInterval.value).filterNot(res.keySet.contains(_)).map(t => (t, Double.NaN))).sortBy(_._1)//
     })
 
@@ -216,7 +216,7 @@ object RunSimulation extends App {
   // ******************************************************************************************
 
   if (config.getBoolean("output.write_tt_4_transform")) {
-    results.flatten(_._1).computeTT4TRANSFORM(0.0.to(100.0).by(config.getDouble("output.write_tt_4_transform_quantile_interval")), simulationStartTime, simulationEndTime, config.getString("output.write_tt_4_transform_file_name"))
+    results.flatten(_.completedPeds).computeTT4TRANSFORM(0.0.to(100.0).by(config.getDouble("output.write_tt_4_transform_quantile_interval")), simulationStartTime, simulationEndTime, config.getString("output.write_tt_4_transform_file_name"))
   }
 }
 

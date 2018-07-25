@@ -48,6 +48,16 @@ abstract class PedestrianDES[T <: PedestrianTrait](val startTime: Time,
   /** getter method for the current time */
   def currentTime: Time = _currentTime
 
+  /** Exit code of the simulation:
+    * - defined as -1 on creation
+    * - 0 for normal completion
+    * - 1 if the simulation wsa aborted if the queues at gates gets too long
+    */
+  private var _exitCode: Int = -1
+
+  /** getter method for the exit code */
+  def exitCode: Int = this._exitCode
+
   /** An Action becomes an Event when a time is associated.
     *
     * @param t      time at which the action must be performed
@@ -81,7 +91,7 @@ abstract class PedestrianDES[T <: PedestrianTrait](val startTime: Time,
     *
     * It is private as only the [[insertEventWithDelay]] method is allowed to add events.
     */
-  val eventList: collection.mutable.PriorityQueue[MyEvent] = collection.mutable.PriorityQueue()
+  protected val eventList: collection.mutable.PriorityQueue[MyEvent] = collection.mutable.PriorityQueue()
 
   /** Use the new version of this method which uses the [[Time]] class.
     * Inserts an event into the eventList after a given delay. No need for sorting as the PriorityQueue is always
@@ -283,7 +293,7 @@ abstract class PedestrianDES[T <: PedestrianTrait](val startTime: Time,
     insertEventWithDelayNew(new Time(0.0)) {
       startEvent
     }
-    while (this.eventList.nonEmpty) {
+    while (this.eventList.nonEmpty && this._exitCode == -1) {
       val event = eventList.dequeue()
       this._currentTime = event.t
       /*if (this._currentTime.value % 120.0 == 0) {
@@ -291,6 +301,15 @@ abstract class PedestrianDES[T <: PedestrianTrait](val startTime: Time,
       }*/
       event.action.execute()
     }
-    println("simulation " + this.ID + " completed !")
+    if (this._exitCode == -1) {
+      this._exitCode = 0
+      println("simulation " + this.ID + " successfully completed !")
+    } else {
+      println("simulation " + this.ID + "was terminated with exit code " + this._exitCode)
+    }
+  }
+
+  def abort(code: Int): Unit = {
+    this._exitCode = code
   }
 }

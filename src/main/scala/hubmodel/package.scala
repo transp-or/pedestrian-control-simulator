@@ -227,6 +227,8 @@ package object hubmodel {
   //                    Runs the simulation, creates video and outputs results
   // ******************************************************************************************
 
+  case class ResultsContainerNew(exitCode:Int, completedPeds: Vector[PedestrianSim], uncompletedPeds: Vector[PedestrianSim], densityZones: Map[String, DensityMeasuredArea])
+
   // Container for the results from a simulation. This type chould be modified if the collectResults function is modified
   type ResultsContainer = (Vector[PedestrianSim], Map[String, DensityMeasuredArea], Vector[PedestrianSim])
 
@@ -240,18 +242,23 @@ package object hubmodel {
     * @param simulator simulator from which to extract the results
     * @return results from the simulation
     */
-  def collectResults(simulator: SFGraphSimulator): ResultsContainer = {
-    (
-      simulator.populationCompleted,
-      simulator.criticalAreas,
-      simulator.population.toVector
-    )
+  def collectResults(simulator: SFGraphSimulator): ResultsContainerNew = {
+    if (simulator.exitCode == 0) {
+      ResultsContainerNew(
+        simulator.exitCode,
+        simulator.populationCompleted,
+        simulator.population.toVector,
+        simulator.criticalAreas
+      )
+    } else {
+      ResultsContainerNew(simulator.exitCode, Vector(), Vector(), Map())
+    }
   }
 
   /** Creates, runs and makes a video from the simulation. No results are processed.
     * Making the video can take some time.
     */
-  def runSimulationWithVideo(config: Config): ResultsContainer = {
+  def runSimulationWithVideo(config: Config): ResultsContainerNew = {
 
     // create simulation
     val sim = createSimulation(config)
@@ -298,7 +305,7 @@ package object hubmodel {
     * @param simulator simulation to run
     * @return results collected from the simulation
     */
-  def runAndCollect(simulator: SFGraphSimulator): ResultsContainer=  {
+  def runAndCollect(simulator: SFGraphSimulator): ResultsContainerNew =  {
     timeBlock(simulator.run())
     collectResults(simulator)
   }
