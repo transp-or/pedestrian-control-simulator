@@ -161,6 +161,17 @@ class SFGraphSimulator(override val startTime: Time,
       if (sim.useGating || sim.measureDensity || sim.useFlowSep || sim.useBinaryGates) sim.insertEventWithZeroDelay(new EvaluateState(sim))
       if (sim.useFlowGates) sim.insertEventWithZeroDelay(new StartFlowGates(sim))
       if (sim.useTreeForNeighbourSearch) sim.insertEventWithDelayNew(new Time(0.0))(new RebuildTree(sim))
+      sim.insertEventWithZeroDelay(new SafeGuard(sim))
+    }
+  }
+
+  private class SafeGuard(sim: SFGraphSimulator) extends Action {
+    override def execute(): Unit = {
+      if (sim.useFlowGates && sim.controlDevices.flowGates.exists(fg => fg.pedestrianQueue.size > 100)) {
+        sim.abort(1)
+      } else {
+        sim.insertEventWithDelayNew(Time(10))(new SafeGuard(sim))
+      }
     }
   }
 
