@@ -1,10 +1,12 @@
 package optimization.bruteforce
 
+import java.io.File
+
 import com.typesafe.config.Config
 import hubmodel.DES.SFGraphSimulator
 import hubmodel.mgmt.ControlDevices
 import hubmodel.ped.PedestrianSim
-import hubmodel.{ResultsContainer, ResultsContainerNew, runAndCollect}
+import hubmodel.{ResultsContainerNew, runAndWriteResults}
 import hubmodel.supply.graph.FlowGateFunctional
 import hubmodel.tools.cells.DensityMeasuredArea
 import myscala.math.stats.ComputeStats
@@ -22,7 +24,14 @@ class ParameterExploration(val referenceSimulator: SFGraphSimulator, config: Con
     val constantRange: NumericRange[Double] = constantBounds._1 to constantBounds._2 by (constantBounds._2 - constantBounds._1) / constantBounds._3
     val linearRange: NumericRange[Double] = linearBounds._1 to linearBounds._2 by (linearBounds._2 - linearBounds._1) / linearBounds._3
 
-    val sims: collection.parallel.ParSeq[(Double, Double, SFGraphSimulator)] = (for (i <- constantRange; j <- linearRange; k <- 0 to config.getInt("sim.nb_runs")) yield {
+    // checks if the output dir exists
+    val outputDir = new File(config.getString("output.dir"))
+    if (!outputDir.exists || !outputDir.isDirectory){
+      throw new IllegalArgumentException("Output dir for files does not exist ! dir=" + config.getString("output.dir"))
+    }
+
+
+    for (i <- constantRange.par; j <- linearRange.par; k <- (0 to config.getInt("sim.nb_runs")).par) {
       //Vector.fill(config.getInt("sim.nb_runs"))({
 
         val newDevices: ControlDevices = new ControlDevices(
@@ -33,7 +42,7 @@ class ParameterExploration(val referenceSimulator: SFGraphSimulator, config: Con
           defaultParameters._11.flowSeparators.map(_.clone())
         )
 
-        (i,j,new SFGraphSimulator(
+        val sim = new SFGraphSimulator(
           defaultParameters._1,
           defaultParameters._2,
           defaultParameters._3,
@@ -46,16 +55,59 @@ class ParameterExploration(val referenceSimulator: SFGraphSimulator, config: Con
           defaultParameters._10,
           newDevices
         )
-        )
-      //})
-    }).par
 
-      //println("Running simulation with linear flow gate function: flowrate = " + i + " + " + j + "*density")
-    sims.tasksupport = new ForkJoinTaskSupport(new java.util.concurrent.ForkJoinPool(config.getInt("execution.threads")))
-    val simulationResults: collection.parallel.ParSeq[(Double, Double, ResultsContainerNew)] = sims.map(sim => (sim._1, sim._2, runAndCollect(sim._3)))
-      simulationResults.seq.filter(_._3.exitCode == 0).groupBy(tup => (tup._1, tup._2)).map(tu => tu._1 -> (tu._2.flatMap(r => r._3.completedPeds.map(_.travelTime.value)).stats, tu._2.flatMap(r => r._3.densityZones.values.flatMap(_.densityHistory.map(_._2))).stats))
-      //val densityStats = simulationResults.map(tu => (tu._1, tu._2.flatMap(r => r._3._2.values.flatMap(_.densityHistory.map(_._2))).stats))
+      runAndWriteResults(sim, i.toString + "_" + j.toString + "_params_", config.getString("output.dir"))
+      System.gc()
+    }
 
+    // set up the parallelism level
+    //sims.tasksupport = new ForkJoinTaskSupport(new java.util.concurrent.ForkJoinPool(config.getInt("execution.threads")))
+
+
+    // runs the simulations and writes the travel times to individual files
+    //sims.foreach(sim => (sim._1, sim._2, runAndWriteResults(sim._3, sim._1.toString + "_" + sim._2.toString + "_params_", config.getString("output.dir"))))
+
+    // reads the files and process the data
+    val files: Map[String, List[File]] = outputDir.listFiles.filter(_.isFile).toList.groupBy(f => {
+      f.getName match {
+        case a if a.contains("_params_tt_") => "tt"
+        case b if b.contains("_params_density_") => "density"
+      }
+    })
+
+    val ttResults: Map[(Double, Double), (Int, Double, Double, Double, Double, Double)] = files("tt").map(f => {
+        val endParams: Int = f.getName.indexOf("_params_tt_")-1
+        val params = f.getName.substring(endParams).split("_").map(_.toDouble)
+        val in = scala.io.Source.fromFile(f)
+        val tt: Iterable[Double] = (for (line <- in.getLines) yield {
+          val cols = line.split(",").map(_.trim)
+          cols(0).toDouble
+        }).toVector
+        in.close
+        (params(0), params(1), tt)
+      }).groupBy(tup => (tup._1, tup._2)).map(tup => tup._1 -> tup._2.flatMap(_._3).stats)
+
+    val densityResults: Map[(Double, Double), (Int, Double, Double, Double, Double, Double)] = files("density").map(f => {
+      val endParams: Int = f.getName.indexOf("_params_density_") - 1
+      val params = f.getName.substring(endParams).split("_").map(_.toDouble)
+      val in = scala.io.Source.fromFile(f)
+      val densities: Iterable[Iterable[Double]] = (for (line <- in.getLines) yield {
+        val cols = line.split(",").map(_.trim)
+        cols.map(_.toDouble).toVector
+      }).toVector
+      in.close
+      (params(0), params(1), densities)
+    }).groupBy(tup => (tup._1, tup._2)).map(tup => tup._1 -> tup._2.head._3.size match {
+      case a if a._2 == 1 => tup._1 -> tup._2.flatMap(_._3.flatten).stats
+      case _ => throw new NotImplementedError("multiple density zones for parameter exploration not implemented !")
+    })
+
+    for (ttRes <- ttResults) yield {
+      densityResults.find(_._1 == ttRes._1) match {
+        case Some(dRes) => ttRes._1 -> (ttRes._2, dRes._2)
+        case None => ttRes._1 -> (ttRes._2, (0, Double.NaN, Double.NaN, Double.NaN, Double.NaN, Double.NaN))
+      }
+    }
   }
 
 }

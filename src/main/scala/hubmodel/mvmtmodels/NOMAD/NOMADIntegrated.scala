@@ -196,6 +196,8 @@ class NOMADIntegrated(sim: SFGraphSimulator) extends Action {
 
   override def execute(): Unit = {
 
+    //sim.errorLogger.error("move peds @ " + sim.currentTime + ", nbr peds=" + sim.population.size)
+
     if (sim.useFlowSep) {
       sim.controlDevices.flowSeparators.foreach(fs => {
         fs.inflowLinesStart.foreach(fl => {

@@ -34,7 +34,7 @@ abstract class PedestrianDES[T <: PedestrianTrait](val startTime: Time,
                                                    val finalTime: Time) {
 
   /** Randomly generated string to make unique logs */
-  private val ID: String = Random.alphanumeric take 10 mkString ""
+  val ID: String = Random.alphanumeric take 10 mkString ""
 
   /** Log for keeping track of events */
   val eventLogger: Logger = new Log("log-DES-events" + ID, Level.TRACE).logger

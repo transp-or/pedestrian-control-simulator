@@ -14,6 +14,10 @@ import myscala.math.vector.{Vector2D, Vector3D}
 import myscala.timeBlock
 import play.api.libs.json.Reads._
 import play.api.libs.json._
+import myscala.output.SeqExtension.SeqWriter
+import myscala.output.SeqOfSeqExtensions.SeqOfSeqWriter
+
+
 /**
   * Created by nicholas on 5/12/17.
   */
@@ -255,6 +259,13 @@ package object hubmodel {
     }
   }
 
+  def writeResults(simulator: SFGraphSimulator, path: String): Unit = {
+    if (simulator.exitCode == 0){
+      simulator.populationCompleted.map(_.travelTime.value).writeToCSV("tt_"+simulator.ID+".csv", path)
+      simulator.criticalAreas.map(_._2.densityHistory.map(_._2).toVector).toVector.writeToCSV("density_"+simulator.ID+".csv", path)
+    }
+  }
+
   /** Creates, runs and makes a video from the simulation. No results are processed.
     * Making the video can take some time.
     */
@@ -308,6 +319,12 @@ package object hubmodel {
   def runAndCollect(simulator: SFGraphSimulator): ResultsContainerNew =  {
     timeBlock(simulator.run())
     collectResults(simulator)
+  }
+
+
+  def runAndWriteResults(simulator: SFGraphSimulator, prefix: String = "", dir: String = ""): Unit = {
+    timeBlock(simulator.run())
+    writeResults(simulator, dir)
   }
 
 }
