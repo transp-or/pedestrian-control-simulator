@@ -296,10 +296,8 @@ println(formulaParser.evaluate("height*perimeter(radius)")) // 502.6548245743669
 println(formulaParser.evaluate("m/sqrt(1-v^2/c^2)"))  // 80.00000000003415
 */
 
-case class tt(a: Int, b: Int){
-  override def hashCode(): Int = this.a.hashCode()
-}
+val str = "0.25_0.0_params_tt_FhBmioTaPG.csv"
 
-
-
-val settest = Set(1,2,3,4)
+str.indexOf("_params_tt_")
+val substr = str.substring(0, str.indexOf("_params_tt_"))
+(substr.split("_").map(_.toDouble))

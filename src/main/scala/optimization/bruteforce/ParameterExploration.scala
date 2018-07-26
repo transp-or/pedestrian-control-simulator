@@ -76,8 +76,8 @@ class ParameterExploration(val referenceSimulator: SFGraphSimulator, config: Con
     })
 
     val ttResults: Map[(Double, Double), (Int, Double, Double, Double, Double, Double)] = files("tt").map(f => {
-        val endParams: Int = f.getName.indexOf("_params_tt_")-1
-        val params = f.getName.substring(endParams).split("_").map(_.toDouble)
+        val endParams: Int = f.getName.indexOf("_params_tt_")
+        val params = f.getName.substring(0, endParams).split("_").map(_.toDouble).toVector
         val in = scala.io.Source.fromFile(f)
         val tt: Iterable[Double] = (for (line <- in.getLines) yield {
           val cols = line.split(",").map(_.trim)
@@ -88,8 +88,8 @@ class ParameterExploration(val referenceSimulator: SFGraphSimulator, config: Con
       }).groupBy(tup => (tup._1, tup._2)).map(tup => tup._1 -> tup._2.flatMap(_._3).stats)
 
     val densityResults: Map[(Double, Double), (Int, Double, Double, Double, Double, Double)] = files("density").map(f => {
-      val endParams: Int = f.getName.indexOf("_params_density_") - 1
-      val params = f.getName.substring(endParams).split("_").map(_.toDouble)
+      val endParams: Int = f.getName.indexOf("_params_density_")
+      val params = f.getName.substring(0, endParams).split("_").map(_.toDouble).toVector
       val in = scala.io.Source.fromFile(f)
       val densities: Iterable[Iterable[Double]] = (for (line <- in.getLines) yield {
         val cols = line.split(",").map(_.trim)
@@ -97,7 +97,7 @@ class ParameterExploration(val referenceSimulator: SFGraphSimulator, config: Con
       }).toVector
       in.close
       (params(0), params(1), densities)
-    }).groupBy(tup => (tup._1, tup._2)).map(tup => tup._1 -> tup._2.head._3.size match {
+    }).groupBy(tup => (tup._1, tup._2)).map(tup => tup._1 -> tup._2.head._3.head.size match {
       case a if a._2 == 1 => tup._1 -> tup._2.flatMap(_._3.flatten).stats
       case _ => throw new NotImplementedError("multiple density zones for parameter exploration not implemented !")
     })

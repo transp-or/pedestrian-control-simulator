@@ -259,10 +259,10 @@ package object hubmodel {
     }
   }
 
-  def writeResults(simulator: SFGraphSimulator, path: String): Unit = {
+  def writeResults(simulator: SFGraphSimulator, prefix: String = "", path: String): Unit = {
     if (simulator.exitCode == 0){
-      simulator.populationCompleted.map(_.travelTime.value).writeToCSV("tt_"+simulator.ID+".csv", path)
-      simulator.criticalAreas.map(_._2.densityHistory.map(_._2).toVector).toVector.writeToCSV("density_"+simulator.ID+".csv", path)
+      simulator.populationCompleted.map(_.travelTime.value).writeToCSV(prefix + "tt_"+simulator.ID+".csv", path)
+      simulator.criticalAreas.map(_._2.densityHistory.map(_._2).toVector).toVector.writeToCSV(prefix + "density_"+simulator.ID+".csv", path)
     }
   }
 
@@ -324,7 +324,7 @@ package object hubmodel {
 
   def runAndWriteResults(simulator: SFGraphSimulator, prefix: String = "", dir: String = ""): Unit = {
     timeBlock(simulator.run())
-    writeResults(simulator, dir)
+    writeResults(simulator, prefix, dir)
   }
 
 }
