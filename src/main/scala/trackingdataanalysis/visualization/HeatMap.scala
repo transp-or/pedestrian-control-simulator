@@ -22,12 +22,8 @@ class HeatMap(outputFile: String,
       case 0 => throw new RuntimeException("no data in x direction ! maybe only NaNs are present ?")
       case 1 => xCoordsDistinct.head
       case _ => {
-        val distinctGaps: Vector[Double] = xCoordsDistinct.dropRight(1).zip(xCoordsDistinct.tail).map(t => t._2 - t._1).distinct
-        if (!distinctGaps.dropRight(1).zip(distinctGaps.tail).forall(t => math.abs(t._1 - t._2) < math.pow(10, -3))) {
-          throw new RuntimeException("Gaps in x direction of data for heatmap are not constant ! distinctGaps = " + distinctGaps.mkString(", "))
-        }
-        distinctGaps(0)
-      }
+       xCoordsDistinct.dropRight(1).zip(xCoordsDistinct.tail).map(t => t._2 - t._1).distinct.min
+}
     }
   }
 
@@ -38,7 +34,7 @@ class HeatMap(outputFile: String,
        case 1 => yCoordsDistinct.head
        case _ => {
          val distinctGaps: Vector[Double] = yCoordsDistinct.dropRight(1).zip(yCoordsDistinct.tail).map(t => t._2 - t._1).distinct
-         if (!distinctGaps.dropRight(1).zip(distinctGaps.tail).forall(t => math.abs(t._1 - t._2) < math.pow(10, -3))) {
+         if (!distinctGaps.dropRight(1).zip(distinctGaps.tail).forall(t => math.abs(t._1 - t._2) < math.pow(10, -5))) {
            throw new RuntimeException("Gaps in y direction of data for heatmap are not constant ! distinctGaps = " + distinctGaps.mkString(", "))
          }
          distinctGaps(0)
@@ -63,13 +59,13 @@ class HeatMap(outputFile: String,
   override def mapVCoord: (Time) => Int = mapVcoordLinear(yMin, yMax, opts.height-2*opts.border2HorizontalAxis)
   override def verticalTransformation: Int => Int = verticalMirrorTransformation(canvas.getHeight)
 
-  println(xMin, xMax, yMin, yMax)
-  println(rawData.map(_._1).toVector.distinct.size, data.map(_._1).toVector.distinct.size)
-  println(rawData.map(_._2).toVector.distinct.size, data.map(_._2).toVector.distinct.size)
+  //println(xMin, xMax, yMin, yMax)
+ // println(rawData.map(_._1).toVector.distinct.size, data.map(_._1).toVector.distinct.size)
+ // println(rawData.map(_._2).toVector.distinct.size, data.map(_._2).toVector.distinct.size)
 
 
-  def minSkipNaN(data: Iterable[Double]): Double = {data.filterNot(_.isNaN).min}
-  def maxSkipNaN(data: Iterable[Double]): Double = {data.filterNot(_.isNaN).max}
+  def minSkipNaN(data: Iterable[Double]): Double = {data.filterNot(x => x.isNaN || x.isInfinity).min}
+  def maxSkipNaN(data: Iterable[Double]): Double = {data.filterNot(x => x.isNaN || x.isInfinity).max}
 
 
   drawAxisShifted(gCanvas, (xMin, yMin), Some(xMin+0.5*xInterval, xMax-0.5*xInterval, xInterval,xLabel), Some(yMin+0.5*yInterval, yMax-0.5*yInterval, yInterval,yLabel))
