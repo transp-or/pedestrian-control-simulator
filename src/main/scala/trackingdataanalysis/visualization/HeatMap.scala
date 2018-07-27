@@ -51,9 +51,9 @@ class HeatMap(outputFile: String,
   override def mapVCoord: (Time) => Int = mapVcoordLinear(yMin, yMax, opts.height-2*opts.border2HorizontalAxis)
   override def verticalTransformation: Int => Int = verticalMirrorTransformation(canvas.getHeight)
 
-  def minSkipNaN(data: Iterable[Double]): Double = {data.filterNot(_.isNaN).min}
-  def maxSkipNaN(data: Iterable[Double]): Double = {data.filterNot(_.isNaN).max}
 
+  def minSkipNaN(data: Iterable[Double]): Double = {data.filterNot(x => x.isNaN || x.isInfinity).min}
+  def maxSkipNaN(data: Iterable[Double]): Double = {data.filterNot(x => x.isNaN || x.isInfinity).max}
 
   drawAxisShifted(gCanvas, (xMin, yMin), Some(xMin+0.5*xInterval, xMax-0.5*xInterval, xInterval,xLabel), Some(yMin+0.5*yInterval, yMax-0.5*yInterval, yInterval,yLabel))
   drawHeatMap(gCanvas, data, (xInterval, data.map(_._1).toVector.distinct.size), (yInterval, data.map(_._2).toVector.distinct.size), opts.zmin, opts.zmax)
