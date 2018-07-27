@@ -46,8 +46,8 @@ object ExploreParameters extends App {
 
   val parameterGridSearch: ParameterExploration = new ParameterExploration(createSimulation(config), config)
 
-  val results = parameterGridSearch.exploreFlowGateFunctionalFormLinear((0.25, 1.25, 10), (0.0, 1, 10))
-
+  parameterGridSearch.exploreFlowGateFunctionalFormLinear((0.25, 1.25, 4), (0.0, 1, 4))
+  val results = parameterGridSearch.processWrittenResults
 
 
   results.map(r => (r._1._1, r._1._2, r._2._1._1, r._2._1._2, r._2._1._3, r._2._1._4, r._2._1._5, r._2._1._6)).toVector.writeToCSV(config.getString("output.output_prefix") + "_exploration-results-travel-time.csv")

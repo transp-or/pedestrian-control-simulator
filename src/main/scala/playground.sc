@@ -296,8 +296,4 @@ println(formulaParser.evaluate("height*perimeter(radius)")) // 502.6548245743669
 println(formulaParser.evaluate("m/sqrt(1-v^2/c^2)"))  // 80.00000000003415
 */
 
-val str = "0.25_0.0_params_tt_FhBmioTaPG.csv"
-
-str.indexOf("_params_tt_")
-val substr = str.substring(0, str.indexOf("_params_tt_"))
-(substr.split("_").map(_.toDouble))
+(BigDecimal(1.0) to BigDecimal(0.0) by BigDecimal(-0.1)).size
