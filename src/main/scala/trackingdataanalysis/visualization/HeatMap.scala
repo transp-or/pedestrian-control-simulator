@@ -67,9 +67,14 @@ class HeatMap(outputFile: String,
   println(rawData.map(_._1).toVector.distinct.size, data.map(_._1).toVector.distinct.size)
   println(rawData.map(_._2).toVector.distinct.size, data.map(_._2).toVector.distinct.size)
 
+
+  def minSkipNaN(data: Iterable[Double]): Double = {data.filterNot(_.isNaN).min}
+  def maxSkipNaN(data: Iterable[Double]): Double = {data.filterNot(_.isNaN).max}
+
+
   drawAxisShifted(gCanvas, (xMin, yMin), Some(xMin+0.5*xInterval, xMax-0.5*xInterval, xInterval,xLabel), Some(yMin+0.5*yInterval, yMax-0.5*yInterval, yInterval,yLabel))
   drawHeatMap(gCanvas, data, (xInterval, data.map(_._1).toVector.distinct.size), (yInterval, data.map(_._2).toVector.distinct.size), opts.zmin, opts.zmax)
-  drawColorMapLegend(gCanvas, if (opts.zmin.isDefined) opts.zmin.get else data.map(_._3).min, if (opts.zmax.isDefined) opts.zmax.get else data.map(_._3).max, label)
+  drawColorMapLegend(gCanvas, if (opts.zmin.isDefined) opts.zmin.get else minSkipNaN(data.map(_._3)), if (opts.zmax.isDefined) opts.zmax.get else maxSkipNaN(data.map(_._3)), label)
 
   // Writes image to file
   if (outputFile.length > 0) {

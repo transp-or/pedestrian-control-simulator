@@ -211,7 +211,7 @@ abstract class DrawingComponents(xBorderSpacing: Int, yBorderSpacing: Int, pixel
 
     graphics.setColor(Color.BLACK)
 
-    if ((BigDecimal(valueMax) to BigDecimal(valueMin) by -(valueMax-valueMin)/10.0).size == 10) {
+    if ((scala.BigDecimal(valueMax) to scala.BigDecimal(valueMin) by scala.BigDecimal(-(valueMax-valueMin)/10.0)).size == 10) {
       graphics.drawString(label, pixelCanvasSize._1 - 15, 2 * yBorderSpacing - (0.5 * cellHeight).toInt + 11 * cellHeight)
     } else {
       graphics.drawString(label, pixelCanvasSize._1 - 15, 2 * yBorderSpacing - (0.5 * cellHeight).toInt + 12 * cellHeight)
