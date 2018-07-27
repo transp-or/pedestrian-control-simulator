@@ -210,7 +210,8 @@ abstract class DrawingComponents(xBorderSpacing: Int, yBorderSpacing: Int, pixel
     def colorMapFunction(x: Double): Color = colorMap(valueMin, valueMax)(x)
 
     graphics.setColor(Color.BLACK)
-    if ((valueMax to valueMin by -(valueMax-valueMin)/10.0).size == 10) {
+
+    if ((BigDecimal(valueMax) to BigDecimal(valueMin) by -(valueMax-valueMin)/10.0).size == 10) {
       graphics.drawString(label, pixelCanvasSize._1 - 15, 2 * yBorderSpacing - (0.5 * cellHeight).toInt + 11 * cellHeight)
     } else {
       graphics.drawString(label, pixelCanvasSize._1 - 15, 2 * yBorderSpacing - (0.5 * cellHeight).toInt + 12 * cellHeight)
