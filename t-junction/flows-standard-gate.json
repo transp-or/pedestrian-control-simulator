@@ -11,43 +11,19 @@
         {
           "start": "00:00:00",
           "end": "00:05:00",
-          "rate": 0.75
-        }
-      ]
-    },
-    {
-      "origin": "right",
-      "destination": "left",
-      "linear": [ ],
-      "constant": [
-        {
-          "start": "00:00:00",
-          "end": "00:05:00",
-          "rate": 0.75
+          "rate": 1.8
         }
       ]
     },
     {
       "origin": "top",
-      "destination": "right",
+      "destination": "bottom",
       "linear": [ ],
       "constant": [
         {
           "start": "00:00:00",
           "end": "00:05:00",
-          "rate": 0.7
-        }
-      ]
-    },
-    {
-      "origin": "top",
-      "destination": "left",
-      "linear": [],
-      "constant": [
-        {
-          "start": "00:00:00",
-          "end": "00:05:00",
-          "rate": 0.7
+          "rate": 1.4
         }
       ]
     }

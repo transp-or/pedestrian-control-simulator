@@ -37,7 +37,7 @@ class PedestrianSim(val origin: Rectangle,
   // ******************************************************************************************
 
   /** History of the pedestrians positions */
-  private var _historyPosition: Vector[(Time, Position)] = Vector((entryTime, currentPosition))
+  protected var _historyPosition: Vector[(Time, Position)] = Vector((entryTime, currentPosition))
 
 
   /** intermediate destination of the pedestrian */
@@ -66,6 +66,8 @@ class PedestrianSim(val origin: Rectangle,
 
   /** target zone */
   var nextZone: Rectangle = route.head
+
+  var previousZone: Rectangle = route.head
 
   /* Position increment to be added at the next time interval */
   var positionIncrement: Position = new ZeroVector2D

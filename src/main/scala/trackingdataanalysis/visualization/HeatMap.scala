@@ -26,13 +26,13 @@ class HeatMap(outputFile: String,
   }
 
    val yInterval: Double = {
-     val yCoordsDistinct: Vector[Double] = data.map(_._2).toVector.distinct.sorted
-     yCoordsDistinct.size match {
-       case 0 => throw new RuntimeException("no data in y direction ! maybe only NaNs are present ?")
-       case 1 => yCoordsDistinct.head
-       case _ => yCoordsDistinct.dropRight(1).zip(yCoordsDistinct.tail).map(t => t._2 - t._1).distinct.min
+       val yCoordsDistinct: Vector[Double] = data.map(_._2).toVector.distinct.sorted
+       yCoordsDistinct.size match {
+         case 0 => throw new RuntimeException("no data in y direction ! maybe only NaNs are present ?")
+         case 1 => yCoordsDistinct.head
+         case _ => yCoordsDistinct.dropRight(1).zip(yCoordsDistinct.tail).map(t => t._2 - t._1).distinct.min
+       }
      }
-   }
 
   // minimum and maximum of each axis
   val xMin: Double = data.map(_._1).min - 0.5*xInterval

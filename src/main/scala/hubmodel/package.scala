@@ -14,7 +14,7 @@ import myscala.math.vector.{Vector2D, Vector3D}
 import myscala.timeBlock
 import play.api.libs.json.Reads._
 import play.api.libs.json._
-import myscala.output.SeqExtension.SeqWriter
+import myscala.output.SeqTuplesExtensions.SeqTuplesWriter
 import myscala.output.SeqOfSeqExtensions.SeqOfSeqWriter
 
 
@@ -261,7 +261,7 @@ package object hubmodel {
 
   def writeResults(simulator: SFGraphSimulator, prefix: String = "", path: String): Unit = {
     if (simulator.exitCode == 0){
-      simulator.populationCompleted.map(_.travelTime.value).writeToCSV(prefix + "tt_"+simulator.ID+".csv", path)
+      simulator.populationCompleted.map(p => (p.origin.name, p.finalDestination.name, p.travelTime.value)).writeToCSV(prefix + "tt_"+simulator.ID+".csv", path)
       simulator.criticalAreas.map(_._2.densityHistory.map(_._2).toVector).toVector.writeToCSV(prefix + "density_"+simulator.ID+".csv", path)
     }
   }

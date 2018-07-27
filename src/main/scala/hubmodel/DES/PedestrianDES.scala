@@ -296,7 +296,7 @@ abstract class PedestrianDES[T <: PedestrianTrait](val startTime: Time,
     while (this.eventList.nonEmpty && this._exitCode == -1) {
       val event = eventList.dequeue()
       this._currentTime = event.t
-      /*if (this._currentTime.value % 120.0 == 0) {
+      /*if (this._currentTime.value % 15.0 == 0) {
         print(" * simulation at " + this._currentTime + " sec\r")
       }*/
       event.action.execute()

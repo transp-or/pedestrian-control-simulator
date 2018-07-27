@@ -220,6 +220,7 @@ class NOMADIntegrated(sim: SFGraphSimulator) extends Action {
         //this.level.updateCurrentCellAndWalkable(this) UNUSED IN THIS FRAMEWORK
 
         // check if it is time for the pedestrian to check his isolation times
+
         ped.updateDesiredSpeed()
         this.updateIsolation(sim.currentTime, ped)
         ped.travelTime = sim.currentTime - ped.entryTime

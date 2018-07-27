@@ -30,14 +30,16 @@ class UpdateRoutes(sim: SFGraphSimulator) extends Action {
         val route: List[Rectangle] = sim.graph.getShortestPath(closestNode, p.finalDestination)
         if (route.head.isInside(p.currentPosition)) route.tail else route
       }*/
+      p.previousZone = p.nextZone
       val newRoute: List[Rectangle] = sim.graph.getShortestPath(p.nextZone, p.finalDestination).tail
-      if (sim.closedEdges.exists(ce => ce._1 == p.nextZone && ce._2 == newRoute.head)) {
+      /*if (sim.closedEdges.exists(ce => ce._1 == p.nextZone && ce._2 == newRoute.head)) {
         p.setCurrentDestination(p.nextZone.uniformSamplePointInside)
-      } else {
+        println("in useless if ?")
+      } else {*/
         p.route = newRoute
         p.nextZone = newRoute.head
         p.setCurrentDestination(p.nextZone.uniformSamplePointInside)
-      }
+      //}
     })
     sim.insertEventWithDelayNew(sim.sf_dt)(new UpdateRoutes(sim))
   }
