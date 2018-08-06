@@ -104,9 +104,9 @@ class ParameterExploration(val referenceSimulator: SFGraphSimulator, config: Con
           cols.map(_.toDouble).toVector
         }).toVector
         in.close
-        (params(0), params(1), densities.map(ds => ds.filter(_ > 0.0)))
+        (params(0), params(1), densities)//.map(ds => ds.filter(_ > 0.0)))
       }).groupBy(tup => (tup._1, tup._2)).map(tup => tup._1 -> tup._2.head._3.head.size match {
-        case a if a._2 == 1 => tup._1 -> tup._2.flatMap(_._3.flatten).stats
+        case a if a._2 == 1 => tup._1 -> tup._2.flatMap(_._3.flatten).filter(_ > 0.0).stats
         case _ => throw new NotImplementedError("multiple density zones for parameter exploration not implemented !")
       })
 
