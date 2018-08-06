@@ -55,10 +55,6 @@ class DrawControlDevicesAndWalls(filename: String = "",
 
         // draws near region
         gImage.drawPolygon(fl.nearRegion.corners.map(_.X).map(mappingFunctions._1).toArray, fl.nearRegion.corners.map(_.Y).map(mappingFunctions._2).map(verticalTransformation).toArray, 4)
-        println(fl.nearRegion.corners.map(_.X))
-        println(fl.nearRegion.corners.map(_.Y))
-        println(fl.nearRegion.corners.map(_.X).map(mappingFunctions._1).toArray.mkString("\t"))
-        println(fl.nearRegion.corners.map(_.Y).map(mappingFunctions._2).toArray.mkString("\t"))
 
         // draws inflow direction
         val inflowDirStart: Vector2D = fl.start + (fl.end-fl.start)*0.5 - (fl.end-fl.start).orthogonal*2.0*0.5
@@ -71,6 +67,30 @@ class DrawControlDevicesAndWalls(filename: String = "",
         )
         drawArrow(gImage, mappingFunctions._1(inflowDirStart.X), verticalTransformation(mappingFunctions._2(inflowDirStart.Y)), mappingFunctions._1(inflowDirEnd.X), verticalTransformation(mappingFunctions._2(inflowDirEnd.Y)))
       })
+    })
+
+
+    devices.flowGates.foreach(fg => {
+
+      // draws flow gate as line
+      gImage.drawLine(
+        mappingFunctions._1(fg.start.X),
+        verticalTransformation(mappingFunctions._2(fg.start.Y)),
+        mappingFunctions._1(fg.end.X),
+        verticalTransformation(mappingFunctions._2(fg.end.Y))
+      )
+
+      // draws inflow direction
+      val inflowDirStart: Vector2D = fg.start + (fg.end-fg.start)*0.5 - (fg.end-fg.start).orthogonal*2.0*0.5
+      val inflowDirEnd: Vector2D = fg.start + (fg.end-fg.start)*0.5 + (fg.end-fg.start).orthogonal*2.0*0.5
+      gImage.drawLine(
+        mappingFunctions._1(inflowDirStart.X),
+        verticalTransformation(mappingFunctions._2(inflowDirStart.Y)),
+        mappingFunctions._1(inflowDirEnd.X),
+        verticalTransformation(mappingFunctions._2(inflowDirEnd.Y))
+      )
+      drawArrow(gImage, mappingFunctions._1(inflowDirStart.X), verticalTransformation(mappingFunctions._2(inflowDirStart.Y)), mappingFunctions._1(inflowDirEnd.X), verticalTransformation(mappingFunctions._2(inflowDirEnd.Y)))
+
     })
   }
 

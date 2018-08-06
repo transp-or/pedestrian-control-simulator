@@ -6,24 +6,32 @@
     {
       "origin": "left",
       "destination": "right",
-      "linear": [ ],
       "constant": [
         {
           "start": "00:00:00",
-          "end": "00:05:00",
+          "end": "00:14:00",
           "rate": 1.8
         }
-      ]
+      ],
+      "linear": [],
+      "sine": []
     },
     {
       "origin": "top",
       "destination": "bottom",
       "linear": [ ],
       "constant": [
+      ],
+      "sine": [
         {
           "start": "00:00:00",
-          "end": "00:05:00",
-          "rate": 1.4
+          "end": "00:14:00",
+          "period_multiplier": 0.02,
+          "period_shift": 0.0,
+          "a": 1.0,
+          "b": 0.4,
+          "c": 0.2,
+          "max_flow": 1.3
         }
       ]
     }

@@ -100,6 +100,17 @@ package hubmodel {
         (JsPath \ "flow").read[Double](min(0.0))
       ) (PedestrianFlow.apply _)
 
+    implicit val SinusFunctionReads: Reads[SinusFunction] = (
+      (JsPath \ "start").read[LocalTime] and
+        (JsPath \ "end").read[LocalTime] and
+        (JsPath \ "period_multiplier").read[Double] and
+        (JsPath \ "period_shift").read[Double] and
+        (JsPath \ "a").read[Double] and
+        (JsPath \ "b").read[Double] and
+        (JsPath \ "c").read[Double] and
+        (JsPath \ "max_flow").read[Double]
+      ) (SinusFunction.apply _)
+
     implicit val LinearFunctionReads: Reads[LinearFunction] = (
         (JsPath \ "start").read[LocalTime] and
         (JsPath \ "end").read[LocalTime] and
@@ -118,9 +129,9 @@ package hubmodel {
       (JsPath \ "origin").read[String] and
         (JsPath \ "destination").read[String] and
         (JsPath \ "constant").read[Vector[ConstantFunction]] and
-        (JsPath \ "linear").read[Vector[LinearFunction]]
+        (JsPath \ "linear").read[Vector[LinearFunction]] and
+        (JsPath \ "sine").read[Vector[SinusFunction]]
       ) (PedestrianFlowFunction.apply _)
-
 
     implicit val ODFlowDataReads: Reads[ODFlowData] = (
       (JsPath \ "location").read[String] and
@@ -277,6 +288,9 @@ package hubmodel {
         def compare(a: PedestrianFlowFunction, b: PedestrianFlowFunction): Int = hubmodel.TimeNumeric.compare(a.start, b.start)
       }
 
+      case class SinPedestrianFlow(s: Time, e: Time, periodStretch: Double, periodShift: Double, a: Double, b: Double, c: Double, maxFlow: Double) extends PedestrianFlowFunction(s, e)
+
+
       case class LinearPedestrianFlow(s: Time, e: Time, rateAtStart: Double, rateAtEnd: Double, slope: Double) extends PedestrianFlowFunction(s, e) {
         if (math.abs(rateAtStart + slope * (this.end - this.start).value - rateAtEnd) > math.pow(10,-5)) {
           throw new IllegalArgumentException("Flow rate at end doesn't match computed flow rate ! " + (rateAtStart + slope * (this.end - this.start).value) + " != " + rateAtEnd)
@@ -292,8 +306,12 @@ package hubmodel {
 
       val flowsFunction: Iterable[PedestrianFlowFunction_New] = {
         _pedestrianFlowData.functionalFlows.map(funcFlow => {
-          val functions: Iterable[PedestrianFlowFunction] = (funcFlow.constantFunctions.map(cf => ConstantPedestrianFlow(Time(cf.start.toSecondOfDay), Time(cf.end.toSecondOfDay), cf.rate)) ++
-            funcFlow.linearFunctions.map(lf => LinearPedestrianFlow(Time(lf.start.toSecondOfDay), Time(lf.end.toSecondOfDay), lf.rateAtStart, lf.rateAtEnd, lf.slope))).sorted(PedestrianFlowFunctionOrdering)
+          val functions: Iterable[PedestrianFlowFunction] = (
+            funcFlow.constantFunctions.map(cf => ConstantPedestrianFlow(Time(cf.start.toSecondOfDay), Time(cf.end.toSecondOfDay), cf.rate)) ++
+            funcFlow.linearFunctions.map(lf => LinearPedestrianFlow(Time(lf.start.toSecondOfDay), Time(lf.end.toSecondOfDay), lf.rateAtStart, lf.rateAtEnd, lf.slope)) ++
+            funcFlow.sinusFunctions.map(sf => SinPedestrianFlow(Time(sf.start.toSecondOfDay), Time(sf.end.toSecondOfDay), sf.periodStretch, sf.periodShift, sf.a, sf.b, sf.c, sf.maxFlow))
+            ).sorted(PedestrianFlowFunctionOrdering)
+
           if (!functions.dropRight(1).zip(functions.tail).forall(pair => pair._1.end == pair._2.start)) {
             throw new IllegalArgumentException("Gaps in flow functions !")
           }
@@ -307,13 +325,17 @@ package hubmodel {
                 case c: ConstantPedestrianFlow => {
                   c.rate
                 }
+                case s: SinPedestrianFlow => {
+                  s.maxFlow * ((math.sin(t.value*s.periodStretch+math.Pi*s.periodShift)+s.a)*s.b + s.c)
+                }
+                case err => throw new NotImplementedError("This type of flow function is not implemented !")
               }
               case other => 0.0
             }
           }
 
-          val start: Time = Time((funcFlow.constantFunctions.map(_.start) ++ funcFlow.linearFunctions.map(_.start)).min.toSecondOfDay)
-          val end: Time = Time((funcFlow.constantFunctions.map(_.end) ++ funcFlow.linearFunctions.map(_.end)).max.toSecondOfDay)
+          val start: Time = Time((funcFlow.constantFunctions.map(_.start) ++ funcFlow.linearFunctions.map(_.start) ++ funcFlow.sinusFunctions.map(_.start)).min.toSecondOfDay)
+          val end: Time = Time((funcFlow.constantFunctions.map(_.end) ++ funcFlow.linearFunctions.map(_.end) ++ funcFlow.sinusFunctions.map(_.end)).max.toSecondOfDay)
 
           PedestrianFlowFunction_New(NodeID_New(funcFlow.O, funcFlow.O.toString), NodeID_New(funcFlow.D, funcFlow.D.toString), start, end, flowRateFunction)
 
