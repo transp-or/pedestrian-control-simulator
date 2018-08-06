@@ -89,7 +89,7 @@ class ParameterExploration(val referenceSimulator: SFGraphSimulator, config: Con
         val in = scala.io.Source.fromFile(f)
         val tt: Iterable[Double] = (for (line <- in.getLines) yield {
           val cols = line.split(",").map(_.trim)
-          cols(0).toDouble
+          cols(2).toDouble
         }).toVector
         in.close
         (params(0), params(1), tt)
