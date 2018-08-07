@@ -25,6 +25,10 @@ abstract class DrawingComponents(xBorderSpacing: Int, yBorderSpacing: Int, pixel
   def mapVCoord: Double => Int// = mapVcoordLinear(bkgdImageSizeMeters._2, canvasHeight)
 
 
+  def drawTitle(graphics2D: Graphics2D, title: String): Unit = {
+    graphics2D.setColor(Color.BLACK)
+    graphics2D.drawString(title, (0.5*pixelCanvasSize._1).toInt - (0.5*graphics2D.getFontMetrics.stringWidth(title)).toInt, xBorderSpacing)
+  }
 
   def drawAxis(graphics: Graphics2D, xDataArg: Option[(Double, Double, Double, String)], yDataArg: Option[(Double, Double, Double, String)]): Unit = {
 
@@ -210,7 +214,6 @@ abstract class DrawingComponents(xBorderSpacing: Int, yBorderSpacing: Int, pixel
     def colorMapFunction(x: Double): Color = colorMap(valueMin, valueMax)(x)
 
     graphics.setColor(Color.BLACK)
-println(valueMax, valueMin)
     if ((scala.BigDecimal(valueMax) to scala.BigDecimal(valueMin) by scala.BigDecimal(-(valueMax-valueMin)/10.0)).size == 10) {
       graphics.drawString(label, pixelCanvasSize._1 - 15, 2 * yBorderSpacing - (0.5 * cellHeight).toInt + 11 * cellHeight)
     } else {

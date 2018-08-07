@@ -11,6 +11,7 @@ class HeatMap(outputFile: String,
               label: String,
               xLabel: String,
               yLabel: String,
+              title: String,
               opts: PlotOptions = PlotOptions()) extends DrawingComponents(opts.border2HorizontalAxis, opts.border2VerticalAxis, (opts.width, opts.height)) {
 
   val data: Iterable[(Double, Double, Double)] = rawData.filterNot(_._3.isNaN)
@@ -58,6 +59,7 @@ class HeatMap(outputFile: String,
   drawAxisShifted(gCanvas, (xMin, yMin), Some(xMin+0.5*xInterval, xMax-0.5*xInterval, xInterval,xLabel), Some(yMin+0.5*yInterval, yMax-0.5*yInterval, yInterval,yLabel))
   drawHeatMap(gCanvas, data, (xInterval, data.map(_._1).toVector.distinct.size), (yInterval, data.map(_._2).toVector.distinct.size), opts.zmin, opts.zmax)
   drawColorMapLegend(gCanvas, if (opts.zmin.isDefined) opts.zmin.get else minSkipNaN(data.map(_._3)), if (opts.zmax.isDefined) opts.zmax.get else maxSkipNaN(data.map(_._3)), label)
+  drawTitle(gCanvas, title)
 
   // Writes image to file
   if (outputFile.length > 0) {
