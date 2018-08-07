@@ -12,14 +12,14 @@ import org.slf4j.LoggerFactory
   * @param name  name of the logger
   * @param level level to use, default is set DEBUG
   */
-class Log(name: String, level: Level = Level.DEBUG) {
+class Log(name: String, dir: Option[String], level: Level = Level.DEBUG) {
   private val lc: LoggerContext = LoggerFactory.getILoggerFactory.asInstanceOf[LoggerContext]
   private val ple = new PatternLayoutEncoder
   ple.setPattern("%date %level [%thread] %logger{10} [%file:%line] %msg%n")
   ple.setContext(lc)
   ple.start()
   private val fileAppender = new FileAppender[ILoggingEvent]
-  fileAppender.setFile("logs/" + name + ".log")
+  fileAppender.setFile(dir.getOrElse("logs/") + name + ".log")
   fileAppender.setEncoder(ple)
   fileAppender.setContext(lc)
   fileAppender.start()

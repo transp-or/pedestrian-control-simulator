@@ -44,7 +44,7 @@ object ExploreParameters extends App {
   // Reads the file passed as argument
   val config: Config = ConfigFactory.load(confFile)
 
-  val parameterGridSearch: ParameterExploration = new ParameterExploration(createSimulation(config), config)
+  val parameterGridSearch: ParameterExploration = new ParameterExploration(config)
 
   parameterGridSearch.exploreFlowGateFunctionalFormLinear((0.25, 6.5, 25), (0.25, 6.5, 25))
   val results = parameterGridSearch.processWrittenResults

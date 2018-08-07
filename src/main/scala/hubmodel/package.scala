@@ -208,6 +208,7 @@ package object hubmodel {
     val sim: SFGraphSimulator = new SFGraphSimulator(
       startTime = simulationStartTime,
       finalTime = simulationEndTime,
+      logDir = None,
       sf_dt = socialForceInterval,
       evaluate_dt = evaluationInterval,
       rebuildTreeInterval = Some(rebuildTreeInterval),

@@ -6,7 +6,7 @@ import com.typesafe.config.Config
 import hubmodel.DES.SFGraphSimulator
 import hubmodel.mgmt.ControlDevices
 import hubmodel.ped.PedestrianSim
-import hubmodel.{ResultsContainerNew, runAndWriteResults}
+import hubmodel.{ResultsContainerNew, runAndWriteResults, createSimulation}
 import hubmodel.supply.graph.FlowGateFunctional
 import hubmodel.tools.cells.DensityMeasuredArea
 import myscala.math.stats.ComputeStats
@@ -15,11 +15,11 @@ import scala.collection.immutable.NumericRange
 import scala.collection.parallel.ForkJoinTaskSupport
 
 
-class ParameterExploration(val referenceSimulator: SFGraphSimulator, config: Config) {
+class ParameterExploration(config: Config) {
 
   def exploreFlowGateFunctionalFormLinear(constantBounds: (Double, Double, Int), linearBounds: (Double, Double, Int)): Unit = {
 
-    val defaultParameters = referenceSimulator.getSetupArguments
+    val defaultParameters = createSimulation(config).getSetupArguments
 
     val constantRange: NumericRange[Double] = constantBounds._1 to constantBounds._2 by (constantBounds._2 - constantBounds._1) / constantBounds._3
     val linearRange: NumericRange[Double] = linearBounds._1 to linearBounds._2 by (linearBounds._2 - linearBounds._1) / linearBounds._3
@@ -45,6 +45,7 @@ class ParameterExploration(val referenceSimulator: SFGraphSimulator, config: Con
       val sim = new SFGraphSimulator(
         defaultParameters._1,
         defaultParameters._2,
+        Some(config.getString("output.log_dir")),
         defaultParameters._3,
         defaultParameters._4,
         defaultParameters._5,
