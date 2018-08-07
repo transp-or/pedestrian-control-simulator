@@ -6,7 +6,7 @@ scalaVersion := "2.12.6"
 fork in run := true
 
 javaOptions in run ++= Seq(
-  "-Xms4G", "-Xmx120G", "-XX:+UseConcMarkSweepGC"
+  "-Xms1G", "-Xmx120G", "-XX:+UseConcMarkSweepGC"
 )
 
 libraryDependencies ++= Seq(

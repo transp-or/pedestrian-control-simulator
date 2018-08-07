@@ -1,10 +1,12 @@
 package optimization.bruteforce
 
+import java.io.File
+
 import com.typesafe.config.Config
 import hubmodel.DES.SFGraphSimulator
 import hubmodel.demand.PedestrianFlow_New
 import hubmodel.ped.PedestrianSim
-import hubmodel.{ResultsContainerNew, runAndCollect}
+import hubmodel.{ResultsContainerNew, runAndCollect, runAndWriteResults}
 import hubmodel.tools.cells.DensityMeasuredArea
 import myscala.math.stats.ComputeStats
 
@@ -19,8 +21,13 @@ class FlowSensitivity(refSimulator: SFGraphSimulator, config: Config) {
 
     val defaultParameters = refSimulator.getSetupArguments
 
-    val sims: collection.parallel.ParSeq[(Double, Double, SFGraphSimulator)] = (for (i <- 0.0 to 1.0 by increments ; j <- 0.0 to 1.0 by increments; n <- 0 to config.getInt("sim.nb_runs"); if i >= j ) yield {
-      //Vector.fill(config.getInt("sim.nb_runs"))({
+    // checks if the output dir exists
+    val outputDir = new File(config.getString("output.dir"))
+    if (!outputDir.exists || !outputDir.isDirectory){
+      throw new IllegalArgumentException("Output dir for files does not exist ! dir=" + config.getString("output.dir"))
+    }
+
+    for (i <- (0.0 to 1.0 by increments).par ; j <- (0.0 to 1.0 by increments).par; n <- (0 to config.getInt("sim.nb_runs")).par; if i >= j ) {
 
         val newFlows = (
           defaultParameters._10._1.map(flow => {
@@ -33,7 +40,7 @@ class FlowSensitivity(refSimulator: SFGraphSimulator, config: Config) {
         )
 
         val devices = defaultParameters._11.clone()
-        (i, j, new SFGraphSimulator(
+        val sim = new SFGraphSimulator(
           defaultParameters._1,
           defaultParameters._2,
           defaultParameters._3,
@@ -46,15 +53,31 @@ class FlowSensitivity(refSimulator: SFGraphSimulator, config: Config) {
           newFlows,
           devices
           )
-        )
-      //})
-   }).par
 
-    sims.tasksupport = new ForkJoinTaskSupport(new java.util.concurrent.ForkJoinPool(config.getInt("execution.threads")))
-    val simulationResults: collection.parallel.ParSeq[(Double, Double, ResultsContainerNew)] = sims.map(sim => (sim._1, sim._2, runAndCollect(sim._3)))
+      runAndWriteResults(sim, i.toString + "_" + j.toString + "_params_", config.getString("output.dir"))
+      System.gc()
+   }
 
-    simulationResults.seq.filter(_._3.exitCode == 0).groupBy(tup => (tup._1, tup._2)).map(tu => tu._1 -> tu._2.flatMap(r => r._3.completedPeds.map(_.travelTime.value)).stats)
-  }
+    val files: Map[String, List[File]] = outputDir.listFiles.filter(_.isFile).toList.groupBy(f => {
+      f.getName match {
+        case a if a.contains("_params_tt_") => "tt"
+        case b if b.contains("_params_density_") => "density"
+      }
+    })
+
+files("tt").map(f => {
+      val endParams: Int = f.getName.indexOf("_params_tt_")
+      val params = f.getName.substring(0, endParams).split("_").map(_.toDouble).toVector
+      val in = scala.io.Source.fromFile(f)
+      val tt: Iterable[Double] = (for (line <- in.getLines) yield {
+        val cols = line.split(",").map(_.trim)
+        cols(0).toDouble
+      }).toVector
+      in.close
+      (params(0), params(1), tt)
+    }).groupBy(tup => (tup._1, tup._2)).map(tup => tup._1 -> tup._2.flatMap(_._3).stats)
+
+ }
 
 
 }

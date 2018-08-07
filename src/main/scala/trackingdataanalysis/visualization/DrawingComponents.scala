@@ -190,15 +190,15 @@ abstract class DrawingComponents(xBorderSpacing: Int, yBorderSpacing: Int, pixel
     val cellWidthPx: Int = (pixelCanvasSize._1 - 2*yBorderSpacing)/xInterval._2
     val cellHeightPx: Int = (pixelCanvasSize._2 - 2*yBorderSpacing)/yInterval._2
 
-    println(pixelCanvasSize)
+/*    println(pixelCanvasSize)
     println(xInterval)
     println(yInterval)
-    println(cellHeightPx, cellWidthPx)
+    println(cellHeightPx, cellWidthPx)*/
     // draw all cells
     for (d <- data) {
       graphics.setColor(colorMapFunction(d._3))
-      println(d._1, d._2, d._3)
-      println(xBorderSpacing + mapVCoord(d._2), xBorderSpacing + mapVCoord(d._2)+(0.5*cellHeightPx).toInt, verticalTransformation(xBorderSpacing + mapVCoord(d._2)+(0.5*cellHeightPx).toInt), cellHeightPx)
+     // println(d._1, d._2, d._3)
+      //println(xBorderSpacing + mapVCoord(d._2), xBorderSpacing + mapVCoord(d._2)+(0.5*cellHeightPx).toInt, verticalTransformation(xBorderSpacing + mapVCoord(d._2)+(0.5*cellHeightPx).toInt), cellHeightPx)
       graphics.fillRect(yBorderSpacing + mapHCoord(d._1)-(0.5*cellWidthPx).toInt, verticalTransformation(xBorderSpacing + mapVCoord(d._2)+(0.5*cellHeightPx).toInt), cellWidthPx, cellHeightPx)
     }
   }
@@ -210,7 +210,8 @@ abstract class DrawingComponents(xBorderSpacing: Int, yBorderSpacing: Int, pixel
     def colorMapFunction(x: Double): Color = colorMap(valueMin, valueMax)(x)
 
     graphics.setColor(Color.BLACK)
-    if ((valueMax to valueMin by -(valueMax-valueMin)/10.0).size == 10) {
+println(valueMax, valueMin)
+    if ((scala.BigDecimal(valueMax) to scala.BigDecimal(valueMin) by scala.BigDecimal(-(valueMax-valueMin)/10.0)).size == 10) {
       graphics.drawString(label, pixelCanvasSize._1 - 15, 2 * yBorderSpacing - (0.5 * cellHeight).toInt + 11 * cellHeight)
     } else {
       graphics.drawString(label, pixelCanvasSize._1 - 15, 2 * yBorderSpacing - (0.5 * cellHeight).toInt + 12 * cellHeight)

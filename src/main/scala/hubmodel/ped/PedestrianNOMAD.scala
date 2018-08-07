@@ -25,6 +25,11 @@ class PedestrianNOMAD(oZone: Rectangle, dZone: Rectangle, entryTime: Time, posO:
   val s0: Double = 0.26
   val getRadius: Double = this.r
 
+  def isStuck: Boolean = {
+    if (this._historyPosition.size > 10) { (this._historyPosition.dropRight(9).last._2 - this._historyPosition.last._2).norm < math.pow(10,-3) }
+    else false
+  }
+
   def updatePreviousPositionAndSpeed(t: Time): Unit = { this.addHistory(t) }
 
   /** Computes the direction based on the current position and the target position
@@ -42,7 +47,14 @@ class PedestrianNOMAD(oZone: Rectangle, dZone: Rectangle, entryTime: Time, posO:
     (computeDesiredDirection(p.currentPosition, p.currentDestination) * p.freeFlowVel - p.currentVelocity) / tau
   }
 
-  def   updateDesiredSpeed(): Unit = {
+  def updateDesiredSpeed(): Unit = {
+    if (this.isStuck){
+      //println("ped " + this.ID + " is stuck")
+      this.nextZone = this.previousZone
+      this.currentDestination = this.previousZone.uniformSamplePointInside
+
+    }
+
     this.desiredDirection =  computeDesiredDirection(this.currentPosition, this.currentDestination) //computePathFollowingComponent(this).normalized
   }
 

@@ -296,10 +296,4 @@ println(formulaParser.evaluate("height*perimeter(radius)")) // 502.6548245743669
 println(formulaParser.evaluate("m/sqrt(1-v^2/c^2)"))  // 80.00000000003415
 */
 
-case class tt(a: Int, b: Int){
-  override def hashCode(): Int = this.a.hashCode()
-}
-
-
-
-val settest = Set(1,2,3,4)
+(BigDecimal(1.0) to BigDecimal(0.0) by BigDecimal(-0.1)).size

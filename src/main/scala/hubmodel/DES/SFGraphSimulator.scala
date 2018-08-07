@@ -89,7 +89,7 @@ class SFGraphSimulator(override val startTime: Time,
   val densityHistory: collection.mutable.ArrayBuffer[(Time, Double)] = collection.mutable.ArrayBuffer((startTime, 0.0))
   val inflowHistory: collection.mutable.ArrayBuffer[(Time, Double)] = collection.mutable.ArrayBuffer((startTime, 0.0))
 
-  val closedEdges: scala.collection.mutable.HashSet[(Rectangle, Rectangle)] = scala.collection.mutable.HashSet()
+  //val closedEdges: scala.collection.mutable.HashSet[(Rectangle, Rectangle)] = scala.collection.mutable.HashSet()
   val gatesHistory: collection.mutable.ArrayBuffer[(Time, List[(String, Boolean)])] = collection.mutable.ArrayBuffer()
 
   val PTInducedFlows: collection.mutable.Map[Rectangle, PTInducedQueue] = collection.mutable.Map()

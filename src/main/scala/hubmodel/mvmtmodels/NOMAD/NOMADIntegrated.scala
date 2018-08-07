@@ -196,6 +196,8 @@ class NOMADIntegrated(sim: SFGraphSimulator) extends Action {
 
   override def execute(): Unit = {
 
+    //sim.errorLogger.error("move peds @ " + sim.currentTime + ", nbr peds=" + sim.population.size)
+
     if (sim.useFlowSep) {
       sim.controlDevices.flowSeparators.foreach(fs => {
         fs.inflowLinesStart.foreach(fl => {
@@ -218,6 +220,7 @@ class NOMADIntegrated(sim: SFGraphSimulator) extends Action {
         //this.level.updateCurrentCellAndWalkable(this) UNUSED IN THIS FRAMEWORK
 
         // check if it is time for the pedestrian to check his isolation times
+
         ped.updateDesiredSpeed()
         this.updateIsolation(sim.currentTime, ped)
         ped.travelTime = sim.currentTime - ped.entryTime
