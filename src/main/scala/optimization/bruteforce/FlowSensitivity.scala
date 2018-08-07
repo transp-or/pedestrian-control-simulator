@@ -7,16 +7,21 @@ import hubmodel.DES.SFGraphSimulator
 import hubmodel.demand.PedestrianFlow_New
 import hubmodel.{createSimulation, runAndWriteResults}
 import myscala.math.stats.ComputeStats
-
 import myscala.output.SeqTuplesExtensions.SeqTuplesWriter
 import trackingdataanalysis.visualization.HeatMap
 import visualization.PlotOptions
 
+import scala.collection.SortedSet
+
 class FlowSensitivity(config: Config) {
 
-  def varyOpposingFlows(increments: Double): Unit = {
+  private val ODs: (String, String) = ("bottom","top")
+  private val ODReversed: (String, String) = ("top","bottom")
 
-    if (increments <= 0.0 || increments > 1.0) {
+
+  def varyOpposingFlows(increments: Double, maxMultipler: Double = 1.0): Unit = {
+
+    if (increments <= 0.0 || increments > maxMultipler) {
       throw new IllegalArgumentException("increment must be contained between 0.0 and 1.0 ! increments=" + increments)
     }
     if (config.getInt("sim.nb_runs") <= 0) {
@@ -31,7 +36,7 @@ class FlowSensitivity(config: Config) {
       throw new IllegalArgumentException("Output dir for files does not exist ! dir=" + config.getString("output.dir"))
     }
 
-    for (i <- (0.0 to 1.0 by increments).par; j <- (0.0 to 1.0 by increments).par; n <- (0 to config.getInt("sim.nb_runs")).par; if i >= j) {
+    for (i <- (0.0 to maxMultipler by increments).par; j <- (0.0 to maxMultipler by increments).par; n <- (0 to config.getInt("sim.nb_runs")).par; if i >= j) {
 
       val newFlows = (
         defaultParameters._10._1.map(flow => {
@@ -71,7 +76,7 @@ class FlowSensitivity(config: Config) {
 
   }
 
-  def processWrittenResults: Map[(Double, Double), (Int, Double, Double, Double, Double, Double)] = {
+  def processWrittenResults: Map[((Double, Double), String, String),((Int, Double, Double, Double, Double, Double), (Int, Double, Double, Double, Double, Double))] = {
 
     val outputDir = new File(config.getString("output.dir"))
 
@@ -82,28 +87,36 @@ class FlowSensitivity(config: Config) {
       }
     })
 
+    //val ODs: collection.mutable.SortedSet[String] = scala.collection.mutable.SortedSet()
 
-files("tt").map(f => {
+    files("tt").map(f => {
       val endParams: Int = f.getName.indexOf("_params_tt_")
       val params = f.getName.substring(0, endParams).split("_").map(_.toDouble).toVector
       val in = scala.io.Source.fromFile(f)
-      val tt: Iterable[Double] = (for (line <- in.getLines) yield {
+      val tt: scala.collection.immutable.SortedMap[(String, String), Vector[Double]] = scala.collection.immutable.SortedMap[(String, String), Vector[Double]]() ++ (for (line <- in.getLines) yield {
         val cols = line.split(",").map(_.trim)
-        cols(2).toDouble
-      }).toVector
+        (cols(0), cols(1), cols(2).toDouble)
+      }).toVector.groupBy(tup => (tup._1, tup._2)).mapValues(v => v.map(_._3))
       in.close
       (params(0), params(1), tt)
-    }).groupBy(tup => (tup._1, tup._2)).map(tup => tup._1 -> tup._2.flatMap(_._3).stats)
+    }).groupBy(tup => (tup._1, tup._2)).map(tup => (tup._1, ODs._1, ODs._2) -> (tup._2.flatMap(t => {
+      t._3.getOrElse((ODs._1, ODs._2), Vector())
+    }).stats, tup._2.flatMap(t => {
+      t._3.getOrElse((ODs._2, ODs._1), Vector())
+    }).stats))
 
  }
 
-  def drawResults(results: Map[(Double, Double), (Int, Double, Double, Double, Double, Double)]): Unit = {
+  def drawResults(results: Map[((Double, Double), String, String),((Int, Double, Double, Double, Double, Double), (Int, Double, Double, Double, Double, Double))]): Unit = {
 
-    results.map(r => (r._1._1, r._1._2, r._2._1, r._2._2, r._2._3, r._2._4, r._2._5, r._2._6)).toVector.writeToCSV(config.getString("output.output_prefix") + "_flow-sensitivity-results.csv")
 
-    new HeatMap(config.getString("output.output_prefix") + "_heatmap-mean-tt.png", results.map(r => (r._1._1, r._1._2, r._2._2)), "mean travel time", "A -> B", "B -> A")
-    new HeatMap(config.getString("output.output_prefix") + "_heatmap-variance-tt.png", results.map(r => (r._1._1, r._1._2, r._2._3)), "var travel time", "A -> B", "B -> A")
-    new HeatMap(config.getString("output.output_prefix") + "_heatmap-median-tt.png", results.map(r => (r._1._1, r._1._2, r._2._4)), "median travel time", "A -> B", "B -> A")
+    new HeatMap(config.getString("output.output_prefix") + "_heatmap-mean-tt-bottom-top.png", results.map(r => (r._1._1._1, r._1._1._2, r._2._1._2)), "mean travel time", "bottom -> top multiplier", "top -> bottom multiplier", "Mean travel time from bottom to top")
+    new HeatMap(config.getString("output.output_prefix") + "_heatmap-variance-tt-bottom-top.png", results.map(r => (r._1._1._1, r._1._1._2, r._2._1._3)), "var travel time", "bottom -> top multiplier", "top -> bottom multiplier", "Variance travel time from bottom to top")
+    new HeatMap(config.getString("output.output_prefix") + "_heatmap-median-tt-bottom-top.png", results.map(r => (r._1._1._1, r._1._1._2, r._2._1._4)), "median travel time", "bottom -> top multiplier", "top -> bottom multiplier", "Median travel time from bottom to top")
+
+    new HeatMap(config.getString("output.output_prefix") + "_heatmap-mean-tt-top-bottom.png", results.map(r => (r._1._1._1, r._1._1._2, r._2._2._2)), "mean travel time", "bottom -> top multiplier", "top -> bottom multiplier", "Mean travel time from top to bottom")
+    new HeatMap(config.getString("output.output_prefix") + "_heatmap-variance-tt-top-bottom.png", results.map(r => (r._1._1._1, r._1._1._2, r._2._2._3)), "var travel time", "bottom -> top multiplier", "top -> bottom multiplier", "Variance travel time from top to bottom")
+    new HeatMap(config.getString("output.output_prefix") + "_heatmap-median-tt-top-bottom.png", results.map(r => (r._1._1._1, r._1._1._2, r._2._2._4)), "median travel time", "bottom -> top multiplier", "top -> bottom multiplier", "Median travel time from top to bottom")
   }
 
 
