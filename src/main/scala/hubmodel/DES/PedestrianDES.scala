@@ -31,16 +31,25 @@ import scala.util.Random
   *
   */
 abstract class PedestrianDES[T <: PedestrianTrait](val startTime: Time,
-                                                   val finalTime: Time) {
+                                                   val finalTime: Time,
+                                                   logPath: Option[String] = None) {
+
+  private val loggerPath: Option[String] = if (logPath.isDefined && logPath.get.last == '/') {
+    logPath
+  } else if (logPath.isDefined && logPath.get.last != '/') {
+    Some(logPath.get + "/")
+  } else {
+    None
+  }
 
   /** Randomly generated string to make unique logs */
   val ID: String = Random.alphanumeric take 10 mkString ""
 
   /** Log for keeping track of events */
-  val eventLogger: Logger = new Log("log-DES-events" + ID, Level.TRACE).logger
+  val eventLogger: Logger = new Log("log-DES-events" + ID, loggerPath, Level.TRACE).logger
 
   /** Log for storing errors */
-  val errorLogger: Logger = new Log("log-DES-errors" + ID, Level.TRACE).logger
+  val errorLogger: Logger = new Log("log-DES-errors" + ID, loggerPath, Level.TRACE).logger
 
   /** current time of the simulation */
   private var _currentTime: Time = startTime

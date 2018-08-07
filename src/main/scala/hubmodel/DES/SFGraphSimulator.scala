@@ -15,6 +15,7 @@ import hubmodel.tools.cells.{DensityMeasuredArea, Rectangle, isInVertex}
 
 class SFGraphSimulator(override val startTime: Time,
                        override val finalTime: Time,
+                       logDir: Option[String],
                        val sf_dt: Time,
                        val evaluate_dt: Time,
                        val rebuildTreeInterval: Option[Time],
@@ -23,7 +24,7 @@ class SFGraphSimulator(override val startTime: Time,
                        val timeTable: PublicTransportSchedule,
                        val stop2Vertices: Stop2Vertex,
                        flows: (Iterable[PedestrianFlow_New], Iterable[PedestrianFlowPT_New], Iterable[PedestrianFlowFunction_New]),
-                       val controlDevices: ControlDevices) extends PedestrianDES[PedestrianNOMAD](startTime, finalTime) {
+                       val controlDevices: ControlDevices) extends PedestrianDES[PedestrianNOMAD](startTime, finalTime, logDir) {
 
   /* Stores the PT induced flows and the other flows separately*/
   val pedestrianFlows: Iterable[PedestrianFlow_New] = flows._1

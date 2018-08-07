@@ -44,7 +44,7 @@ object ReadExploreParametersResults extends App {
   // Reads the file passed as argument
   val config: Config = ConfigFactory.load(confFile)
 
-  val results = new ParameterExploration(createSimulation(config), config).processWrittenResults
+  val results = new ParameterExploration(config).processWrittenResults
 
   results.map(r => (r._1._1, r._1._2, r._2._1._1, r._2._1._2, r._2._1._3, r._2._1._4, r._2._1._5, r._2._1._6)).toVector.writeToCSV(config.getString("output.output_prefix") + "_exploration-results-travel-time.csv")
     results.map(r => (r._1._1, r._1._2, r._2._2._1, r._2._2._2, r._2._2._3, r._2._2._4, r._2._2._5, r._2._2._6)).toVector.writeToCSV(config.getString("output.output_prefix") + "_exploration-results-density.csv")
