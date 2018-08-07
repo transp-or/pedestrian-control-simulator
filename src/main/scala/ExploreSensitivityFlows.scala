@@ -45,16 +45,9 @@ object ExploreSensitivityFlows extends App {
 
 
 
-
   val flowRatioSensitivity: FlowSensitivity = new FlowSensitivity(config)
   flowRatioSensitivity.varyOpposingFlows(1.0/10.0)
   val results = flowRatioSensitivity.processWrittenResults
-
-
-  results.map(r => (r._1._1, r._1._2, r._2._1, r._2._2, r._2._3, r._2._4, r._2._5, r._2._6)).toVector.writeToCSV(config.getString("output.output_prefix") + "_flow-sensitivity-results.csv")
-
-  new HeatMap(config.getString("output.output_prefix") + "_heatmap-mean-tt.png", results.map(r => (r._1._1, r._1._2, r._2._2)), "mean travel time", "A -> B", "B -> A")
-  new HeatMap(config.getString("output.output_prefix") + "_heatmap-variance-tt.png", results.map(r => (r._1._1, r._1._2, r._2._3)), "var travel time", "A -> B", "B -> A")
-  new HeatMap(config.getString("output.output_prefix") + "_heatmap-median-tt.png", results.map(r => (r._1._1, r._1._2, r._2._4)), "median travel time", "A -> B", "B -> A")
+  flowRatioSensitivity.drawResults(results)
 
 }

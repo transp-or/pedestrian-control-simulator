@@ -6,14 +6,17 @@ import com.typesafe.config.Config
 import hubmodel.DES.SFGraphSimulator
 import hubmodel.mgmt.ControlDevices
 import hubmodel.ped.PedestrianSim
-import hubmodel.{ResultsContainerNew, runAndWriteResults, createSimulation}
+import hubmodel.{ResultsContainerNew, createSimulation, runAndWriteResults}
 import hubmodel.supply.graph.FlowGateFunctional
 import hubmodel.tools.cells.DensityMeasuredArea
 import myscala.math.stats.ComputeStats
+import trackingdataanalysis.visualization.HeatMap
 
 import scala.collection.immutable.NumericRange
 import scala.collection.parallel.ForkJoinTaskSupport
-
+import myscala.output.SeqTuplesExtensions.SeqTuplesWriter
+import trackingdataanalysis.visualization.HeatMap
+import visualization.PlotOptions
 
 class ParameterExploration(config: Config) {
 
@@ -117,6 +120,23 @@ class ParameterExploration(config: Config) {
           case None => ttRes._1 -> (ttRes._2, (0, Double.NaN, Double.NaN, Double.NaN, Double.NaN, Double.NaN))
         }
       }
+  }
+
+  def drawResults(results: Map[(Double, Double), ((Int, Double, Double, Double, Double, Double), (Int, Double, Double, Double, Double, Double))]):  Unit = {
+
+    results.map(r => (r._1._1, r._1._2, r._2._1._1, r._2._1._2, r._2._1._3, r._2._1._4, r._2._1._5, r._2._1._6)).toVector.writeToCSV(config.getString("output.output_prefix") + "_exploration-results-travel-time.csv")
+    results.map(r => (r._1._1, r._1._2, r._2._2._1, r._2._2._2, r._2._2._3, r._2._2._4, r._2._2._5, r._2._2._6)).toVector.writeToCSV(config.getString("output.output_prefix") + "_exploration-results-density.csv")
+
+
+    new HeatMap(config.getString("output.output_prefix") + "_heatmap-mean-tt.png", results.map(r => (r._1._1, r._1._2, r._2._1._2)), "mean travel time", "constant", "linear")
+    new HeatMap(config.getString("output.output_prefix") + "_heatmap-variance-tt.png", results.map(r => (r._1._1, r._1._2, r._2._1._3)), "var travel time", "constant", "linear")
+    new HeatMap(config.getString("output.output_prefix") + "_heatmap-median-tt.png", results.map(r => (r._1._1, r._1._2, r._2._1._4)), "median travel time", "constant", "linear")
+
+
+    new HeatMap(config.getString("output.output_prefix") + "_heatmap-mean-density.png", results.map(r => (r._1._1, r._1._2, r._2._2._2)), "mean density", "constant", "linear")
+    new HeatMap(config.getString("output.output_prefix") + "_heatmap-variance-density.png", results.map(r => (r._1._1, r._1._2, r._2._2._3)), "var density", "constant", "linear")
+    new HeatMap(config.getString("output.output_prefix") + "_heatmap-median-density.png", results.map(r => (r._1._1, r._1._2, r._2._2._4)), "median density", "constant", "linear")
+
   }
 
 }

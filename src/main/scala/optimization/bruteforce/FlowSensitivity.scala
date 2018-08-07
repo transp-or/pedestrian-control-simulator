@@ -5,12 +5,12 @@ import java.io.File
 import com.typesafe.config.Config
 import hubmodel.DES.SFGraphSimulator
 import hubmodel.demand.PedestrianFlow_New
-import hubmodel.ped.PedestrianSim
-import hubmodel.{ResultsContainerNew, createSimulation, runAndCollect, runAndWriteResults}
-import hubmodel.tools.cells.DensityMeasuredArea
+import hubmodel.{createSimulation, runAndWriteResults}
 import myscala.math.stats.ComputeStats
 
-import scala.collection.parallel.ForkJoinTaskSupport
+import myscala.output.SeqTuplesExtensions.SeqTuplesWriter
+import trackingdataanalysis.visualization.HeatMap
+import visualization.PlotOptions
 
 class FlowSensitivity(config: Config) {
 
@@ -96,6 +96,15 @@ files("tt").map(f => {
     }).groupBy(tup => (tup._1, tup._2)).map(tup => tup._1 -> tup._2.flatMap(_._3).stats)
 
  }
+
+  def drawResults(results: Map[(Double, Double), (Int, Double, Double, Double, Double, Double)]): Unit = {
+
+    results.map(r => (r._1._1, r._1._2, r._2._1, r._2._2, r._2._3, r._2._4, r._2._5, r._2._6)).toVector.writeToCSV(config.getString("output.output_prefix") + "_flow-sensitivity-results.csv")
+
+    new HeatMap(config.getString("output.output_prefix") + "_heatmap-mean-tt.png", results.map(r => (r._1._1, r._1._2, r._2._2)), "mean travel time", "A -> B", "B -> A")
+    new HeatMap(config.getString("output.output_prefix") + "_heatmap-variance-tt.png", results.map(r => (r._1._1, r._1._2, r._2._3)), "var travel time", "A -> B", "B -> A")
+    new HeatMap(config.getString("output.output_prefix") + "_heatmap-median-tt.png", results.map(r => (r._1._1, r._1._2, r._2._4)), "median travel time", "A -> B", "B -> A")
+  }
 
 
 }

@@ -2,9 +2,7 @@ import RunSimulation.args
 import com.typesafe.config.{Config, ConfigFactory}
 import optimization.bruteforce.ParameterExploration
 import hubmodel.createSimulation
-import myscala.output.SeqTuplesExtensions.SeqTuplesWriter
-import trackingdataanalysis.visualization.HeatMap
-import visualization.PlotOptions
+
 
 object ExploreParameters extends App {
 
@@ -49,17 +47,7 @@ object ExploreParameters extends App {
   parameterGridSearch.exploreFlowGateFunctionalFormLinear((0.25, 6.5, 25), (0.25, 6.5, 25))
   val results = parameterGridSearch.processWrittenResults
 
-  results.map(r => (r._1._1, r._1._2, r._2._1._1, r._2._1._2, r._2._1._3, r._2._1._4, r._2._1._5, r._2._1._6)).toVector.writeToCSV(config.getString("output.output_prefix") + "_exploration-results-travel-time.csv")
-  results.map(r => (r._1._1, r._1._2, r._2._2._1, r._2._2._2, r._2._2._3, r._2._2._4, r._2._2._5, r._2._2._6)).toVector.writeToCSV(config.getString("output.output_prefix") + "_exploration-results-density.csv")
+  parameterGridSearch.drawResults(results)
 
-
-  new HeatMap(config.getString("output.output_prefix") + "_heatmap-mean-tt.png", results.map(r => (r._1._1, r._1._2, r._2._1._2)), "mean travel time", "constant", "linear")
-  new HeatMap(config.getString("output.output_prefix") + "_heatmap-variance-tt.png", results.map(r => (r._1._1, r._1._2, r._2._1._3)), "var travel time", "constant", "linear")
-  new HeatMap(config.getString("output.output_prefix") + "_heatmap-median-tt.png", results.map(r => (r._1._1, r._1._2, r._2._1._4)), "median travel time", "constant", "linear")
-
-
-  new HeatMap(config.getString("output.output_prefix") + "_heatmap-mean-density.png", results.map(r => (r._1._1, r._1._2, r._2._2._2)), "mean density", "constant", "linear")
-  new HeatMap(config.getString("output.output_prefix") + "_heatmap-variance-density.png", results.map(r => (r._1._1, r._1._2, r._2._2._3)), "var density", "constant", "linear")
-  new HeatMap(config.getString("output.output_prefix") + "_heatmap-median-density.png", results.map(r => (r._1._1, r._1._2, r._2._2._4)), "median density", "constant", "linear")
 
 }
