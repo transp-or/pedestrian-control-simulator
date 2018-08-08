@@ -46,6 +46,8 @@ object ExploreParameters extends App {
 
   parameterGridSearch.exploreFlowGateFunctionalFormLinear((0.25, 6.5, 25), (0.25, 6.5, 25))
   val results = parameterGridSearch.processWrittenResults
+
   parameterGridSearch.drawResults(results)
+
 
 }
