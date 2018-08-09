@@ -1,6 +1,6 @@
 package hubmodel.tools.cells
 
-import hubmodel.Position
+import hubmodel.{Position, Time}
 
 
 /** Representation of a vertex, or cell. This is used for representing vertices in the graph specification
@@ -25,15 +25,33 @@ class RectangleModifiable(name: String,
   C = (__C._1 + __C._2) * 0.5
   D = (__D._1 + __D._2) * 0.5
 
+  private var ATarget: Position = A
+  private var BTarget: Position = B
+  private var CTarget: Position = C
+  private var DTarget: Position = D
+
   def getCornersBoundaries: ((Position, Position), (Position, Position), (Position, Position), (Position, Position)) = {
     (this.__A, this.__B, this.__C, this.__D)
   }
 
-  def updatePositions(fraction: Double): Unit = {
-    this.A = this.__A._1 + (this.__A._2 - this.__A._1) * fraction
-    this.B = this.__B._1 + (this.__B._2 - this.__B._1) * fraction
-    this.C = this.__C._1 + (this.__C._2 - this.__C._1) * fraction
-    this.D = this.__D._1 + (this.__D._2 - this.__D._1) * fraction
+  private val speed: Double = 0.5 // m/s fixed in a arbitrary manner
+
+  def moveRectangle(dt: Time): Unit = {
+    if ((this.A - this.ATarget).norm > 0.0) this.A = this.A + (this.ATarget - this.A).normalized * (speed * dt.value)
+
+    if ((this.B - this.BTarget).norm > 0.0) this.B = this.B + (this.BTarget - this.B).normalized * (speed * dt.value)
+
+    if  ((this.C - this.CTarget).norm > 0.0) this.C = this.C + (this.CTarget - this.C).normalized * (speed * dt.value)
+
+    if ((this.D - this.DTarget).norm > 0.0) this.D = this.D + (this.DTarget - this.D).normalized * (speed * dt.value)
+
+  }
+
+  def setTargetPosition(fraction: Double): Unit = {
+    this.ATarget = this.__A._1 + (this.__A._2 - this.__A._1) * fraction
+    this.BTarget = this.__B._1 + (this.__B._2 - this.__B._1) * fraction
+    this.CTarget = this.__C._1 + (this.__C._2 - this.__C._1) * fraction
+    this.DTarget = this.__D._1 + (this.__D._2 - this.__D._1) * fraction
   }
 
   /** Checks whether another object equals this one by comparing the positions associated to the vertex
@@ -55,7 +73,7 @@ class RectangleModifiable(name: String,
     (this.__A, this.__B, this.__C, this.__D).##
   }
 
-  override def toString: String = this.name
+  override def toString: String = this.name + ", " + this.A + ", " + this.B + ", " + this.C + ", " + this.D
 
 
   override def clone(): RectangleModifiable = new RectangleModifiable(

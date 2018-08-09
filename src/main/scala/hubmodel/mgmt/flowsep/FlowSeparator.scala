@@ -64,6 +64,13 @@ class FlowSeparator(val startA: Position,
 
     if ( math.abs(frac - this.fractionHistory.last._2)/this.fractionHistory.last._2 > FLOW_SEPARATOR_UPDATE ) {
       this.currentTargetPosition = (this.startA + (this.startB - this.startA) * frac, this.endA + (this.endB - this.endA) * frac)
+      this.associatedZonesStart.foreach(_.setTargetPosition(frac))
+      this.associatedZonesEnd.foreach(_.setTargetPosition(frac))
+     /* println(frac)
+      println(this.currentTargetPosition)
+      this.associatedZonesStart.foreach(println)
+      this.associatedZonesEnd.foreach(println)*/
+
     }
     this.fractionHistory.append((time, frac))
   }
@@ -77,9 +84,13 @@ class FlowSeparator(val startA: Position,
     override def execute(): Unit = {
       if ((currentTargetPosition._1 - start).norm > 0.0) {
         start = start + (currentTargetPosition._1 - start).normalized * (speed * sim.sf_dt.value)
+        associatedZonesStart.foreach(_.moveRectangle(sim.sf_dt))
       }
+
       if ((currentTargetPosition._2 - end).norm > 0.0) {
         end = end + (currentTargetPosition._2 - end).normalized * (speed * sim.sf_dt.value)
+        associatedZonesEnd.foreach(_.moveRectangle(sim.sf_dt))
+
       }
 
       positionHistory.append((sim.currentTime, start, end))
