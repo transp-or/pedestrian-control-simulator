@@ -13,7 +13,7 @@ import visualization.PlotOptions
 
 import scala.collection.SortedSet
 
-class FlowSensitivity(config: Config) {
+class FlowSensitivity(config: Config) extends GridSearch{
 
   private val ODs: (String, String) = ("bottom","top")
   private val ODReversed: (String, String) = ("top","bottom")
@@ -89,34 +89,30 @@ class FlowSensitivity(config: Config) {
 
     //val ODs: collection.mutable.SortedSet[String] = scala.collection.mutable.SortedSet()
 
-    files("tt").map(f => {
-      val endParams: Int = f.getName.indexOf("_params_tt_")
-      val params = f.getName.substring(0, endParams).split("_").map(_.toDouble).toVector
-      val in = scala.io.Source.fromFile(f)
-      val tt: scala.collection.immutable.SortedMap[(String, String), Vector[Double]] = scala.collection.immutable.SortedMap[(String, String), Vector[Double]]() ++ (for (line <- in.getLines) yield {
-        val cols = line.split(",").map(_.trim)
-        (cols(0), cols(1), cols(2).toDouble)
-      }).toVector.groupBy(tup => (tup._1, tup._2)).mapValues(v => v.map(_._3))
-      in.close
-      (params(0), params(1), tt)
-    }).groupBy(tup => (tup._1, tup._2)).map(tup => (tup._1, ODs._1, ODs._2) -> (tup._2.flatMap(t => {
-      t._3.getOrElse((ODs._1, ODs._2), Vector())
-    }).stats, tup._2.flatMap(t => {
-      t._3.getOrElse((ODs._2, ODs._1), Vector())
-    }).stats))
+
+    files("tt").map(ProcessTTFile).groupBy(tup => (tup._1, tup._2)).map(tup => (tup._1, ODs._1, ODs._2) -> (
+      tup._2.flatMap(t => { t._3.getOrElse((ODs._1, ODs._2), Vector())}).stats,
+      tup._2.flatMap(t => { t._3.getOrElse((ODs._2, ODs._1), Vector())}).stats
+    )
+    )
+
+
 
  }
 
   def drawResults(results: Map[((Double, Double), String, String),((Int, Double, Double, Double, Double, Double), (Int, Double, Double, Double, Double, Double))]): Unit = {
 
+    val plotOptionsTT = PlotOptions(zmin=Some(20.5), zmax=Some(25))
+    val plotOptionsVarTT = PlotOptions(zmin=Some(0.0), zmax=Some(100))
 
-    new HeatMap(config.getString("output.output_prefix") + "_heatmap-mean-tt-bottom-top.png", results.map(r => (r._1._1._1, r._1._1._2, r._2._1._2)), "mean travel time", "bottom -> top multiplier", "top -> bottom multiplier", "Mean travel time from bottom to top")
-    new HeatMap(config.getString("output.output_prefix") + "_heatmap-variance-tt-bottom-top.png", results.map(r => (r._1._1._1, r._1._1._2, r._2._1._3)), "var travel time", "bottom -> top multiplier", "top -> bottom multiplier", "Variance travel time from bottom to top")
-    new HeatMap(config.getString("output.output_prefix") + "_heatmap-median-tt-bottom-top.png", results.map(r => (r._1._1._1, r._1._1._2, r._2._1._4)), "median travel time", "bottom -> top multiplier", "top -> bottom multiplier", "Median travel time from bottom to top")
 
-    new HeatMap(config.getString("output.output_prefix") + "_heatmap-mean-tt-top-bottom.png", results.map(r => (r._1._1._1, r._1._1._2, r._2._2._2)), "mean travel time", "bottom -> top multiplier", "top -> bottom multiplier", "Mean travel time from top to bottom")
-    new HeatMap(config.getString("output.output_prefix") + "_heatmap-variance-tt-top-bottom.png", results.map(r => (r._1._1._1, r._1._1._2, r._2._2._3)), "var travel time", "bottom -> top multiplier", "top -> bottom multiplier", "Variance travel time from top to bottom")
-    new HeatMap(config.getString("output.output_prefix") + "_heatmap-median-tt-top-bottom.png", results.map(r => (r._1._1._1, r._1._1._2, r._2._2._4)), "median travel time", "bottom -> top multiplier", "top -> bottom multiplier", "Median travel time from top to bottom")
+    new HeatMap(config.getString("output.output_prefix") + "_heatmap-mean-tt-bottom-top.png", results.map(r => (r._1._1._1, r._1._1._2, r._2._1._2)), "mean travel time", "bottom -> top multiplier", "top -> bottom multiplier", "Mean travel time from bottom to top", plotOptionsTT)
+    new HeatMap(config.getString("output.output_prefix") + "_heatmap-variance-tt-bottom-top.png", results.map(r => (r._1._1._1, r._1._1._2, r._2._1._3)), "var travel time", "bottom -> top multiplier", "top -> bottom multiplier", "Variance travel time from bottom to top", plotOptionsVarTT)
+    new HeatMap(config.getString("output.output_prefix") + "_heatmap-median-tt-bottom-top.png", results.map(r => (r._1._1._1, r._1._1._2, r._2._1._4)), "median travel time", "bottom -> top multiplier", "top -> bottom multiplier", "Median travel time from bottom to top", plotOptionsTT)
+
+    new HeatMap(config.getString("output.output_prefix") + "_heatmap-mean-tt-top-bottom.png", results.map(r => (r._1._1._1, r._1._1._2, r._2._2._2)), "mean travel time", "bottom -> top multiplier", "top -> bottom multiplier", "Mean travel time from top to bottom", plotOptionsTT)
+    new HeatMap(config.getString("output.output_prefix") + "_heatmap-variance-tt-top-bottom.png", results.map(r => (r._1._1._1, r._1._1._2, r._2._2._3)), "var travel time", "bottom -> top multiplier", "top -> bottom multiplier", "Variance travel time from top to bottom", plotOptionsVarTT)
+    new HeatMap(config.getString("output.output_prefix") + "_heatmap-median-tt-top-bottom.png", results.map(r => (r._1._1._1, r._1._1._2, r._2._2._4)), "median travel time", "bottom -> top multiplier", "top -> bottom multiplier", "Median travel time from top to bottom", plotOptionsTT)
   }
 
 

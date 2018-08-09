@@ -18,7 +18,7 @@ import myscala.output.SeqTuplesExtensions.SeqTuplesWriter
 import trackingdataanalysis.visualization.HeatMap
 import visualization.PlotOptions
 
-class ParameterExploration(config: Config) {
+class ParameterExploration(config: Config) extends GridSearch{
 
   def exploreFlowGateFunctionalFormLinear(constantBounds: (Double, Double, Int), linearBounds: (Double, Double, Int)): Unit = {
 
@@ -87,17 +87,14 @@ class ParameterExploration(config: Config) {
         }
       })
 
-      val ttResults: Map[(Double, Double), (Int, Double, Double, Double, Double, Double)] = files("tt").map(f => {
-        val endParams: Int = f.getName.indexOf("_params_tt_")
-        val params = f.getName.substring(0, endParams).split("_").map(_.toDouble).toVector
-        val in = scala.io.Source.fromFile(f)
-        val tt: Iterable[Double] = (for (line <- in.getLines) yield {
-          val cols = line.split(",").map(_.trim)
-          cols(2).toDouble
-        }).toVector
-        in.close
-        (params(0), params(1), tt)
-      }).groupBy(tup => (tup._1, tup._2)).map(tup => tup._1 -> tup._2.flatMap(_._3).stats)
+      val OD1: (String, String) = ("left","right")
+      val OD2: (String, String) = ("top","bottom")
+
+
+      val ttResults: Map[(Double, Double, String, String), (Int, Double, Double, Double, Double, Double)] = files("tt").map(ProcessTTFile).
+        flatMap(tup => tup._3.map(t => (tup._1, tup._2, t._1._1, t._1._2, t._2))).
+        groupBy(tup => (tup._1, tup._2, tup._3, tup._4)).
+        mapValues(v => v.flatMap(_._5).stats)
 
       val densityResults: Map[(Double, Double), (Int, Double, Double, Double, Double, Double)] = files("density").map(f => {
         val endParams: Int = f.getName.indexOf("_params_density_")
@@ -114,7 +111,7 @@ class ParameterExploration(config: Config) {
         case _ => throw new NotImplementedError("multiple density zones for parameter exploration not implemented !")
       })
 
-      for (ttRes <- ttResults) yield {
+      for (ttRes <- ttResults/*.filterKeys(k => (k._3, k._4) == OD2)*/.map( kv => (kv._1._1, kv._1._2) -> kv._2)) yield {
         densityResults.find(_._1 == ttRes._1) match {
           case Some(dRes) => ttRes._1 -> (ttRes._2, dRes._2)
           case None => ttRes._1 -> (ttRes._2, (0, Double.NaN, Double.NaN, Double.NaN, Double.NaN, Double.NaN))
@@ -127,15 +124,16 @@ class ParameterExploration(config: Config) {
     results.map(r => (r._1._1, r._1._2, r._2._1._1, r._2._1._2, r._2._1._3, r._2._1._4, r._2._1._5, r._2._1._6)).toVector.writeToCSV(config.getString("output.output_prefix") + "_exploration-results-travel-time.csv")
     results.map(r => (r._1._1, r._1._2, r._2._2._1, r._2._2._2, r._2._2._3, r._2._2._4, r._2._2._5, r._2._2._6)).toVector.writeToCSV(config.getString("output.output_prefix") + "_exploration-results-density.csv")
 
+    val plotOptionsTT = PlotOptions(zmin=Some(19), zmax=Some(25))
 
-    new HeatMap(config.getString("output.output_prefix") + "_heatmap-mean-tt.png", results.map(r => (r._1._1, r._1._2, r._2._1._2)), "mean travel time", "constant", "linear", "")
-    new HeatMap(config.getString("output.output_prefix") + "_heatmap-variance-tt.png", results.map(r => (r._1._1, r._1._2, r._2._1._3)), "var travel time", "constant", "linear", "")
-    new HeatMap(config.getString("output.output_prefix") + "_heatmap-median-tt.png", results.map(r => (r._1._1, r._1._2, r._2._1._4)), "median travel time", "constant", "linear", "")
+    new HeatMap(config.getString("output.output_prefix") + "_heatmap-mean-tt.png", results.map(r => (r._1._1, r._1._2, r._2._1._2)), "mean travel time", "constant", "linear", "mean travel time", plotOptionsTT)
+    new HeatMap(config.getString("output.output_prefix") + "_heatmap-variance-tt.png", results.map(r => (r._1._1, r._1._2, r._2._1._3)), "var travel time", "constant", "linear", "variance of travel time")
+    new HeatMap(config.getString("output.output_prefix") + "_heatmap-median-tt.png", results.map(r => (r._1._1, r._1._2, r._2._1._4)), "median travel time", "constant", "linear", "median of travel time", plotOptionsTT)
 
 
-    new HeatMap(config.getString("output.output_prefix") + "_heatmap-mean-density.png", results.map(r => (r._1._1, r._1._2, r._2._2._2)), "mean density", "constant", "linear", "")
-    new HeatMap(config.getString("output.output_prefix") + "_heatmap-variance-density.png", results.map(r => (r._1._1, r._1._2, r._2._2._3)), "var density", "constant", "linear", "")
-    new HeatMap(config.getString("output.output_prefix") + "_heatmap-median-density.png", results.map(r => (r._1._1, r._1._2, r._2._2._4)), "median density", "constant", "linear", "")
+    new HeatMap(config.getString("output.output_prefix") + "_heatmap-mean-density.png", results.map(r => (r._1._1, r._1._2, r._2._2._2)), "mean density", "constant", "linear", "mean of density")
+    new HeatMap(config.getString("output.output_prefix") + "_heatmap-variance-density.png", results.map(r => (r._1._1, r._1._2, r._2._2._3)), "var density", "constant", "linear", "variance of density")
+    new HeatMap(config.getString("output.output_prefix") + "_heatmap-median-density.png", results.map(r => (r._1._1, r._1._2, r._2._2._4)), "median density", "constant", "linear", "median of density")
 
   }
 

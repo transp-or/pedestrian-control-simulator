@@ -233,7 +233,7 @@ abstract class DrawingComponents(xBorderSpacing: Int, yBorderSpacing: Int, pixel
     val x: Double = value - minData
     val minRange: Double = 0.0
     val maxRange:Double = maxData - minData
-    new Color(min(255,(230 * x/(maxRange-minRange)).toInt), min(255,(230 * x/(maxRange-minRange)).toInt), min(255,(230 * x/(maxRange-minRange)).toInt))
+    new Color(math.max(0, math.min(255,(230 * x/(maxRange-minRange)).toInt)), math.max(0,math.min(255,(230 * x/(maxRange-minRange)).toInt)), math.max(0,math.min(255,(230 * x/(maxRange-minRange)).toInt)))
   }
 
 
