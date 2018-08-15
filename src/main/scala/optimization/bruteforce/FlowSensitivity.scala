@@ -102,8 +102,8 @@ class FlowSensitivity(config: Config) extends GridSearch{
 
   def drawResults(results: Map[((Double, Double), String, String),((Int, Double, Double, Double, Double, Double), (Int, Double, Double, Double, Double, Double))]): Unit = {
 
-    val plotOptionsTT = PlotOptions(zmin=Some(20.5), zmax=Some(25))
-    val plotOptionsVarTT = PlotOptions(zmin=Some(0.0), zmax=Some(100))
+    val plotOptionsTT = PlotOptions()
+    val plotOptionsVarTT = PlotOptions()
 
 
     new HeatMap(config.getString("output.output_prefix") + "_heatmap-mean-tt-bottom-top.png", results.map(r => (r._1._1._1, r._1._1._2, r._2._1._2)), "mean travel time", "bottom -> top multiplier", "top -> bottom multiplier", "Mean travel time from bottom to top", plotOptionsTT)
