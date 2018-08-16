@@ -6,6 +6,7 @@ import java.awt.{Color, Font, Graphics2D}
 import breeze.linalg.min
 import breeze.numerics.floor
 
+import scala.annotation.tailrec
 import scala.collection.immutable.NumericRange
 
 abstract class DrawingComponents(xBorderSpacing: Int, yBorderSpacing: Int, pixelCanvasSize: (Int, Int)) extends VisualizationTools {
@@ -38,13 +39,13 @@ abstract class DrawingComponents(xBorderSpacing: Int, yBorderSpacing: Int, pixel
 
     // axis
     graphics.drawLine(yBorderSpacing, verticalTransformation(xBorderSpacing + mapVCoord(0.0)), pixelCanvasSize._1-xBorderSpacing+extraSpacing, verticalTransformation(xBorderSpacing + mapVCoord(0.0)))
-    graphics.drawLine(yBorderSpacing + mapHCoord(0.0), verticalTransformation(xBorderSpacing), yBorderSpacing + mapHCoord(0.0), verticalTransformation(pixelCanvasSize._2-xBorderSpacing+extraSpacing))
+    graphics.drawLine(yBorderSpacing, verticalTransformation(xBorderSpacing), yBorderSpacing, verticalTransformation(pixelCanvasSize._2-xBorderSpacing+extraSpacing))
 
     // arrow heads
     graphics.drawLine(pixelCanvasSize._1-xBorderSpacing+extraSpacing, verticalTransformation(xBorderSpacing + mapVCoord(0.0)), pixelCanvasSize._1-(xBorderSpacing+extraSpacing)+lineExtension4Arrow, verticalTransformation(xBorderSpacing+5 + mapVCoord(0.0)))
     graphics.drawLine(pixelCanvasSize._1-xBorderSpacing+extraSpacing, verticalTransformation(xBorderSpacing + mapVCoord(0.0)), pixelCanvasSize._1-(xBorderSpacing+extraSpacing)+lineExtension4Arrow, verticalTransformation(xBorderSpacing-5 + mapVCoord(0.0)))
-    graphics.drawLine(yBorderSpacing + mapHCoord(0.0), verticalTransformation(pixelCanvasSize._2-xBorderSpacing+extraSpacing), yBorderSpacing + mapHCoord(0.0)+5, verticalTransformation(pixelCanvasSize._2-(xBorderSpacing+extraSpacing)+lineExtension4Arrow))
-    graphics.drawLine(yBorderSpacing + mapHCoord(0.0), verticalTransformation(pixelCanvasSize._2-xBorderSpacing+extraSpacing), yBorderSpacing + mapHCoord(0.0)-5, verticalTransformation(pixelCanvasSize._2-(xBorderSpacing+extraSpacing)+lineExtension4Arrow))
+    graphics.drawLine(yBorderSpacing, verticalTransformation(pixelCanvasSize._2-xBorderSpacing+extraSpacing), yBorderSpacing+5, verticalTransformation(pixelCanvasSize._2-(xBorderSpacing+extraSpacing)+lineExtension4Arrow))
+    graphics.drawLine(yBorderSpacing, verticalTransformation(pixelCanvasSize._2-xBorderSpacing+extraSpacing), yBorderSpacing-5, verticalTransformation(pixelCanvasSize._2-(xBorderSpacing+extraSpacing)+lineExtension4Arrow))
 
     // axis labels with larger font
     val currentFont: Font = graphics.getFont
@@ -76,8 +77,8 @@ abstract class DrawingComponents(xBorderSpacing: Int, yBorderSpacing: Int, pixel
 
       // draws y ticks
       posYTicks.foreach(tick => {
-        graphics.drawLine(yBorderSpacing-5 + mapHCoord(0.0), verticalTransformation(xBorderSpacing+tick._1), yBorderSpacing+5 + mapHCoord(0.0), verticalTransformation(xBorderSpacing+tick._1))
-        graphics.drawString(f"${tick._2}%1.2f", yBorderSpacing - 5 - 2 + mapHCoord(0.0) - graphics.getFontMetrics.stringWidth(f"${tick._2}%1.2f"), verticalTransformation(xBorderSpacing+tick._1-floor(0.33*graphics.getFontMetrics.getHeight).toInt))
+        graphics.drawLine(yBorderSpacing-5, verticalTransformation(xBorderSpacing+tick._1), yBorderSpacing+5, verticalTransformation(xBorderSpacing+tick._1))
+        graphics.drawString(f"${tick._2}%1.2f", yBorderSpacing - 5 - 2 - graphics.getFontMetrics.stringWidth(f"${tick._2}%1.2f"), verticalTransformation(xBorderSpacing+tick._1-floor(0.33*graphics.getFontMetrics.getHeight).toInt))
       })
 
     }
@@ -169,16 +170,26 @@ abstract class DrawingComponents(xBorderSpacing: Int, yBorderSpacing: Int, pixel
   }
 
 
-  def drawHistogram(graphics: Graphics2D, binCount: Vector[(Int, Double)], intervals: Vector[Double]): Unit = {
+  def drawHistogram(graphics: Graphics2D, binCount: Vector[(Int, Double)], intervals: Vector[Double], xLabel: String): Unit = {
 
     val barWidthPx: Int = (pixelCanvasSize._1 - yBorderSpacing*2)/(intervals.size-1)
-    val barHeightPx: Int = scala.math.round((pixelCanvasSize._2-xBorderSpacing*2.toDouble)/(1.2*binCount.map(_._2).max)).toInt
+    val barHeightPx: Int = mapVCoord(1.0)//scala.math.round((pixelCanvasSize._2-xBorderSpacing*2.toDouble)/(1.2*binCount.map(_._2).max)).toInt
 
+    @tailrec
+    def filterEveryOtherValue(x: Iterable[(Double, Double)], size: Int): Iterable[(Double, Double)] = {
+      if (x.size <= size) { x }
+      else { filterEveryOtherValue(x.zipWithIndex.filter(_._2 % 2 == 0).map(_._1), size) }
+    }
 
-    intervals.dropRight(1).zip(intervals.tail).foreach(pair => {
-      val str: String = "(" + "%1.2f".format(pair._1) + ", " + "%1.2f".format(pair._2) + "]"
+    val intervals2Show: Iterable[(Double, Double)] = filterEveryOtherValue(intervals.dropRight(1).zip(intervals.tail), 6)
+
+    intervals2Show.foreach(pair => {
+      val str: String = "(" + "%1.0f".format(pair._1) + ", " + "%1.0f".format(pair._2) + "]"
       graphics.drawString(str, yBorderSpacing + mapHCoord(0.5*pair._1+0.5*pair._2)-floor(0.5*graphics.getFontMetrics.stringWidth(str)).toInt, verticalTransformation(xBorderSpacing-5-2 + mapVCoord(0.0)-graphics.getFontMetrics.getHeight))
     })
+
+    graphics.setColor(Color.BLACK)
+    graphics.drawString(xLabel, (0.5*pixelCanvasSize._1).toInt - (0.5*graphics.getFontMetrics.stringWidth(xLabel)).toInt, verticalTransformation(5))
 
     binCount.filter(_._1 >= 0).foreach(bar => {
       graphics.fillRect(barWidthPx/2+yBorderSpacing + mapHCoord(intervals(bar._1))-barWidthPx/2, verticalTransformation((bar._2*barHeightPx).toInt) - xBorderSpacing , barWidthPx, (bar._2*barHeightPx).toInt)

@@ -114,19 +114,19 @@ class FlowSensitivity(config: Config) extends GridSearch {
 
   def drawResults(results: Map[(Double, Double, String, String),(Int, Double, Double, Double, Double, Double)]): Unit = {
 
-    val plotOptionsTT = PlotOptions()
+    val plotOptionsTT = PlotOptions(zmin=Some(28), zmax=Some(32))
     val plotOptionsVarTT = PlotOptions()
 
-    new HeatMap(config.getString("output.output_prefix") + "_heatmap-mean-tt.png", results.map(r => (r._1._1, r._1._2, r._2._2)), "mean travel time", "constant", "linear", "mean travel time", plotOptionsTT)
-    new HeatMap(config.getString("output.output_prefix") + "_heatmap-variance-tt.png", results.map(r => (r._1._1, r._1._2, r._2._3)), "var travel time", "constant", "linear", "variance of travel time")
-    new HeatMap(config.getString("output.output_prefix") + "_heatmap-median-tt.png", results.map(r => (r._1._1, r._1._2, r._2._4)), "median travel time", "constant", "linear", "median of travel time", plotOptionsTT)
+    new HeatMap(config.getString("output.output_prefix") + "_heatmap-mean-tt.png", results.map(r => (r._1._1, r._1._2, r._2._2)), "mean travel time", "bottom -> top multiplier", "top -> bottom multiplier", "Mean travel time", plotOptionsTT)
+    new HeatMap(config.getString("output.output_prefix") + "_heatmap-variance-tt.png", results.map(r => (r._1._1, r._1._2, r._2._3)), "var travel time", "bottom -> top multiplier", "top -> bottom multiplier", "Variance of travel time")
+    new HeatMap(config.getString("output.output_prefix") + "_heatmap-median-tt.png", results.map(r => (r._1._1, r._1._2, r._2._4)), "median travel time", "bottom -> top multiplier", "top -> bottom multiplier", "Median of travel time", plotOptionsTT)
 
   }
 
 
   def drawResultsSplitOD(results: Map[((Double, Double), String, String),((Int, Double, Double, Double, Double, Double), (Int, Double, Double, Double, Double, Double))]): Unit = {
 
-    val plotOptionsTT = PlotOptions()
+    val plotOptionsTT = PlotOptions(zmin=Some(28), zmax=Some(32))
     val plotOptionsVarTT = PlotOptions()
 
     new HeatMap(config.getString("output.output_prefix") + "_heatmap-mean-tt-bottom-top.png", results.map(r => (r._1._1._1, r._1._1._2, r._2._1._2)), "mean travel time", "bottom -> top multiplier", "top -> bottom multiplier", "Mean travel time from bottom to top", plotOptionsTT)

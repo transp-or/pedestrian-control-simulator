@@ -181,7 +181,7 @@ object AnalyseTrackingData extends App {
       speedByEntyTimeMean.toVector.sortBy(_._1).writeToCSV(config.getString("output.prefix") + "-TTByEntyTimeMean.csv")
       println("Stats of the speed per time interval:\n" + speedByEntyTimeMean.values.map(_._2).stats)
 
-      new Histogram(config.getString("output.prefix") + "-meanSpeedPerDepartureTimeHistogram.png", speedByEntyTimeMean.map(_._2._2), 0.05, "speed [m/s]", PlotOptions(xmin=Some(0.5), xmax=Some(1.5)))
+      new Histogram(config.getString("output.prefix") + "-meanSpeedPerDepartureTimeHistogram.png", speedByEntyTimeMean.map(_._2._2), 0.05, "speed [m/s]", "Mean speed per departure time", PlotOptions(xmin=Some(0.5), xmax=Some(1.5)))
 
       val opts = PlotOptions(xTickInterval = 0.5 ,yTickInterval = 0.25, xmin=Some(0.0), xmax=Some(6), width = 800, height = 600, ymin = Some(0.0), ymax = Some(3))
 

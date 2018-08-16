@@ -12,6 +12,7 @@ class Histogram(outputFile: String,
                 x: Iterable[Double],
                 binSize: Double,
                 xLabel: String,
+                title: String,
                 opts: PlotOptions = PlotOptions()) extends DrawingComponents(opts.border2HorizontalAxis, opts.border2VerticalAxis, (opts.width, opts.height)) with VisualizationTools {
 
   val xmin: Double = if (opts.xmin.isDefined) opts.xmin.get else x.min
@@ -27,7 +28,7 @@ class Histogram(outputFile: String,
 
   // completes abstract classes by implementing the mapping functions
   override def mapHCoord: (Time) => Int = mapHcoordLinear(xmin, xmax, opts.width-opts.border2HorizontalAxis-opts.border2VerticalAxis)
-  override def mapVCoord: (Time) => Int = mapVcoordLinear(0, 1.2*binnedData.map(_._2).max, opts.height-2*opts.border2HorizontalAxis)//1.2*binnedData.map(_._2).max
+  override def mapVCoord: (Time) => Int = mapVcoordLinear(if (opts.ymin.isDefined) opts.ymin.get else 0.0, if (opts.ymax.isDefined) opts.ymax.get else 1.2*binnedData.map(_._2).max, opts.height-2*opts.border2HorizontalAxis)//1.2*binnedData.map(_._2).max
   override def verticalTransformation: Int => Int = verticalMirrorTransformation(canvas.getHeight)
 
   // builds the background based on the size passed as argument
@@ -36,8 +37,9 @@ class Histogram(outputFile: String,
   gCanvas.setColor(Color.WHITE)
   gCanvas.fillRect(0, 0, canvas.getWidth(), canvas.getHeight())
 
-  drawAxis(gCanvas, None, Some((0, 1.2*binnedData.map(_._2).max,0.005,"frequency"))) // 1.2*binnedData.map(_._2).max,1.2*binnedData.map(_._2).max/10.0
-  drawHistogram(gCanvas, binnedData, intervals.toVector)
+  drawAxis(gCanvas, None, Some((if (opts.ymin.isDefined) opts.ymin.get else 0.0, if (opts.ymax.isDefined) opts.ymax.get else 1.2*binnedData.map(_._2).max  ,0.05,"frequency"))) // 1.2*binnedData.map(_._2).max,1.2*binnedData.map(_._2).max/10.0
+  drawHistogram(gCanvas, binnedData, intervals.toVector, xLabel)
+  drawTitle(gCanvas, title)
 
   // Writes image to file
   if (outputFile.length > 0) {

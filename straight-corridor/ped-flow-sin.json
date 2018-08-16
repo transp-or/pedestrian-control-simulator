@@ -1,0 +1,45 @@
+{
+  "location": "corridor",
+  "PTflows": [],
+  "flows": [],
+  "function_flows": [
+    {
+      "origin": "top",
+      "destination": "bottom",
+      "linear": [ ],
+      "constant": [
+      ],
+      "sine": [
+        {
+          "start": "00:00:00",
+          "end": "00:14:00",
+          "period_multiplier": 0.02,
+          "period_shift": 0.0,
+          "a": 1.0,
+          "b": 0.4,
+          "c": 0.2,
+          "max_flow": 2.0
+        }
+      ]
+    },
+    {
+      "origin": "bottom",
+      "destination": "top",
+      "linear": [ ],
+      "constant": [
+      ],
+      "sine": [
+        {
+          "start": "00:00:00",
+          "end": "00:14:00",
+          "period_multiplier": 0.02,
+          "period_shift": 0.75,
+          "a": 1.0,
+          "b": 0.4,
+          "c": 0.2,
+          "max_flow": 2.0
+        }
+      ]
+    }
+  ]
+}

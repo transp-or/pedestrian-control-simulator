@@ -8,6 +8,8 @@ import hubmodel.results.PopulationProcessing
 import myscala.math.stats.{ComputeStats, stats}
 import myscala.output.SeqOfSeqExtensions.SeqOfSeqWriter
 import myscala.output.SeqTuplesExtensions.SeqTuplesWriter
+import trackingdataanalysis.visualization.Histogram
+import visualization.PlotOptions
 
 import scala.collection.JavaConverters._
 import scala.collection.mutable.ArrayBuffer
@@ -107,7 +109,7 @@ object RunSimulation extends App {
 
   //println(results.flatMap(_.completedPeds.map(_.travelTime.value)).stats)
 
-  if (config.getBoolean("output.write_travel_times") || config.getBoolean("output.write_densities") || config.getBoolean("output.write_tt_stats") ) {
+  if (config.getBoolean("output.write_travel_times") || config.getBoolean("output.write_densities") ) {
 
     println("Processing results")
 
@@ -153,9 +155,12 @@ object RunSimulation extends App {
         )
       }
     }
+  }
 
-    // computes statistics on travel times and writes them
-    if (config.getBoolean("output.write_tt_stats")) results.map(r => stats(r.completedPeds.map(p => p.travelTime.value))).writeToCSV(config.getString("output.output_prefix") + "_travel_times_stats.csv", rowNames = None, columnNames = Some(Vector("size", "mean", "variance", "median", "min", "max")))
+  // computes statistics on travel times and writes them
+  if (config.getBoolean("output.write_tt_stats")) {
+    results.map(r => stats(r.completedPeds.map(p => p.travelTime.value))).writeToCSV(config.getString("output.output_prefix") + "_travel_times_stats.csv", rowNames = None, columnNames = Some(Vector("size", "mean", "variance", "median", "min", "max")))
+    new Histogram(config.getString("output.output_prefix") + "_travel_times_hist.png", results.flatMap(r => r.completedPeds.map(p => p.travelTime.value)), 1.0, "travel times [s]", "Histogram of travel times", PlotOptions(xmin=Some(20.0), xmax=Some(50.0), ymax=Some(0.3)))
   }
 
   if (config.getBoolean("output.write_trajectories_as_VS")) {
