@@ -25,7 +25,7 @@ class ParameterExploration(config: Config) extends GridSearch{
     val defaultParameters = createSimulation(config).getSetupArguments
 
     val constantRange: NumericRange[Double] = constantBounds._1 to constantBounds._2 by (constantBounds._2 - constantBounds._1) / constantBounds._3
-    val linearRange: NumericRange[Double] = linearBounds._1 to linearBounds._2 by (linearBounds._2 - linearBounds._1) / linearBounds._3
+    val linearRange: NumericRange[Double] = {linearBounds._1 to linearBounds._2 by (linearBounds._2 - linearBounds._1) / linearBounds._3}
 
     // checks if the output dir exists
     val outputDir = new File(config.getString("output.dir"))
@@ -34,7 +34,7 @@ class ParameterExploration(config: Config) extends GridSearch{
     }
 
 
-    for (i <- constantRange.par; j <- linearRange.par; k <- (0 to config.getInt("sim.nb_runs")).par) {
+    for (i <- constantRange.par; j <- linearRange.par; k <- (1 to config.getInt("sim.nb_runs")).par) {
       //Vector.fill(config.getInt("sim.nb_runs"))({
 
       val newDevices: ControlDevices = new ControlDevices(
@@ -124,7 +124,7 @@ class ParameterExploration(config: Config) extends GridSearch{
     results.map(r => (r._1._1, r._1._2, r._2._1._1, r._2._1._2, r._2._1._3, r._2._1._4, r._2._1._5, r._2._1._6)).toVector.writeToCSV(config.getString("output.output_prefix") + "_exploration-results-travel-time.csv")
     results.map(r => (r._1._1, r._1._2, r._2._2._1, r._2._2._2, r._2._2._3, r._2._2._4, r._2._2._5, r._2._2._6)).toVector.writeToCSV(config.getString("output.output_prefix") + "_exploration-results-density.csv")
 
-    val plotOptionsTT = PlotOptions(zmin=Some(19), zmax=Some(25))
+    val plotOptionsTT = PlotOptions()
 
     new HeatMap(config.getString("output.output_prefix") + "_heatmap-mean-tt.png", results.map(r => (r._1._1, r._1._2, r._2._1._2)), "mean travel time", "constant", "linear", "mean travel time", plotOptionsTT)
     new HeatMap(config.getString("output.output_prefix") + "_heatmap-variance-tt.png", results.map(r => (r._1._1, r._1._2, r._2._1._3)), "var travel time", "constant", "linear", "variance of travel time")

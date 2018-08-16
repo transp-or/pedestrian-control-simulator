@@ -1,3 +1,4 @@
+import ExploreSensitivityFlows.flowRatioSensitivity
 import com.typesafe.config.{Config, ConfigFactory}
 import optimization.bruteforce.FlowSensitivity
 
@@ -39,8 +40,13 @@ object ReadExploreSensitivityFlowsResults extends App {
   // Reads the file passed as argument
   val config: Config = ConfigFactory.load(confFile)
 
-  val results = new FlowSensitivity(config).processWrittenResults
-  new FlowSensitivity(config).drawResults(results)
+  val flowSens: FlowSensitivity = new FlowSensitivity(config)
+
+  val results = flowSens.processWrittenResults
+  flowSens.drawResults(results)
+
+  val resultsSplitOD = flowSens.processWrittenResultsSplitOD
+  flowSens.drawResultsSplitOD(resultsSplitOD)
 
 
 }
