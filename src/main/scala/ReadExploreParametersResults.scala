@@ -44,8 +44,12 @@ object ReadExploreParametersResults extends App {
   // Reads the file passed as argument
   val config: Config = ConfigFactory.load(confFile)
 
-  val results = new ParameterExploration(config).processWrittenResults
-  new ParameterExploration(config).drawResults(results)
+  val parameterGridSearch: ParameterExploration = new ParameterExploration(config)
 
+  val results = parameterGridSearch.processWrittenResults
+  parameterGridSearch.drawResults(results)
+
+  val resultsSplitOD = parameterGridSearch.processWrittenResultsSplitOD
+  parameterGridSearch.drawResultsSplitOD(resultsSplitOD)
 
 }

@@ -10,7 +10,7 @@
         {
           "start": "00:00:00",
           "end": "00:14:00",
-          "rate": 1.0
+          "rate": 1.6
         }
       ],
       "linear": [],
@@ -18,7 +18,7 @@
     },
     {
       "origin": "top",
-      "destination": "bottom",
+      "destination": "right",
       "linear": [ ],
       "constant": [
       ],
@@ -31,7 +31,7 @@
           "a": 1.0,
           "b": 0.4,
           "c": 0.2,
-          "max_flow": 1.2
+          "max_flow": 2.0
         }
       ]
     }

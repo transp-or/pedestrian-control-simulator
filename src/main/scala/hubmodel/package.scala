@@ -16,6 +16,8 @@ import play.api.libs.json.Reads._
 import play.api.libs.json._
 import myscala.output.SeqTuplesExtensions.SeqTuplesWriter
 import myscala.output.SeqOfSeqExtensions.SeqOfSeqWriter
+import myscala.math.stats.{ComputeStats, stats}
+import myscala.math.stats.computeQuantile
 
 
 /**

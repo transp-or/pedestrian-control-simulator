@@ -168,6 +168,7 @@ object RunSimulation extends App {
     writePopulationTrajectories(results.head.completedPeds++results.head.uncompletedPeds, config.getString("output.output_prefix") + "_simulation_trajectories.csv")
   }
 
+
   // Analyse pedestrian data like travel time and walking speed by departure time interval.
   if (!config.getStringList("results-analysis.o_nodes").isEmpty && !config.getStringList("results-analysis.d_nodes").isEmpty )
   {

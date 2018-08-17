@@ -18,7 +18,7 @@ import myscala.output.SeqTuplesExtensions.SeqTuplesWriter
 import trackingdataanalysis.visualization.HeatMap
 import visualization.PlotOptions
 
-class ParameterExploration(config: Config) extends GridSearch{
+class ParameterExploration(config: Config) extends GridSearch {
 
   def exploreFlowGateFunctionalFormLinear(constantBounds: (Double, Double, Int), linearBounds: (Double, Double, Int)): Unit = {
 
@@ -40,7 +40,11 @@ class ParameterExploration(config: Config) extends GridSearch{
       val newDevices: ControlDevices = new ControlDevices(
         defaultParameters._11.monitoredAreas.map(_.clone()),
         defaultParameters._11.amws.map(_.clone()),
-        defaultParameters._11.flowGates.map(fg => new FlowGateFunctional(fg.startVertex, fg.endVertex, fg.start, fg.end, fg.monitoredArea, { x: Double => math.max(0.0000001, i + j * x) })),
+        if (config.getBoolean("sim.use_flow_gates")) {
+          defaultParameters._11.flowGates.map(fg => new FlowGateFunctional(fg.startVertex, fg.endVertex, fg.start, fg.end, fg.monitoredArea, { x: Double => math.max(0.0000001, i + j * x) }))
+        } else {
+          Vector()
+        },
         defaultParameters._11.binaryGates.map(_.clone()),
         defaultParameters._11.flowSeparators.map(_.clone())
       )
@@ -87,14 +91,12 @@ class ParameterExploration(config: Config) extends GridSearch{
         }
       })
 
-      val OD1: (String, String) = ("left","right")
-      val OD2: (String, String) = ("top","bottom")
-
-
-      val ttResults: Map[(Double, Double, String, String), (Int, Double, Double, Double, Double, Double)] = files("tt").map(ProcessTTFile).
+      val ttResults: Map[(Double, Double), (Int, Double, Double, Double, Double, Double)] = files("tt").map(ProcessTTFile).
         flatMap(tup => tup._3.map(t => (tup._1, tup._2, t._1._1, t._1._2, t._2))).
-        groupBy(tup => (tup._1, tup._2, tup._3, tup._4)).
+        groupBy(tup => (tup._1, tup._2)).
         mapValues(v => v.flatMap(_._5).stats)
+
+      println(ttResults)
 
       val densityResults: Map[(Double, Double), (Int, Double, Double, Double, Double, Double)] = files("density").map(f => {
         val endParams: Int = f.getName.indexOf("_params_density_")
@@ -119,6 +121,23 @@ class ParameterExploration(config: Config) extends GridSearch{
       }
   }
 
+  def processWrittenResultsSplitOD: Map[(Double, Double, String, String),((Int, Double, Double, Double, Double, Double))] = {
+
+    val outputDir = new File(config.getString("output.dir"))
+
+    val files: Map[String, List[File]] = outputDir.listFiles.filter(_.isFile).toList.groupBy(f => {
+      f.getName match {
+        case a if a.contains("_params_tt_") => "tt"
+        case b if b.contains("_params_density_") => "density"
+      }
+    })
+
+    files("tt").map(ProcessTTFile).
+      flatMap(tup => tup._3.map(t => (tup._1, tup._2, t._1._1, t._1._2, t._2))).
+      groupBy(tup => (tup._1, tup._2, tup._3, tup._4)).
+      mapValues(v => v.flatMap(_._5).stats)
+  }
+
   def drawResults(results: Map[(Double, Double), ((Int, Double, Double, Double, Double, Double), (Int, Double, Double, Double, Double, Double))]):  Unit = {
 
     results.map(r => (r._1._1, r._1._2, r._2._1._1, r._2._1._2, r._2._1._3, r._2._1._4, r._2._1._5, r._2._1._6)).toVector.writeToCSV(config.getString("output.output_prefix") + "_exploration-results-travel-time.csv")
@@ -134,6 +153,25 @@ class ParameterExploration(config: Config) extends GridSearch{
     new HeatMap(config.getString("output.output_prefix") + "_heatmap-mean-density.png", results.map(r => (r._1._1, r._1._2, r._2._2._2)), "mean density", "constant", "linear", "mean of density")
     new HeatMap(config.getString("output.output_prefix") + "_heatmap-variance-density.png", results.map(r => (r._1._1, r._1._2, r._2._2._3)), "var density", "constant", "linear", "variance of density")
     new HeatMap(config.getString("output.output_prefix") + "_heatmap-median-density.png", results.map(r => (r._1._1, r._1._2, r._2._2._4)), "median density", "constant", "linear", "median of density")
+
+  }
+
+  def drawResultsSplitOD(results: Map[(Double, Double, String, String), (Int, Double, Double, Double, Double, Double)]): Unit = {
+
+
+    val OD1: (String, String) = ("left","right")
+    val OD2: (String, String) = ("top","bottom")
+
+    val plotOptionsTT = PlotOptions()
+
+    new HeatMap(config.getString("output.output_prefix") + "_heatmap-mean-tt-" + OD1.toString() + ".png", results.filter(tup => (tup._1._3, tup._1._4) == OD1).map(r => (r._1._1, r._1._2, r._2._2)), "mean travel time", "constant", "linear", "Mean travel time from " + OD1.toString(), plotOptionsTT)
+    new HeatMap(config.getString("output.output_prefix") + "_heatmap-variance-tt-" + OD1.toString() + ".png", results.filter(tup => (tup._1._3, tup._1._4) == OD1).map(r => (r._1._1, r._1._2, r._2._3)), "var travel time", "constant", "linear", "Variance travel time from " + OD1.toString())
+    new HeatMap(config.getString("output.output_prefix") + "_heatmap-median-tt-" + OD1.toString() + ".png", results.filter(tup => (tup._1._3, tup._1._4) == OD1).map(r => (r._1._1, r._1._2, r._2._4)), "median travel time", "constant", "linear", "Median travel time from " + OD1.toString(), plotOptionsTT)
+
+    new HeatMap(config.getString("output.output_prefix") + "_heatmap-mean-tt-" + OD2.toString() + ".png", results.filter(tup => (tup._1._3, tup._1._4) == OD2).map(r => (r._1._1, r._1._2, r._2._2)), "mean travel time", "constant", "linear", "Mean travel time from " + OD2.toString(), plotOptionsTT)
+    new HeatMap(config.getString("output.output_prefix") + "_heatmap-variance-tt-" + OD2.toString() + ".png", results.filter(tup => (tup._1._3, tup._1._4) == OD2).map(r => (r._1._1, r._1._2, r._2._3)), "var travel time", "constant", "linear", "Variance travel time from " + OD2.toString())
+    new HeatMap(config.getString("output.output_prefix") + "_heatmap-median-tt-" + OD2.toString() + ".png", results.filter(tup => (tup._1._3, tup._1._4) == OD2).map(r => (r._1._1, r._1._2, r._2._4)), "median travel time", "constant", "linear", "Median travel time from " + OD2.toString(), plotOptionsTT)
+
 
   }
 
