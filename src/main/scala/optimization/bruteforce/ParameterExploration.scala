@@ -160,7 +160,7 @@ class ParameterExploration(config: Config) extends GridSearch {
 
 
     val OD1: (String, String) = ("left","right")
-    val OD2: (String, String) = ("top","bottom")
+    val OD2: (String, String) = ("top","right")
 
     val plotOptionsTT = PlotOptions()
 

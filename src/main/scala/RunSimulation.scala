@@ -160,7 +160,7 @@ object RunSimulation extends App {
   // computes statistics on travel times and writes them
   if (config.getBoolean("output.write_tt_stats")) {
     results.map(r => stats(r.completedPeds.map(p => p.travelTime.value))).writeToCSV(config.getString("output.output_prefix") + "_travel_times_stats.csv", rowNames = None, columnNames = Some(Vector("size", "mean", "variance", "median", "min", "max")))
-    new Histogram(config.getString("output.output_prefix") + "_travel_times_hist.png", results.flatMap(r => r.completedPeds.map(p => p.travelTime.value)), 1.0, "travel times [s]", "Histogram of travel times", PlotOptions(xmin=Some(20.0), xmax=Some(50.0), ymax=Some(0.3)))
+    new Histogram(config.getString("output.output_prefix") + "_travel_times_hist.png", results.flatMap(r => r.completedPeds.map(p => p.travelTime.value)), 1.0, "travel times [s]", "Histogram of travel times", PlotOptions(xmin=Some(10.0), xmax=Some(40.0), ymax=Some(0.3)))
   }
 
   if (config.getBoolean("output.write_trajectories_as_VS")) {
