@@ -40,7 +40,7 @@ trait PedestrianTrait {
   def entryTime: Time
 
   /** exit time from the system */
-  def exitTime: Time
+  var exitTime: Time
 
   /** has reached destination and has exited simulation */
   var reachedDestination: Boolean = false
