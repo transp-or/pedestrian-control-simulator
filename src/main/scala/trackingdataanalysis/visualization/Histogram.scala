@@ -27,9 +27,17 @@ class Histogram(outputFile: String,
   val binnedData: Vector[(Int, Double)] =  x.groupBy(binningFunc).map(kv => kv._1-1 -> kv._2.size.toDouble/x.size).toVector.sortBy(_._1)
 
   // completes abstract classes by implementing the mapping functions
-  override def mapHCoord: (Time) => Int = mapHcoordLinear(xmin, xmax, opts.width-opts.border2HorizontalAxis-opts.border2VerticalAxis)
-  override def mapVCoord: (Time) => Int = mapVcoordLinear(if (opts.ymin.isDefined) opts.ymin.get else 0.0, if (opts.ymax.isDefined) opts.ymax.get else 1.2*binnedData.map(_._2).max, opts.height-2*opts.border2HorizontalAxis)//1.2*binnedData.map(_._2).max
+   def mapHCoord(v: Double): Int = mapHcoordLinear(xmin, xmax, opts.width-opts.border2HorizontalAxis-opts.border2VerticalAxis)(v)
+   def mapVCoord(v: Double): Int = mapVcoordLinear(if (opts.ymin.isDefined) opts.ymin.get else 0.0, if (opts.ymax.isDefined) opts.ymax.get else 1.2*binnedData.map(_._2).max, opts.height-2*opts.border2HorizontalAxis)(v)//1.2*binnedData.map(_._2).max(v)
   override def verticalTransformation: Int => Int = verticalMirrorTransformation(canvas.getHeight)
+
+  def mapHCoordBD(x: BigDecimal): Int = 0
+  def mapHcoordDrawingZone(x: Double): Int = 0
+  def mapVcoordDrawingZone(x: Double): Int = 0
+  def mapHcoordDrawingZoneBD(x: BigDecimal): Int = 0
+  def mapVcoordDrawingZoneBD(x: BigDecimal): Int = 0
+  def mapVCoordBD(x: BigDecimal): Int = 0
+
 
   // builds the background based on the size passed as argument
   val canvas: BufferedImage = new BufferedImage(opts.width, opts.height, BufferedImage.TYPE_4BYTE_ABGR)

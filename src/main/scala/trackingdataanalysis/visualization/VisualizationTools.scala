@@ -4,7 +4,8 @@ import java.awt.Graphics2D
 import java.awt.geom.Ellipse2D
 
 import breeze.linalg.DenseVector
-import breeze.numerics.round
+
+import scala.math.BigDecimal.RoundingMode
 
 trait VisualizationTools {
 
@@ -49,7 +50,7 @@ trait VisualizationTools {
     * @param hPos    point to map
     * @return the position in pixels of the original coordinate
     */
-  def mapHcoordLinear(trueMin: Double, trueMax: Double, pixelWidth: Int)(x: Double): Int = round((x-trueMin) / (trueMax-trueMin) * pixelWidth).toInt
+  def mapHcoordLinear(trueMin: Double, trueMax: Double, pixelWidth: Int)(x: Double): Int = math.round((x-trueMin) / (trueMax-trueMin) * pixelWidth).toInt
 
   /** Mapping function for vertical (height) coordinates
     *
@@ -58,9 +59,25 @@ trait VisualizationTools {
     * @param wPos    point to map
     * @return the position in pixels of the original coordinate
     */
-  def mapVcoordLinear(trueMin: Double, trueMax: Double, pixelHeight: Int)(y: Double): Int = round((y-trueMin) / (trueMax-trueMin) * pixelHeight).toInt
+  def mapVcoordLinear(trueMin: Double, trueMax: Double, pixelHeight: Int)(y: Double): Int = math.round((y-trueMin) / (trueMax-trueMin) * pixelHeight).toInt
 
-  //def mapHcoordAffine(hTrue: Double, lowerBound: Double, hPixels: Int)(hPos: Double): Int = floor((hPos - lowerBound) / (hTrue - lowerBound) * hPixels).toInt
+  def mapHcoordAffine(trueMin: Double, trueMax: Double, pixelMin: Int, pixelMax: Int)(x: Double): Int = pixelMin + math.round((x-trueMin) / (trueMax-trueMin) * (pixelMax-pixelMin)).toInt
+
+
+  def mapHcoordLinearBD(trueMin: BigDecimal, trueMax: BigDecimal, pixelWidth: Int)(x: BigDecimal): Int = ((x-trueMin) / (trueMax-trueMin) * pixelWidth).setScale(0, RoundingMode.HALF_UP).intValue()//new MathContext(4, RoundingMode.HALF_UP))
+
+  /** Mapping function for vertical (height) coordinates
+    *
+    * @param trueWidth width in meters of the image
+    * @param pixelWidth width in pixels of the image
+    * @param wPos    point to map
+    * @return the position in pixels of the original coordinate
+    */
+  def mapVcoordLinearBD(trueMin: BigDecimal, trueMax: BigDecimal, pixelHeight: Int)(y: BigDecimal): Int = ((y-trueMin) / (trueMax-trueMin) * pixelHeight).setScale(0, RoundingMode.HALF_UP).intValue()
+
+  def mapHcoordAffineBD(trueMin: BigDecimal, trueMax: BigDecimal, pixelMin: Int, pixelMax: Int)(x: BigDecimal): Int = pixelMin + ((x-trueMin) / (trueMax-trueMin) * (pixelMax-pixelMin)).setScale(0, RoundingMode.HALF_UP).intValue()
+
+
 
   //def mapVcoordAffine(wTrue: Double, lowerBound: Double, wPixels: Int)(wPos: Double): Int = floor((wPos - lowerBound) / (wTrue - lowerBound) * wPixels).toInt
 

@@ -21,9 +21,17 @@ class ScatterPlot(outputFile: String,
   val ymax: Double = if (opts.ymax.isEmpty) y.max else opts.ymax.get
 
   // completes abstract classes by implementing the mapping functions
-  override def mapHCoord: (Time) => Int = mapHcoordLinear(xmin, xmax, opts.width-opts.border2HorizontalAxis-opts.border2VerticalAxis)
-  override def mapVCoord: (Time) => Int = mapVcoordLinear(ymin, ymax, opts.height-2*opts.border2HorizontalAxis)
+   def mapHCoord(v: Double): Int = mapHcoordLinear(xmin, xmax, opts.width-opts.border2HorizontalAxis-opts.border2VerticalAxis)(v)
+   def mapVCoord(v: Double): Int = mapVcoordLinear(ymin, ymax, opts.height-2*opts.border2HorizontalAxis)(v)
   override def verticalTransformation: Int => Int = verticalMirrorTransformation(canvas.getHeight)
+
+  def mapHCoordBD(x: BigDecimal): Int = 0
+  def mapHcoordDrawingZone(x: Double): Int = 0
+  def mapVcoordDrawingZone(x: Double): Int = 0
+  def mapHcoordDrawingZoneBD(x: BigDecimal): Int = 0
+  def mapVcoordDrawingZoneBD(x: BigDecimal): Int = 0
+  def mapVCoordBD(x: BigDecimal): Int = 0
+
 
   // checks the data has the same size
   assert(x.length == y.length, "output file: " + outputFile + ": x and y do not have the same length ! x.length="+x.length + ", y.length=" + y.length)
