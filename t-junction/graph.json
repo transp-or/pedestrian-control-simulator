@@ -85,16 +85,29 @@
       "x": 6.0,
       "y": 12.5,
       "x1": 16.2,
-      "y1": 11.7,
+      "y1": 11.9,
       "x2": 18.8,
-      "y2": 11.7,
+      "y2": 11.9,
       "x3": 18.8,
-      "y3": 15.7,
+      "y3": 15.1,
       "x4": 16.2,
-      "y4": 15.7
+      "y4": 15.1
     },
     {
       "name": "gate-top",
+      "x": 6.0,
+      "y": 12.5,
+      "x1": 16,
+      "y1": 17,
+      "x2": 19,
+      "y2": 17,
+      "x3": 19,
+      "y3": 17.9,
+      "x4": 16,
+      "y4": 17.9
+    },
+    {
+      "name": "gate-bottom",
       "x": 6.0,
       "y": 12.5,
       "x1": 16,
@@ -107,43 +120,30 @@
       "y4": 16.9
     },
     {
-      "name": "gate-bottom",
-      "x": 6.0,
-      "y": 12.5,
-      "x1": 16,
-      "y1": 15,
-      "x2": 19,
-      "y2": 15,
-      "x3": 19,
-      "y3": 15.9,
-      "x4": 16,
-      "y4": 15.9
-    },
-    {
       "name": "gate-bottom-top",
       "x": 6.0,
       "y": 12.5,
       "x1": 16,
-      "y1": 11.1,
+      "y1": 10.1,
       "x2": 19,
-      "y2": 11.1,
+      "y2": 10.1,
       "x3": 19,
-      "y3": 12,
+      "y3": 11,
       "x4": 16,
-      "y4": 12
+      "y4": 11
     },
     {
       "name": "gate-bottom-bottom",
       "x": 6.0,
       "y": 12.5,
       "x1": 16,
-      "y1": 10,
+      "y1": 9,
       "x2": 19,
-      "y2": 10,
+      "y2": 9,
       "x3": 19,
-      "y3": 11,
+      "y3": 10,
       "x4": 16,
-      "y4": 11
+      "y4": 10
     }
   ],
   "connectivity": [
@@ -224,23 +224,23 @@
       "o": "gate-top",
       "d": "gate-bottom",
       "start_pos_x": 19,
-      "start_pos_y": 15.95,
+      "start_pos_y": 16.95,
       "end_pos_x": 16,
-      "end_pos_y": 15.95,
+      "end_pos_y": 16.95,
       "controlled_area": "junction-monitor",
-      "functional_form": "quadratic",
-      "functional_parameters": [10.0, 0.0, 0.0]
+      "functional_form": "linear",
+      "functional_parameters": [0.8,0.7]
     },
     {
-      "o": "gate-bottom-top",
-      "d": "gate-bottom-bottom",
+      "o": "gate-bottom-bottom",
+      "d": "gate-bottom-top",
       "start_pos_x": 16,
-      "start_pos_y": 11.05,
+      "start_pos_y": 10.05,
       "end_pos_x": 19,
-      "end_pos_y": 11.05,
+      "end_pos_y": 10.05,
       "controlled_area": "junction-monitor",
-      "functional_form": "quadratic",
-      "functional_parameters": [10.0, 0.0, 0.0]
+      "functional_form": "linear",
+      "functional_parameters": [0.8,0.7]
     }
   ],
   "controlled_areas" :[
@@ -254,7 +254,7 @@
       "y3": 15.5,
       "x4": 16,
       "y4": 15.5,
-      "target_density": 1.5
+      "target_density": 1.35
     }
   ],
   "binary_gates": [],

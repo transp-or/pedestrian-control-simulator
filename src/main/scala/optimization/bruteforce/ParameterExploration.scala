@@ -143,7 +143,7 @@ class ParameterExploration(config: Config) extends GridSearch {
     results.map(r => (r._1._1, r._1._2, r._2._1._1, r._2._1._2, r._2._1._3, r._2._1._4, r._2._1._5, r._2._1._6)).toVector.writeToCSV(config.getString("output.output_prefix") + "_exploration-results-travel-time.csv")
     results.map(r => (r._1._1, r._1._2, r._2._2._1, r._2._2._2, r._2._2._3, r._2._2._4, r._2._2._5, r._2._2._6)).toVector.writeToCSV(config.getString("output.output_prefix") + "_exploration-results-density.csv")
 
-    val plotOptionsTT = PlotOptions()
+    val plotOptionsTT = PlotOptions(zmax=Some(24))
 
     new HeatMap(config.getString("output.output_prefix") + "_heatmap-mean-tt.png", results.map(r => (r._1._1, r._1._2, r._2._1._2)), "mean travel time", "constant", "linear", "mean travel time", plotOptionsTT)
     new HeatMap(config.getString("output.output_prefix") + "_heatmap-variance-tt.png", results.map(r => (r._1._1, r._1._2, r._2._1._3)), "var travel time", "constant", "linear", "variance of travel time")
@@ -159,10 +159,14 @@ class ParameterExploration(config: Config) extends GridSearch {
   def drawResultsSplitOD(results: Map[(Double, Double, String, String), (Int, Double, Double, Double, Double, Double)]): Unit = {
 
 
-    val OD1: (String, String) = ("left","right")
-    val OD2: (String, String) = ("top","right")
+    val OD1: (String, String) = ("left-bottom","right-bottom")
+    val OD2: (String, String) = ("top","right-bottom")
+    val OD3: (String, String) = ("bottom","right-bottom")
+    val OD4: (String, String) = ("top","left-top")
+    val OD5: (String, String) = ("bottom","left-top")
 
-    val plotOptionsTT = PlotOptions()
+
+    val plotOptionsTT = PlotOptions(zmax=Some(24))
 
     new HeatMap(config.getString("output.output_prefix") + "_heatmap-mean-tt-" + OD1.toString() + ".png", results.filter(tup => (tup._1._3, tup._1._4) == OD1).map(r => (r._1._1, r._1._2, r._2._2)), "mean travel time", "constant", "linear", "Mean travel time from " + OD1.toString(), plotOptionsTT)
     new HeatMap(config.getString("output.output_prefix") + "_heatmap-variance-tt-" + OD1.toString() + ".png", results.filter(tup => (tup._1._3, tup._1._4) == OD1).map(r => (r._1._1, r._1._2, r._2._3)), "var travel time", "constant", "linear", "Variance travel time from " + OD1.toString())
