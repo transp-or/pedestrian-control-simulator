@@ -1,4 +1,3 @@
-
 name := "hub-simulator"
 organization := "ch.epfl.transpor.pedestrians"
 version := "1.0-SNAPSHOT"
@@ -21,7 +20,7 @@ libraryDependencies ++= Seq(
   "com.typesafe.scala-logging" %% "scala-logging" % "3.7.2",
   "org.scalactic" %% "scalactic" % "3.0.1",
   "transpor.tools" % "power-voronoi" % "1.0",
-  "com.github.NicholasMolyneaux" %% "scala-custom" % "1.0.1",
+  "com.github.NicholasMolyneaux" %% "scala-custom" % "1.1.1",
   "transpor.tools" % "dxf-parser" % "1.0",
   "nl.tudelft.pedestrians" % "nomad" % "1.0",
   "org.scala-lang.modules" %% "scala-parser-combinators" % "1.1.1"
@@ -35,7 +34,8 @@ libraryDependencies += "javax.vecmath" % "vecmath" % "1.5.2"
 
 
 resolvers ++= Seq(
-  "Typesafe Repo" at "http://repo.typesafe.com/typesafe/releases/"
+  "Typesafe Repo" at "http://repo.typesafe.com/typesafe/releases/",
+  "Sonatype OSS Snapshots" at "https://oss.sonatype.org/content/repositories/releases/"
 )
 
 // https://stackoverflow.com/questions/28459333/how-to-build-an-uber-jar-fat-jar-using-sbt-within-intellij-idea

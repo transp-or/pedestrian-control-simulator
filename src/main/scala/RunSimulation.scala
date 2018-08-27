@@ -5,7 +5,7 @@ import hubmodel._
 import hubmodel.output.TRANSFORM.PopulationProcessingTRANSFORM
 import hubmodel.ped.PedestrianSim
 import hubmodel.results.PopulationProcessing
-import myscala.math.stats.{ComputeStats, stats}
+import myscala.math.stats.{ComputeStats, stats, computeQuantile}
 import myscala.output.SeqOfSeqExtensions.SeqOfSeqWriter
 import myscala.output.SeqTuplesExtensions.SeqTuplesWriter
 import trackingdataanalysis.visualization.Histogram
@@ -160,7 +160,7 @@ object RunSimulation extends App {
   // computes statistics on travel times and writes them
   if (config.getBoolean("output.write_tt_stats")) {
     results.map(r => stats(r.completedPeds.map(p => p.travelTime.value))).writeToCSV(config.getString("output.output_prefix") + "_travel_times_stats.csv", rowNames = None, columnNames = Some(Vector("size", "mean", "variance", "median", "min", "max")))
-    new Histogram(config.getString("output.output_prefix") + "_travel_times_hist.png", results.flatMap(r => r.completedPeds.map(p => p.travelTime.value)), 1.0, "travel times [s]", "Histogram of travel times", PlotOptions(xmin=Some(10.0), xmax=Some(40.0), ymax=Some(0.3)))
+    new Histogram(config.getString("output.output_prefix") + "_travel_times_hist.png", results.flatMap(r => r.completedPeds.map(p => p.travelTime.value)), 1.0, "travel times [s]", "Histogram of travel times", PlotOptions(xmin=Some(20), xmax=Some(50.0), ymax=Some(0.20)))
   }
 
   if (config.getBoolean("output.write_trajectories_as_VS")) {
@@ -170,7 +170,7 @@ object RunSimulation extends App {
 
 
   // Analyse pedestrian data like travel time and walking speed by departure time interval.
-  if (!config.getStringList("results-analysis.o_nodes").isEmpty && !config.getStringList("results-analysis.d_nodes").isEmpty )
+  if (!config.getStringList("results-analysis.o_nodes").isEmpty && !config.getStringList("results-analysis.d_nodes").isEmpty)
   {
     val ODPairsToAnalyse: Iterable[(String, String)] = config.getStringList("results-analysis.o_nodes").asScala.zip(config.getStringList("results-analysis.d_nodes").asScala).map(t => (t._1, t._2))
 
@@ -215,6 +215,8 @@ object RunSimulation extends App {
       columnNames = Some(Vector("time", "size", "mean", "variance", "median") ++ Vector.fill(results.size)("r").zipWithIndex.map(t => t._1 + t._2.toString))
     )
 
+    new Histogram(config.getString("output.output_prefix") + "-travel-time-per-time-interval-histogram.png", ttByIntervals.flatMap(_.map(_._2)).filterNot(_.isNaN), 1.0,"travel time [s]", "Travel time per departure interval histogram", PlotOptions(xmin=Some(22), xmax=Some(40), ymax=Some(0.35)))
+    println(ttByIntervals.flatMap(_.map(_._2)).filterNot(_.isNaN).stats, computeQuantile(75)(ttByIntervals.flatMap(_.map(_._2)).filterNot(_.isNaN)), computeQuantile(85)(ttByIntervals.flatMap(_.map(_._2)).filterNot(_.isNaN)),  computeQuantile(95)(ttByIntervals.flatMap(_.map(_._2)).filterNot(_.isNaN)), computeQuantile(97.5)(ttByIntervals.flatMap(_.map(_._2)).filterNot(_.isNaN)), computeQuantile(99)(ttByIntervals.flatMap(_.map(_._2)).filterNot(_.isNaN)))
   }
 
   // ******************************************************************************************

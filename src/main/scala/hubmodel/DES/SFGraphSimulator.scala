@@ -168,7 +168,7 @@ class SFGraphSimulator(override val startTime: Time,
 
   private class SafeGuard(sim: SFGraphSimulator) extends Action {
     override def execute(): Unit = {
-      if (sim.useFlowGates && sim.controlDevices.flowGates.exists(fg => fg.pedestrianQueue.size > 100)) {
+      if (sim.useFlowGates && sim.controlDevices.flowGates.exists(fg => fg.pedestrianQueue.size > 1000)) {
         sim.abort(1)
       } else {
         sim.insertEventWithDelayNew(Time(10))(new SafeGuard(sim))

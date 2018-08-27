@@ -1,6 +1,9 @@
 package hubmodel.tools.cells
 
+import java.util.concurrent.ThreadLocalRandom
+
 import hubmodel.{Position, Time}
+import myscala.math.vector.Vector2D
 
 
 /** Representation of a vertex, or cell. This is used for representing vertices in the graph specification
@@ -44,7 +47,6 @@ class RectangleModifiable(name: String,
     if  ((this.C - this.CTarget).norm > 0.0) this.C = this.C + (this.CTarget - this.C).normalized * (speed * dt.value)
 
     if ((this.D - this.DTarget).norm > 0.0) this.D = this.D + (this.DTarget - this.D).normalized * (speed * dt.value)
-
   }
 
   def setTargetPosition(fraction: Double): Unit = {
@@ -52,6 +54,11 @@ class RectangleModifiable(name: String,
     this.BTarget = this.__B._1 + (this.__B._2 - this.__B._1) * fraction
     this.CTarget = this.__C._1 + (this.__C._2 - this.__C._1) * fraction
     this.DTarget = this.__D._1 + (this.__D._2 - this.__D._1) * fraction
+  }
+
+  override def uniformSamplePointInside: Position = {
+    println(this.name, this.A, this.B, this.C, this.D)
+    Vector2D(ThreadLocalRandom.current.nextDouble(this.A.X + 0.1, this.B.X - 0.1), ThreadLocalRandom.current.nextDouble(this.A.Y + 0.1, this.D.Y - 0.1))
   }
 
   /** Checks whether another object equals this one by comparing the positions associated to the vertex

@@ -8,6 +8,8 @@ import visualization.PlotOptions
 
 import scala.collection.immutable.NumericRange
 
+import myscala.math
+
 class Histogram(outputFile: String,
                 x: Iterable[Double],
                 binSize: Double,
@@ -15,10 +17,10 @@ class Histogram(outputFile: String,
                 title: String,
                 opts: PlotOptions = PlotOptions()) extends DrawingComponents(opts.border2HorizontalAxis, opts.border2VerticalAxis, (opts.width, opts.height)) with VisualizationTools {
 
+  if (x.isEmpty) { throw new IllegalArgumentException("Data for histogram is empty !")}
+
   val xmin: Double = if (opts.xmin.isDefined) opts.xmin.get else x.min
   val xmax: Double = if (opts.xmax.isDefined) opts.xmax.get else x.max
-
-  // Function used to put data into bins
 
   // process data
   val intervals: NumericRange[Double] = xmin.to(xmax).by(binSize)

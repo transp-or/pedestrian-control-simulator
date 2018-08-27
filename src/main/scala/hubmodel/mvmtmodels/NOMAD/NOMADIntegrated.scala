@@ -209,7 +209,8 @@ class NOMADIntegrated(sim: SFGraphSimulator) extends Action {
       })
     }
 
-    sim.population.foreach(ped => {
+    sim.population.foreach(ped => {ped.addHistory(sim.currentTime)})
+    sim.population.filterNot(_.isWaiting).foreach(ped => {
 
       // The pedestrian step function deals with the state of the ped (entering, walking, activity) and is not reauired here.
       // Only the "stepWalkingData" functionalites are implemented
@@ -236,18 +237,16 @@ class NOMADIntegrated(sim: SFGraphSimulator) extends Action {
         // IN THIS CASE, ALWAYS UPDATE THE TRAVELLED DISTANCE
         //if (this.isUpdateWalkingData)
         ped.travelDistance += (ped.currentPosition - ped.getHistoryPosition.last._2).norm
-        ped.addHistory(sim.currentTime)
         ped.previousMajorPosition = ped.currentPosition
 
         //ped.updatePreviousPositionAndSpeed(sim.currentTime)
         insertPedInMoveList(ped)
       }
-
     })
 
-    if (sim.population.size != (this.pedestrianToMoveInIsolation.size + this.pedestrianToMoveInRange.size + this.pedestrianToMoveInCollision.size)) {
+    /*if (sim.population.filterNot(_.isWaiting).size != (this.pedestrianToMoveInIsolation.size + this.pedestrianToMoveInRange.size + this.pedestrianToMoveInCollision.size)) {
       throw new Exception("error in size of population lists")
-    }
+    }*/
 
 
     if (this.pedestrianToMoveInCollision.nonEmpty) {
@@ -270,9 +269,11 @@ class NOMADIntegrated(sim: SFGraphSimulator) extends Action {
     if (sim.useFlowGates) {
       sim.controlDevices.flowGates.foreach(fg => {
         sim.population
-          .filter(p => p.nextZone == fg.endVertex && !fg.pedestrianQueue.
-            contains(p) && !p.freedFrom.
-            contains(fg.ID) && isInVertex(fg.startVertex)(p.currentPosition))
+          .filter(
+            p => p.nextZone == fg.endVertex &&
+              !fg.pedestrianQueue.contains(p) &&
+              !p.freedFrom.contains(fg.ID) &&
+              isInVertex(fg.startVertex)(p.currentPosition))
           .foreach(p => sim.insertEventWithZeroDelay(new fg.EnqueuePedestrian(p, sim)))
       })
     }
@@ -283,12 +284,11 @@ class NOMADIntegrated(sim: SFGraphSimulator) extends Action {
   def walkPedestrian(ped: PedestrianNOMAD, pedestrians: util.ArrayList[InfluenceAreaReturnPedData], obstacles: util.ArrayList[InfluenceAreaReturnObsData], dt: Double): Unit = {
 
 
-    if (sim.population.exists(ped => !sim.spaceSF.isInsideWalkableArea(ped.currentPosition))) {
+    /*if (sim.population.exists(ped => !sim.spaceSF.isInsideWalkableArea(ped.currentPosition))) {
       val ped = sim.population.find(ped => !sim.spaceSF.isInsideWalkableArea(ped.currentPosition))
-    }
+    }*/
 
     val acc: Vector3d = new Vector3d()
-
 
 
     strayingAccelerationFixedTau(acc, new Vector3d(ped.currentVelocity.X, ped.currentVelocity.Y, 0.0), ped.freeFlowVel, new Vector3d(ped.desiredDirection.X, ped.desiredDirection.Y, 0.0), ped.tau)

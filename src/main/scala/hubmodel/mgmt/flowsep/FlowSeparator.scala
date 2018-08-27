@@ -57,10 +57,10 @@ class FlowSeparator(val startA: Position,
     val rawFrac: Double = if (flowHistory.last._2 == 0 && flowHistory.last._3 == 0)  { 0.5 }
     else {  flowHistory.last._2.toDouble / (flowHistory.last._2.toDouble + flowHistory.last._3.toDouble) }
 
-    val frac: Double = 0.5/*if (rawFrac < 0.0 ) 0.0
+    val frac: Double = if (rawFrac < 0.0 ) 0.0
     else if (rawFrac.isNaN || rawFrac.isInfinite) 1.0
     else if (rawFrac > 0.9) 1.0
-    else rawFrac*/
+    else rawFrac
 
     if ( math.abs(frac - this.fractionHistory.last._2)/this.fractionHistory.last._2 > FLOW_SEPARATOR_UPDATE ) {
       this.currentTargetPosition = (this.startA + (this.startB - this.startA) * frac, this.endA + (this.endB - this.endA) * frac)
@@ -90,7 +90,6 @@ class FlowSeparator(val startA: Position,
       if ((currentTargetPosition._2 - end).norm > 0.0) {
         end = end + (currentTargetPosition._2 - end).normalized * (speed * sim.sf_dt.value)
         associatedZonesEnd.foreach(_.moveRectangle(sim.sf_dt))
-
       }
 
       positionHistory.append((sim.currentTime, start, end))
