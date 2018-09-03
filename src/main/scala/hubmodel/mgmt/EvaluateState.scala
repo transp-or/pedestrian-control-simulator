@@ -37,8 +37,12 @@ class EvaluateState(sim: SFGraphSimulator) extends Action with Controller {
           val box: PolygonSimple = new PolygonSimple
           zone.corners.foreach(corner => box.add(corner.X, corner.Y))
           voronoi.setClipPoly(box)
+          val voronoiTessellations: Vector[Site] = voronoi.computeDiagram().toVector
           zone.densityHistory.append(
-            (sim.currentTime, voronoi.computeDiagram().filter(s => isInVertex(zone)(Vector2D(s.x, s.y))).foldLeft(0.0)((acc: Double, n: Site) => acc + 1.0 / (paxInZone * n.getPolygon.getArea)))
+            (sim.currentTime, voronoiTessellations.filter(s => isInVertex(zone)(Vector2D(s.x, s.y))).foldLeft(0.0)((acc: Double, n: Site) => acc + 1.0 / (paxInZone * n.getPolygon.getArea)))
+          )
+          zone.paxIndividualDensityHistory.append(
+            (sim.currentTime, voronoiTessellations.filter(s => isInVertex(zone)(Vector2D(s.x, s.y))).map(1.0/_.getPolygon.getArea))
           )
         } catch {
           case e: Exception => {

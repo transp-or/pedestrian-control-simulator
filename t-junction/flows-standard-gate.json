@@ -4,93 +4,106 @@
   "flows": [],
   "function_flows": [
     {
+      "origin": "top",
+      "destination": "right-bottom",
+      "linear": [ ],
+      "constant": [
+      ],
+      "sine": [
+        {
+          "start": "00:00:00",
+          "end": "00:14:00",
+          "period_multiplier": 0.15,
+          "period_shift": 0.0,
+          "a": 1.0,
+          "b": 0.49,
+          "c": 0.05,
+          "max_flow": 2.3
+        }
+      ]
+    },
+    {
+      "origin": "top",
+      "destination": "left-top",
+      "linear": [ ],
+      "constant": [
+      ],
+      "sine": [
+        {
+          "start": "00:00:00",
+          "end": "00:14:00",
+          "period_multiplier": 0.15,
+          "period_shift": 0.0,
+          "a": 1.0,
+          "b": 0.49,
+          "c": 0.05,
+          "max_flow": 2.3
+        }
+      ]
+    },
+    {
+      "origin": "bottom",
+      "destination": "right-bottom",
+      "linear": [ ],
+      "constant": [
+      ],
+      "sine": [
+        {
+          "start": "00:00:00",
+          "end": "00:14:00",
+          "period_multiplier": 0.15,
+          "period_shift": 0.0,
+          "a": 1.0,
+          "b": 0.49,
+          "c": 0.05,
+          "max_flow": 2.3
+        }
+      ]
+    },
+    {
+      "origin": "bottom",
+      "destination": "left-top",
+      "linear": [ ],
+      "constant": [
+      ],
+      "sine": [
+        {
+          "start": "00:00:00",
+          "end": "00:14:00",
+          "period_multiplier": 0.15,
+          "period_shift": 0.0,
+          "a": 1.0,
+          "b": 0.49,
+          "c": 0.05,
+          "max_flow": 2.3
+        }
+      ]
+    },
+    {
       "origin": "left-bottom",
       "destination": "right-bottom",
+      "linear": [ ],
       "constant": [
         {
           "start": "00:00:00",
           "end": "00:14:00",
-          "rate": 1.0
+          "rate": 0.0
         }
       ],
-      "linear": [],
       "sine": []
     },
     {
-      "origin": "top",
-      "destination": "right-bottom",
-      "linear": [ ],
-      "constant": [
-      ],
-      "sine": [
-        {
-          "start": "00:00:00",
-          "end": "00:14:00",
-          "period_multiplier": 0.1,
-          "period_shift": 0.0,
-          "a": 1.0,
-          "b": 0.49,
-          "c": 0.05,
-          "max_flow": 1.1
-        }
-      ]
-    },
-    {
-      "origin": "bottom",
-      "destination": "right-bottom",
-      "linear": [ ],
-      "constant": [
-      ],
-      "sine": [
-        {
-          "start": "00:00:00",
-          "end": "00:14:00",
-          "period_multiplier": 0.1,
-          "period_shift": 0.0,
-          "a": 1.0,
-          "b": 0.49,
-          "c": 0.05,
-          "max_flow": 1.1
-        }
-      ]
-    },
-    {
-      "origin": "top",
+      "origin": "right-top",
       "destination": "left-top",
       "linear": [ ],
       "constant": [
-      ],
-      "sine": [
         {
-          "start": "00:00:00",
-          "end": "00:14:00",
-          "period_multiplier": 0.1,
-          "period_shift": 0.0,
-          "a": 1.0,
-          "b": 0.49,
-          "c": 0.05,
-          "max_flow": 1.1
-        }
-      ]
-    },
-    {
-      "origin": "bottom",
-      "destination": "left-top",
-      "linear": [ ],
-      "constant": [
+        "start": "00:00:00",
+        "end": "00:14:00",
+        "rate": 0.0
+      }
       ],
-      "sine": [
-        {
-          "start": "00:00:00",
-          "end": "00:14:00",
-          "period_multiplier": 0.1,
-          "period_shift": 0.0,
-          "a": 1.0,
-          "b": 0.49,
-          "c": 0.05,
-          "max_flow": 1.1
-        }
-      ]
+      "sine": [ ]
     }
   ]
 }

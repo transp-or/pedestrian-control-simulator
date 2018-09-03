@@ -18,6 +18,8 @@ import myscala.output.SeqTuplesExtensions.SeqTuplesWriter
 import trackingdataanalysis.visualization.HeatMap
 import visualization.PlotOptions
 
+import scala.collection.GenIterable
+
 class ParameterExploration(config: Config) extends GridSearch {
 
   def exploreFlowGateFunctionalFormLinear(constantBounds: (Double, Double, Int), linearBounds: (Double, Double, Int)): Unit = {
@@ -33,15 +35,20 @@ class ParameterExploration(config: Config) extends GridSearch {
       throw new IllegalArgumentException("Output dir for files does not exist ! dir=" + config.getString("output.dir"))
     }
 
+    val range: GenIterable[(Double, Double, Int)] = if (config.getBoolean("execution.parallel")) {
+      val r = (for (i <- constantRange; j <- linearRange; k <- 1 to config.getInt("sim.nb_runs")) yield {(i,j,k)}).par
+      r.tasksupport = new ForkJoinTaskSupport(new scala.concurrent.forkjoin.ForkJoinPool(config.getInt("execution.threads")))
+      r
+    }
+    else { for (i <- constantRange; j <- linearRange; k <- 1 to config.getInt("sim.nb_runs")) yield {(i,j,k)} }
 
-    for (i <- constantRange.par; j <- linearRange.par; k <- (1 to config.getInt("sim.nb_runs")).par) {
-      //Vector.fill(config.getInt("sim.nb_runs"))({
+    for (t <- range) {
 
       val newDevices: ControlDevices = new ControlDevices(
         defaultParameters._11.monitoredAreas.map(_.clone()),
         defaultParameters._11.amws.map(_.clone()),
         if (config.getBoolean("sim.use_flow_gates")) {
-          defaultParameters._11.flowGates.map(fg => new FlowGateFunctional(fg.startVertex, fg.endVertex, fg.start, fg.end, fg.monitoredArea, { x: Double => math.max(0.0000001, i + j * x) }))
+          defaultParameters._11.flowGates.map(fg => new FlowGateFunctional(fg.startVertex, fg.endVertex, fg.start, fg.end, fg.monitoredArea, { x: Double => math.max(0.0000001, t._1 + t._2 * x) }))
         } else {
           Vector()
         },
@@ -64,7 +71,7 @@ class ParameterExploration(config: Config) extends GridSearch {
         newDevices
       )
 
-      runAndWriteResults(sim, i.toString + "_" + j.toString + "_params_", config.getString("output.dir"))
+      runAndWriteResults(sim, t._1.toString + "_" + t._2.toString + "_params_", config.getString("output.dir"))
       System.gc()
     }
   }
@@ -96,8 +103,6 @@ class ParameterExploration(config: Config) extends GridSearch {
         groupBy(tup => (tup._1, tup._2)).
         mapValues(v => v.flatMap(_._5).stats)
 
-      println(ttResults)
-
       val densityResults: Map[(Double, Double), (Int, Double, Double, Double, Double, Double)] = files("density").map(f => {
         val endParams: Int = f.getName.indexOf("_params_density_")
         val params = f.getName.substring(0, endParams).split("_").map(_.toDouble).toVector
@@ -113,7 +118,7 @@ class ParameterExploration(config: Config) extends GridSearch {
         case _ => throw new NotImplementedError("multiple density zones for parameter exploration not implemented !")
       })
 
-      for (ttRes <- ttResults/*.filterKeys(k => (k._3, k._4) == OD2)*/.map( kv => (kv._1._1, kv._1._2) -> kv._2)) yield {
+      for (ttRes <- ttResults.map( kv => (kv._1._1, kv._1._2) -> kv._2)) yield {
         densityResults.find(_._1 == ttRes._1) match {
           case Some(dRes) => ttRes._1 -> (ttRes._2, dRes._2)
           case None => ttRes._1 -> (ttRes._2, (0, Double.NaN, Double.NaN, Double.NaN, Double.NaN, Double.NaN))
@@ -176,6 +181,17 @@ class ParameterExploration(config: Config) extends GridSearch {
     new HeatMap(config.getString("output.output_prefix") + "_heatmap-variance-tt-" + OD2.toString() + ".png", results.filter(tup => (tup._1._3, tup._1._4) == OD2).map(r => (r._1._1, r._1._2, r._2._3)), "var travel time", "constant", "linear", "Variance travel time from " + OD2.toString())
     new HeatMap(config.getString("output.output_prefix") + "_heatmap-median-tt-" + OD2.toString() + ".png", results.filter(tup => (tup._1._3, tup._1._4) == OD2).map(r => (r._1._1, r._1._2, r._2._4)), "median travel time", "constant", "linear", "Median travel time from " + OD2.toString(), plotOptionsTT)
 
+    new HeatMap(config.getString("output.output_prefix") + "_heatmap-mean-tt-" + OD3.toString() + ".png", results.filter(tup => (tup._1._3, tup._1._4) == OD3).map(r => (r._1._1, r._1._2, r._2._2)), "mean travel time", "constant", "linear", "Mean travel time from " + OD3.toString(), plotOptionsTT)
+    new HeatMap(config.getString("output.output_prefix") + "_heatmap-variance-tt-" + OD3.toString() + ".png", results.filter(tup => (tup._1._3, tup._1._4) == OD3).map(r => (r._1._1, r._1._2, r._2._3)), "var travel time", "constant", "linear", "Variance travel time from " + OD3.toString())
+    new HeatMap(config.getString("output.output_prefix") + "_heatmap-median-tt-" + OD3.toString() + ".png", results.filter(tup => (tup._1._3, tup._1._4) == OD3).map(r => (r._1._1, r._1._2, r._2._4)), "median travel time", "constant", "linear", "Median travel time from " + OD3.toString(), plotOptionsTT)
+
+    new HeatMap(config.getString("output.output_prefix") + "_heatmap-mean-tt-" + OD4.toString() + ".png", results.filter(tup => (tup._1._3, tup._1._4) == OD4).map(r => (r._1._1, r._1._2, r._2._2)), "mean travel time", "constant", "linear", "Mean travel time from " + OD4.toString(), plotOptionsTT)
+    new HeatMap(config.getString("output.output_prefix") + "_heatmap-variance-tt-" + OD4.toString() + ".png", results.filter(tup => (tup._1._3, tup._1._4) == OD4).map(r => (r._1._1, r._1._2, r._2._3)), "var travel time", "constant", "linear", "Variance travel time from " + OD4.toString())
+    new HeatMap(config.getString("output.output_prefix") + "_heatmap-median-tt-" + OD4.toString() + ".png", results.filter(tup => (tup._1._3, tup._1._4) == OD4).map(r => (r._1._1, r._1._2, r._2._4)), "median travel time", "constant", "linear", "Median travel time from " + OD4.toString(), plotOptionsTT)
+
+    new HeatMap(config.getString("output.output_prefix") + "_heatmap-mean-tt-" + OD5.toString() + ".png", results.filter(tup => (tup._1._3, tup._1._4) == OD5).map(r => (r._1._1, r._1._2, r._2._2)), "mean travel time", "constant", "linear", "Mean travel time from " + OD5.toString(), plotOptionsTT)
+    new HeatMap(config.getString("output.output_prefix") + "_heatmap-variance-tt-" + OD5.toString() + ".png", results.filter(tup => (tup._1._3, tup._1._4) == OD5).map(r => (r._1._1, r._1._2, r._2._3)), "var travel time", "constant", "linear", "Variance travel time from " + OD5.toString())
+    new HeatMap(config.getString("output.output_prefix") + "_heatmap-median-tt-" + OD5.toString() + ".png", results.filter(tup => (tup._1._3, tup._1._4) == OD5).map(r => (r._1._1, r._1._2, r._2._4)), "median travel time", "constant", "linear", "Median travel time from " + OD5.toString(), plotOptionsTT)
 
   }
 

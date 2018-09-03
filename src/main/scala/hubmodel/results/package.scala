@@ -24,9 +24,25 @@ package object results {
     def aggregateMetricByOD(filter: PedestrianSim => Boolean, pedFunc: PedestrianSim => Double): Map[(Rectangle, Rectangle), (Int, Double, Double, Double, Double, Double)] = {
       this.pop.filter(filter).groupBy(p => (p.origin, p.finalDestination)).map(grouped => grouped._1 -> grouped._2.map(pedFunc).stats)
     }
+  }
 
-    //.writeToCSV(config.getString("output.output_prefix") + "_travel_times_OD_stats.csv", columnNames = Some(Vector("O", "D", "size", "mean", "variance", "median", "min", "max")), rowNames = None)
+  implicit class PopulationSummaryProcessing(popSummary: Vector[(String, String, Double, Double, Double)]) {
 
+    /** Based on the functions passed as argument, computes the metrics per time window of all the pedestrians satisfying
+      * the predicate "filter".
+      *
+      * @param f     predicate used to filter the population
+      * @param pedFunc    extracts the metric from an individual
+      * @param windowFunc computes the index of the window in which the pedestrian belongs
+      * @return map where the keys are the time intervals and the values the statstics of the metric
+      */
+    def aggregateMetricByTimeWindow(f: Tuple5[String, String, Double, Double, Double] => Boolean, pedFunc: Tuple5[String, String, Double, Double, Double] => Double, windowFunc: Tuple5[String, String, Double, Double, Double] => Double): Map[Double, (Int, Double, Double, Double, Double, Double)] = {
+      this.popSummary.filter(d => f(d)).groupBy(d => windowFunc(d)).map(grouped => grouped._1 -> grouped._2.map( d=> pedFunc(d)).stats)
+    }
+
+    def aggregateMetricByOD(f: Tuple5[String, String, Double, Double, Double] => Boolean, pedFunc: Tuple5[String, String, Double, Double, Double] => Double): Map[(String, String), (Int, Double, Double, Double, Double, Double)] = {
+      this.popSummary.filter(d => f(d)).groupBy(p => (p._1, p._2)).map(grouped => grouped._1 -> grouped._2.map(d => pedFunc(d)).stats)
+    }
   }
 
 }

@@ -296,4 +296,6 @@ println(formulaParser.evaluate("height*perimeter(radius)")) // 502.6548245743669
 println(formulaParser.evaluate("m/sqrt(1-v^2/c^2)"))  // 80.00000000003415
 */
 
-(BigDecimal(1.0) to BigDecimal(0.0) by BigDecimal(-0.1)).size
+val a ="abcdef.csv"
+
+a.substring(a.indexOf(".csv")-2, a.indexOf(".csv"))

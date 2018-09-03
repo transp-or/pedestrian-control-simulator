@@ -7,7 +7,10 @@ package hubmodel.DES
 import java.io.{BufferedWriter, File, FileWriter}
 import java.util.concurrent.ThreadLocalRandom
 
-import ch.qos.logback.classic.{Level, Logger}
+import ch.qos.logback.classic.Level
+import com.typesafe.scalalogging.Logger
+
+//import ch.qos.logback.classic.{Level, Logger}
 import hubmodel.TimeNumeric.mkOrderingOps
 import hubmodel.ped.PedestrianTrait
 import hubmodel.tools.Log

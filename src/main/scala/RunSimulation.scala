@@ -2,18 +2,21 @@
 import com.typesafe.config.{Config, ConfigFactory}
 import hubmodel.DES.SFGraphSimulator
 import hubmodel._
-import hubmodel.output.TRANSFORM.PopulationProcessingTRANSFORM
+import hubmodel.output.TRANSFORM.PopulationSummaryProcessingTRANSFORM
 import hubmodel.ped.PedestrianSim
-import hubmodel.results.PopulationProcessing
-import myscala.math.stats.{ComputeStats, stats, computeQuantile}
+import hubmodel.results.PopulationSummaryProcessing
+import myscala.math.stats.ComputeStats
+import myscala.math.stats.ComputeQuantiles
+import myscala.math.stats.computeQuantiles
 import myscala.output.SeqOfSeqExtensions.SeqOfSeqWriter
 import myscala.output.SeqTuplesExtensions.SeqTuplesWriter
-import trackingdataanalysis.visualization.Histogram
+import trackingdataanalysis.visualization.{Histogram, ScatterPlot}
 import visualization.PlotOptions
 
+import scala.collection.GenIterable
 import scala.collection.JavaConverters._
 import scala.collection.mutable.ArrayBuffer
-import scala.collection.parallel.ForkJoinTaskSupport
+import scala.collection.parallel.{ExecutionContextTaskSupport, ForkJoinTaskSupport}
 
 /**
   * Runs the simulations based on the configuration file. This configuration file contains all the details regarding
@@ -68,9 +71,9 @@ object RunSimulation extends App {
 
 
   // Checks that the number of simulations to run is coherent
-  if ( config.getInt("sim.nb_runs") == 0 && !config.getBoolean("output.make_video")) {
+  /*if ( config.getInt("sim.nb_runs") == 0 && !config.getBoolean("output.make_video")) {
     throw new IllegalArgumentException("No simulation to run ! Check parameters in config file.")
-  }
+  }*/
 
   val simulationStartTime: Time = Time(config.getDouble("sim.start_time"))
   val simulationEndTime: Time = Time(config.getDouble("sim.end_time"))
@@ -80,42 +83,42 @@ object RunSimulation extends App {
 
 
   // Runs the simulations in parallel or sequential based on the config file.
-  val results: Vector[ResultsContainerNew] = {
 
-    println("Preparing " + n + " simulations")
-
-    if (config.getBoolean("output.make_video") && n == 0) {
-      Vector(runSimulationWithVideo(config))
-    }
-    else if (config.getBoolean("output.make_video") && n > 0 && runSimulationsInParallel) {
-      val simulationCollection: collection.parallel.ParSeq[SFGraphSimulator] = collection.parallel.ParSeq.fill(n - 1)(createSimulation(config))
-      simulationCollection.tasksupport = new ForkJoinTaskSupport(new java.util.concurrent.ForkJoinPool(config.getInt("execution.threads")))
-      simulationCollection.par.map(runAndCollect).seq.toVector :+ runSimulationWithVideo(config)
-    }
-    else if (config.getBoolean("output.make_video") && n > 0 && !runSimulationsInParallel) {
-      val simulationCollection: collection.immutable.Vector[SFGraphSimulator] = collection.immutable.Vector.fill(n - 1)(createSimulation(config))
-      simulationCollection.map(runAndCollect).seq.toVector :+ runSimulationWithVideo(config)
-    }
-    else if (!config.getBoolean("output.make_video") && n > 0 && runSimulationsInParallel) {
-      val simulationCollection: collection.parallel.ParSeq[SFGraphSimulator] = collection.parallel.ParSeq.fill(n)(createSimulation(config))
-      simulationCollection.tasksupport = new ForkJoinTaskSupport(new java.util.concurrent.ForkJoinPool(config.getInt("execution.threads")))
-      simulationCollection.par.map(runAndCollect).seq.toVector
-    }
-    else {
-      val simulationCollection: collection.immutable.Vector[SFGraphSimulator] = collection.immutable.Vector.fill(n)(createSimulation(config))
-      simulationCollection.map(runAndCollect)
-    }
+  if (config.getBoolean("output.make_video")) {
+    println("Running simulation for video...")
+    runSimulationWithVideo(config)
   }
 
-  //println(results.flatMap(_.completedPeds.map(_.travelTime.value)).stats)
+  val range: GenIterable[Int] = if (runSimulationsInParallel) {
+    val r = (1 to n).par
+    r.tasksupport = new ForkJoinTaskSupport(new scala.concurrent.forkjoin.ForkJoinPool(config.getInt("execution.threads")))
+    r
+  }
+  else { 1 to n }
 
+
+  if (n > 0) {
+      range.foreach(s => {
+        val sim = createSimulation(config)
+        runAndWriteResults(sim, "sim_results_", config.getString("output.dir"))
+        System.gc()
+      })
+  } else {
+      println("No more simulations to run !")
+  }
+
+  // Reads intermediate results
+  val results: Vector[ResultsContainerRead] = readResults(config.getString("output.dir")).toVector
+
+
+  // Processing results
   if (config.getBoolean("output.write_travel_times") || config.getBoolean("output.write_densities") ) {
 
     println("Processing results")
 
     // Collects then writes individual travel times to csv
     if (config.getBoolean("output.write_travel_times")) results
-      .map(r => r.completedPeds.map(p => p.travelTime.value))
+      .map(r => r.tt.map(_._3))
       .writeToCSV(
         config.getString("output.output_prefix") + "_travel_times.csv",
         columnNames = Some(Vector.fill(results.size)("r").zipWithIndex.map(t => t._1 + t._2.toString)),
@@ -125,26 +128,26 @@ object RunSimulation extends App {
     // Collects then writes individual travel times with OD to csv
     if (config.getBoolean("output.write_travel_times")) results
       .zipWithIndex
-      .flatMap(r => r._1.completedPeds.map(p => (r._2, p.travelTime, p.origin, p.finalDestination)))
+      .flatMap(r => r._1.tt.map(p => (r._2, p._3, p._1, p._2)))
       .writeToCSV(
         config.getString("output.output_prefix") + "_travel_times_OD.csv",
         columnNames = Some(Vector("run", "travel_time", "origin_id", "destination_id")),
-        rowNames = None
-      )
+        rowNames = None)
 
     // Collects times at which densities where measured
-    val densityTimes: Vector[Time] = results.head.densityZones.head._2.densityHistory.unzip._1.toVector
+    val densityTimes: Vector[Time] = results.head.monitoredAreaDensity._1.map(Time(_))
 
      // writes densities to csv, first column is time, second column is mean, third column is var, then all individual densities
     if (config.getBoolean("output.write_densities") && config.getBoolean("sim.measure_density")) {
-      for (i <- results.head.densityZones.keySet) {
+      for (i <- results.head.monitoredAreaDensity._2.indices) {
+
         val densityStatsPerTime: Vector[(Int, Double, Double, Double, Double, Double)] = for (j <- densityTimes) yield {
-          (for (k <- results.map(_.densityZones)) yield {
-            k(i).densityHistory.find(_._1 == j).get._2
+          (for (k <- results.map(_.monitoredAreaDensity)) yield {
+            k._2(i)(k._1.indexOf(j.value))
           }).stats
         }
 
-        val densities: Vector[ArrayBuffer[Double]] = results.map(_.densityZones(i).densityHistory.map(_._2))
+        val densities: Vector[Vector[Double]] = results.map(_.monitoredAreaDensity._2(i))
         (for (ii <- densityStatsPerTime.indices) yield {
           Vector(densityStatsPerTime(ii)._1, densityStatsPerTime(ii)._2, densityStatsPerTime(ii)._3, densityStatsPerTime(ii)._4,
             densityStatsPerTime(ii)._5, densityStatsPerTime(ii)._6) ++ densities.map(_(ii))
@@ -159,15 +162,11 @@ object RunSimulation extends App {
 
   // computes statistics on travel times and writes them
   if (config.getBoolean("output.write_tt_stats")) {
-    results.map(r => stats(r.completedPeds.map(p => p.travelTime.value))).writeToCSV(config.getString("output.output_prefix") + "_travel_times_stats.csv", rowNames = None, columnNames = Some(Vector("size", "mean", "variance", "median", "min", "max")))
-    new Histogram(config.getString("output.output_prefix") + "_travel_times_hist.png", results.flatMap(r => r.completedPeds.map(p => p.travelTime.value)), 1.0, "travel times [s]", "Histogram of travel times", PlotOptions(xmin=Some(20), xmax=Some(50.0), ymax=Some(0.20)))
+    results.map(r => r.tt.map(_._3).stats).writeToCSV(config.getString("output.output_prefix") + "_travel_times_stats.csv", rowNames = None, columnNames = Some(Vector("size", "mean", "variance", "median", "min", "max")))
+    new Histogram(config.getString("output.output_prefix") + "_travel_times_hist.png", results.flatMap(_.tt.map(_._3)), 1.0, "travel times [s]", "Histogram of travel times", PlotOptions(xmin=Some(12), xmax=Some(40.0), ymax=Some(0.20)))
+    println("tt " + results.flatMap(_.tt.map(_._3)).cutOfAfterQuantile(99).stats)
+    println(computeQuantiles(Vector(65,70,75,80,85,90,95,97,99))(results.flatMap(_.tt.map(_._3)).cutOfAfterQuantile(99)))
   }
-
-  if (config.getBoolean("output.write_trajectories_as_VS")) {
-    println("Writing trajectories as VS to file")
-    writePopulationTrajectories(results.head.completedPeds++results.head.uncompletedPeds, config.getString("output.output_prefix") + "_simulation_trajectories.csv")
-  }
-
 
   // Analyse pedestrian data like travel time and walking speed by departure time interval.
   if (!config.getStringList("results-analysis.o_nodes").isEmpty && !config.getStringList("results-analysis.d_nodes").isEmpty)
@@ -178,30 +177,14 @@ object RunSimulation extends App {
       times(times.indexWhere(_ > t))
     }
 
-    def pedData: PedestrianSim => Double = ped => ped.travelDistance / ped.travelTime.value
+    def pedWindows: Tuple5[String, String, Double, Double, Double] => Double = ped => findInterval(ped._4, (simulationStartTime.value to simulationEndTime.value by evaluationInterval.value).toVector)
 
-    def pedWindows: PedestrianSim => Double = ped => findInterval(ped.entryTime.value, (simulationStartTime.value to simulationEndTime.value by evaluationInterval.value).toVector)
+    def pedFilter: Tuple5[String, String, Double, Double, Double] => Boolean = ped => true //ODPairsToAnalyse.exists(_ == (ped._1, ped._2))
 
-    def pedFilter: PedestrianSim => Boolean = ped => ODPairsToAnalyse.exists(_ == (ped.origin.name, ped.finalDestination.name))
-
-    val speedByInteval: Vector[Vector[(Double, Double)]] = results.map(r => {
-      val res = r.completedPeds.aggregateMetricByTimeWindow(pedFilter, pedData, pedWindows)
-      (res.map( r => (r._1, r._2._2)).toVector ++ (simulationStartTime.value to simulationEndTime.value by evaluationInterval.value).filterNot(res.keySet.contains(_)).map(t => (t, Double.NaN))).sortBy(_._1)//
-    })
-
-    val speedStats: IndexedSeq[(Double, (Int, Double, Double, Double, Double, Double))] = (for (i <- simulationStartTime.value to simulationEndTime.value by evaluationInterval.value) yield {
-      i -> (for (j <- results.indices if speedByInteval(j).exists(_._1 == i)) yield { speedByInteval(j).find(_._1 == i).get._2}).filterNot(_.isNaN).stats
-    }).sortBy(_._1)
-    (speedStats.map(_._1) +: speedStats.map(_._2._1) +: speedStats.map(_._2._2) +: speedStats.map(_._2._3) +:speedStats.map(_._2._4) +: speedByInteval.map(_.map(_._2))).writeToCSV(
-      config.getString("output.output_prefix") + "-mean-speed-per-time-interval.csv",
-      rowNames = None,
-        columnNames = Some(Vector("time", "size", "mean", "variance", "median") ++ Vector.fill(results.size)("r").zipWithIndex.map(t => t._1 + t._2.toString))
-      )
-
-    def pedData2: PedestrianSim => Double = ped => ped.travelTime.value
+    def pedData: Tuple5[String, String, Double, Double, Double] => Double = ped => ped._3
 
     val ttByIntervals: IndexedSeq[IndexedSeq[(Double, Double)]] = results.map(r => {
-      val res = r.completedPeds.aggregateMetricByTimeWindow(pedFilter, pedData2, pedWindows)
+      val res = r.tt.aggregateMetricByTimeWindow(pedFilter, pedData, pedWindows)
       (res.map( r => (r._1, r._2._2)).toVector ++ (simulationStartTime.value to simulationEndTime.value by evaluationInterval.value).filterNot(res.keySet.contains(_)).map(t => (t, Double.NaN))).sortBy(_._1)//
     })
 
@@ -216,7 +199,20 @@ object RunSimulation extends App {
     )
 
     new Histogram(config.getString("output.output_prefix") + "-travel-time-per-time-interval-histogram.png", ttByIntervals.flatMap(_.map(_._2)).filterNot(_.isNaN), 1.0,"travel time [s]", "Travel time per departure interval histogram", PlotOptions(xmin=Some(22), xmax=Some(40), ymax=Some(0.35)))
-    println(ttByIntervals.flatMap(_.map(_._2)).filterNot(_.isNaN).stats, computeQuantile(75)(ttByIntervals.flatMap(_.map(_._2)).filterNot(_.isNaN)), computeQuantile(85)(ttByIntervals.flatMap(_.map(_._2)).filterNot(_.isNaN)),  computeQuantile(95)(ttByIntervals.flatMap(_.map(_._2)).filterNot(_.isNaN)), computeQuantile(97.5)(ttByIntervals.flatMap(_.map(_._2)).filterNot(_.isNaN)), computeQuantile(99)(ttByIntervals.flatMap(_.map(_._2)).filterNot(_.isNaN)))
+    //println("tt by departurew times " + ttByIntervals.flatMap(_.map(_._2)).filterNot(_.isNaN).stats, computeQuantile(75)(ttByIntervals.flatMap(_.map(_._2)).filterNot(_.isNaN)), computeQuantile(85)(ttByIntervals.flatMap(_.map(_._2)).filterNot(_.isNaN)),  computeQuantile(95)(ttByIntervals.flatMap(_.map(_._2)).filterNot(_.isNaN)), computeQuantile(97.5)(ttByIntervals.flatMap(_.map(_._2)).filterNot(_.isNaN)), computeQuantile(99)(ttByIntervals.flatMap(_.map(_._2)).filterNot(_.isNaN)))
+
+    val targetDensityRange = BigDecimal(0.0) to BigDecimal(3.5) by BigDecimal(0.25)
+
+    val individualDensityAboveThreshold: Map[BigDecimal, Vector[(Double, Int)]] = targetDensityRange.map(rho => rho -> {
+      results.flatMap(_.monitoredAreaIndividualDensity.groupBy(_.head).map(v => v._1 -> v._2.flatMap(d => d.tail).count(_ > rho.doubleValue())))
+    }).toMap.map(v => v._1 -> v._2.sortBy(_._1))
+
+    individualDensityAboveThreshold.toVector.sortBy(_._1).map(_._2.map(_._2)).writeToCSV(config.getString("output.output_prefix") + "-pax-above-target.csv", rowNames=None, columnNames=Some(targetDensityRange.map(_.toString)))
+
+    //println(individualDensityAboveThreshold)
+    new Histogram(config.getString("output.output_prefix") + "-pax-above-target-histogram.png", results.flatMap(_.monitoredAreaIndividualDensity).flatten, 1.0, "#pax above threshold [pax]", "Number of people with density above threshold")
+    new ScatterPlot(config.getString("output.output_prefix") + "-pax-above-target-scatterplot.png", results.flatMap(_.monitoredAreaIndividualDensity).flatten, results.flatMap(_.monitoredAreaIndividualDensity).flatten.map(v => v*0.0+1.0), "#pax above threshold [pax]", "Number of people with density above threshold")
+
   }
 
   // ******************************************************************************************
@@ -224,7 +220,7 @@ object RunSimulation extends App {
   // ******************************************************************************************
 
   if (config.getBoolean("output.write_tt_4_transform")) {
-    results.flatten(_.completedPeds).computeTT4TRANSFORM(0.0.to(100.0).by(config.getDouble("output.write_tt_4_transform_quantile_interval")), simulationStartTime, simulationEndTime, config.getString("output.write_tt_4_transform_file_name"))
+    results.flatten(_.tt).computeTT4TRANSFORM(0.0.to(100.0).by(config.getDouble("output.write_tt_4_transform_quantile_interval")), simulationStartTime, simulationEndTime, config.getString("output.write_tt_4_transform_file_name"))
   }
 }
 

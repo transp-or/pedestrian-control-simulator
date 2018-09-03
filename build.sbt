@@ -17,10 +17,10 @@ libraryDependencies ++= Seq(
   "org.jcodec" % "jcodec-javase" % "0.2.0",
   "com.typesafe" % "config" % "1.3.1",
   "ch.qos.logback" % "logback-classic" % "1.2.3",
-  "com.typesafe.scala-logging" %% "scala-logging" % "3.7.2",
+  "com.typesafe.scala-logging" %% "scala-logging" % "3.9.0",
   "org.scalactic" %% "scalactic" % "3.0.1",
   "transpor.tools" % "power-voronoi" % "1.0",
-  "com.github.NicholasMolyneaux" %% "scala-custom" % "1.1.1",
+  "com.github.NicholasMolyneaux" %% "scala-custom" % "1.1.2",
   "transpor.tools" % "dxf-parser" % "1.0",
   "nl.tudelft.pedestrians" % "nomad" % "1.0",
   "org.scala-lang.modules" %% "scala-parser-combinators" % "1.1.1"

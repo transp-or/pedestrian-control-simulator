@@ -1,5 +1,6 @@
 import java.io.{BufferedWriter, File, FileWriter}
 
+import RunSimulation.{config, results}
 import breeze.numerics.{floor, round}
 import com.typesafe.config.{Config, ConfigFactory}
 import hubmodel.DES.SFGraphSimulator
@@ -16,8 +17,8 @@ import play.api.libs.json.Reads._
 import play.api.libs.json._
 import myscala.output.SeqTuplesExtensions.SeqTuplesWriter
 import myscala.output.SeqOfSeqExtensions.SeqOfSeqWriter
-import myscala.math.stats.{ComputeStats, stats}
-import myscala.math.stats.computeQuantile
+import myscala.math.stats.ComputeQuantiles
+import myscala.math.stats.ComputeStats
 
 
 /**
@@ -237,7 +238,7 @@ package object hubmodel {
   case class ResultsContainerNew(exitCode:Int, completedPeds: Vector[PedestrianSim], uncompletedPeds: Vector[PedestrianSim], densityZones: Map[String, DensityMeasuredArea])
 
   // Container for the results from a simulation. This type chould be modified if the collectResults function is modified
-  type ResultsContainer = (Vector[PedestrianSim], Map[String, DensityMeasuredArea], Vector[PedestrianSim])
+  case class ResultsContainerRead(tt: Vector[(String, String, Double, Double, Double)], monitoredAreaDensity: (Vector[Double] , Vector[Vector[Double]]), monitoredAreaIndividualDensity: Vector[Vector[Double]])
 
   /** Used to extract the desired results from the simulator. Avoids keeping all information in memory.
     *
@@ -262,17 +263,89 @@ package object hubmodel {
     }
   }
 
-  def writeResults(simulator: SFGraphSimulator, prefix: String = "", path: String): Unit = {
-    if (simulator.exitCode == 0){
+  /**
+    * Writes the main results from a simulation to csv files. This is needed when running dozens of simulations as the
+    * RAM fills up too quickly otherwise.
+    * @param simulator simulator with completed results
+    * @param prefix prefix to the file name
+    * @param path path where to write the file, default is empty
+    */
+  def writeResults(simulator: SFGraphSimulator, prefix: String = "", path: String, writeTrajectories: Boolean = false): Unit = {
+
+    if (simulator.exitCode == 0) {
       simulator.populationCompleted.map(p => (p.origin.name, p.finalDestination.name, p.travelTime.value, p.entryTime.value, p.exitTime.value)).writeToCSV(prefix + "tt_"+simulator.ID+".csv", path)
-      simulator.criticalAreas.map(_._2.densityHistory.map(_._2).toVector).toVector.writeToCSV(prefix + "density_"+simulator.ID+".csv", path)
+      (simulator.criticalAreas.head._2.densityHistory.map(_._1.value).toVector +: simulator.criticalAreas.map(_._2.densityHistory.map(_._2).toVector).toVector).writeToCSV(prefix + "density_" + simulator.ID + ".csv", path)
+      simulator.criticalAreas.head._2.paxIndividualDensityHistory.flatMap(v => Vector.fill(v._2.size)(v._1.value).zip(v._2)).toVector.writeToCSV(prefix + "individual_densities_" + simulator.ID + ".csv", path)
     }
+
+    if (writeTrajectories) {
+
+      println("Writing trajectories as VS to file")
+      writePopulationTrajectories(simulator.populationCompleted ++ simulator.population, prefix + "_simulation_trajectories_" + simulator.ID + ".csv")
+    }
+  }
+
+  /**
+    * Reads the files located in the argument and processes them to an  Iterable of [[ResultsContainerRead]] object.
+    * @param path dir where the files are located
+    * @return Iterable containing the results
+    */
+  def readResults(path: String): Iterable[ResultsContainerRead] = {
+    val outputDir = new File(path)
+    if (!outputDir.exists || !outputDir.isDirectory) {
+      throw new IllegalArgumentException("Output dir for files does not exist ! dir=" + path)
+    }
+
+    // reads the files populates a map based on the keyword present in the name
+    val files: Map[String, Map[String, File]] = outputDir.listFiles.filter(_.isFile).toList.groupBy(f => f.getName.substring(f.getName.indexOf(".csv")-10, f.getName.indexOf(".csv"))).map(kv => kv._1 -> kv._2.map(f => {
+      f.getName match {
+        case a if a.contains("_tt_") => "tt"
+        case b if b.contains("_density_") => "density"
+        case c if c.contains("_individual_densities_") => "individual_densities"
+        case other => throw new IllegalArgumentException("File should not be present: " + other)
+      }
+    } -> f
+    ).toMap)
+
+    files.map(sr => {
+
+      // process travel times file
+      val tt: Vector[(String, String, Double, Double, Double)] = {
+        val in = scala.io.Source.fromFile(sr._2("tt"))
+        val data = (for (line <- in.getLines) yield {
+          val cols = line.split(",").map(_.trim)
+          (cols(0), cols(1), cols(2).toDouble, cols(3).toDouble, cols(4).toDouble)
+        }).toVector
+        in.close
+        data
+      }
+
+      // process density file
+      val density: (Vector[Double] , Vector[Vector[Double]]) = {
+        val in = scala.io.Source.fromFile(sr._2("density"))
+        val data = (for (line <- in.getLines) yield {
+          line.split(",").map(_.trim.toDouble)
+        }).toVector
+        in.close
+        (data.map(_(0)), data.map(a => a.tail.toVector))//data.map(_.toVector).toVector
+      }
+
+      // process individual density measurements
+      val densityPerIndividual: Vector[Vector[Double]] = {
+        val in = scala.io.Source.fromFile(sr._2("individual_densities"))
+        val data = (for (line <- in.getLines) yield { line.split(",").map(_.trim.toDouble) }).toVector
+        in.close
+        data.map(a => a.toVector)
+      }
+
+      ResultsContainerRead(tt, density, densityPerIndividual)
+    })
   }
 
   /** Creates, runs and makes a video from the simulation. No results are processed.
     * Making the video can take some time.
     */
-  def runSimulationWithVideo(config: Config): ResultsContainerNew = {
+  def runSimulationWithVideo(config: Config): Unit = {
 
     // create simulation
     val sim = createSimulation(config)
@@ -287,6 +360,8 @@ package object hubmodel {
 
     // execute simulation
     timeBlock(sim.run())
+
+    println("tt for vid= " + sim.populationCompleted.map(_.travelTime.value).cutOfAfterQuantile(99).stats)
 
     println("Making video of simulation, this can take some time...")
 
@@ -311,7 +386,6 @@ package object hubmodel {
       sim.writePopulationTrajectories(config.getString("output.output_prefix") + "_simulation_trajectories.csv")
     }*/
 
-    collectResults(sim)
   }
 
   /** Runs the simulation and then collects the results. The simulation is timed.
