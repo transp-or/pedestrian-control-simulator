@@ -8,7 +8,7 @@ import hubmodel.supply.continuous.Wall
 import hubmodel.tools.cells.Rectangle
 import javax.imageio.ImageIO
 
-class DrawWallsAndGraph(walls: Iterable[Wall], edges: Vector[(Rectangle, Rectangle)], filename: String) {
+class DrawWallsAndGraph(walls: Iterable[Wall], edges: Vector[(Rectangle, Rectangle)], filename: String, showNames: Boolean = true) {
 
   val wallBounds: (Double, Double, Double, Double) = getBounds(walls)
   val graphBounds: (Double, Double, Double, Double) = getBounds(edges)
@@ -24,8 +24,8 @@ class DrawWallsAndGraph(walls: Iterable[Wall], edges: Vector[(Rectangle, Rectang
     mapCoordAffine(trueYMin, trueYMax, IMAGE_HEIGHT)
   )
 
-  val wallImage = new DrawWalls(walls, mapFun = Some(mappingFunctions), imHeight = Some(IMAGE_HEIGHT))
-  val graphImage = new DrawGraph(edges, mapFun = Some(mappingFunctions), imHeight = Some(IMAGE_HEIGHT))
+  val wallImage = new DrawWalls(walls, mapFun = Some(mappingFunctions), imHeight = Some(IMAGE_HEIGHT), showNames = showNames)
+  val graphImage = new DrawGraph(edges, mapFun = Some(mappingFunctions), imHeight = Some(IMAGE_HEIGHT),showNames = showNames)
 
   val image: BufferedImage = new BufferedImage(IMAGE_WIDTH, wallImage.imageHeight, BufferedImage.TYPE_4BYTE_ABGR)
   val verticalTransformation: Int => Int = verticalMirrorTransformation(image.getHeight)
@@ -37,6 +37,6 @@ class DrawWallsAndGraph(walls: Iterable[Wall], edges: Vector[(Rectangle, Rectang
   wallImage.draw(gImage, verticalTransformation)
   gImage.setColor(Color.RED)
   graphImage.draw(gImage, verticalTransformation)
-  graphImage.drawNames(gImage, verticalTransformation)
+  if (showNames) { graphImage.drawNames(gImage, verticalTransformation) }
   ImageIO.write(image, filename.split("\\.").last, new java.io.File(filename))
 }

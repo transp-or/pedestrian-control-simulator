@@ -31,7 +31,7 @@ class Wall {
         this.a = a;
         this.b = b;
         if (this.a.getZ() != this.b.getZ()) {
-            throw new IllegalArgumentException("heights are different at each end of wall");
+            throw new IllegalArgumentException("heights are different at each end of wall! w=" + this.a + ", " + this.b);
         }
         this.type = (int) this.a.getZ();
     }

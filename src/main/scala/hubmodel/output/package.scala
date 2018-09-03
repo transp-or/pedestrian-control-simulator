@@ -18,7 +18,7 @@ package object output {
   // Thickness of the border around the main drawing.
   val border: Int = 5
 
-  val IMAGE_WIDTH: Int = 2000 + 2 * border
+  val IMAGE_WIDTH: Int = 10000 + 2 * border
 
   def computeMappingFunctions(bounds: (Double, Double, Double, Double)): (Double => Int, Double => Int) = {
     val minX = bounds._1
