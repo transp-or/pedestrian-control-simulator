@@ -1,14 +1,24 @@
 package hubmodel.input.ProcessDXF;
 
 import org.kabeja.dxf.helpers.Point;
-
 import java.awt.geom.Path2D;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 
 /**
  * Representation of a zone in the CAD file. These zones are used by the route choice model for computing the route
  * of the pedestrians. The zones must be orthogonal rectangles for th ehub model (for the sake of simplicity).
  */
 class Zone {
+
+    public static double round(double value, int places) {
+        if (places < 0) throw new IllegalArgumentException();
+
+        BigDecimal bd = new BigDecimal(value);
+        bd = bd.setScale(places, RoundingMode.HALF_UP);
+        return bd.doubleValue();
+    }
+
 
     /**
      * Corners of the zone. Must be a rectangle for the hub model.
@@ -23,31 +33,31 @@ class Zone {
     /**
      * name of the zone
      */
-    String name;
+    String name = "";
 
     /**
      * Constructor. On creation, the Path2D object is created so that the assignment of the names can be performed.
      *
-     * @param a a corner
-     * @param b a corner
-     * @param c a corner
-     * @param d a corner
+     * @param aIn a corner
+     * @param bIn a corner
+     * @param cIn a corner
+     * @param dIn a corner
      */
-    Zone(Point a, Point b, Point c, Point d) {
+    Zone(Point aIn, Point bIn, Point cIn, Point dIn) {
 
         // sets the four corner
-        this.a = a;
-        this.b = b;
-        this.c = c;
-        this.d = d;
+        this.a = new Point(round(aIn.getX(), 3), round(aIn.getY(), 3), aIn.getZ());
+        this.b =  new Point(round(bIn.getX(), 3), round(bIn.getY(), 3), bIn.getZ());
+        this.c =  new Point(round(cIn.getX(), 3), round(cIn.getY(), 3), cIn.getZ());
+        this.d =  new Point(round(dIn.getX(), 3), round(dIn.getY(), 3), dIn.getZ());
 
         // builds the Path2D object
         polygon = new Path2D.Double();
-        polygon.moveTo(a.getX(), a.getY());
-        polygon.lineTo(b.getX(), b.getY());
-        polygon.lineTo(c.getX(), c.getY());
-        polygon.lineTo(d.getX(), d.getY());
-        polygon.lineTo(a.getX(), a.getY());
+        polygon.moveTo(this.a.getX(), this.a.getY());
+        polygon.lineTo(this.b.getX(), this.b.getY());
+        polygon.lineTo(this.c.getX(), this.c.getY());
+        polygon.lineTo(this.d.getX(), this.d.getY());
+        polygon.lineTo(this.a.getX(), this.a.getY());
     }
 
 

@@ -3,6 +3,8 @@ package hubmodel.input.ProcessDXF;
 import org.kabeja.dxf.*;
 
 import java.io.IOException;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -10,10 +12,16 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Random;
+
+import static hubmodel.input.ProcessDXF.EdgeTypes.*;
+import static org.apache.commons.lang3.RandomStringUtils.*;
+
+
 
 /**
  * Parser for CAD files for the hub model. Extends the {@link DXFReader} class with methods for reading specific
- * layers and writing the contents in the JSON format for the hub model.
+ * layers and writing the contents in the JSON format for the hub model. The DXF file must be saved as: R2013 ASCII
  * <p>
  * ==Usage==
  * {{{
@@ -28,6 +36,7 @@ import java.util.List;
  * }}}
  */
 public class DXFReaderHubModel extends DXFReader {
+
 
     /**
      * Layer containing the walls. Set on construction.
@@ -189,13 +198,21 @@ public class DXFReaderHubModel extends DXFReader {
 
         if (names_z != null) {
             for (int i = 0; i < names_z.size(); i++) {
-                zonesNames.add(names_z.get(i).getText());
+                if (names_z.get(i).getText().compareTo("") != 0) {zonesNames.add(names_z.get(i).getText());}
                 for (int j = 0; j < zones.size(); j++) {
                     if (zones.get(j).polygon.contains(names_z.get(i).getInsertPoint().getX(), names_z.get(i).getInsertPoint().getY())) {
                         zones.get(j).name = names_z.get(i).getText();
                     }
                 }
             }
+        }
+
+        for (int i = 0; i < zones.size(); i++) {
+                if (zones.get(i).name.compareTo("") == 0) {
+                    zones.get(i).name = randomAlphabetic(10);
+                    zonesNames.add(zones.get(i).name);
+                }
+            zonesNames.add(zones.get(i).name);
         }
 
         List<DXFLine> l_g = this.graphLayer.getDXFEntities(DXFConstants.ENTITY_TYPE_LINE);
@@ -214,7 +231,32 @@ public class DXFReaderHubModel extends DXFReader {
                         d = zones.get(j).name;
                     }
                 }
-                edges.add(new Edge(l_g.get(i).getStartPoint(), l_g.get(i).getEndPoint(), o, d));
+                if (o.compareTo("") == 0) {
+                    System.out.print("missing zone at " + o + ", " + l_g.get(i).getStartPoint()+ "\n");
+                }
+                if (d.compareTo("") == 0){
+                    System.out.print("missing zone at " + d + ", " +  l_g.get(i).getEndPoint() + "\n");
+                }
+                int edgeType = 0;
+                if (l_g.get(i).getLineWeight() == 0) {
+                    edgeType = BI_DIR;
+                } else if (l_g.get(i).getLineWeight() == 5) {
+                    edgeType = UNI_DIR;
+                }
+                else if (l_g.get(i).getLineWeight() == 9) {
+                    edgeType = UNI_DIR_UP;
+                }
+                else if (l_g.get(i).getLineWeight() == 13) {
+                    edgeType = UNI_DIR_DOWN;
+                }
+                else if (l_g.get(i).getLineWeight() == 15) {
+                    edgeType = LEVEL_CHANGE;
+                }
+                edges.add(new Edge(l_g.get(i).getStartPoint(), l_g.get(i).getEndPoint(), o, d, edgeType));
+                if (edgeType == BI_DIR) {
+                    edges.add(new Edge(l_g.get(i).getEndPoint(), l_g.get(i).getStartPoint(), d, o, edgeType));
+                }
+
             }
         }
 
@@ -250,7 +292,7 @@ public class DXFReaderHubModel extends DXFReader {
                 str += ",";
             }
         }
-        str += "], \"flow_gates\": [], \"controlled_areas\": [], \"binary_gates\": [], \"flow_separators\": []}";
+        str += "], \"flow_gates\": [], \"controlled_areas\": [], \"binary_gates\": [], \"flow_separators\": [], \"moving_walkways\": []}";
 
         ArrayList<String> strA = new ArrayList<String>();
         strA.add(str);

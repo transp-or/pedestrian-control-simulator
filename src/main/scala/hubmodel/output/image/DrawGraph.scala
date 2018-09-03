@@ -11,7 +11,8 @@ import javax.imageio.ImageIO
 class DrawGraph(edges: Vector[(Rectangle, Rectangle)],
                 filename: String = "",
                 mapFun: Option[(Double => Int, Double => Int)] = None,
-                imHeight: Option[Int] = None) {
+                imHeight: Option[Int] = None,
+                showNames: Boolean = true) {
 
   val mappingFunctions: (Double => Int, Double => Int) = mapFun match {
     case None => {
@@ -37,7 +38,7 @@ class DrawGraph(edges: Vector[(Rectangle, Rectangle)],
     gImage.fillRect(0, 0, image.getWidth(), image.getHeight())
     gImage.setColor(Color.BLACK)
     draw(gImage, verticalTransformation)
-    drawNames(gImage, verticalTransformation)
+    if  (showNames) { drawNames(gImage, verticalTransformation) }
     ImageIO.write(image, filename.split("\\.").last, new java.io.File(filename))
   }
 

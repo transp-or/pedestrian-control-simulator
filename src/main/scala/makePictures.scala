@@ -50,9 +50,11 @@ object makePictures extends App {
         else config.prefix + '_'
       }
 
-      val wallsImage = new DrawWalls(infraSF.walls, prefixToAdd + "wallImage.png", showNames = config.showWallNames)
-      val graphImage = new DrawGraph(infraGraph._1.edges.map(e => (e.startVertex, e.endVertex)).toVector, prefixToAdd + "graphImage.png")
-      val fullImage = new DrawWallsAndGraph(infraSF.walls, infraGraph._1.edges.map(e => (e.startVertex, e.endVertex)).toVector, prefixToAdd + "wallAndGraphImage.png")
+      val showNamesOnFigures: Boolean = if (config.showWallNames) {true} else { false }
+
+      val wallsImage = new DrawWalls(infraSF.walls, prefixToAdd + "wallImage.png", showNames = showNamesOnFigures)
+      val graphImage = new DrawGraph(infraGraph._1.edges.map(e => (e.startVertex, e.endVertex)).toVector, prefixToAdd + "graphImage.png", showNames = showNamesOnFigures)
+      val fullImage = new DrawWallsAndGraph(infraSF.walls, infraGraph._1.edges.map(e => (e.startVertex, e.endVertex)).toVector, prefixToAdd + "wallAndGraphImage.png",  showNames = showNamesOnFigures)
 
     case None => println("Probably an error when passing the parameters, or an unknown parameter was given.")
   }
