@@ -154,8 +154,8 @@ object AnalyseTrackingData extends App {
 
 
       val accumulationDensities = data.computeAccumulationDensity(mainZone, timesMiddles)
-      println(mainZone)
-      println(accumulationDensities)
+      //println(mainZone)
+      //println(accumulationDensities)
 
       /*val fitResults: (Double, Double, Double) = data.computeControllerParams(
         new DenseVector(inflowControlled),

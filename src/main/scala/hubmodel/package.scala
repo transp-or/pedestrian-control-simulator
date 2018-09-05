@@ -274,8 +274,10 @@ package object hubmodel {
 
     if (simulator.exitCode == 0) {
       simulator.populationCompleted.map(p => (p.origin.name, p.finalDestination.name, p.travelTime.value, p.entryTime.value, p.exitTime.value)).writeToCSV(prefix + "tt_"+simulator.ID+".csv", path)
-      (simulator.criticalAreas.head._2.densityHistory.map(_._1.value).toVector +: simulator.criticalAreas.map(_._2.densityHistory.map(_._2).toVector).toVector).writeToCSV(prefix + "density_" + simulator.ID + ".csv", path)
-      simulator.criticalAreas.head._2.paxIndividualDensityHistory.flatMap(v => Vector.fill(v._2.size)(v._1.value).zip(v._2)).toVector.writeToCSV(prefix + "individual_densities_" + simulator.ID + ".csv", path)
+      if (simulator.criticalAreas.nonEmpty) {
+        (simulator.criticalAreas.head._2.densityHistory.map(_._1.value).toVector +: simulator.criticalAreas.map(_._2.densityHistory.map(_._2).toVector).toVector).writeToCSV(prefix + "density_" + simulator.ID + ".csv", path)
+        simulator.criticalAreas.head._2.paxIndividualDensityHistory.flatMap(v => Vector.fill(v._2.size)(v._1.value).zip(v._2)).toVector.writeToCSV(prefix + "individual_densities_" + simulator.ID + ".csv", path)
+      }
     }
 
     if (writeTrajectories) {
@@ -319,6 +321,7 @@ package object hubmodel {
         in.close
         data
       }
+
 
       // process density file
       val density: (Vector[Double] , Vector[Vector[Double]]) = {

@@ -243,7 +243,7 @@
       "functional_parameters": [4.5, -0.1]
     }
   ],
-  "controlled_areas" :[
+  "controlled_areas" : [
     {
       "name": "junction-monitor",
       "x1": 15,

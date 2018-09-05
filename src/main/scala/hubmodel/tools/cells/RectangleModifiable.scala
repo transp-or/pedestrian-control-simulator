@@ -57,7 +57,7 @@ class RectangleModifiable(name: String,
   }
 
   override def uniformSamplePointInside: Position = {
-    println(this.name, this.A, this.B, this.C, this.D)
+    //println(this.name, this.A, this.B, this.C, this.D)
     Vector2D(ThreadLocalRandom.current.nextDouble(this.A.X + 0.1, this.B.X - 0.1), ThreadLocalRandom.current.nextDouble(this.A.Y + 0.1, this.D.Y - 0.1))
   }
 

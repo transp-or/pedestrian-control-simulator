@@ -5,6 +5,9 @@ import java.awt.geom.Ellipse2D
 
 import breeze.linalg.DenseVector
 
+import scala.annotation.tailrec
+import scala.collection.{IterableLike, SeqLike}
+import scala.collection.generic.CanBuildFrom
 import scala.math.BigDecimal.RoundingMode
 
 trait VisualizationTools {
@@ -92,4 +95,22 @@ trait VisualizationTools {
   def verticalMirrorTransformation(imHeight: Int)(yCoord: Int): Int = {
     -yCoord + imHeight
   }
+
+  @tailrec
+  final def filterEveryOtherValue[T](x: Seq[T], size: Int)/*(implicit cbf: CanBuildFrom[T, Double, T])*/: Seq[T]  = {
+    if (x.size <= size) { x }
+    else {
+      filterEveryOtherValue(x.zipWithIndex.filter(_._2 % 2 == 0).map(_._1), size)
+    }
+  }
+
+ /* def filterEveryOtherValue2[U, A <: Seq[U]](x: A, s: Int)(implicit bf: CanBuildFrom[A, U, A]): A = {
+    if (x.size == s) { x }
+    else { filterEveryOtherValue2(x.zipWithIndex.filter(_._2 % 2 == 0).map(_._1).asInstanceOf[A], s) }
+  }*/
+
+
+  def trimNonWordCharacters[T <: Iterable[String]](items: T with IterableLike[String, T])(implicit cbf: CanBuildFrom[T, String, T]): T =
+    items map { _.replaceAll("\\W", "") }
+
 }

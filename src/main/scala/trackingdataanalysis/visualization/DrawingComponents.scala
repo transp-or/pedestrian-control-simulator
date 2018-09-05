@@ -80,7 +80,7 @@ abstract class DrawingComponents(val border2HAxis: Int, val border2VAxis: Int, v
 
     // ticks specification
     if (xDataArg.isDefined) {
-      val xTicks: NumericRange[Double] = xDataArg.get._1 to xDataArg.get._2 by xDataArg.get._3
+      val xTicks: Vector[Double] = filterEveryOtherValue((xDataArg.get._1 to xDataArg.get._2 by xDataArg.get._3).toVector, 7).toVector
       val posXTicks: IndexedSeq[(Int, Double)] = xTicks map mapHCoord  zip xTicks
 
       // draws x ticks
@@ -88,9 +88,10 @@ abstract class DrawingComponents(val border2HAxis: Int, val border2VAxis: Int, v
         graphics.drawLine(border2VAxis+tick._1, verticalTransformation(border2HAxis-5 + mapVCoord(0.0)), border2VAxis+tick._1, verticalTransformation(border2HAxis+5 + mapVCoord(0.0)))
         graphics.drawString(f"${tick._2}%1.2f", border2VAxis+tick._1-floor(0.5*graphics.getFontMetrics.stringWidth(f"${tick._2}%1.2f")).toInt, verticalTransformation(border2HAxis-5-2 + mapVCoord(0.0)-graphics.getFontMetrics.getHeight))
       })
-      }
+    }
+
     if (yDataArg.isDefined) {
-      val yTicks: NumericRange[Double] = yDataArg.get._1 to yDataArg.get._2 by yDataArg.get._3
+      val yTicks: Vector[Double] = filterEveryOtherValue(yDataArg.get._1 to yDataArg.get._2 by yDataArg.get._3, 7).toVector
       val posYTicks: IndexedSeq[(Int, Double)] = yTicks map mapVCoord zip yTicks
 
       // draws y ticks
@@ -98,8 +99,8 @@ abstract class DrawingComponents(val border2HAxis: Int, val border2VAxis: Int, v
         graphics.drawLine(border2VAxis-5, verticalTransformation(border2HAxis+tick._1), border2VAxis+5, verticalTransformation(border2HAxis+tick._1))
         graphics.drawString(f"${tick._2}%1.2f", border2VAxis - 5 - 2 - graphics.getFontMetrics.stringWidth(f"${tick._2}%1.2f"), verticalTransformation(border2HAxis+tick._1-floor(0.33*graphics.getFontMetrics.getHeight).toInt))
       })
-
     }
+
   }
 
   def drawAxisShifted(graphics: Graphics2D, origin: (Double, Double), xDataArg: Option[(Double, Double, Double, String)], yDataArg: Option[(Double, Double, Double, String)]): Unit = {
@@ -197,16 +198,10 @@ abstract class DrawingComponents(val border2HAxis: Int, val border2VAxis: Int, v
     val barWidthPx: Int = (pixelCanvasSize._1 - border2VAxis*2)/(intervals.size-1)
     val barHeightPx: Int = mapVCoord(1.0)//scala.math.round((pixelCanvasSize._2-xBorderSpacing*2.toDouble)/(1.2*binCount.map(_._2).max)).toInt
 
-    @tailrec
-    def filterEveryOtherValue(x: Iterable[(Double, Double)], size: Int): Iterable[(Double, Double)] = {
-      if (x.size <= size) { x }
-      else { filterEveryOtherValue(x.zipWithIndex.filter(_._2 % 2 == 0).map(_._1), size) }
-    }
-
-    val intervals2Show: Iterable[(Double, Double)] = filterEveryOtherValue(intervals.dropRight(1).zip(intervals.tail), 6)
+    val intervals2Show: Vector[(Double, Double)] = filterEveryOtherValue(intervals.dropRight(1).zip(intervals.tail), 7).toVector
 
     intervals2Show.foreach(pair => {
-      val str: String = "(" + "%1.0f".format(pair._1) + ", " + "%1.0f".format(pair._2) + "]"
+      val str: String = "(" + "%1.2f".format(pair._1) + ", " + "%1.2f".format(pair._2) + "]"
       graphics.drawString(str, border2VAxis + mapHCoord(0.5*pair._1+0.5*pair._2)-floor(0.5*graphics.getFontMetrics.stringWidth(str)).toInt, verticalTransformation(border2HAxis-5-2 + mapVCoord(0.0)-graphics.getFontMetrics.getHeight))
     })
 
@@ -224,8 +219,8 @@ abstract class DrawingComponents(val border2HAxis: Int, val border2VAxis: Int, v
     def colorMapFunction(x: Double): Color = colorMap(if (minRange.isDefined) minRange.get else data.map(_._3).min, if (maxRange.isDefined) maxRange.get else data.map(_._3).max)(x)
 
     // compute width and height of cells
-    val cellWidthPx: Int = (pixelCanvasSize._1 - border2HAxis - border2VAxis)/(xInterval._2)
-    val cellHeightPx: Int = (pixelCanvasSize._2 - border2HAxis-border2VAxis)/(yInterval._2)
+    val cellWidthPx: Int = (pixelCanvasSize._1 - border2HAxis - border2VAxis)/xInterval._2
+    val cellHeightPx: Int = (pixelCanvasSize._2 - border2HAxis-border2VAxis)/yInterval._2
 
 /*    println(pixelCanvasSize)
     println(xInterval)

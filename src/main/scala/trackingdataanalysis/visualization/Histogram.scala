@@ -47,7 +47,7 @@ class Histogram(outputFile: String,
   gCanvas.setColor(Color.WHITE)
   gCanvas.fillRect(0, 0, canvas.getWidth(), canvas.getHeight())
 
-  drawAxis(gCanvas, None, Some((if (opts.ymin.isDefined) opts.ymin.get else 0.0, if (opts.ymax.isDefined) opts.ymax.get else 1.2*binnedData.map(_._2).max  ,0.05,"frequency"))) // 1.2*binnedData.map(_._2).max,1.2*binnedData.map(_._2).max/10.0
+  drawAxis(gCanvas, None, Some((if (opts.ymin.isDefined) opts.ymin.get else 0.0, if (opts.ymax.isDefined) opts.ymax.get else 1.2*binnedData.map(_._2).max, 0.01, "frequency"))) // 1.2*binnedData.map(_._2).max,1.2*binnedData.map(_._2).max/10.0
   drawHistogram(gCanvas, binnedData, intervals.toVector, xLabel)
   drawTitle(gCanvas, title)
 
