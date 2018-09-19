@@ -21,6 +21,7 @@ import scala.util.{Failure, Success, Try}
   */
 class RouteGraph(private val vertices: Vector[Rectangle],
                  private val standardEdges: Iterable[MyEdge],
+                 private val levelChanges: Iterable[MyEdgeLevelChange],
                  flowGates: Iterable[FlowGate],
                  binaryGates: Iterable[BinaryGate],
                  movingWalkways: Iterable[MovingWalkway],
@@ -76,8 +77,10 @@ class RouteGraph(private val vertices: Vector[Rectangle],
     }
   }
 
+  val isFloorChange: (Rectangle, Rectangle) => Boolean = (a, b) => this.levelChanges.map(e => (e.startVertex.ID, e.endVertex.ID)).exists(_ == (a.ID, b.ID))
+
   def clone(devices: ControlDevices): RouteGraph = new RouteGraph(
-    this.vertices,this.standardEdges, devices.flowGates,devices.binaryGates, devices.amws, devices.flowSeparators
+    this.vertices,this.standardEdges, this.levelChanges, devices.flowGates,devices.binaryGates, devices.amws, devices.flowSeparators
   )
 
 }

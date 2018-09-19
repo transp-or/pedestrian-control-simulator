@@ -142,7 +142,7 @@ abstract class PedestrianDES[T <: PedestrianTrait](val startTime: Time,
     * @param action the [[Action]] which must take place
     */
   def insertEventAtAbsolute[U <: Action](t: Time)(action: U): Unit = {
-    if (startTime <= t && t <= finalTime) eventList += new MyEvent(t, action)
+    if (startTime <= t && t < finalTime) eventList += new MyEvent(t, action)
   }
 
 

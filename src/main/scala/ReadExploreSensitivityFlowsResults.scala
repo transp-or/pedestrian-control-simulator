@@ -38,6 +38,7 @@ object ReadExploreSensitivityFlowsResults extends App {
   }
 
   // Reads the file passed as argument
+  println(confFile)
   val config: Config = ConfigFactory.load(confFile)
 
   val flowSens: FlowSensitivity = new FlowSensitivity(config)
@@ -47,6 +48,12 @@ object ReadExploreSensitivityFlowsResults extends App {
 
   val resultsSplitOD = flowSens.processWrittenResultsSplitOD
   flowSens.drawResultsSplitOD(resultsSplitOD)
+
+
+  if (!config.getIsNull("output.compare_results_to")) {
+    println(config.getString("output.compare_results_to"))
+    flowSens.drawComparisonResults("simulation/flow-sensitivity-fixed-sep.conf")
+  }
 
 
 }

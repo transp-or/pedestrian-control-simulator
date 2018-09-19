@@ -24,7 +24,7 @@ class MyEdge(val startVertex: Rectangle, val endVertex: Rectangle) extends Defau
   def cost: Double = _cost
 
   // setter for the cost. The call to sychronized is to ensure multi-thread correctness
-  def updateCost(v: Double): Unit = synchronized(_cost = v)
+  def updateCost(v: Double): Unit = _cost = v
 
 
   /** Checks whether another object equals this one

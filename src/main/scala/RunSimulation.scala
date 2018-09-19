@@ -112,7 +112,7 @@ object RunSimulation extends App {
 
 
   // Processing results
-  if (config.getBoolean("output.write_travel_times") || config.getBoolean("output.write_densities") ) {
+  if (config.getBoolean("output.write_travel_times")) {
 
     println("Processing results")
 
@@ -134,20 +134,23 @@ object RunSimulation extends App {
         columnNames = Some(Vector("run", "travel_time", "origin_id", "destination_id")),
         rowNames = None)
 
+  }
+
+  if ( config.getBoolean("output.write_densities") ) {
     // Collects times at which densities where measured
-    val densityTimes: Vector[Time] = results.head.monitoredAreaDensity._1.map(Time(_))
+    val densityTimes: Vector[Time] = results.head.monitoredAreaDensity.get._1.map(Time(_))
 
      // writes densities to csv, first column is time, second column is mean, third column is var, then all individual densities
     if (config.getBoolean("output.write_densities") && config.getBoolean("sim.measure_density")) {
-      for (i <- results.head.monitoredAreaDensity._2.indices) {
+      for (i <- results.head.monitoredAreaDensity.get._2.indices) {
 
         val densityStatsPerTime: Vector[(Int, Double, Double, Double, Double, Double)] = for (j <- densityTimes) yield {
-          (for (k <- results.map(_.monitoredAreaDensity)) yield {
+          (for (k <- results.map(_.monitoredAreaDensity.get)) yield {
             k._2(i)(k._1.indexOf(j.value))
           }).stats
         }
 
-        val densities: Vector[Vector[Double]] = results.map(_.monitoredAreaDensity._2(i))
+        val densities: Vector[Vector[Double]] = results.map(_.monitoredAreaDensity.get._2(i))
         (for (ii <- densityStatsPerTime.indices) yield {
           Vector(densityStatsPerTime(ii)._1, densityStatsPerTime(ii)._2, densityStatsPerTime(ii)._3, densityStatsPerTime(ii)._4,
             densityStatsPerTime(ii)._5, densityStatsPerTime(ii)._6) ++ densities.map(_(ii))
@@ -164,7 +167,7 @@ object RunSimulation extends App {
     val targetDensityRange = BigDecimal(0.0) to BigDecimal(3.5) by BigDecimal(0.25)
 
     val individualDensityAboveThreshold: Map[BigDecimal, Vector[(Double, Int)]] = targetDensityRange.map(rho => rho -> {
-      results.flatMap(_.monitoredAreaIndividualDensity.groupBy(_.head).map(v => v._1 -> v._2.flatMap(d => d.tail).count(_ > rho.doubleValue())))
+      results.flatMap(_.monitoredAreaIndividualDensity.get.groupBy(_.head).map(v => v._1 -> v._2.flatMap(d => d.tail).count(_ > rho.doubleValue())))
     }).toMap.map(v => v._1 -> v._2.sortBy(_._1))
 
     individualDensityAboveThreshold.toVector.sortBy(_._1).map(_._2.map(_._2)).writeToCSV(config.getString("output.output_prefix") + "-pax-above-target.csv", rowNames=None, columnNames=Some(targetDensityRange.map(_.toString)))
@@ -178,25 +181,25 @@ object RunSimulation extends App {
     )
 
     new Histogram(config.getString("output.output_prefix") + "_density-histogram.png",
-      results.flatMap(_.monitoredAreaDensity._2.flatten),
+      results.flatMap(_.monitoredAreaDensity.get._2.flatten),
       0.1,
       "densities [pax/m^2]",
       "Histogram of densities measured in area",
       PlotOptions(xmin=Some(0), xmax=Some(6.0), ymax=Some(0.10))
     )
-    println("density " + results.flatMap(_.monitoredAreaDensity._2.flatten).stats)
-    println(computeQuantiles(Vector(65,70,75,80,85,90,95,97,99))(results.flatMap(_.monitoredAreaDensity._2.flatten)))
+    println("density " + results.flatMap(_.monitoredAreaDensity.get._2.flatten).stats)
+    println(computeQuantiles(Vector(65,70,75,80,85,90,95,97,99))(results.flatMap(_.monitoredAreaDensity.get._2.flatten)))
 
     new Histogram(config.getString("output.output_prefix") + "_individual-densities-histogram.png",
-      results.flatMap(_.monitoredAreaIndividualDensity.map(_.tail).flatten),
+      results.flatMap(_.monitoredAreaIndividualDensity.get.map(_.tail).flatten),
       0.1,
       "individual density [pax/m^2]",
       "Histogram of individual densities",
       PlotOptions(xmin=Some(0), xmax=Some(6.0), ymax=Some(0.04))
     )
     //println(results.flatMap(_.monitoredAreaIndividualDensity.map(_.tail).flatten))
-    println("individual density " + results.flatMap(_.monitoredAreaIndividualDensity.map(_.tail).flatten).stats)
-    println(computeQuantiles(Vector(65,70,75,80,85,90,95,97,99))(results.flatMap(_.monitoredAreaIndividualDensity.map(_.tail).flatten)))
+    println("individual density " + results.flatMap(_.monitoredAreaIndividualDensity.get.map(_.tail).flatten).stats)
+    println(computeQuantiles(Vector(65,70,75,80,85,90,95,97,99))(results.flatMap(_.monitoredAreaIndividualDensity.get.map(_.tail).flatten)))
 
   }
 
@@ -214,6 +217,7 @@ object RunSimulation extends App {
     val ODPairsToAnalyse: Iterable[(String, String)] = config.getStringList("results-analysis.o_nodes").asScala.zip(config.getStringList("results-analysis.d_nodes").asScala).map(t => (t._1, t._2))
 
     def findInterval(t: Double, times: Vector[Double]): Double = {
+      println(t)
       times(times.indexWhere(_ > t))
     }
 
@@ -240,8 +244,6 @@ object RunSimulation extends App {
 
     new Histogram(config.getString("output.output_prefix") + "-travel-time-per-time-interval-histogram.png", ttByIntervals.flatMap(_.map(_._2)).filterNot(_.isNaN), 1.0,"travel time [s]", "Travel time per departure interval histogram", PlotOptions(xmin=Some(22), xmax=Some(40), ymax=Some(0.35)))
     //println("tt by departurew times " + ttByIntervals.flatMap(_.map(_._2)).filterNot(_.isNaN).stats, computeQuantile(75)(ttByIntervals.flatMap(_.map(_._2)).filterNot(_.isNaN)), computeQuantile(85)(ttByIntervals.flatMap(_.map(_._2)).filterNot(_.isNaN)),  computeQuantile(95)(ttByIntervals.flatMap(_.map(_._2)).filterNot(_.isNaN)), computeQuantile(97.5)(ttByIntervals.flatMap(_.map(_._2)).filterNot(_.isNaN)), computeQuantile(99)(ttByIntervals.flatMap(_.map(_._2)).filterNot(_.isNaN)))
-
-
   }
 
   // ******************************************************************************************

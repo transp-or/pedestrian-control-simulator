@@ -377,6 +377,7 @@ package object JSONReaders {
       (JsPath \ "sublocation").read[String](minLength[String](2)) and
       (JsPath \ "nodes").read[Vector[Vertex_JSON]] and
       (JsPath \ "connectivity").read[Vector[Connectivity_JSON]] and
+      (JsPath \ "connectivity_level_change").read[Vector[Connectivity_JSON]] and
       (JsPath \ "flow_gates").read[Vector[FlowGates_JSON]] and
       (JsPath \ "controlled_areas").read[Vector[MonitoredAreas_JSON]] and
       (JsPath \ "binary_gates").read[Vector[FlowGates_JSON]] and

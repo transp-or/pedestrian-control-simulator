@@ -13,5 +13,4 @@ public class ProcessDXFForHubModel {
         dxf.writeWallsToFile("walls-test.json");
         dxf.writeGraphToFile("graph-test.json");
     }
-
 }

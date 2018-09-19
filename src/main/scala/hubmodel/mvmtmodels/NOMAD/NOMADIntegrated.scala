@@ -262,6 +262,7 @@ class NOMADIntegrated(sim: SFGraphSimulator) extends Action {
       }
 
     sim.processCompletedPedestrian(sim.finalDestinationReached)
+    sim.population.filter(sim.intermediateDestinationReached).foreach(sim.updateIntermediateDestination)
     //sim.population.foreach(ped => println(sim.currentTime, ped, ped.currentPosition))
     sim.rebuildMTree()
 

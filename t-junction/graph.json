@@ -219,6 +219,14 @@
       ]
     }
     ],
+  "connectivity_level_change": [
+    {
+      "node": "test",
+      "connected_to": [
+        "test2"
+      ]
+    }
+  ],
   "flow_gates": [
     {
       "o": "gate-top",
@@ -243,6 +251,7 @@
       "functional_parameters": [4.5, -0.1]
     }
   ],
+
   "controlled_areas" : [
     {
       "name": "junction-monitor",

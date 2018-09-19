@@ -1,8 +1,6 @@
 package hubmodel.route
 
 import hubmodel.DES.{Action, SFGraphSimulator}
-import hubmodel.tools.cells.Rectangle
-
 
 /**
   * Created by nicholas on 5/29/17.
@@ -24,24 +22,8 @@ import hubmodel.tools.cells.Rectangle
 
 class UpdateRoutes(sim: SFGraphSimulator) extends Action {
   override def execute(): Unit = {
-    sim.population.filter(sim.intermediateDestinationReached).filterNot(_.isWaiting).foreach(p => {
-      /*val closestNode: Rectangle = sim.graph.vertexMap.values.map(r => (r, (r.center - p.currentPosition).norm)).minBy(_._2)._1
-      val newRoute: List[Rectangle] = {
-        val route: List[Rectangle] = sim.graph.getShortestPath(closestNode, p.finalDestination)
-        if (route.head.isInside(p.currentPosition)) route.tail else route
-      }*/
-      p.previousZone = p.nextZone
-      val newRoute: List[Rectangle] = sim.graph.getShortestPath(p.nextZone, p.finalDestination).tail
-      /*if (sim.closedEdges.exists(ce => ce._1 == p.nextZone && ce._2 == newRoute.head)) {
-        p.setCurrentDestination(p.nextZone.uniformSamplePointInside)
-        println("in useless if ?")
-      } else {*/
-        p.route = newRoute
-        p.nextZone = newRoute.head
-        p.setCurrentDestination(p.nextZone.uniformSamplePointInside)
-      //}
-    })
-    sim.insertEventWithDelayNew(sim.sf_dt)(new UpdateRoutes(sim))
+    sim.population.filter(sim.intermediateDestinationReached).filterNot(_.isWaiting).foreach(p => sim.updateIntermediateDestination(p))
+    sim.insertEventWithDelayNew(sim.route_dt)(new UpdateRoutes(sim))
   }
 
   override def toString: String = "UpdateRoutes"

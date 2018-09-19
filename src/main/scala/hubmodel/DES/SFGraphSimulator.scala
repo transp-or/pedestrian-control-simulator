@@ -12,11 +12,13 @@ import hubmodel.supply.continuous.{ContinuousSpace, Wall}
 import hubmodel.supply.graph.{RouteGraph, StartFlowGates, Stop2Vertex}
 import hubmodel.supply.{NodeID_New, NodeParent, StopID_New, TrainID_New}
 import hubmodel.tools.cells.{DensityMeasuredArea, Rectangle, isInVertex}
+import hubmodel.route.processIntermediateArrival
 
 class SFGraphSimulator(override val startTime: Time,
                        override val finalTime: Time,
                        logDir: Option[String],
                        val sf_dt: Time,
+                       val route_dt: Time,
                        val evaluate_dt: Time,
                        val rebuildTreeInterval: Option[Time],
                        val spaceSF: ContinuousSpace,
@@ -39,6 +41,9 @@ class SFGraphSimulator(override val startTime: Time,
 
   /* checks whether a pedestrian has reach is next destination zone */
   def intermediateDestinationReached: PedestrianSim => Boolean = p => isInVertex(p.nextZone)(p.currentPosition)
+
+  /* Updates the next destination */
+  def updateIntermediateDestination(ped: PedestrianSim): Unit = processIntermediateArrival(this.graph)(ped)
 
   /* checks if the pedestrian has reached is final destination */
   def finalDestinationReached: PedestrianSim => Boolean = p => isInVertex(p.finalDestination)(p.currentPosition)
@@ -192,6 +197,7 @@ class SFGraphSimulator(override val startTime: Time,
   Time,
   Time,
   Time,
+  Time,
   Option[Time],
   ContinuousSpace,
   RouteGraph,
@@ -203,6 +209,7 @@ class SFGraphSimulator(override val startTime: Time,
   startTime,
   finalTime,
   sf_dt,
+    route_dt,
   evaluate_dt,
   rebuildTreeInterval,
   spaceSF,

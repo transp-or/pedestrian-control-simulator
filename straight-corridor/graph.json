@@ -43,6 +43,7 @@
       ]
     }
     ],
+  "connectivity_level_change": [],
   "flow_gates": [],
   "controlled_areas" :[],
   "binary_gates": [],

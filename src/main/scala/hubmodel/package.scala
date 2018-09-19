@@ -68,6 +68,8 @@ package object hubmodel {
 
     def abs: Time = new Time(java.lang.Math.abs(this.value))
 
+    def *(m: Double) = new Time(this.value * m)
+
     def asReadable: String = {
       val hours: Int = floor(value / 3600.0).toInt
       val minutes: Int = floor((value - hours * 3600) / 60.0).toInt
@@ -200,6 +202,7 @@ package object hubmodel {
     val simulationStartTime: Time = Time(config.getDouble("sim.start_time"))
     val simulationEndTime: Time = Time(config.getDouble("sim.end_time"))
     val socialForceInterval: Time = Time(config.getDouble("sim.sf_dt"))
+    val routeUpdateInterval: Time = Time(config.getDouble("sim.route_dt"))
     val evaluationInterval: Time = Time(config.getDouble("sim.evaluate_dt"))
     val rebuildTreeInterval: Time = Time(config.getDouble("sim.rebuild_tree_dt"))
 
@@ -213,6 +216,7 @@ package object hubmodel {
       finalTime = simulationEndTime,
       logDir = None,
       sf_dt = socialForceInterval,
+      route_dt = routeUpdateInterval,
       evaluate_dt = evaluationInterval,
       rebuildTreeInterval = Some(rebuildTreeInterval),
       spaceSF = infraSF.continuousSpace,
@@ -238,7 +242,7 @@ package object hubmodel {
   case class ResultsContainerNew(exitCode:Int, completedPeds: Vector[PedestrianSim], uncompletedPeds: Vector[PedestrianSim], densityZones: Map[String, DensityMeasuredArea])
 
   // Container for the results from a simulation. This type chould be modified if the collectResults function is modified
-  case class ResultsContainerRead(tt: Vector[(String, String, Double, Double, Double)], monitoredAreaDensity: (Vector[Double] , Vector[Vector[Double]]), monitoredAreaIndividualDensity: Vector[Vector[Double]])
+  case class ResultsContainerRead(tt: Vector[(String, String, Double, Double, Double)], monitoredAreaDensity: Option[(Vector[Double] , Vector[Vector[Double]])], monitoredAreaIndividualDensity: Option[Vector[Vector[Double]]])
 
   /** Used to extract the desired results from the simulator. Avoids keeping all information in memory.
     *
@@ -324,22 +328,27 @@ package object hubmodel {
 
 
       // process density file
-      val density: (Vector[Double] , Vector[Vector[Double]]) = {
-        val in = scala.io.Source.fromFile(sr._2("density"))
-        val data = (for (line <- in.getLines) yield {
-          line.split(",").map(_.trim.toDouble)
-        }).toVector
-        in.close
-        (data.map(_(0)), data.map(a => a.tail.toVector))//data.map(_.toVector).toVector
-      }
+        val density: Option[(Vector[Double], Vector[Vector[Double]])] =
+          if (sr._2.keySet.contains("density")) {
+          val in = scala.io.Source.fromFile(sr._2("density"))
+          val data = (for (line <- in.getLines) yield {
+            line.split(",").map(_.trim.toDouble)
+          }).toVector
+          in.close
+          Some((data.map(_ (0)), data.map(a => a.tail.toVector))) //data.map(_.toVector).toVector
+        } else { None }
+
 
       // process individual density measurements
-      val densityPerIndividual: Vector[Vector[Double]] = {
-        val in = scala.io.Source.fromFile(sr._2("individual_densities"))
-        val data = (for (line <- in.getLines) yield { line.split(",").map(_.trim.toDouble) }).toVector
-        in.close
-        data.map(a => a.toVector)
-      }
+        val densityPerIndividual: Option[Vector[Vector[Double]]] =
+          if (sr._2.keySet.contains("individual_densities")) {
+            val in = scala.io.Source.fromFile(sr._2("individual_densities"))
+          val data = (for (line <- in.getLines) yield {
+            line.split(",").map(_.trim.toDouble)
+          }).toVector
+          in.close
+          Some(data.map(a => a.toVector))
+        } else { None }
 
       ResultsContainerRead(tt, density, densityPerIndividual)
     })

@@ -109,7 +109,6 @@ class PedestrianSim(val origin: Rectangle,
 
   def setCurrentDestination(pos: Position): Unit = {
     this.currentDestination = pos
-    this.currentDestination = pos
   }
 
   // ******************************************************************************************

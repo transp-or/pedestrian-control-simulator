@@ -45,15 +45,15 @@ class ParameterExploration(config: Config) extends GridSearch {
     for (t <- range) {
 
       val newDevices: ControlDevices = new ControlDevices(
-        defaultParameters._11.monitoredAreas.map(_.clone()),
-        defaultParameters._11.amws.map(_.clone()),
+        defaultParameters._12.monitoredAreas.map(_.clone()),
+        defaultParameters._12.amws.map(_.clone()),
         if (config.getBoolean("sim.use_flow_gates")) {
-          defaultParameters._11.flowGates.map(fg => new FlowGateFunctional(fg.startVertex, fg.endVertex, fg.start, fg.end, fg.monitoredArea, { x: Double => math.max(0.0000001, t._1 + t._2 * x) }))
+          defaultParameters._12.flowGates.map(fg => new FlowGateFunctional(fg.startVertex, fg.endVertex, fg.start, fg.end, fg.monitoredArea, { x: Double => math.max(0.0000001, t._1 + t._2 * x) }))
         } else {
           Vector()
         },
-        defaultParameters._11.binaryGates.map(_.clone()),
-        defaultParameters._11.flowSeparators.map(_.clone())
+        defaultParameters._12.binaryGates.map(_.clone()),
+        defaultParameters._12.flowSeparators.map(_.clone())
       )
 
       val sim = new SFGraphSimulator(
@@ -64,10 +64,11 @@ class ParameterExploration(config: Config) extends GridSearch {
         defaultParameters._4,
         defaultParameters._5,
         defaultParameters._6,
-        defaultParameters._7.clone(newDevices),
-        defaultParameters._8,
+        defaultParameters._7,
+        defaultParameters._8.clone(newDevices),
         defaultParameters._9,
         defaultParameters._10,
+        defaultParameters._11,
         newDevices
       )
 

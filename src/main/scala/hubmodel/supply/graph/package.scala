@@ -33,7 +33,8 @@ package object graph {
       case s: JsSuccess[InfraGraphParser] =>
         val v: Vector[Rectangle] = s.get.nodes.map(n => new Rectangle(n.name, Vector2D(n.x1, n.y1), Vector2D(n.x2, n.y2), Vector2D(n.x3, n.y3), Vector2D(n.x4, n.y4)))
         val vertexMap: Map[String, Rectangle] = v.map(v => v.name -> v).toMap
-        val e: Iterable[MyEdge] = s.get.standardConnections.flatMap(c => c.conn.map(neigh => new MyEdge(vertexMap(c.node), vertexMap(neigh))))
+        val levelChanges: Iterable[MyEdgeLevelChange] = s.get.levelChanges.flatMap(c => c.conn.map(neigh => new MyEdgeLevelChange(vertexMap(c.node), vertexMap(neigh))))
+        val e: Iterable[MyEdge] = s.get.standardConnections.flatMap(c => c.conn.map(neigh => new MyEdge(vertexMap(c.node), vertexMap(neigh)))) ++ levelChanges
         val fg: Iterable[FlowGate] = if (useFlowGates) {
           s.get.flowGates.map(fg => fg.funcForm match {
             case Some(str) if str == "quadratic" => new FlowGateFunctional(vertexMap(fg.o), vertexMap(fg.d), Vector2D(fg.start_pos_x, fg.start_pos_y), Vector2D(fg.end_pos_x, fg.end_pos_y), fg.area, {x: Double => math.min(10.0, math.max(0.0, fg.funcParam.get(0) + fg.funcParam.get(1)*x  + fg.funcParam.get(2)*x*x))} )
@@ -115,7 +116,7 @@ package object graph {
         } else {
           Vector()
         }
-        (new RouteGraph(v, e, fg, bg, mv, flowSeparators), new ControlDevices(monitoredAreas, mv, fg, bg, flowSeparators))
+        (new RouteGraph(v, e, levelChanges, fg, bg, mv, flowSeparators), new ControlDevices(monitoredAreas, mv, fg, bg, flowSeparators))
       case e: JsError => throw new Error("Error while parsing graph specification file: " + JsError.toJson(e).toString())
     }
   }
