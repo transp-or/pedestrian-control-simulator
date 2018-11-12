@@ -1,0 +1,14 @@
+{
+  "location": "den-haag",
+  "PTflows": [],
+  "flows": [
+    {
+      "origin": "9032",
+      "destination": "8002",
+      "start": "00:00:00",
+      "end": "00:02:00",
+      "flow": 100
+    }
+  ],
+  "function_flows": [ ]
+}

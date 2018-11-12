@@ -7,12 +7,11 @@ import hubmodel.mgmt.{ControlDevices, EvaluateState}
 import hubmodel.mvmtmodels.NOMAD.NOMADIntegrated
 import hubmodel.mvmtmodels.RebuildTree
 import hubmodel.ped.{PedestrianNOMAD, PedestrianSim}
-import hubmodel.route.UpdateRoutes
+import hubmodel.route.{UpdateRoutes, processIntermediateArrival}
 import hubmodel.supply.continuous.{ContinuousSpace, Wall}
 import hubmodel.supply.graph.{RouteGraph, StartFlowGates, Stop2Vertex}
 import hubmodel.supply.{NodeID_New, NodeParent, StopID_New, TrainID_New}
 import hubmodel.tools.cells.{DensityMeasuredArea, Rectangle, isInVertex}
-import hubmodel.route.processIntermediateArrival
 
 class SFGraphSimulator(override val startTime: Time,
                        override val finalTime: Time,
@@ -100,6 +99,7 @@ class SFGraphSimulator(override val startTime: Time,
 
   val PTInducedFlows: collection.mutable.Map[Rectangle, PTInducedQueue] = collection.mutable.Map()
 
+  val ODZones: Iterable[Rectangle] = this.graph.vertexMap.values.filter(_.isOD)
 
   var regulatorIntegralAction: Double = 0.0
   /** Takes a conceptual node (train or on foot) and returns the set of "real" nodes (the ones used by the graph)

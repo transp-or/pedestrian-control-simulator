@@ -6,7 +6,6 @@ import java.awt.{Color, Font, Graphics2D}
 import breeze.linalg.min
 import breeze.numerics.floor
 
-import scala.annotation.tailrec
 import scala.collection.immutable.NumericRange
 
 abstract class DrawingComponents(val border2HAxis: Int, val border2VAxis: Int, val pixelCanvasSize: (Int, Int)) extends VisualizationTools {
@@ -198,12 +197,19 @@ abstract class DrawingComponents(val border2HAxis: Int, val border2VAxis: Int, v
     val barWidthPx: Int = (pixelCanvasSize._1 - border2VAxis*2)/(intervals.size-1)
     val barHeightPx: Int = mapVCoord(1.0)//scala.math.round((pixelCanvasSize._2-xBorderSpacing*2.toDouble)/(1.2*binCount.map(_._2).max)).toInt
 
-    val intervals2Show: Vector[(Double, Double)] = filterEveryOtherValue(intervals.dropRight(1).zip(intervals.tail), 7).toVector
+    /*val intervals2Show: Vector[(Double, Double)] = filterEveryOtherValue(intervals.dropRight(1).zip(intervals.tail), 7).toVector
 
     intervals2Show.foreach(pair => {
       val str: String = "(" + "%1.2f".format(pair._1) + ", " + "%1.2f".format(pair._2) + "]"
       graphics.drawString(str, border2VAxis + mapHCoord(0.5*pair._1+0.5*pair._2)-floor(0.5*graphics.getFontMetrics.stringWidth(str)).toInt, verticalTransformation(border2HAxis-5-2 + mapVCoord(0.0)-graphics.getFontMetrics.getHeight))
+    })*/
+
+
+    val values2Show: Seq[Double] = filterEveryOtherValue(intervals, 10)
+    values2Show.foreach(v => {
+      graphics.drawString("%1.2f".format(v), border2VAxis + mapHCoord(v+0.5*(intervals.tail.head-intervals.head))-floor(0.5*graphics.getFontMetrics.stringWidth("%1.2f".format(v))).toInt, verticalTransformation(border2HAxis-5-2 + mapVCoord(0.0)-graphics.getFontMetrics.getHeight))
     })
+
 
     graphics.setColor(Color.BLACK)
     graphics.drawString(xLabel, (0.5*pixelCanvasSize._1).toInt - (0.5*graphics.getFontMetrics.stringWidth(xLabel)).toInt, verticalTransformation(5))
@@ -261,7 +267,4 @@ abstract class DrawingComponents(val border2HAxis: Int, val border2VAxis: Int, v
     val maxRange:Double = maxData - minData
     new Color(math.max(0, math.min(230,(230 * x/(maxRange-minRange)).toInt)), math.max(0,math.min(230,(230 * x/(maxRange-minRange)).toInt)), math.max(0,math.min(230,(230 * x/(maxRange-minRange)).toInt)))
   }
-
-
-
 }

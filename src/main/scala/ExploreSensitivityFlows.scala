@@ -1,9 +1,5 @@
 import com.typesafe.config.{Config, ConfigFactory}
-import hubmodel.createSimulation
-import myscala.output.SeqTuplesExtensions.SeqTuplesWriter
-import optimization.bruteforce.{FlowSensitivity, ParameterExploration}
-import trackingdataanalysis.visualization.HeatMap
-import visualization.PlotOptions
+import optimization.bruteforce.FlowSensitivity
 
 object ExploreSensitivityFlows extends App {
 

@@ -233,8 +233,8 @@ class NOMADOriginalModel(sim: SFGraphSimulator) extends Action {
       p.travelTime = sim.currentTime - p.entryTime
 
       // sets the increments in position and velocity for the pedestrian
-      p.velocityIncrement = totalAcceleration * sim.sf_dt.value
-      p.positionIncrement = p.currentVelocity * sim.sf_dt.value
+      p.velocityIncrement = totalAcceleration * sim.sf_dt.value.toDouble
+      p.positionIncrement = p.currentVelocity * sim.sf_dt.value.toDouble
 
       //println(p.velocityIncrement , p.positionIncrement)
     }

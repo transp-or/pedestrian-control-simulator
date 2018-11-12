@@ -7,7 +7,6 @@ import myscala.output.MapSeqExtensions._
 import myscala.output.SeqExtension.SeqWriter
 import play.api.libs.functional.syntax._
 import play.api.libs.json._
-import trackingdataanalysis.pedtrack.{DataSpecification, FunctionsOnPedestrianMaps, PedestrianTrait, Time}
 
 import scala.collection.mutable.ArrayBuffer
 import scala.math.BigDecimal.RoundingMode

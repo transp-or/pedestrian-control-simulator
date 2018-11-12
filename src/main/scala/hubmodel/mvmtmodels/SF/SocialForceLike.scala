@@ -180,8 +180,8 @@ abstract class SocialForceLike(sim: SFGraphSimulator) {
 
 
       // sets the increments in position and velocity for the pedestrian
-      p.velocityIncrement = force * sim.sf_dt.value
-      p.positionIncrement = (p.currentVelocity + p.velocityIncrement) * sim.sf_dt.value // (p.currentVelocity + p.velocityIncrement)
+      p.velocityIncrement = force * sim.sf_dt.value.toDouble
+      p.positionIncrement = (p.currentVelocity + p.velocityIncrement) * sim.sf_dt.value.toDouble // (p.currentVelocity + p.velocityIncrement)
 
       //println(p.velocityIncrementNew , p.positionIncrementNew)
     }

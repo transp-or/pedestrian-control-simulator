@@ -20,7 +20,7 @@ class NOMADIntegrated(sim: SFGraphSimulator) extends Action {
 
   // initialise the in range and in collision time schedule
   //val isolatedTimeStepMillis: Double = 1000.0 * sim.sf_dt.value // NomadModel.model.simTime.getTimeStep
-  val isolatedTimeStepSeconds: Double = sim.sf_dt.value //NomadModel.model.simTime.getTimeStepSeconds
+  val isolatedTimeStepSeconds: Double = sim.sf_dt.value.toDouble //NomadModel.model.simTime.getTimeStepSeconds
 
   //val rangeTimeStepMillis: Double = this.isolatedTimeStepMillis * 0.2 //NOMAD.defaults.IN_RANGE_FRACTION.round
   val rangeTimeStepSeconds: Double = isolatedTimeStepSeconds * 0.2 //isolatedTimeStepSeconds * 0.2 // SimulationTime.convertSimTime(this.rangeTimeStepMillis)
@@ -93,14 +93,14 @@ class NOMADIntegrated(sim: SFGraphSimulator) extends Action {
         isolationInterval = (closestDistance - 2.0 * 0.3) / (2 * 3.2)
         //val closestPed = pedInsideIsoltionDistance.minBy(that => (p.currentPosition - that.currentPosition).norm)
         if (isolationInterval <= sim.sf_dt.value) {
-          p.isolationTimePed = currentTime.addDouble(3.0 - 2 * 0.3 / (2 * 3.2)).value
+          p.isolationTimePed = currentTime.addDouble(3.0 - 2 * 0.3 / (2 * 3.2)).value.toDouble
           p.isolationTypePed = hubmodel.IN_COLLISION
         } else {
-          p.isolationTimePed = currentTime.addDouble((closestPed.currentPosition - p.currentPosition).norm - 2 * 0.3 / (2 * 3.2)).value
+          p.isolationTimePed = currentTime.addDouble((closestPed.currentPosition - p.currentPosition).norm - 2 * 0.3 / (2 * 3.2)).value.toDouble
           p.isolationTypePed = hubmodel.IN_RANGE
         }
       } else {
-        p.isolationTimePed = sim.currentTime.addDouble(closestDistance - (3.0 - 0.3) / (2 * 3.2)).value
+        p.isolationTimePed = sim.currentTime.addDouble(closestDistance - (3.0 - 0.3) / (2 * 3.2)).value.toDouble
         p.isolationTypePed = hubmodel.ISOLATED
       }
     }
@@ -130,7 +130,7 @@ class NOMADIntegrated(sim: SFGraphSimulator) extends Action {
         // then the pedestrian should be in collision.
         // Add an extra value to the calculate in collision interval
         // to prevent an update at the next X steps.
-        p.isolationTimeObs = sim.currentTime.addDouble((3.0 - 0.3) / 3.2).value
+        p.isolationTimeObs = sim.currentTime.addDouble((3.0 - 0.3) / 3.2).value.toDouble
         //return the in-collision type
         p.isolationTypeObs = hubmodel.IN_COLLISION
 
@@ -138,14 +138,14 @@ class NOMADIntegrated(sim: SFGraphSimulator) extends Action {
         // if the in range time step is larger then the time step
         // then add the current time to calculate the next time that
         // this pedestrian should update his isolation state.
-        p.isolationTimeObs = sim.currentTime.addDouble(isolationInterval).value
+        p.isolationTimeObs = sim.currentTime.addDouble(isolationInterval).value.toDouble
         //return the in-range type
-        p.isolationTypeObs = hubmodel.IN_RANGE;
+        p.isolationTypeObs = hubmodel.IN_RANGE
       }
 
     } else {
       // if the isolated time step is positive then add the current time
-      p.isolationTimeObs = sim.currentTime.addDouble(isolationInterval).value
+      p.isolationTimeObs = sim.currentTime.addDouble(isolationInterval).value.toDouble
       //return the isolated type
       p.isolationTypeObs = hubmodel.ISOLATED
     }

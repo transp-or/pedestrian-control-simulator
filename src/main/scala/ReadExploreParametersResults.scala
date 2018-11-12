@@ -1,10 +1,5 @@
-import ExploreParameters.{args, config}
 import com.typesafe.config.{Config, ConfigFactory}
-import hubmodel.createSimulation
 import optimization.bruteforce.ParameterExploration
-import trackingdataanalysis.visualization.HeatMap
-import visualization.PlotOptions
-import myscala.output.SeqTuplesExtensions.SeqTuplesWriter
 
 object ReadExploreParametersResults extends App {
 

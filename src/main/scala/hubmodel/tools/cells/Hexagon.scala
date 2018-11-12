@@ -7,6 +7,9 @@ import hubmodel.{Position, generateUUID}
 import myscala.math.vector.Vector2D
 
 class Hexagon(val center: Position, edgeLength: Double) extends Vertex {
+
+  val isOD: Boolean = false
+
   val name: String = generateUUID
 
   val A: Position = center + Vector2D(-cos(30 * math.Pi / 180.0), sqrt(1 - pow(cos(30 * math.Pi / 180.0), 2))) * edgeLength

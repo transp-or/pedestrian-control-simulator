@@ -24,7 +24,7 @@ import hubmodel.tools.cells.Rectangle
 class PedestrianGenerationNonHomogeneousRate(o: Rectangle, d: Rectangle, start: Time, end: Time, rateFunction: Time => Double, sim: SFGraphSimulator) extends Action {
 
   /** Maximum rate of the pedestrian generation rate, computed by sampling */
-  private val rateMax: Double = start.value.to(end.value).by(0.01).map(v => rateFunction(Time(v))).max
+  private val rateMax: Double = start.value.to(end.value).by(0.01).map(v => rateFunction(Time(v.toDouble))).max
 
   private var previousGenerationTime: Time = Time(0)
 

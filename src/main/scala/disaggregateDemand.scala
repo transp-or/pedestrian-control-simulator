@@ -1,15 +1,4 @@
 import java.io.File
-import java.time.LocalTime
-
-import breeze.numerics.pow
-import hubmodel.demand.transit.Train
-import hubmodel.demand.{SplitFractions}
-import myscala.output.SeqOfSeqExtensions.SeqOfSeqWriter
-import org.scalactic.Tolerance._
-import org.scalactic.TypeCheckedTripleEquals._
-import play.api.libs.json.{JsError, JsSuccess, JsValue, Json}
-
-import scala.io.BufferedSource
 
 object disaggregateDemand extends App {
 

@@ -1,4 +1,3 @@
-import ExploreSensitivityFlows.flowRatioSensitivity
 import com.typesafe.config.{Config, ConfigFactory}
 import optimization.bruteforce.FlowSensitivity
 

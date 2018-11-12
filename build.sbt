@@ -24,7 +24,8 @@ libraryDependencies ++= Seq(
   "transpor.tools" % "dxf-parser" % "1.0",
   "nl.tudelft.pedestrians" % "nomad" % "1.0",
   "org.scala-lang.modules" %% "scala-parser-combinators" % "1.1.1",
-  "org.apache.commons" % "commons-lang3" % "3.8"
+  "org.apache.commons" % "commons-lang3" % "3.8",
+  "org.apache.commons" % "commons-math3" % "3.6"
 )
 
 //resolvers += Opts.resolver.sonatypeReleases // add if needed

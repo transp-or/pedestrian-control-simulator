@@ -83,7 +83,7 @@ class MovingPedestriansWithDensityVideo(outputFile: String,
   // List of times with corresponding ellipses to draw. For each time, the list of ellipses coreespond to the pedestrians.
 
   //println(population2TimePositionList.map(_._1).toVector.sorted)
-  var timeEllipses: Vector[(Time, List[Ellipse2D])] = population2TimePositionList.filter(pair => times2Show.exists(t => math.abs(t - pair._1.value) <= math.pow(10, -5))).map(p => (p._1, p._2.map(createDot))).toVector
+  var timeEllipses: Vector[(Time, List[Ellipse2D])] = population2TimePositionList.filter(pair => times2Show.exists(t => (t - pair._1.value).abs.toDouble <= math.pow(10, -5))).map(p => (p._1, p._2.map(createDot))).toVector
   //println(population2TimePositionList.filter(pair => times2Show.contains(pair._1)).map(_._1).sorted)
 
   // Image to use for combining all the different components: the bkgd image, the dots, the monitored areas, the gates, etc.
@@ -104,7 +104,7 @@ class MovingPedestriansWithDensityVideo(outputFile: String,
     //if (timeEllipses.head._1 == times2Show(i)) {
     val gPoints: Graphics2D = points.createGraphics()
     gPoints.setColor(Color.RED)
-    timeEllipses.indexWhere(te => math.abs(times2Show(i) - te._1.value) < math.pow(10, -5)) match {
+    timeEllipses.indexWhere(te => (times2Show(i) - te._1.value).abs.toDouble < math.pow(10, -5)) match {
       case a if a >= 0 => timeEllipses(a)._2.foreach(p => gPoints.fill(p))
       case _ => {}
     }

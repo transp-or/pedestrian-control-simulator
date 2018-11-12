@@ -7,11 +7,7 @@ import hubmodel.DES.SFGraphSimulator
 import hubmodel.demand.PedestrianFlow_New
 import hubmodel.{createSimulation, runAndWriteResults}
 import myscala.math.stats.ComputeStats
-import myscala.output.SeqTuplesExtensions.SeqTuplesWriter
-import trackingdataanalysis.visualization.HeatMap
-import visualization.PlotOptions
-
-import scala.collection.SortedSet
+import trackingdataanalysis.visualization.{HeatMap, PlotOptions}
 
 class FlowSensitivity(config: Config) extends GridSearch {
 
@@ -71,7 +67,7 @@ class FlowSensitivity(config: Config) extends GridSearch {
         devices
       )
 
-      runAndWriteResults(sim, i.toString + "_" + j.toString + "_params_", config.getString("output.dir"))
+      runAndWriteResults(sim, i.toString + "_" + j.toString + "_params_", if (!config.getIsNull("output.dir")) {Some(config.getString("output.dir"))} else {None})
       System.gc()
     }
 

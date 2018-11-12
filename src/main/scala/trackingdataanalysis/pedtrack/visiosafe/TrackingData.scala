@@ -7,7 +7,6 @@ package visiosafe {
 
   import myscala.math.linalg.areaFrom2DVectors
   import myscala.math.vector.Vector2D
-  import trackingdataanalysis.pedtrack.{NewPosition2D, Position}
   import trackingdataanalysis.pedtrack.io.InflowType
 
   /* ----------------------------------------------------------------------------------

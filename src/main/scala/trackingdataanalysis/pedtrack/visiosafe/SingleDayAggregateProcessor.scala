@@ -15,8 +15,7 @@ import myscala.output.SeqExtension._
 import myscala.output.SeqOfSeqExtensions.SeqOfSeqWriter
 import trackingdataanalysis.pedtrack.Pedestrian
 import trackingdataanalysis.pedtrack.io.{CONTROLLED, UNCONTROLLED}
-import trackingdataanalysis.visualization.ScatterPlot3D
-import visualization.PlotOptions
+import trackingdataanalysis.visualization.{PlotOptions, ScatterPlot3D}
 
 import scala.collection.JavaConversions._
 

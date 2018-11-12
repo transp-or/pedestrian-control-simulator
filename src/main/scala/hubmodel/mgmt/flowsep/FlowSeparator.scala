@@ -5,7 +5,6 @@ import hubmodel.supply.continuous.{MovableWall, SINGLELINE, Wall}
 import hubmodel.supply.graph.MyEdge
 import hubmodel.tools.cells.RectangleModifiable
 import hubmodel.{FLOW_SEPARATOR_UPDATE, Position, Time, generateUUID}
-import myscala.math.vector.Vector2D
 
 class FlowSeparator(val startA: Position,
                     val startB: Position,
@@ -83,12 +82,12 @@ class FlowSeparator(val startA: Position,
 
     override def execute(): Unit = {
       if ((currentTargetPosition._1 - start).norm > 0.0) {
-        start = start + (currentTargetPosition._1 - start).normalized * (speed * sim.sf_dt.value)
+        start = start + (currentTargetPosition._1 - start).normalized * (speed * sim.sf_dt.value.toDouble)
         associatedZonesStart.foreach(_.moveRectangle(sim.sf_dt))
       }
 
       if ((currentTargetPosition._2 - end).norm > 0.0) {
-        end = end + (currentTargetPosition._2 - end).normalized * (speed * sim.sf_dt.value)
+        end = end + (currentTargetPosition._2 - end).normalized * (speed * sim.sf_dt.value.toDouble)
         associatedZonesEnd.foreach(_.moveRectangle(sim.sf_dt))
       }
 

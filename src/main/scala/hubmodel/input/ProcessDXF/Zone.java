@@ -1,6 +1,7 @@
 package hubmodel.input.ProcessDXF;
 
 import org.kabeja.dxf.helpers.Point;
+
 import java.awt.geom.Path2D;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -79,19 +80,20 @@ class Zone {
      *
      * @return String with the object as JSON
      */
-    String toJSON() {
+    String toJSON(Double scale) {
         return "{" +
                 "\"name\": \"" + this.name.replace("{", "").replace("}", "") + "\"," +
                 "\"x\":" + 0.0 + "," +
                 "\"y\":" + 0.0 + "," +
-                "\"x1\":" + this.a.getX() + "," +
-                "\"y1\":" + this.a.getY() + "," +
-                "\"x2\":" + this.b.getX() + "," +
-                "\"y2\":" + this.b.getY() + "," +
-                "\"x3\":" + this.c.getX() + "," +
-                "\"y3\":" + this.c.getY() + "," +
-                "\"x4\":" + this.d.getX() + "," +
-                "\"y4\":" + this.d.getY() +
+                "\"x1\":" + this.a.getX()*scale + "," +
+                "\"y1\":" + this.a.getY()*scale  + "," +
+                "\"x2\":" + this.b.getX()*scale  + "," +
+                "\"y2\":" + this.b.getY()*scale  + "," +
+                "\"x3\":" + this.c.getX()*scale  + "," +
+                "\"y3\":" + this.c.getY()*scale  + "," +
+                "\"x4\":" + this.d.getX()*scale  + "," +
+                "\"y4\":" + this.d.getY()*scale  + "," +
+                "\"OD\": false" +
                 "}";
     }
 }

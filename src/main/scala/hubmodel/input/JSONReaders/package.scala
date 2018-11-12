@@ -88,7 +88,7 @@ package object JSONReaders {
     * @param x4   top left x-coord
     * @param y4   top left y-coord
     */
-  private[JSONReaders] case class Vertex_JSON(name: String, x1: Double, y1: Double, x2: Double, y2: Double, x3: Double, y3: Double, x4: Double, y4: Double)
+  private[JSONReaders] case class Vertex_JSON(name: String, x1: Double, y1: Double, x2: Double, y2: Double, x3: Double, y3: Double, x4: Double, y4: Double, OD: Boolean)
 
   /**
     * Reads a JSON structure into a [[Vertex_JSON]] object. No validation on the arguments is done.
@@ -102,7 +102,8 @@ package object JSONReaders {
       (JsPath \ "x3").read[Double] and
       (JsPath \ "y3").read[Double] and
       (JsPath \ "x4").read[Double] and
-      (JsPath \ "y4").read[Double]
+      (JsPath \ "y4").read[Double] and
+      (JsPath \ "OD").read[Boolean]
     ) (Vertex_JSON.apply _)
 
 

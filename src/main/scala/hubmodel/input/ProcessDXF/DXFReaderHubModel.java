@@ -3,8 +3,6 @@ package hubmodel.input.ProcessDXF;
 import org.kabeja.dxf.*;
 
 import java.io.IOException;
-import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -12,10 +10,9 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Random;
 
 import static hubmodel.input.ProcessDXF.EdgeTypes.*;
-import static org.apache.commons.lang3.RandomStringUtils.*;
+import static org.apache.commons.lang3.RandomStringUtils.randomAlphabetic;
 
 
 
@@ -80,7 +77,7 @@ public class DXFReaderHubModel extends DXFReader {
      *
      * @param fileName
      */
-    public void writeWallsToFile(String fileName) {
+    public void writeWallsToFile(String fileName, Double scale) {
 
         // Reads all entities which can be used to create walls.
         List<DXFPolyline> lwpl_w = this.wallLayer.getDXFEntities(DXFConstants.ENTITY_TYPE_LWPOLYLINE);
@@ -123,7 +120,7 @@ public class DXFReaderHubModel extends DXFReader {
 
         // appends all wall objects
         for (int i = 0; i < walls.size(); i++) {
-            str += walls.get(i).toJSON();
+            str += walls.get(i).toJSON(scale);
             if (i != walls.size() - 1) {
                 str += ",";
             }
@@ -161,7 +158,7 @@ public class DXFReaderHubModel extends DXFReader {
      *
      * @param fileName
      */
-    public void writeGraphToFile(String fileName) {
+    public void writeGraphToFile(String fileName, Double scale) {
 
         List<DXFPolyline> lwpl_z = this.zoneLayer.getDXFEntities(DXFConstants.ENTITY_TYPE_LWPOLYLINE);
         List<DXFPolyline> pl_z = this.zoneLayer.getDXFEntities(DXFConstants.ENTITY_TYPE_POLYLINE);
@@ -198,6 +195,7 @@ public class DXFReaderHubModel extends DXFReader {
 
         if (names_z != null) {
             for (int i = 0; i < names_z.size(); i++) {
+                System.out.print(names_z.get(i).getText());
                 if (names_z.get(i).getText().compareTo("") != 0) {zonesNames.add(names_z.get(i).getText());}
                 for (int j = 0; j < zones.size(); j++) {
                     if (zones.get(j).polygon.contains(names_z.get(i).getInsertPoint().getX(), names_z.get(i).getInsertPoint().getY())) {
@@ -278,7 +276,7 @@ public class DXFReaderHubModel extends DXFReader {
 
 
         for (int i = 0; i < zones.size(); i++) {
-            str += zones.get(i).toJSON();
+            str += zones.get(i).toJSON(scale);
             if (i != zones.size() - 1) {
                 str += ",";
             }
@@ -292,7 +290,8 @@ public class DXFReaderHubModel extends DXFReader {
                 str += ",";
             }
         }
-        str += "], \"flow_gates\": [], \"controlled_areas\": [], \"binary_gates\": [], \"flow_separators\": [], \"moving_walkways\": []}";
+        str += "], \"flow_gates\": [], \"controlled_areas\": [], \"binary_gates\": [], \"flow_separators\": [], \"moving_walkways\": [], \"connectivity_level_change\": []" +
+                "}";
 
         ArrayList<String> strA = new ArrayList<String>();
         strA.add(str);

@@ -292,7 +292,7 @@ package hubmodel {
 
 
       case class LinearPedestrianFlow(s: Time, e: Time, rateAtStart: Double, rateAtEnd: Double, slope: Double) extends PedestrianFlowFunction(s, e) {
-        if (math.abs(rateAtStart + slope * (this.end - this.start).value - rateAtEnd) > math.pow(10,-5)) {
+        if ((rateAtStart + slope * (this.end - this.start).value.toDouble - rateAtEnd).abs > math.pow(10,-5)) {
           throw new IllegalArgumentException("Flow rate at end doesn't match computed flow rate ! " + (rateAtStart + slope * (this.end - this.start).value) + " != " + rateAtEnd)
         }
       }
@@ -320,13 +320,13 @@ package hubmodel {
             functions.find(f => f.start <= t && t <= f.end) match {
               case Some(f) => f match {
                 case l: LinearPedestrianFlow => {
-                  l.rateAtStart + (t-l.start).value * l.slope
+                  l.rateAtStart + (t-l.start).value.toDouble * l.slope
                 }
                 case c: ConstantPedestrianFlow => {
                   c.rate
                 }
                 case s: SinPedestrianFlow => {
-                  s.maxFlow * ((math.sin(t.value*s.periodStretch+math.Pi*s.periodShift)+s.a)*s.b + s.c)
+                  s.maxFlow * ((math.sin(t.value.toDouble*s.periodStretch+math.Pi*s.periodShift)+s.a)*s.b + s.c)
                 }
                 case err => throw new NotImplementedError("This type of flow function is not implemented !")
               }

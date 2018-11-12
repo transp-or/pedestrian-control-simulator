@@ -1,9 +1,4 @@
 
-import breeze.numerics.{cos, pow, sqrt}
-import hubmodel.{Position, Time, generateUUID}
-import hubmodel.output.image.DrawCells
-import hubmodel.route.Guo2011.HexagonPotentialField
-import play.api.libs.functional.~
 
 /*case class MyCell(center: Position, edgeLength: Double){ //}, conn: List[String]) {
   val ID: String = generateUUID

@@ -4,11 +4,8 @@ import java.awt.image.BufferedImage
 import java.awt.{Color, Graphics2D}
 
 import javax.imageio.ImageIO
-import visualization.PlotOptions
 
 import scala.collection.immutable.NumericRange
-
-import myscala.math
 
 class Histogram(outputFile: String,
                 x: Iterable[Double],
@@ -24,9 +21,8 @@ class Histogram(outputFile: String,
 
   // process data
   val intervals: NumericRange[Double] = xmin.to(xmax).by(binSize)
-  def binningFunc(v: Double): Int = intervals.indexWhere( _ > v)
 
-  val binnedData: Vector[(Int, Double)] =  x.groupBy(binningFunc).map(kv => kv._1-1 -> kv._2.size.toDouble/x.size).toVector.sortBy(_._1)
+  val binnedData: Vector[(Int, Double)] =  computeHistogramData(x, binSize, opts.xmin, opts.xmax)
 
   // completes abstract classes by implementing the mapping functions
    def mapHCoord(v: Double): Int = mapHcoordLinear(xmin, xmax, opts.width-opts.border2HorizontalAxis-opts.border2VerticalAxis)(v)

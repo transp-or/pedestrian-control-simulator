@@ -6,7 +6,7 @@ import java.awt.geom.Ellipse2D
 import breeze.linalg.DenseVector
 
 import scala.annotation.tailrec
-import scala.collection.{IterableLike, SeqLike}
+import scala.collection.IterableLike
 import scala.collection.generic.CanBuildFrom
 import scala.math.BigDecimal.RoundingMode
 

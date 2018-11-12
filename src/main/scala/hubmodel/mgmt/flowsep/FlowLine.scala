@@ -14,7 +14,8 @@ class FlowLine(val start: Position, val end: Position, controlled: Int = 0) {
       start - (end - start).orthogonal * FLOW_LINE_REGION_EXTENSION,
       end - (end - start).orthogonal * FLOW_LINE_REGION_EXTENSION,
       end + (end - start).orthogonal * FLOW_LINE_REGION_EXTENSION,
-      start + (end - start).orthogonal * FLOW_LINE_REGION_EXTENSION
+      start + (end - start).orthogonal * FLOW_LINE_REGION_EXTENSION,
+      false
     )
   }
 

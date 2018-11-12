@@ -5,20 +5,15 @@ import java.io.File
 import com.typesafe.config.Config
 import hubmodel.DES.SFGraphSimulator
 import hubmodel.mgmt.ControlDevices
-import hubmodel.ped.PedestrianSim
-import hubmodel.{ResultsContainerNew, createSimulation, runAndWriteResults}
 import hubmodel.supply.graph.FlowGateFunctional
-import hubmodel.tools.cells.DensityMeasuredArea
+import hubmodel.{createSimulation, runAndWriteResults}
 import myscala.math.stats.ComputeStats
-import trackingdataanalysis.visualization.HeatMap
-
-import scala.collection.immutable.NumericRange
-import scala.collection.parallel.ForkJoinTaskSupport
 import myscala.output.SeqTuplesExtensions.SeqTuplesWriter
-import trackingdataanalysis.visualization.HeatMap
-import visualization.PlotOptions
+import trackingdataanalysis.visualization.{HeatMap, PlotOptions}
 
 import scala.collection.GenIterable
+import scala.collection.immutable.NumericRange
+import scala.collection.parallel.ForkJoinTaskSupport
 
 class ParameterExploration(config: Config) extends GridSearch {
 
@@ -72,7 +67,7 @@ class ParameterExploration(config: Config) extends GridSearch {
         newDevices
       )
 
-      runAndWriteResults(sim, t._1.toString + "_" + t._2.toString + "_params_", config.getString("output.dir"))
+      runAndWriteResults(sim, t._1.toString + "_" + t._2.toString + "_params_", if (!config.getIsNull("output.dir")) {Some(config.getString("output.dir"))} else {None})
       System.gc()
     }
   }

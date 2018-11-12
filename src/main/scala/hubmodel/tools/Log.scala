@@ -1,10 +1,7 @@
 package hubmodel.tools
 
 import ch.qos.logback.classic.Level
-import ch.qos.logback.classic.encoder.PatternLayoutEncoder
-import ch.qos.logback.classic.spi.ILoggingEvent
 //import ch.qos.logback.classic.{Level, Logger, LoggerContext}
-import ch.qos.logback.core.FileAppender
 import com.typesafe.scalalogging.Logger
 //import org.slf4j.LoggerFactory
 

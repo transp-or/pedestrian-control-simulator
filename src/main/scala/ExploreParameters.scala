@@ -1,7 +1,5 @@
-import RunSimulation.args
 import com.typesafe.config.{Config, ConfigFactory}
 import optimization.bruteforce.ParameterExploration
-import hubmodel.createSimulation
 
 
 object ExploreParameters extends App {

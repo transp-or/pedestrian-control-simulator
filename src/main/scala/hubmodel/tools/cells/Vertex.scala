@@ -18,6 +18,8 @@ trait Vertex {
 
   def name: String
 
+  def isOD: Boolean
+
   // unique identifier
   def uniformSamplePointInside: Position
 

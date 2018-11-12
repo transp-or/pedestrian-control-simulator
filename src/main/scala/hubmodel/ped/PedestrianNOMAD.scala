@@ -10,8 +10,8 @@ class PedestrianNOMAD(oZone: Rectangle, dZone: Rectangle, entryTime: Time, posO:
   var isolationTypePed: Int = 0
   var isolationTypeObs: Int = 0
   val isInvisible: Boolean = false
-  var isolationTimeObs: Double = entryTime.value
-  var isolationTimePed: Double = entryTime.value
+  var isolationTimeObs: Double = entryTime.value.toDouble
+  var isolationTimePed: Double = entryTime.value.toDouble
   val AT: Double = 0.5
   val infAreaMaxExtObs: Double = 1.0
   var desiredDirection: Vector2D = new ZeroVector2D

@@ -16,7 +16,7 @@ package object TRANSFORM {
       val res: collection.mutable.Map[(String, String), collection.mutable.ArrayBuffer[Double]] = collection.mutable.Map()
       pop.foreach(p => {
         if (p.entryTime >= startTime || p.exitTime <= endTime) {
-          res.getOrElseUpdate((p.origin.name, p.finalDestination.name), collection.mutable.ArrayBuffer()).append(p.travelTime.value)
+          res.getOrElseUpdate((p.origin.name, p.finalDestination.name), collection.mutable.ArrayBuffer()).append(p.travelTime.value.toDouble)
         }
       })
       val file = new File(fileName)

@@ -4,7 +4,6 @@ import java.awt.image.BufferedImage
 import java.awt.{Color, Graphics2D}
 
 import javax.imageio.ImageIO
-import visualization.PlotOptions
 
 
 class ScatterPlot3D(outputFile: String,

@@ -100,8 +100,8 @@ package object output {
 
   def createWhiteBackground(bkgdImageSizeMeters: (Double, Double)): BufferedImage = {
 
-    val initialWidth: Int = bkgdImageSizeMeters._1.ceil.toInt * 20
-    val initialHeight: Int = bkgdImageSizeMeters._2.ceil.toInt * 20
+    val initialWidth: Int = bkgdImageSizeMeters._1.ceil.toInt * 10
+    val initialHeight: Int = bkgdImageSizeMeters._2.ceil.toInt * 10
 
     // rounds the canvas width to an even number
     val canvasWidth: Int = if (initialWidth % 2 == 0) initialWidth else initialWidth + 1

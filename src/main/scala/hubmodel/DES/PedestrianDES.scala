@@ -180,6 +180,7 @@ abstract class PedestrianDES[T <: PedestrianTrait](val startTime: Time,
   def processCompletedPedestrian(condition: T => Boolean): Unit = {
     val completedPeds: Map[String, T] = this._populationNew.filter(kv => condition(kv._2)).toMap
     completedPeds.values.foreach(p => {
+      p.addHistory(this.currentTime)
       p.reachedDestination = true
       p.exitTime = this.currentTime
     })

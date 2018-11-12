@@ -6,6 +6,7 @@ import hubmodel.Time
 import hubmodel.TimeNumeric.mkOrderingOps
 import hubmodel.supply.graph.FlowGate
 
+@Deprecated
 class PIGateController(sim: SFGraphSimulator) extends Action {
 
   def allocateSupply(totalInflow: Double, gates: Vector[String]): Map[String, Double] = {

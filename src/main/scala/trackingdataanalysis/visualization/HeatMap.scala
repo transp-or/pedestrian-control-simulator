@@ -1,10 +1,9 @@
 package trackingdataanalysis.visualization
 
-import java.awt.{Color, Graphics2D}
 import java.awt.image.BufferedImage
+import java.awt.{Color, Graphics2D}
 import java.math.MathContext
 
-import visualization.PlotOptions
 import javax.imageio.ImageIO
 
 class HeatMap(outputFile: String,

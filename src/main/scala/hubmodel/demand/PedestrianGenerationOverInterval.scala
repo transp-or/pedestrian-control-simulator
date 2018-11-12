@@ -40,7 +40,7 @@ class PedestrianGenerationOverInterval(o: Rectangle, d: Rectangle, start: Time, 
     */
   override def execute(): Unit = {
     sim.eventLogger.trace("time=" + sim.currentTime + ": generating " + numberPeople + " pedestrians in interval " + start + ":" + end)
-    poissonProcessIterator(end.value - start.value, numberPeople).foreach(t => {
+    poissonProcessIterator((end - start).value.toDouble, numberPeople).foreach(t => {
       sim.insertEventAtAbsolute(start + t)(new CreatePedestrian(o, d, sim))
     })
   }

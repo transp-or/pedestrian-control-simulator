@@ -2,19 +2,15 @@
   * Created by nicholas on 2/15/17.
   */
 
-import breeze.linalg.{DenseVector}
 import breeze.numerics.{pow, sqrt}
 import com.typesafe.config.ConfigFactory
 import kn.uni.voronoitreemap.j2d.PolygonSimple
 import myscala.math.stats.ComputeStats
 import myscala.output.SeqTuplesExtensions.SeqTuplesWriter
-import trackingdataanalysis.pedtrack.{DataSpecification, Pedestrian}
-import trackingdataanalysis.pedtrack.io.MonitoredAreaReader
+import trackingdataanalysis.pedtrack.io.{CONTROLLED, MonitoredAreaReader, UNCONTROLLED}
 import trackingdataanalysis.pedtrack.visiosafe.{DataProcessor, MultiDayAggregateProcessor, SingleDayAggregateProcessor}
-import trackingdataanalysis.visualization.{Histogram, RegressionPlot, ScatterPlot}
-import visualization.PlotOptions
-import trackingdataanalysis.pedtrack.io.{CONTROLLED, UNCONTROLLED}
-import trackingdataanalysis.pedtrack.norm
+import trackingdataanalysis.pedtrack.{DataSpecification, Pedestrian, norm}
+import trackingdataanalysis.visualization.{Histogram, PlotOptions, ScatterPlot}
 
 import scala.collection.JavaConverters._
 
@@ -224,7 +220,7 @@ object AnalyseTrackingData extends App {
       */
       //TTByEntyTimeMean.toVector.sortBy(_._1).writeToCSV(config.getString("output.prefix") + "-TTByEntyTimeMean.csv")
       println("Stats of the mean TT per time interval:")
-      TTByEntyTimeMean.foreach(dayPop => println(dayPop._1 + dayPop._2.map(_._2._2).stats.toString))
+      //TTByEntyTimeMean.foreach(dayPop => println(dayPop._1 + dayPop._2.map(_._2._2).stats.toString))
     }
   }
 }

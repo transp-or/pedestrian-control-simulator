@@ -1,8 +1,7 @@
 package trackingdataanalysis.pedtrack.visiosafe
 
 import breeze.linalg.DenseVector
-import trackingdataanalysis.pedtrack.Pedestrian
-import trackingdataanalysis.pedtrack.time2Seconds
+import trackingdataanalysis.pedtrack.{Pedestrian, time2Seconds}
 
 /** Container for the procssing methods common to both single day and multi day processing
   *
@@ -30,9 +29,6 @@ abstract class DataProcessor(zoneFile: String, tolerance: Double) {
       else ped += (cols.last -> new Pedestrian(cols.last, (cols(8).toDouble/1000.0, cols(9).toDouble/1000.0), time2Seconds(cols)))
     }
     bufferedSource.close()
-    //println(ped.keys.toVector.sorted)
-    //println(ped.size)
-    //ped.toMap
     ped
   }
 

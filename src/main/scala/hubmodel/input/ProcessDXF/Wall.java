@@ -50,13 +50,13 @@ class Wall {
      *
      * @return String with the object as JSON.
      */
-    String toJSON() {
+    String toJSON(Double scale) {
         return "{" +
                 "\"comment\": \"\", " +
-                "\"x1\":" + this.a.getX() + "," +
-                "\"y1\":" + this.a.getY() + "," +
-                "\"x2\":" + this.b.getX() + "," +
-                "\"y2\":" + this.b.getY() + "," +
+                "\"x1\":" + this.a.getX()*scale + "," +
+                "\"y1\":" + this.a.getY()*scale + "," +
+                "\"x2\":" + this.b.getX()*scale + "," +
+                "\"y2\":" + this.b.getY()*scale + "," +
                 "\"type\":" + this.type +
                 "}";
     }

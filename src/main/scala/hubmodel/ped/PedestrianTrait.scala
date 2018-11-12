@@ -57,6 +57,7 @@ trait PedestrianTrait {
     else desiredVel * ((1.3 * 1.34) / desiredVel.norm)
   }
 
+  def addHistory(t: Time): Unit
 
   // ******************************************************************************************
   //                    FUNCTIONS FOR PRINTING THE PEDESTRIAN
