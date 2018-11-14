@@ -6,10 +6,10 @@ import hubmodel.mgmt.{ControlDevices, EvaluateState}
 import hubmodel.mvmtmodels.NOMAD.NOMADIntegrated
 import hubmodel.mvmtmodels.RebuildTree
 import hubmodel.ped.{PedestrianNOMAD, PedestrianNOMADWithGraph, PedestrianSim}
-import hubmodel.route.{UpdateRoutes}
+import hubmodel.route.UpdateRoutes
 import hubmodel.supply.NodeParent
 import hubmodel.supply.continuous.{ContinuousSpace, Wall}
-import hubmodel.supply.graph.{RouteGraph, RouteGraphParent, StartFlowGates}
+import hubmodel.supply.graph.{RouteGraph, RouteGraphMultiple, RouteGraphParent, StartFlowGates}
 import hubmodel.tools.cells.{DensityMeasuredArea, Rectangle, isInVertex}
 
 class NOMADGraphSimulator[T <: PedestrianNOMAD](st: Time,
@@ -36,7 +36,10 @@ class NOMADGraphSimulator[T <: PedestrianNOMAD](st: Time,
   def intermediateDestinationReached: PedestrianSim => Boolean = p => isInVertex(p.nextZone)(p.currentPosition)
 
   /* Updates the next destination */
-  //def updateIntermediateDestination(ped: T): Unit = graph.processIntermediateArrival(ped)
+  def updateIntermediateDestination(ped: T): Unit = graph match {
+    case rs: RouteGraph[T] => { rs.processIntermediateArrival(ped) }
+    case rm: RouteGraphMultiple[T] => { rm.processIntermediateArrival(ped) }
+  }
 
   /* checks if the pedestrian has reached is final destination */
   def finalDestinationReached: PedestrianSim => Boolean = p => isInVertex(p.finalDestination)(p.currentPosition)

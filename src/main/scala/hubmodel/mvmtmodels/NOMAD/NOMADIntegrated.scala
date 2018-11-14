@@ -262,8 +262,8 @@ class NOMADIntegrated[T <: PedestrianNOMAD](sim: NOMADGraphSimulator[T]) extends
       }
 
     sim.processCompletedPedestrian(sim.finalDestinationReached)
-    //sim.population.filter(sim.intermediateDestinationReached).foreach(p => sim.updateIntermediateDestination(p))
-    //sim.population.foreach(ped => println(sim.currentTime, ped, ped.currentPosition))
+    sim.population.filter(sim.intermediateDestinationReached).foreach(p => sim.updateIntermediateDestination(p))
+
     sim.rebuildMTree()
 
     // enqueues pedestrians in the waiting zones if gating is used

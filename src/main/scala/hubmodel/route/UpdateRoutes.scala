@@ -7,7 +7,7 @@ import hubmodel.ped.{PedestrianNOMAD, PedestrianTrait}
 
 class UpdateRoutes[T <: PedestrianNOMAD](sim: NOMADGraphSimulator[T]) extends Action[T] {
   override def execute(): Unit = {
-    //sim.population.filter(sim.intermediateDestinationReached).filterNot(_.isWaiting).foreach(p => sim.updateIntermediateDestination(p))
+    sim.population.filter(sim.intermediateDestinationReached).filterNot(_.isWaiting).foreach(p => sim.updateIntermediateDestination(p))
     sim.insertEventWithDelay(sim.route_dt)(new UpdateRoutes(sim))
   }
 

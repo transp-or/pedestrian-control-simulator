@@ -4,11 +4,11 @@ import hubmodel.mgmt.ControlDevices
 import hubmodel.ped._
 import hubmodel.tools.cells.Rectangle
 
-abstract class RouteGraphParent[+T <: PedestrianNOMAD] extends WithGates {
+abstract class RouteGraphParent[+T <: PedestrianNOMAD] {//extends WithGates {
 
   //type V <: PedestrianNOMAD
 
-  //def processIntermediateArrival(ped: V): Unit
+  //def processIntermediateArrival[U >: T](ped: U): Unit
 
   def vertexMap: Map[String, Rectangle]
 

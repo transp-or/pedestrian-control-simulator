@@ -19,4 +19,7 @@ trait WithGates {
       gate.get.pedestrianQueue.enqueue(p)
     }
   }
+
+  def processIntermediateArrival(ped: PedestrianNOMAD): Unit
+
 }
