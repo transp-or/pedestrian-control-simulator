@@ -1,15 +1,17 @@
 package hubmodel.demand
 
 import breeze.numerics.pow
-import hubmodel.DES.{Action, SFGraphSimulator}
+import hubmodel.DES.{Action, NOMADGraphSimulator}
 import hubmodel._
-import hubmodel.ped.PedestrianNOMAD
+import hubmodel.ped.{PedestrianNOMAD, PedestrianNOMADWithGraph}
 import hubmodel.tools.cells.Rectangle
+
+import scala.reflect.ClassTag
 
 /**
   * Creates a pedestrian. A new pedestrian will be added when this event is executed.
   */
-class CreatePedestrian(o: Rectangle, d: Rectangle, sim: SFGraphSimulator) extends Action {
+class CreatePedestrian[T <: PedestrianNOMAD](o: Rectangle, d: Rectangle, sim: NOMADGraphSimulator[T])(implicit tag: ClassTag[T]) extends Action[T] {
 
   /**
     * Inserts a new pedestrian. The characteristics of this pedestrian are sampled on creation.
@@ -36,7 +38,9 @@ class CreatePedestrian(o: Rectangle, d: Rectangle, sim: SFGraphSimulator) extend
       pos
     }
 
+    //tag.runtimeClass.getConstructor(classOf[(Rectangle, Rectangle, Time, Position, List[Rectangle], String)]).newInstance(o, d, sim.currentTime, generationPoint, route, "").asInstanceOf[T]
     // inserts new pedestrian into population
-    sim.insertInPopulation(new PedestrianNOMAD(o, d, sim.currentTime, generationPoint, route))
+    sim.insertInPopulation(tag.runtimeClass.getConstructor(classOf[(Rectangle, Rectangle, BigDecimal, Position, List[Rectangle], String)]).newInstance(o, d, sim.currentTime.value, generationPoint, route, "").asInstanceOf[T])//new T(o, d, sim.currentTime, generationPoint, route, ""))
   }
 }
+

@@ -1,6 +1,6 @@
 package hubmodel.supply.graph
 
-import hubmodel.Position
+import hubmodel.{Position, Time}
 import hubmodel.tools.cells.Rectangle
 
 /** Extension of [[hubmodel.supply.MyEdgeWithGate]] for the usage of "flow gates". The gates control the
@@ -14,11 +14,6 @@ import hubmodel.tools.cells.Rectangle
   * @param end         other end of the gate
   */
 class FlowGate(startVertex: Rectangle, endVertex: Rectangle, start: Position, end: Position, ma: String) extends MyEdgeWithGate(startVertex, endVertex, start, end, ma) {
-
-  // variable flow rate of the gate [pax/s]
-  var flowRate: Double = 0.5
-
-
 
   /** Checks whether another object equals this one
     *

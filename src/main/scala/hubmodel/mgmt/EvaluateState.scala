@@ -1,6 +1,7 @@
 package hubmodel.mgmt
 
-import hubmodel.DES.{Action, SFGraphSimulator}
+import hubmodel.DES.{Action, NOMADGraphSimulator}
+import hubmodel.ped.PedestrianNOMAD
 import hubmodel.tools.cells.isInVertex
 import kn.uni.voronoitreemap.datastructure.OpenList
 import kn.uni.voronoitreemap.diagram.PowerDiagram
@@ -18,7 +19,7 @@ import scala.collection.JavaConversions._
   *
   * @param sim simulation containing the data
   */
-class EvaluateState(sim: SFGraphSimulator) extends Action with Controller {
+class EvaluateState[T <: PedestrianNOMAD](sim: NOMADGraphSimulator[T]) extends Action[T] with Controller {
 
   def computeDensity(): Unit = {
 
@@ -77,8 +78,7 @@ class EvaluateState(sim: SFGraphSimulator) extends Action with Controller {
   override def execute(): Unit = {
     sim.eventLogger.trace("sim-time=" + sim.currentTime + ": state evaluation")
     this.computeDensity()
-    sim.eventLogger.trace("sim-time=" + sim.currentTime + ": number people inside critical area: " + sim.densityHistory.last._2)
-    if (sim.useGating) { sim.insertEventWithZeroDelay(new DLQRGateController(sim)) }
+    if (sim.useFlowGates || sim.useBinaryGates) { sim.insertEventWithZeroDelay(new DLQRGateController(sim)) }
     if (sim.useFlowSep) {
       //processIncomingFlows()
       sim.controlDevices.flowSeparators.foreach(fs => {
@@ -88,7 +88,7 @@ class EvaluateState(sim: SFGraphSimulator) extends Action with Controller {
         fs.inflowLinesEnd.foreach(_.reinitialize())
       })
     }
-    sim.insertEventWithDelayNew(sim.evaluate_dt)(new EvaluateState(sim))
+    sim.insertEventWithDelay(sim.evaluate_dt)(new EvaluateState(sim))
   }
 
 }

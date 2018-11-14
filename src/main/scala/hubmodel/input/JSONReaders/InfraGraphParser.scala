@@ -25,5 +25,6 @@ case class InfraGraphParser(location: String,
                             controlledAreas: Vector[MonitoredAreas_JSON], // the controlled areas are the same as the zones
                             binaryGates: Vector[FlowGates_JSON], // binary gates are flow gates with only two states
                             movingWalkways: Vector[MovingWalkways_JSON],
-                            flowSeparators: Vector[FlowSeparator_JSON]
+                            flowSeparators: Vector[FlowSeparator_JSON],
+                            alternateConnections: Vector[ConnectivityAlternatives_JSON]
                            ) extends Infrastructure

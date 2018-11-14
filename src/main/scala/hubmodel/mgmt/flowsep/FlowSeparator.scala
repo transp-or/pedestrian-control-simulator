@@ -1,6 +1,7 @@
 package hubmodel.mgmt.flowsep
 
-import hubmodel.DES.{Action, SFGraphSimulator}
+import hubmodel.DES.{Action, NOMADGraphSimulator}
+import hubmodel.ped.PedestrianNOMAD
 import hubmodel.supply.continuous.{MovableWall, SINGLELINE, Wall}
 import hubmodel.supply.graph.MyEdge
 import hubmodel.tools.cells.RectangleModifiable
@@ -78,7 +79,7 @@ class FlowSeparator(val startA: Position,
     new MovableWall("movable wall", this.start, this.end, SINGLELINE)
   }
 
-  class MoveFlowSeperator(sim: SFGraphSimulator) extends Action {
+  class MoveFlowSeperator[T <: PedestrianNOMAD](sim: NOMADGraphSimulator[T]) extends Action[T] {
 
     override def execute(): Unit = {
       if ((currentTargetPosition._1 - start).norm > 0.0) {
@@ -94,7 +95,7 @@ class FlowSeparator(val startA: Position,
       positionHistory.append((sim.currentTime, start, end))
 
       if ( flowSeparatorNeedsToMove(sim.sf_dt) ) {
-        sim.insertEventWithDelayNew(sim.sf_dt)(new MoveFlowSeperator(sim))
+        sim.insertEventWithDelay(sim.sf_dt)(new MoveFlowSeperator(sim))
         movingWallEventIsInserted = true
       } else {
         //start = currentTargetPosition._1

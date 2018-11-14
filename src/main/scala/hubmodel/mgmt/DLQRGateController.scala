@@ -1,14 +1,15 @@
 package hubmodel.mgmt
 
 import breeze.linalg.{max, min}
-import hubmodel.DES.{Action, SFGraphSimulator}
+import hubmodel.DES.{Action, NOMADGraphSimulator}
 import hubmodel.Time
 import hubmodel.TimeNumeric.mkOrderingOps
+import hubmodel.ped.PedestrianNOMAD
 import hubmodel.supply.graph.{FlowGate, FlowGateFunctional}
 
 import scala.annotation.tailrec
 
-class DLQRGateController(sim: SFGraphSimulator) extends Action {
+class DLQRGateController[T <: PedestrianNOMAD](sim: NOMADGraphSimulator[T]) extends Action[T] {
 
   def allocateSupply(totalInflow: Double, gates: Vector[String]): Map[String, Double] = {
     gates.map(g => g -> totalInflow / gates.size).toMap
@@ -33,20 +34,26 @@ class DLQRGateController(sim: SFGraphSimulator) extends Action {
     sim.controlDevices.flowGates.foreach(fgGen => {
       fgGen match {
         case fg: FlowGateFunctional => {
-          fg.flowRate = math.min(fg.functionalForm(sim.criticalAreas(fg.monitoredArea).paxIndividualDensityHistory.last._2.count(_ > sim.criticalAreas(fg.monitoredArea).targetDensity)), 10.0) // pax above target density
+          fg.setFlowRate(
+            math.min(fg.functionalForm(sim.criticalAreas(fg.monitoredArea).paxIndividualDensityHistory.last._2.count(_ > sim.criticalAreas(fg.monitoredArea).targetDensity)), 10.0),
+            sim.currentTime
+          )// pax above target density
           /*fg.flowRate = math.min(fg.functionalForm(sim.criticalAreas(fg.monitoredArea).targetDensity - sim.criticalAreas(fg.monitoredArea).densityHistory.last._2), 10.0)*/ // mean voronoi density
 
         }
         case fg: FlowGate => {
           val totalInflow: Double = max(0.1, min(5.0, 0.65 * (sim.criticalAreas(fg.monitoredArea).targetDensity - sim.criticalAreas(fg.monitoredArea).densityHistory.last._2)))
-          fg.flowRate = min(fg.width * 1.5, fg.width * (totalInflow / sim.controlDevices.flowGates.count(_.monitoredArea == fg.monitoredArea)))
+          fg.setFlowRate(
+            min(fg.width * 1.5, fg.width * (totalInflow / sim.controlDevices.flowGates.count(_.monitoredArea == fg.monitoredArea))),
+            sim.currentTime
+          )
         }
       }
 
       // when execution of release pedestrian takes place, if flow rate is 0 then the event will never happen. Hence manually insert one to restart flow gates.
       if (fgGen.flowRate > 0.0) {
         //sim.errorLogger.error("release times at: " + sim.currentTime + ", rate=" + fgGen.flowRate + ", times=" + computeReleaseTimes(fgGen.flowRate, sim.evaluate_dt))
-        computeReleaseTimes(fgGen.flowRate, sim.evaluate_dt).foreach(t => sim.insertEventWithDelayNew(t)(new fgGen.ReleasePedestrian(sim)))
+        computeReleaseTimes(fgGen.flowRate, sim.evaluate_dt).foreach(t => sim.insertEventWithDelay(t)(new fgGen.ReleasePedestrian(sim)))
       }
     })
   }

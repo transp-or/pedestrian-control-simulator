@@ -1,14 +1,17 @@
 package hubmodel.supply
 
 import hubmodel.Position
-import hubmodel.input.JSONReaders.{InfraGraphParser, Track2NodeMapping_JSON}
+import hubmodel.input.JSONReaders.{Connectivity_JSON, InfraGraphParser, Track2NodeMapping_JSON}
 import hubmodel.mgmt.ControlDevices
 import hubmodel.mgmt.flowsep.{FlowLine, FlowSeparator}
+import hubmodel.ped.{PedestrianNOMAD, PedestrianNOMADWithGraph, PedestrianSim}
 import hubmodel.tools.cells.{DensityMeasuredArea, Rectangle, RectangleModifiable}
 import myscala.math.vector.Vector2D
+import nl.tudelft.pedestrians.agents.Pedestrian
 import play.api.libs.json.{JsError, JsSuccess, JsValue, Json}
 
 import scala.io.BufferedSource
+import scala.reflect.ClassTag
 
 package object graph {
 
@@ -24,7 +27,8 @@ package object graph {
                 useBinarygates: Boolean,
                 useAMWs: Boolean,
                 useFlowSep: Boolean,
-                measureDensity: Boolean): (RouteGraph, ControlDevices) = {
+                measureDensity: Boolean): (RouteGraphParent[PedestrianNOMAD], ControlDevices) = {
+
 
     val source: BufferedSource = scala.io.Source.fromFile(graphSpecificationFile)
     val input: JsValue = Json.parse(try source.mkString finally source.close)
@@ -33,13 +37,27 @@ package object graph {
       case s: JsSuccess[InfraGraphParser] =>
         val v: Vector[Rectangle] = s.get.nodes.map(n => new Rectangle(n.name, Vector2D(n.x1, n.y1), Vector2D(n.x2, n.y2), Vector2D(n.x3, n.y3), Vector2D(n.x4, n.y4), n.OD))
         val vertexMap: Map[String, Rectangle] = v.map(v => v.name -> v).toMap
-        val levelChanges: Iterable[MyEdgeLevelChange] = s.get.levelChanges.flatMap(c => c.conn.map(neigh => new MyEdgeLevelChange(vertexMap(c.node), vertexMap(neigh))))
-        val e: Iterable[MyEdge] = s.get.standardConnections.flatMap(c => c.conn.map(neigh => new MyEdge(vertexMap(c.node), vertexMap(neigh)))) ++ levelChanges
+
+        /**
+          * Transforms the connections from JSON connectivity objects to edges used for the graph.
+          * @param edges set of edges stored as JSON objects
+          * @tparam T subtype of the [[MyEdge]] to return
+          * @return collection of type T tedges
+          */
+        def connections2Edges[T <: MyEdge](edges: Iterable[Connectivity_JSON])(implicit tag: ClassTag[T]): Iterable[T] = {
+          edges.flatMap(c => c.conn.map(neigh => {
+            tag.runtimeClass.getConstructor(classOf[(Rectangle, Rectangle)]).newInstance(vertexMap(c.node), vertexMap(neigh)).asInstanceOf[T]
+          }))
+        }
+
+        val levelChanges: Iterable[MyEdgeLevelChange] = connections2Edges[MyEdgeLevelChange](s.get.levelChanges)//.flatMap(c => c.conn.map(neigh => new MyEdgeLevelChange(vertexMap(c.node), vertexMap(neigh))))
+        val baseEdgeCollection: Iterable[MyEdge] = connections2Edges[MyEdge](s.get.standardConnections) ++ levelChanges//.flatMap(c => c.conn.map(neigh => new MyEdge(vertexMap(c.node), vertexMap(neigh)))) ++ levelChanges
+
         val fg: Iterable[FlowGate] = if (useFlowGates) {
           s.get.flowGates.map(fg => fg.funcForm match {
-            case Some(str) if str == "quadratic" => new FlowGateFunctional(vertexMap(fg.o), vertexMap(fg.d), Vector2D(fg.start_pos_x, fg.start_pos_y), Vector2D(fg.end_pos_x, fg.end_pos_y), fg.area, {x: Double => math.min(10.0, math.max(0.0, fg.funcParam.get(0) + fg.funcParam.get(1)*x  + fg.funcParam.get(2)*x*x))} )
-            case Some(str) if str == "linear" => new FlowGateFunctional(vertexMap(fg.o), vertexMap(fg.d), Vector2D(fg.start_pos_x, fg.start_pos_y), Vector2D(fg.end_pos_x, fg.end_pos_y), fg.area, {x: Double => math.min(10.0, math.max(0.0, fg.funcParam.get(0) + fg.funcParam.get(1)*x))} )
-            case None  => new FlowGate(vertexMap(fg.o), vertexMap(fg.d), Vector2D(fg.start_pos_x, fg.start_pos_y), Vector2D(fg.end_pos_x, fg.end_pos_y), fg.area)
+            case Some(str) if str == "quadratic" => new FlowGateFunctional(vertexMap(fg.o), vertexMap(fg.d), Vector2D(fg.start_pos_x, fg.start_pos_y), Vector2D(fg.end_pos_x, fg.end_pos_y), fg.area, { x: Double => math.min(10.0, math.max(0.0, fg.funcParam.get(0) + fg.funcParam.get(1) * x + fg.funcParam.get(2) * x * x)) })
+            case Some(str) if str == "linear" => new FlowGateFunctional(vertexMap(fg.o), vertexMap(fg.d), Vector2D(fg.start_pos_x, fg.start_pos_y), Vector2D(fg.end_pos_x, fg.end_pos_y), fg.area, { x: Double => math.min(10.0, math.max(0.0, fg.funcParam.get(0) + fg.funcParam.get(1) * x)) })
+            case None => new FlowGate(vertexMap(fg.o), vertexMap(fg.d), Vector2D(fg.start_pos_x, fg.start_pos_y), Vector2D(fg.end_pos_x, fg.end_pos_y), fg.area)
           })
         } else {
           Vector()
@@ -101,7 +119,7 @@ package object graph {
               (Vector2D(oz.x4(0), oz.y4(0)), Vector2D(oz.x4(1), oz.y4(1))),
               false
             ))
-            val oldZones: Iterable[String] = fs.overZone_1.collect({case oZone if oZone.overridenZone.isDefined => oZone.overridenZone.get}) ++ fs.overZone_2.collect({case oZone if oZone.overridenZone.isDefined => oZone.overridenZone.get})
+            val oldZones: Iterable[String] = fs.overZone_1.collect({ case oZone if oZone.overridenZone.isDefined => oZone.overridenZone.get }) ++ fs.overZone_2.collect({ case oZone if oZone.overridenZone.isDefined => oZone.overridenZone.get })
 
             new FlowSeparator(
               Vector2D(fs.x1a, fs.y1a),
@@ -112,7 +130,7 @@ package object graph {
               fs.inf_2.map(il => new FlowLine(Vector2D(il.x1, il.y1), Vector2D(il.x2, il.y2))),
               oz_1,
               oz_2,
-              fs.overConn.collect({ case c if vertexMapUpdated.contains(c.node) => c.conn.collect({ case neigh if vertexMapUpdated.contains(neigh) =>  new MyEdge(vertexMapUpdated(c.node), vertexMapUpdated(neigh)) }) }).flatten,
+              fs.overConn.collect({ case c if vertexMapUpdated.contains(c.node) => c.conn.collect({ case neigh if vertexMapUpdated.contains(neigh) => new MyEdge(vertexMapUpdated(c.node), vertexMapUpdated(neigh)) }) }).flatten,
               oldZones
             )
           }
@@ -120,13 +138,28 @@ package object graph {
         } else {
           Vector()
         }
-        (new RouteGraph(v, e, levelChanges, fg, bg, mv, flowSeparators), new ControlDevices(monitoredAreas, mv, fg, bg, flowSeparators))
+
+        // Returns the graph object and the control devices
+        (
+          if (s.get.alternateConnections.isEmpty) { new RouteGraph[PedestrianNOMAD](v, baseEdgeCollection, levelChanges, fg, bg, mv, flowSeparators) }
+          else {
+            val graphs = new RouteGraphMultiple[PedestrianNOMADWithGraph](levelChanges, fg, bg, mv, flowSeparators)
+            s.get.alternateConnections.foreach(g => {
+              val edges2Remove = connections2Edges[MyEdge](g.conn2Remove).toVector
+              val edges: Iterable[MyEdge] = baseEdgeCollection.filterNot(e => edges2Remove.contains(e)) ++ connections2Edges(g.conn2Add)
+              graphs.addGraph(g.name, v, edges)
+            })
+            graphs
+          },
+          new ControlDevices(monitoredAreas, mv, fg, bg, flowSeparators)
+        )
+
       case e: JsError => throw new Error("Error while parsing graph specification file: " + JsError.toJson(e).toString())
     }
   }
 
 
-  def readStop2Vertex(fileName: String): Stop2Vertex = {
+  def readPTStop2GraphVertexMap(fileName: String): Stop2Vertex = {
 
     val source: BufferedSource = scala.io.Source.fromFile(fileName)
     val input: JsValue = Json.parse(try source.mkString finally source.close)

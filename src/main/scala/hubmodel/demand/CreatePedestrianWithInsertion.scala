@@ -1,15 +1,17 @@
 package hubmodel.demand
 
 import breeze.numerics.pow
-import hubmodel.DES.{Action, SFGraphSimulator}
+import hubmodel.DES.{Action, NOMADGraphSimulator}
 import hubmodel._
-import hubmodel.ped.PedestrianNOMAD
+import hubmodel.ped.{PedestrianNOMAD, PedestrianNOMADWithGraph}
 import hubmodel.tools.cells.Rectangle
+
+import scala.reflect.ClassTag
 
 /**
   * Creates a pedestrian. A new pedestrian will be added when this event is executed.
   */
-class CreatePedestrianWithInsertion(o: Rectangle, d: Rectangle, sim: SFGraphSimulator, timeGenerator: Time => Option[Time]) extends Action {
+class CreatePedestrianWithInsertion[T <: PedestrianNOMAD](o: Rectangle, d: Rectangle, sim: NOMADGraphSimulator[T], timeGenerator: Time => Option[Time])(implicit tag: ClassTag[T]) extends Action[T] {
 
   /**
     * Inserts a new pedestrian. The characteristics of this pedestrian are sampled on creation.
@@ -37,11 +39,11 @@ class CreatePedestrianWithInsertion(o: Rectangle, d: Rectangle, sim: SFGraphSimu
     }
 
     // inserts new pedestrian into population
-    sim.insertInPopulation(new PedestrianNOMAD(o, d, sim.currentTime, generationPoint, route))
-
+    sim.insertInPopulation(tag.runtimeClass.getConstructor(classOf[(Rectangle, Rectangle, BigDecimal, Position, List[Rectangle])]).newInstance(o, d, sim.currentTime.value, generationPoint, route).asInstanceOf[T])
+    //tag.runtimeClass.getConstructor(classOf[(Rectangle, Rectangle, BigDecimal, Position, List[Rectangle])]).newInstance(o, d, sim.currentTime.value, generationPoint, route).asInstanceOf[T]
     timeGenerator(sim.currentTime) collect {
       case t: Time => {
-        sim.insertEventWithDelayNew(t) (new CreatePedestrianWithInsertion (o, d, sim, timeGenerator) )
+        sim.insertEventWithDelay(t) (new CreatePedestrianWithInsertion (o, d, sim, timeGenerator) )
       }
     }
   }

@@ -113,7 +113,7 @@ package object JSONReaders {
     * @param node node from which the connections leaves
     * @param conn collection of destination nodes
     */
-  private[JSONReaders] case class Connectivity_JSON(node: String, conn: List[String])
+  case class Connectivity_JSON(node: String, conn: List[String])
 
   /**
     * Reads the JSON structures into a [[Connectivity_JSON]] object. No validation is done.
@@ -122,6 +122,24 @@ package object JSONReaders {
     (JsPath \ "node").read[String] and
       (JsPath \ "connected_to").read[List[String]]
     ) (Connectivity_JSON.apply _)
+
+
+  /**
+    * Connections leading from one specific vertex to all connected vertices.
+    *
+    * @param name name of the alternate connection set
+    * @param conn2Add collection of connections to add
+    */
+  private[JSONReaders] case class ConnectivityAlternatives_JSON(name: String, conn2Add: List[Connectivity_JSON], conn2Remove: List[Connectivity_JSON])
+
+  /**
+    * Reads the JSON structures into a [[Connectivity_JSON]] object. No validation is done.
+    */
+  implicit val ConnectivityAlternatives_JSONReads: Reads[ConnectivityAlternatives_JSON] = (
+    (JsPath \ "name").read[String] and
+      (JsPath \ "connectivity_to_add").read[List[Connectivity_JSON]] and
+      (JsPath \ "connectivity_to_remove").read[List[Connectivity_JSON]]
+    ) (ConnectivityAlternatives_JSON.apply _)
 
   /**
     * Object used for reading a flow gate from JSON. The arguments are the properties of the flow gate.
@@ -383,7 +401,8 @@ package object JSONReaders {
       (JsPath \ "controlled_areas").read[Vector[MonitoredAreas_JSON]] and
       (JsPath \ "binary_gates").read[Vector[FlowGates_JSON]] and
       (JsPath \ "moving_walkways").read[Vector[MovingWalkways_JSON]] and
-      (JsPath \ "flow_separators").read[Vector[FlowSeparator_JSON]]
+      (JsPath \ "flow_separators").read[Vector[FlowSeparator_JSON]] and
+      (JsPath \ "alternate_graphs").read[Vector[ConnectivityAlternatives_JSON]]
     ) (InfraGraphParser.apply _)
 
   // ******************************************************************************************

@@ -3,13 +3,14 @@ import java.math.MathContext
 import java.nio.file.{Files, Paths}
 
 import com.typesafe.config.{Config, ConfigFactory}
-import hubmodel.DES.SFGraphSimulator
-import hubmodel.demand.{PedestrianFlowFunction_New, PedestrianFlowPT_New, PedestrianFlow_New, PublicTransportSchedule, readDisaggDemand, readDisaggDemandTF, readPedestrianFlows, readSchedule, readScheduleTF}
+import hubmodel.DES.NOMADGraphSimulator
+import hubmodel.demand.{CreatePedestrian, PedestrianFlowFunction_New, PedestrianFlowPT_New, PedestrianFlow_New, ProcessTimeTable, PublicTransportSchedule, readDisaggDemand, readDisaggDemandTF, readPedestrianFlows, readSchedule, readScheduleTF}
 import hubmodel.output.image.{DrawControlDevicesAndWalls, DrawGraph, DrawWalls, DrawWallsAndGraph}
 import hubmodel.output.video.MovingPedestriansWithDensityWithWallVideo
-import hubmodel.ped.{PedestrianSim, PedestrianTrait}
+import hubmodel.ped.{PedestrianNOMAD, PedestrianSim, PedestrianTrait}
+import hubmodel.supply.{NodeID_New, NodeParent, StopID_New, TrainID_New}
 import hubmodel.supply.continuous.{MovableWall, ReadContinuousSpace}
-import hubmodel.supply.graph.{BinaryGate, Stop2Vertex, readGraph, readStop2Vertex}
+import hubmodel.supply.graph.{BinaryGate, Stop2Vertex, readGraph, readPTStop2GraphVertexMap}
 import hubmodel.tools.cells.{DensityMeasuredArea, Rectangle}
 import myscala.math.vector.{Vector2D, Vector3D}
 import myscala.output.SeqOfSeqExtensions.SeqOfSeqWriter
@@ -22,6 +23,8 @@ import play.api.libs.json._
 import scala.collection.immutable.NumericRange
 import scala.math.BigDecimal.RoundingMode
 import scala.util.{Failure, Success, Try}
+import hubmodel.TimeNumeric.mkOrderingOps
+import hubmodel.demand.flows.{ProcessDisaggregatePedestrianFlows, ProcessPedestrianFlows}
 
 
 /**
@@ -29,6 +32,8 @@ import scala.util.{Failure, Success, Try}
   */
 
 package object hubmodel {
+
+  type T = PedestrianNOMAD
 
   /* pedestrian isolations */
   val ISOLATED: Int = 0
@@ -185,7 +190,7 @@ package object hubmodel {
     *
     * @return simulator ready to run
     */
-  def createSimulation(config: Config): SFGraphSimulator = {
+  def createSimulation(config: Config): NOMADGraphSimulator[T] = {
 
 
     // checkValid(), just as in the plain SimpleLibContext.
@@ -225,19 +230,21 @@ package object hubmodel {
 
     // Loads the train time table used to create demand from trains
     val (timeTable, stop2Vertex) = if (config.hasPath("files.timetable") && !config.getIsNull("files.timetable")) {
-      (readSchedule(config.getString("files.timetable")),
-        readStop2Vertex(config.getString("files.zones_to_vertices_map")))
+      (
+        readSchedule(config.getString("files.timetable")),
+        readPTStop2GraphVertexMap(config.getString("files.zones_to_vertices_map"))
+      )
     } else if (config.hasPath("files.timetable_TF") && !config.getIsNull("files.timetable_TF")) {
-      (readScheduleTF(config.getString("files.timetable_TF")),
-        readStop2Vertex(config.getString("files.zones_to_vertices_map")))
+      (
+        readScheduleTF(config.getString("files.timetable_TF")),
+        readPTStop2GraphVertexMap(config.getString("files.zones_to_vertices_map"))
+      )
     } else if (flows._2.isEmpty) {
       println(" * no time table is required as PT induced flows are empty")
       (new PublicTransportSchedule("unused", Vector()), new Stop2Vertex(Map(), Map()))
     } else {
       throw new IllegalArgumentException("both time tables files are set to null in config file")
     }
-
-    //val flows =  new ReadPedestrianFlows(config.getString("files.flows"), config.getBoolean("sim.use_flows"))
 
     // Loads the disaggregate pedestrian demand.
     val disaggPopulation: Iterable[(String, String, Time)] = if (config.hasPath("files.flows_TF") && config.getIsNull("files.flows_TF") && !config.getIsNull("files.disaggregate_demand")) {
@@ -247,6 +254,21 @@ package object hubmodel {
     } else {
       println(" * using only standard pedestrian flows")
       Iterable()
+    }
+
+    /** Takes a conceptual node (train or on foot) and returns the set of "real" nodes (the ones used by the graph)
+      * in which the pedestrians must be created.
+      *
+      * @param conceptualNode node representing the train or the pedestrian zone
+      * @return iterable in which the pedestrians will be created
+      */
+    def conceptualNode2GraphNodes(conceptualNode: NodeParent): Iterable[Rectangle] = {
+      conceptualNode match {
+        case x: TrainID_New => stop2Vertex.stop2Vertices(timeTable.timeTable(x).stop).map(n => routeGraph.vertexMap(n))
+        case x: NodeID_New => Iterable(routeGraph.vertexMap(x.ID))
+        case x: StopID_New => Iterable(routeGraph.vertexMap(x.ID.toString))
+        case _ => throw new Exception("Track ID should not be there !")
+      }
     }
 
     // Loads the start time, end time and time intervals
@@ -262,29 +284,29 @@ package object hubmodel {
 
 
 
-    val sim: SFGraphSimulator = new SFGraphSimulator(
-      startTime = simulationStartTime,
-      finalTime = simulationEndTime,
+    val sim: NOMADGraphSimulator[T] = new NOMADGraphSimulator[T](
+      simulationStartTime,
+      simulationEndTime,
       logDir = None,
       sf_dt = socialForceInterval,
       route_dt = routeUpdateInterval,
       evaluate_dt = evaluationInterval,
       rebuildTreeInterval = Some(rebuildTreeInterval),
-      spaceSF = infraSF.continuousSpace,
+      spaceMicro = infraSF.continuousSpace,
       graph = routeGraph,
       timeTable = timeTable,
-      stop2Vertices = stop2Vertex,
-      flows = flows,
+      stop2Vertices = conceptualNode2GraphNodes,
       controlDevices = controlDevices
     )
 
-    if (disaggPopulation.nonEmpty) {
-      sim.insertMultiplePedestrians(disaggPopulation)//.filter({p => if (ThreadLocalRandom.current.nextDouble(0.0, 1.0) > 0.6 )true else false}) )
-    }
+    if (disaggPopulation.nonEmpty) { sim.insertEventWithZeroDelay(new ProcessDisaggregatePedestrianFlows(disaggPopulation, sim)) }
+
+    val PTInducedFlows = flows._2
+    sim.insertEventWithZeroDelay(new ProcessTimeTable[T](timeTable, PTInducedFlows, sim))
+    sim.insertEventWithZeroDelay(new ProcessPedestrianFlows[T](flows._1, flows._3, sim))
 
     sim
   }
-
 
   // ******************************************************************************************
   //                    Runs the simulation, creates video and outputs results
@@ -305,7 +327,7 @@ package object hubmodel {
     * @param simulator simulator from which to extract the results
     * @return results from the simulation
     */
-  def collectResults(simulator: SFGraphSimulator): ResultsContainerNew = {
+  def collectResults(simulator: NOMADGraphSimulator[T]): ResultsContainerNew = {
     if (simulator.exitCode == 0) {
       ResultsContainerNew(
         simulator.exitCode,
@@ -325,7 +347,7 @@ package object hubmodel {
     * @param prefix prefix to the file name
     * @param path path where to write the file, default is empty
     */
-  def writeResults(simulator: SFGraphSimulator, prefix: String = "", dir: Option[String], writeTrajectoriesVS: Boolean = false, writeTrajectoriesJSON: Boolean = false): Unit = {
+  def writeResults(simulator: NOMADGraphSimulator[T], prefix: String = "", dir: Option[String], writeTrajectoriesVS: Boolean = false, writeTrajectoriesJSON: Boolean = false): Unit = {
 
     // TODO: check if files exists and remove them if they are inside tmp, and warn about them if they are in output_dir
     val path: String = dir match {
@@ -465,20 +487,11 @@ package object hubmodel {
       sim.populationCompleted ++ sim.population,
       sim.criticalAreas.values,
       gates.map(g => g.ID -> g).toMap,
-      sim.gatesHistory.map(p => ((p._1.value * 1).rounded.toInt, p._2)),
-      sim.densityHistory.map(p => ((p._1.value * 1).rounded.toInt, p._2)),
+      collection.mutable.ArrayBuffer(),
+      scala.collection.mutable.ArrayBuffer(),
       (sim.startTime.value to sim.finalTime.value by config.getDouble("output.video_dt")).map(new Time(_)),
       sim.controlDevices.flowSeparators
     )
-
-    println("Pop")
-    //println(sim.population ++ sim.populationCompleted)
-
-    /*if (config.getBoolean("output.write_trajectories_as_VS")) {
-      println("Writing trajectory data from video...")
-      sim.writePopulationTrajectories(config.getString("output.output_prefix") + "_simulation_trajectories.csv")
-    }*/
-
   }
 
   /** Runs the simulation and then collects the results. The simulation is timed.
@@ -486,13 +499,13 @@ package object hubmodel {
     * @param simulator simulation to run
     * @return results collected from the simulation
     */
-  def runAndCollect(simulator: SFGraphSimulator): ResultsContainerNew =  {
+  def runAndCollect(simulator: NOMADGraphSimulator[T]): ResultsContainerNew =  {
     timeBlock(simulator.run())
     collectResults(simulator)
   }
 
 
-  def runAndWriteResults(simulator: SFGraphSimulator, prefix: String = "", dir: Option[String], writeTrajectoriesVS: Boolean = false, writeTrajectoriesJSON: Boolean = false): Unit = {
+  def runAndWriteResults(simulator: NOMADGraphSimulator[T], prefix: String = "", dir: Option[String], writeTrajectoriesVS: Boolean = false, writeTrajectoriesJSON: Boolean = false): Unit = {
     timeBlock(simulator.run())
     writeResults(simulator, prefix, dir, writeTrajectoriesVS, writeTrajectoriesJSON)
   }

@@ -6,9 +6,12 @@ package hubmodel.demand
 
 import java.util.concurrent.ThreadLocalRandom
 
-import hubmodel.DES.{Action, SFGraphSimulator}
+import hubmodel.DES.{Action, NOMADGraphSimulator}
 import hubmodel._
+import hubmodel.ped.PedestrianNOMAD
 import hubmodel.tools.cells.Rectangle
+
+import scala.reflect.ClassTag
 
 /** Extension of [[Action]] which will insert a [[CreatePedestrian]] actions based on a Poisson distribution for
   * the creation times.
@@ -17,7 +20,7 @@ import hubmodel.tools.cells.Rectangle
   * @param end          end time of the pedestrian creation
   * @param numberPeople number of people to create
   */
-class PedestrianGenerationOverInterval(o: Rectangle, d: Rectangle, start: Time, end: Time, numberPeople: Int, sim: SFGraphSimulator) extends Action {
+class PedestrianGenerationOverInterval[T <: PedestrianNOMAD](o: Rectangle, d: Rectangle, start: Time, end: Time, numberPeople: Int, sim: NOMADGraphSimulator[T])(implicit tag: ClassTag[T]) extends Action[T] {
 
   /** Poisson distribution
     *

@@ -1,11 +1,15 @@
 package hubmodel.DES
 
+import hubmodel.ped.PedestrianNOMAD
+
+import scala.reflect.ClassTag
+
 /**
   * Parent to all actions which will appear in the DES.
   * The only method which is mandatory is "execute". To give more control over what data is passed to the events,
   * the Actions which inherent from [[Action]] should take as arguments the simulation.
   */
-trait Action {
+abstract class Action[T <: PedestrianNOMAD] {
 
 
   /** Relative priority between different classes. The higher the value, the higher the priority. This means

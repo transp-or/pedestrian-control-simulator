@@ -3,8 +3,9 @@ package optimization.bruteforce
 import java.io.File
 
 import com.typesafe.config.{Config, ConfigFactory}
-import hubmodel.DES.SFGraphSimulator
-import hubmodel.demand.PedestrianFlow_New
+import hubmodel.DES.NOMADGraphSimulator
+import hubmodel.demand.flows.ProcessPedestrianFlows
+import hubmodel.demand.{PedestrianFlowFunction_New, PedestrianFlowPT_New, PedestrianFlow_New, ProcessTimeTable, readPedestrianFlows}
 import hubmodel.{createSimulation, runAndWriteResults}
 import myscala.math.stats.ComputeStats
 import trackingdataanalysis.visualization.{HeatMap, PlotOptions}
@@ -34,24 +35,8 @@ class FlowSensitivity(config: Config) extends GridSearch {
 
     for (i <- (0.0 to maxMultipler by increments).par; j <- (0.0 to maxMultipler by increments).par; n <- (1 to config.getInt("sim.nb_runs")).par; if i >= j) {
 
-      val newFlows = (
-        defaultParameters._11._1.map(flow => {
-          if (flow.O.ID == "bottom" && flow.D.ID == "top") {
-            PedestrianFlow_New(flow.O, flow.D, flow.start, flow.end, flow.f * i)
-          }
-          else if (flow.O.ID == "top" && flow.D.ID == "bottom") {
-            PedestrianFlow_New(flow.O, flow.D, flow.start, flow.end, flow.f * j)
-          }
-          else {
-            throw new NoSuchElementException("this flow does not exist in this setup")
-          }
-        }),
-        defaultParameters._11._2,
-        defaultParameters._11._3
-      )
-
-      val devices = defaultParameters._12.clone()
-      val sim = new SFGraphSimulator(
+      val devices = defaultParameters._11.clone()
+      val sim = new NOMADGraphSimulator(
         defaultParameters._1,
         defaultParameters._2,
         Some(config.getString("output.log_dir")),
@@ -63,9 +48,39 @@ class FlowSensitivity(config: Config) extends GridSearch {
         defaultParameters._8.clone(devices),
         defaultParameters._9,
         defaultParameters._10,
-        newFlows,
         devices
       )
+
+
+
+      // Loads the pedestrian flows. These are either exogenous to the trains (from outside) or flows originating from trains.
+      val flows: (Iterable[PedestrianFlow_New], Iterable[PedestrianFlowPT_New], Iterable[PedestrianFlowFunction_New]) = if (!config.getIsNull("files.flows") && config.getBoolean("sim.use_flows")) {
+        readPedestrianFlows(config.getString("files.flows"))
+      } else if (!config.getIsNull("files.flows_TF") && config.getBoolean("sim.use_flows")) {
+        readPedestrianFlows(config.getString("files.flows_TF"))
+      } else {
+        println(" * using only disaggregate pedestrian demand")
+        (Iterable(), Iterable(), Iterable())
+      }
+
+      val newFlows = (
+        flows._1.map(flow => {
+          if (flow.O.ID == "bottom" && flow.D.ID == "top") {
+            PedestrianFlow_New(flow.O, flow.D, flow.start, flow.end, flow.f * i)
+          }
+          else if (flow.O.ID == "top" && flow.D.ID == "bottom") {
+            PedestrianFlow_New(flow.O, flow.D, flow.start, flow.end, flow.f * j)
+          }
+          else {
+            throw new NoSuchElementException("this flow does not exist in this setup")
+          }
+        }),
+        flows._2,
+        flows._3
+      )
+
+      sim.insertEventWithZeroDelay(new ProcessPedestrianFlows(newFlows._1, newFlows._3, sim))
+
 
       runAndWriteResults(sim, i.toString + "_" + j.toString + "_params_", if (!config.getIsNull("output.dir")) {Some(config.getString("output.dir"))} else {None})
       System.gc()

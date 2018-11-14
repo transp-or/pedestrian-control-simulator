@@ -1,15 +1,16 @@
 package hubmodel.mvmtmodels
 
-import hubmodel.DES.{Action, SFGraphSimulator}
+import hubmodel.DES.{Action, NOMADGraphSimulator}
+import hubmodel.ped.PedestrianNOMAD
 
 /** Event which trigers the reconstruction from scratch of the m-tree which is used to find the neighbouring
   * pedestrians. The execute functions calls the method defined in the simulator which rebuilds the tree.
   *
   * @param sim simulator passed as argument
   */
-class RebuildTree(sim: SFGraphSimulator) extends Action {
+class RebuildTree[T <: PedestrianNOMAD](sim: NOMADGraphSimulator[T]) extends Action[T] {
 
-  /** Triggers the execution of the m-tree by calling the [[SFGraphSimulator.rebuildMTree()]] method.
+  /** Triggers the execution of the m-tree by calling the [[NOMADGraphSimulator.rebuildMTree()]] method.
     *
     */
   override def execute(): Unit = {
@@ -21,7 +22,7 @@ class RebuildTree(sim: SFGraphSimulator) extends Action {
     sim.rebuildMTree()
 
     // inserts new rebuild tree event
-    sim.insertEventWithDelayNew(sim.rebuildTreeInterval.get)(new RebuildTree(sim))
+    sim.insertEventWithDelay(sim.rebuildTreeInterval.get)(new RebuildTree(sim))
   }
 
 

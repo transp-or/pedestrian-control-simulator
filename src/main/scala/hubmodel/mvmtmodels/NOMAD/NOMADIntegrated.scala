@@ -4,7 +4,7 @@ import java.util
 import java.util.concurrent.ThreadLocalRandom
 
 import com.vividsolutions.jts.geom.Coordinate
-import hubmodel.DES.{Action, SFGraphSimulator}
+import hubmodel.DES.{Action, NOMADGraphSimulator}
 import hubmodel.ped.PedestrianNOMAD
 import hubmodel.supply.continuous.Wall
 import hubmodel.tools.cells.isInVertex
@@ -16,7 +16,7 @@ import nl.tudelft.pedestrians.collection.InfluenceAreaReturnPedData
 import nl.tudelft.pedestrians.utils.GeometryUtils
 import nomad.operational.InfluenceAreaReturnObsData
 
-class NOMADIntegrated(sim: SFGraphSimulator) extends Action {
+class NOMADIntegrated[T <: PedestrianNOMAD](sim: NOMADGraphSimulator[T]) extends Action[T] {
 
   // initialise the in range and in collision time schedule
   //val isolatedTimeStepMillis: Double = 1000.0 * sim.sf_dt.value // NomadModel.model.simTime.getTimeStep
@@ -262,7 +262,7 @@ class NOMADIntegrated(sim: SFGraphSimulator) extends Action {
       }
 
     sim.processCompletedPedestrian(sim.finalDestinationReached)
-    sim.population.filter(sim.intermediateDestinationReached).foreach(sim.updateIntermediateDestination)
+    //sim.population.filter(sim.intermediateDestinationReached).foreach(p => sim.updateIntermediateDestination(p))
     //sim.population.foreach(ped => println(sim.currentTime, ped, ped.currentPosition))
     sim.rebuildMTree()
 
@@ -900,7 +900,7 @@ class NOMADIntegrated(sim: SFGraphSimulator) extends Action {
   }
 
 
-  protected def insertNextEvent(): Unit = sim.insertEventWithDelayNew(Time(this.isolatedTimeStepSeconds))(new NOMADIntegrated(sim))
+  protected def insertNextEvent(): Unit = sim.insertEventWithDelay(Time(this.isolatedTimeStepSeconds))(new NOMADIntegrated(sim))
 
 
   def getPedInLevelVicinity_3D(thisPedestrian: PedestrianNOMAD, pedestrians: Iterable[PedestrianNOMAD]/*, obstacles: java.util.ArrayList[InfrastructureObject]*/): java.util.ArrayList[InfluenceAreaReturnPedData] = {

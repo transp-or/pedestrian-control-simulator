@@ -6,9 +6,12 @@ package hubmodel.demand
 
 import java.util.concurrent.ThreadLocalRandom
 
-import hubmodel.DES.{Action, SFGraphSimulator}
+import hubmodel.DES.{Action, NOMADGraphSimulator}
 import hubmodel._
+import hubmodel.ped.PedestrianNOMAD
 import hubmodel.tools.cells.Rectangle
+
+import scala.reflect.ClassTag
 
 /** Extension of [[Action]] which will insert a [[CreatePedestrian]] actions based on a Poisson distribution for
   * the creation times.
@@ -17,7 +20,7 @@ import hubmodel.tools.cells.Rectangle
   * @param end          end time of the pedestrian creation
   * @param numberPeople number of people to create
   */
-class PedestrianGeneration(o: Rectangle, d: Rectangle, start: Time, numberPeople: Int, sim: SFGraphSimulator) extends Action {
+class PedestrianGeneration[T <: PedestrianNOMAD](o: Rectangle, d: Rectangle, start: Time, numberPeople: Int, sim: NOMADGraphSimulator[T])(implicit tag: ClassTag[T]) extends Action[T] {
 
   /** Poisson distribution
     *
@@ -42,14 +45,17 @@ class PedestrianGeneration(o: Rectangle, d: Rectangle, start: Time, numberPeople
     sim.eventLogger.trace("time=" + sim.currentTime + ": generating " + numberPeople + " pedestrians at " + start)
     //println((end-start).toLong, numberPeople, sim.randU, Vector())
     //poissonProcessIterator(end.value-start.value, numberPeople).foreach(t => {sim.insertEventWithDelayNew(add(start,t))(new CreatePedestrian(o, d, sim))})
-    val tinfQueue: PTInducedQueue = sim.PTInducedFlows.getOrElseUpdate(o, new PTInducedQueue(o))
+    val tinfQueue: PTInducedQueue[T] = sim.PTInducedFlows.getOrElseUpdate(o, new PTInducedQueue(o))
     if (tinfQueue.isEmpty) {
-      sim.insertEventWithDelayNew(new Time(-math.log(ThreadLocalRandom.current.nextDouble(0.0, 1.0) / sim.PTInducedFlows(o).rate))) {
+      sim.insertEventWithDelay(new Time(-math.log(ThreadLocalRandom.current.nextDouble(0.0, 1.0) / sim.PTInducedFlows(o).rate))) {
         new ReleasePedPTInducedFlow(o, sim)
       }
     }
-    tinfQueue.appendPeds(Vector.fill((1.5*numberPeople).toInt) {
+    tinfQueue.appendPeds(Vector.fill((1.5*numberPeople).toInt)
+    {
       new CreatePedestrian(o, d, sim)
+
+
     })
     //arrivalTimes.
   }

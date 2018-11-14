@@ -5,7 +5,7 @@ import hubmodel.supply.graph.RouteGraph
 
 package object route {
 
-  def processIntermediateArrival(graph: RouteGraph)(p: PedestrianSim): Unit = {
+  /*def processIntermediateArrival(graph: RouteGraph[])(p: PedestrianSim): Unit = {
       if (graph.isFloorChange(p.nextZone, p.route.head)) {
         p.previousZone = p.route.head
         p.currentPosition = p.route.head.uniformSamplePointInside
@@ -19,5 +19,5 @@ package object route {
         p.nextZone = p.route.head
       }
       p.setCurrentDestination(p.nextZone.uniformSamplePointInside)
-  }
+  }*/
 }

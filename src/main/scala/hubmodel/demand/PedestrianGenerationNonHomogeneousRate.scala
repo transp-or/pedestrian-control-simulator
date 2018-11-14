@@ -6,10 +6,13 @@ package hubmodel.demand
 
 import java.util.concurrent.ThreadLocalRandom
 
-import hubmodel.DES.{Action, SFGraphSimulator}
+import hubmodel.DES.{Action, NOMADGraphSimulator}
 import hubmodel.TimeNumeric.mkOrderingOps
 import hubmodel._
+import hubmodel.ped.PedestrianNOMAD
 import hubmodel.tools.cells.Rectangle
+
+import scala.reflect.ClassTag
 
 /** Extension of [[Action]] which will insert a [[CreatePedestrian]] actions based on the non homogeneous arrival rate
   * of pedestrians.
@@ -21,7 +24,7 @@ import hubmodel.tools.cells.Rectangle
   * @param rateFunction non homogenous function
   * @param sim simulator
   */
-class PedestrianGenerationNonHomogeneousRate(o: Rectangle, d: Rectangle, start: Time, end: Time, rateFunction: Time => Double, sim: SFGraphSimulator) extends Action {
+class PedestrianGenerationNonHomogeneousRate[T <: PedestrianNOMAD](o: Rectangle, d: Rectangle, start: Time, end: Time, rateFunction: Time => Double, sim: NOMADGraphSimulator[T])(implicit tag: ClassTag[T]) extends Action[T] {
 
   /** Maximum rate of the pedestrian generation rate, computed by sampling */
   private val rateMax: Double = start.value.to(end.value).by(0.01).map(v => rateFunction(Time(v.toDouble))).max
@@ -53,7 +56,7 @@ class PedestrianGenerationNonHomogeneousRate(o: Rectangle, d: Rectangle, start: 
 
     // Samples all the times and then inserts [[CreatePedestrian]] events at those times.
     this.next(sim.currentTime) collect {
-      case t: Time => sim.insertEventAtAbsolute(start + t)(new CreatePedestrianWithInsertion(o, d, sim, this.next))
+      case t: Time => sim.insertEventAtAbsolute(start + t)(new CreatePedestrianWithInsertion[T](o, d, sim, this.next))
     }
   }
 }

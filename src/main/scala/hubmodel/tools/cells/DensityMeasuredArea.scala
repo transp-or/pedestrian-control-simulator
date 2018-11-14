@@ -11,9 +11,14 @@ class DensityMeasuredArea(name: String, A: Position, B: Position, C: Position, D
   // density per pedestrian computed using voronoi tessellations.
   val paxIndividualDensityHistory: collection.mutable.ArrayBuffer[(Time, Iterable[Double])] = collection.mutable.ArrayBuffer()
 
-  // inflow inot the controlled area.
+  // inflow into the controlled area.
   val inflowHistory: collection.mutable.ArrayBuffer[(Time, Double)] = collection.mutable.ArrayBuffer()
 
+  /**
+    * Initializes the containers at the start of the simulation with values of 0. This assume that the simulation is
+    * started allways from an empty state.
+    * @param startTime time of the first measurement
+    */
   def initializeContainers(startTime: Time): Unit = {
     densityHistory.append((startTime, 0.0))
     inflowHistory.append((startTime, 0.0))

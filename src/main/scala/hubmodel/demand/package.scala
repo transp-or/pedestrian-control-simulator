@@ -344,9 +344,7 @@ package hubmodel {
 
         (
           _pedestrianFlowData.flows.map(f => PedestrianFlow_New(NodeID_New(f.O, f.O.toString), NodeID_New(f.D, f.D.toString), f.start, f.end, f.f)),
-          _pedestrianFlowData.PTflows.map(f => {
-            PedestrianFlowPT_New(f.origin, f.destination, f.f)
-          }),
+          _pedestrianFlowData.PTflows.map(f => { PedestrianFlowPT_New(f.origin, f.destination, f.f) }),
           flowsFunction
         )
       }

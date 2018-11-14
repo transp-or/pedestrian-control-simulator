@@ -1,13 +1,13 @@
 package hubmodel.mgmt
 
 import breeze.linalg.{max, min}
-import hubmodel.DES.{Action, SFGraphSimulator}
+import hubmodel.DES.{Action, NOMADGraphSimulator}
 import hubmodel.Time
 import hubmodel.TimeNumeric.mkOrderingOps
 import hubmodel.supply.graph.FlowGate
 
-@Deprecated
-class PIGateController(sim: SFGraphSimulator) extends Action {
+/*@Deprecated
+class PIGateController(sim: SFGraphSimulator) extends Action[T] {
 
   def allocateSupply(totalInflow: Double, gates: Vector[String]): Map[String, Double] = {
     gates.map(g => g -> totalInflow / gates.size).toMap
@@ -35,5 +35,5 @@ class PIGateController(sim: SFGraphSimulator) extends Action {
     })
 
   }
-}
+}*/
 

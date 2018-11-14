@@ -1,14 +1,14 @@
 package hubmodel.route.Guo2011
 
 import hubmodel.DES.{Action, PedestrianDES}
-import hubmodel.ped.PedestrianSim
+import hubmodel.ped.{PedestrianNOMAD, PedestrianSim}
+
+import scala.reflect.ClassTag
 
 
-class UpdateRoutesGuo(sim: PedestrianDES[PedestrianSim]) extends Action {
+class UpdateRoutesGuo[T <: PedestrianNOMAD](sim: PedestrianDES[T]) extends Action[T] {
 
 
-  override def execute(): Unit = {
-
-  }
+  override def execute(): Unit = ???
 
 }

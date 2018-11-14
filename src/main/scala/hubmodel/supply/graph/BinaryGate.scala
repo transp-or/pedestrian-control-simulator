@@ -10,6 +10,7 @@ import hubmodel.tools.cells.Rectangle
   * @param start one end of the gate (used for visualization)
   * @param end   other end of the gate (used for visualization)
   */
+@deprecated("use flow gates instead")
 class BinaryGate(o: Rectangle,
                  d: Rectangle,
                  start: Position,
@@ -17,7 +18,7 @@ class BinaryGate(o: Rectangle,
                  ma: String) extends MyEdgeWithGate(o, d, start, end, ma) {
 
 
-  var flowRate: Double = Double.MaxValue
+  //var flowRate: Double = Double.MaxValue
 
   // On creation, all gates are open
   var isOpen: Boolean = true
