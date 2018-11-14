@@ -6,6 +6,4 @@ import hubmodel.tools.cells.Rectangle
 class PedestrianNOMADWithGraph(o: Rectangle,
                                d: Rectangle,
                                et: Time,
-                               pos: Position,
-                               route: List[Rectangle],
-                               val graph: String = "") extends PedestrianNOMAD(o, d, et, pos, route) with GraphID
+                               pos: Position) extends PedestrianNOMAD(o, d, et, pos) with WithGraphID

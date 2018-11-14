@@ -25,10 +25,10 @@ class CreatePedestrianWithInsertion[T <: PedestrianNOMAD](o: Rectangle, d: Recta
     sim.eventLogger.trace("time=" + sim.currentTime + ": pedestrian created")
 
     // the shortest path method returns the origin node as the first element of the route.
-    val route = sim.graph.getShortestPath(o, d).tail
+    //val route = sim.graph.getShortestPath(o, d).tail
 
     // sample until the generation point is far enough away from other pedestrians
-    val generationPoint: Position = {
+    /*val generationPoint: Position = {
       var pos: Position = o.uniformSamplePointInside
       var it: Int = 0
       while (it < 100 && sim.population.exists(ped => pow((ped.currentPosition.X - pos.X) * (ped.currentPosition.X - pos.X) + (ped.currentPosition.Y - pos.Y) * (ped.currentPosition.Y - pos.Y), 0.5) < 0.5)) {
@@ -36,10 +36,11 @@ class CreatePedestrianWithInsertion[T <: PedestrianNOMAD](o: Rectangle, d: Recta
         it = it + 1
       }
       pos
-    }
+    }*/
 
     // inserts new pedestrian into population
-    sim.insertInPopulation(tag.runtimeClass.getConstructor(classOf[(Rectangle, Rectangle, BigDecimal, Position, List[Rectangle])]).newInstance(o, d, sim.currentTime.value, generationPoint, route).asInstanceOf[T])
+    sim.insertEventWithZeroDelay(new CreatePedestrian(o, d, sim))
+    //sim.insertInPopulation(tag.runtimeClass.getConstructor(classOf[(Rectangle, Rectangle, BigDecimal, Position, List[Rectangle])]).newInstance(o, d, sim.currentTime.value, generationPoint, route).asInstanceOf[T])
     //tag.runtimeClass.getConstructor(classOf[(Rectangle, Rectangle, BigDecimal, Position, List[Rectangle])]).newInstance(o, d, sim.currentTime.value, generationPoint, route).asInstanceOf[T]
     timeGenerator(sim.currentTime) collect {
       case t: Time => {

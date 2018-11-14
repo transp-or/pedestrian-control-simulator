@@ -36,9 +36,15 @@ class NOMADGraphSimulator[T <: PedestrianNOMAD](st: Time,
   def intermediateDestinationReached: PedestrianSim => Boolean = p => isInVertex(p.nextZone)(p.currentPosition)
 
   /* Updates the next destination */
-  def updateIntermediateDestination(ped: T): Unit = graph match {
+  val updateIntermediateDestination: T => Unit = ped => graph match {
     case rs: RouteGraph[T] => { rs.processIntermediateArrival(ped) }
     case rm: RouteGraphMultiple[T] => { rm.processIntermediateArrival(ped) }
+  }
+
+  /* Computes the first route  */
+  val setFirstRoute: T => Unit = ped => graph match {
+    case rs: RouteGraph[T] => { rs.processIntermediateArrival(ped) }
+    case rm: RouteGraphMultiple[T] => { rm.setRouteFirst(ped) }
   }
 
   /* checks if the pedestrian has reached is final destination */

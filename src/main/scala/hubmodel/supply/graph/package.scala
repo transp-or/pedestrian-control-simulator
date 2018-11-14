@@ -36,22 +36,7 @@ package object graph {
     input.validate[InfraGraphParser] match {
       case s: JsSuccess[InfraGraphParser] =>
         val v: Vector[Rectangle] = s.get.nodes.map(n => new Rectangle(n.name, Vector2D(n.x1, n.y1), Vector2D(n.x2, n.y2), Vector2D(n.x3, n.y3), Vector2D(n.x4, n.y4), n.OD))
-        val vertexMap: Map[String, Rectangle] = v.map(v => v.name -> v).toMap
-
-        /**
-          * Transforms the connections from JSON connectivity objects to edges used for the graph.
-          * @param edges set of edges stored as JSON objects
-          * @tparam T subtype of the [[MyEdge]] to return
-          * @return collection of type T tedges
-          */
-        def connections2Edges[T <: MyEdge](edges: Iterable[Connectivity_JSON])(implicit tag: ClassTag[T]): Iterable[T] = {
-          edges.flatMap(c => c.conn.map(neigh => {
-            tag.runtimeClass.getConstructor(classOf[(Rectangle, Rectangle)]).newInstance(vertexMap(c.node), vertexMap(neigh)).asInstanceOf[T]
-          }))
-        }
-
-        val levelChanges: Iterable[MyEdgeLevelChange] = connections2Edges[MyEdgeLevelChange](s.get.levelChanges)//.flatMap(c => c.conn.map(neigh => new MyEdgeLevelChange(vertexMap(c.node), vertexMap(neigh))))
-        val baseEdgeCollection: Iterable[MyEdge] = connections2Edges[MyEdge](s.get.standardConnections) ++ levelChanges//.flatMap(c => c.conn.map(neigh => new MyEdge(vertexMap(c.node), vertexMap(neigh)))) ++ levelChanges
+        var vertexMap: Map[String, Rectangle] = v.map(v => v.name -> v).toMap
 
         val fg: Iterable[FlowGate] = if (useFlowGates) {
           s.get.flowGates.map(fg => fg.funcForm match {
@@ -80,7 +65,7 @@ package object graph {
         val flowSeparators: Iterable[FlowSeparator] = if (useFlowSep) {
 
           // updates the vertex map to remove overriden nodes and add the new ones linked to the flow separators
-          val vertexMapUpdated: Map[String, Rectangle] = {
+          vertexMap = {
             vertexMap --
               s.get.flowSeparators.flatMap(_.overZone_1.collect({ case oZone if oZone.overridenZone.isDefined => oZone.overridenZone.get })) --
               s.get.flowSeparators.flatMap(_.overZone_2.collect({ case oZone if oZone.overridenZone.isDefined => oZone.overridenZone.get })) ++
@@ -130,7 +115,7 @@ package object graph {
               fs.inf_2.map(il => new FlowLine(Vector2D(il.x1, il.y1), Vector2D(il.x2, il.y2))),
               oz_1,
               oz_2,
-              fs.overConn.collect({ case c if vertexMapUpdated.contains(c.node) => c.conn.collect({ case neigh if vertexMapUpdated.contains(neigh) => new MyEdge(vertexMapUpdated(c.node), vertexMapUpdated(neigh)) }) }).flatten,
+              fs.overConn.collect({ case c if vertexMap.contains(c.node) => c.conn.collect({ case neigh if vertexMap.contains(neigh) => new MyEdge(vertexMap(c.node), vertexMap(neigh)) }) }).flatten,
               oldZones
             )
           }
@@ -139,15 +124,32 @@ package object graph {
           Vector()
         }
 
+        /**
+          * Transforms the connections from JSON connectivity objects to edges used for the graph.
+          * @param edges set of edges stored as JSON objects
+          * @tparam T subtype of the [[MyEdge]] to return
+          * @return collection of type T tedges
+          */
+        def connections2Edges[T <: MyEdge](edges: Iterable[Connectivity_JSON])(implicit tag: ClassTag[T]): Iterable[T] = {
+          edges.flatMap(c => c.conn.map(neigh => {
+            tag.runtimeClass.getConstructors()(0).newInstance(vertexMap(c.node), vertexMap(neigh)).asInstanceOf[T]
+          }))
+        }
+
+        val levelChanges: Iterable[MyEdgeLevelChange] = connections2Edges[MyEdgeLevelChange](s.get.levelChanges)//.flatMap(c => c.conn.map(neigh => new MyEdgeLevelChange(vertexMap(c.node), vertexMap(neigh))))
+      val baseEdgeCollection: Iterable[MyEdge] = connections2Edges[MyEdge](s.get.standardConnections) ++ levelChanges//.flatMap(c => c.conn.map(neigh => new MyEdge(vertexMap(c.node), vertexMap(neigh)))) ++ levelChanges
+
+
         // Returns the graph object and the control devices
         (
           if (s.get.alternateConnections.isEmpty) { new RouteGraph[PedestrianNOMAD](v, baseEdgeCollection, levelChanges, fg, bg, mv, flowSeparators) }
           else {
             val graphs = new RouteGraphMultiple[PedestrianNOMADWithGraph](levelChanges, fg, bg, mv, flowSeparators)
+            graphs.addGraph("base", 1.0 - s.get.alternateConnections.foldLeft(0.0)((a, b) => a + b.frac), v, baseEdgeCollection)
             s.get.alternateConnections.foreach(g => {
               val edges2Remove = connections2Edges[MyEdge](g.conn2Remove).toVector
-              val edges: Iterable[MyEdge] = baseEdgeCollection.filterNot(e => edges2Remove.contains(e)) ++ connections2Edges(g.conn2Add)
-              graphs.addGraph(g.name, v, edges)
+              val edges: Iterable[MyEdge] = baseEdgeCollection.filterNot(e => edges2Remove.contains(e)) ++ connections2Edges[MyEdge](g.conn2Add)
+              graphs.addGraph(g.name, g.frac, v, edges)
             })
             graphs
           },

@@ -1,0 +1,33 @@
+
+    {
+      "name": "notFollowingRules",
+      "fraction_of_pop": 0.1,
+      "connectivity_to_add": [
+        {
+          "node": "t1",
+          "connected_to": [
+            "t2"
+          ]
+        },
+        {
+          "node": "b2",
+          "connected_to": [
+            "b1"
+          ]
+        }
+      ],
+      "connectivity_to_remove": [
+        {
+          "node": "t2",
+          "connected_to": [
+            "t1"
+          ]
+        },
+        {
+          "node": "b1",
+          "connected_to": [
+            "b2"
+          ]
+        }
+      ]
+    }

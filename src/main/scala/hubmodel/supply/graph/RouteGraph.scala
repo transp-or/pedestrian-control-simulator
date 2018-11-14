@@ -29,7 +29,7 @@ class RouteGraph[T <: PedestrianNOMAD](private val baseVertices: Iterable[Rectan
                                      flowGates: Iterable[FlowGate],
                                      binaryGates: Iterable[BinaryGate],
                                      movingWalkways: Iterable[MovingWalkway],
-                                     flowSeparators: Iterable[FlowSeparator]) extends RouteGraphParent[T] {
+                                     flowSeparators: Iterable[FlowSeparator]) extends RouteGraphParent[T](levelChanges, flowGates, binaryGates, movingWalkways, flowSeparators) {
 
   // Function to enqueue pedestrians into queues at gates.
   /*def enqueueInWaitingZone(p: T): Unit = {
@@ -37,7 +37,7 @@ class RouteGraph[T <: PedestrianNOMAD](private val baseVertices: Iterable[Rectan
   }*/
 
   // Map from vertex names to the vertices themselves
-  val vertexMap: Map[String, Rectangle] = baseVertices.map(v => v.name -> v).toMap ++
+  override val vertexMap: Map[String, Rectangle] = baseVertices.map(v => v.name -> v).toMap ++
     flowSeparators.flatMap(fs => fs.associatedZonesStart.map(oz => oz.name -> oz)).toMap ++
     flowSeparators.flatMap(fs => fs.associatedZonesEnd.map(oz => oz.name -> oz)).toMap --
     flowSeparators.flatMap(fs => fs.overridenZones)
@@ -49,7 +49,7 @@ class RouteGraph[T <: PedestrianNOMAD](private val baseVertices: Iterable[Rectan
   vertexMap.values.foreach(v => network.addVertex(v))
 
   // builds the edge set from the various strategies which modify the base graph.
-  val edges: Set[MyEdge] = (standardEdges ++ flowGates ++ binaryGates ++ movingWalkways).toSet
+  override val edges: Set[MyEdge] = (standardEdges ++ flowGates ++ binaryGates ++ movingWalkways).toSet
     .filterNot(e => flowSeparators.flatMap(_.associatedConnectivity.map(_.startVertex.name)).toVector.contains(e.startVertex.name)
       || flowSeparators.flatMap(_.associatedConnectivity.map(_.startVertex.name)).toVector.contains(e.endVertex.name)
     ) ++ flowSeparators.flatMap(_.associatedConnectivity)
@@ -81,7 +81,7 @@ class RouteGraph[T <: PedestrianNOMAD](private val baseVertices: Iterable[Rectan
     * @param d destination node
     * @return the list if vertices representing the path
     */
-  def getShortestPath(o: Rectangle, d: Rectangle, ID: Option[String] = None): List[Rectangle] = {
+  def getShortestPath(o: Rectangle, d: Rectangle): List[Rectangle] = {
     Try(shortestPathBuilder.getPath(o, d)) match {
       case Success(s) => {
         s.getVertexList.asScala.toList
@@ -96,15 +96,17 @@ class RouteGraph[T <: PedestrianNOMAD](private val baseVertices: Iterable[Rectan
     */
   val isFloorChange: (Rectangle, Rectangle) => Boolean = (a, b) => this.levelChanges.map(e => (e.startVertex.ID, e.endVertex.ID)).exists(_ == (a.ID, b.ID))
 
-  type V = PedestrianNOMAD
-
   /**
     * Changes the pedestrian's intermediat destination when the current intermediat destination is reached.
     *
     * @param p pedestrian for whom to change destination
     */
   def processIntermediateArrival(p: T): Unit = {
-    if (this.isFloorChange(p.nextZone, p.route.head)) {
+    if (p.route.isEmpty){
+      p.route = this.getShortestPath(p.origin, p.finalDestination).tail
+      p.nextZone = p.route.head
+    }
+    else if (this.isFloorChange(p.nextZone, p.route.head)) {
       p.previousZone = p.route.head
       p.currentPosition = p.route.head.uniformSamplePointInside
       p.nextZone = p.route.tail.head
@@ -112,7 +114,6 @@ class RouteGraph[T <: PedestrianNOMAD](private val baseVertices: Iterable[Rectan
     }
     else {
       p.previousZone = p.nextZone
-
       p.route = this.getShortestPath(p.nextZone, p.finalDestination).tail
       p.nextZone = p.route.head
     }
@@ -127,7 +128,7 @@ class RouteGraph[T <: PedestrianNOMAD](private val baseVertices: Iterable[Rectan
     * @param devices The new set of devices to use to make the graph. This way multiple graphs do not share control devices
     * @return Copy of the graph.
     */
-  def clone(devices: ControlDevices): RouteGraph[T] = new RouteGraph[T](
+  override def clone(devices: ControlDevices): RouteGraph[T] = new RouteGraph[T](
     this.baseVertices, this.standardEdges, this.levelChanges, devices.flowGates, devices.binaryGates, devices.amws, devices.flowSeparators
   )
 

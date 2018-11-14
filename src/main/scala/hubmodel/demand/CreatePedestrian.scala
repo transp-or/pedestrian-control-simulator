@@ -4,6 +4,7 @@ import breeze.numerics.pow
 import hubmodel.DES.{Action, NOMADGraphSimulator}
 import hubmodel._
 import hubmodel.ped.{PedestrianNOMAD, PedestrianNOMADWithGraph}
+import hubmodel.supply.graph.RouteGraphMultiple
 import hubmodel.tools.cells.Rectangle
 
 import scala.reflect.ClassTag
@@ -25,7 +26,8 @@ class CreatePedestrian[T <: PedestrianNOMAD](o: Rectangle, d: Rectangle, sim: NO
     sim.eventLogger.trace("time=" + sim.currentTime + ": pedestrian created")
 
     // the shortest path method returns the origin node as the first element of the route.
-    val route = sim.graph.getShortestPath(o, d).tail
+
+    //val route = sim.graph.getShortestPath(o, d).tail
 
     // sample until the generation point is far enough away from other pedestrians
     val generationPoint: Position = {
@@ -40,7 +42,13 @@ class CreatePedestrian[T <: PedestrianNOMAD](o: Rectangle, d: Rectangle, sim: NO
 
     //tag.runtimeClass.getConstructor(classOf[(Rectangle, Rectangle, Time, Position, List[Rectangle], String)]).newInstance(o, d, sim.currentTime, generationPoint, route, "").asInstanceOf[T]
     // inserts new pedestrian into population
-    sim.insertInPopulation(tag.runtimeClass.getConstructor(classOf[(Rectangle, Rectangle, BigDecimal, Position, List[Rectangle], String)]).newInstance(o, d, sim.currentTime.value, generationPoint, route, "").asInstanceOf[T])//new T(o, d, sim.currentTime, generationPoint, route, ""))
+
+    val newPed: T = tag.runtimeClass.getConstructors()(0).newInstance(o, d, sim.currentTime.value, generationPoint).asInstanceOf[T]
+    sim.setFirstRoute(newPed)
+
+
+
+    sim.insertInPopulation(newPed)//new T(o, d, sim.currentTime, generationPoint, route, ""))
   }
 }
 

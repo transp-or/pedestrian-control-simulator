@@ -13,7 +13,7 @@ class TrainArrival[T <: PedestrianNOMAD](train: Vehicle, tinf: Iterable[Pedestri
     sim.eventLogger.trace("time=" + sim.currentTime + ": train arrival")
     tinf.flatMap(pedFlow => splitFractionsUniform(sim.stop2Vertices(pedFlow.O), sim.stop2Vertices(pedFlow.D), pedFlow.f))
       .foreach(flow => sim.insertEventWithZeroDelay {
-      new PedestrianGeneration(flow._1, flow._2, new Time(0.0), math.round(flow._3).toInt, sim)
+      new PedestrianGenerationTINF(flow._1, flow._2, new Time(0.0), math.round(flow._3).toInt, sim)
     })
   }
 }

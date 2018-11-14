@@ -1,4 +1,4 @@
-package hubmodel.demand
+package hubmodel.demand.flows
 
 /**
   * Created by nicholas on 5/12/17.
@@ -9,6 +9,7 @@ import java.util.concurrent.ThreadLocalRandom
 import hubmodel.DES.{Action, NOMADGraphSimulator}
 import hubmodel.TimeNumeric.mkOrderingOps
 import hubmodel._
+import hubmodel.demand.{CreatePedestrian, CreatePedestrianWithInsertion}
 import hubmodel.ped.PedestrianNOMAD
 import hubmodel.tools.cells.Rectangle
 

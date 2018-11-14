@@ -26,8 +26,7 @@ import myscala.math.vector.ZeroVector2D
 class PedestrianSim(val origin: Rectangle,
                     val finalDestination: Rectangle,
                     val freeFlowVel: Double,
-                    val entryTime: Time,
-                    var route: List[Rectangle]) extends PedestrianTrait {
+                    val entryTime: Time) extends PedestrianTrait {
 
   /** current position of the pedestrian */
   var currentPosition: Position = origin.uniformSamplePointInside
@@ -39,9 +38,10 @@ class PedestrianSim(val origin: Rectangle,
   /** History of the pedestrians positions */
   protected var _historyPosition: Vector[(Time, Position)] = Vector((entryTime, currentPosition))
 
+  var route: List[Rectangle] = List()
 
   /** intermediate destination of the pedestrian */
-  var currentDestination: Position = route.head.uniformSamplePointInside
+  var currentDestination: Position = new Position(0,0)//route.head.uniformSamplePointInside
 
   // Checks that the velocity is realistic
   assert(freeFlowVel > 0.0, "Unacceptable free flow velocity")
@@ -65,9 +65,9 @@ class PedestrianSim(val origin: Rectangle,
   val freedFrom: scala.collection.mutable.ArrayBuffer[String] = scala.collection.mutable.ArrayBuffer()
 
   /** target zone */
-  var nextZone: Rectangle = route.head
+  var nextZone: Rectangle = finalDestination//route.head
 
-  var previousZone: Rectangle = route.head
+  var previousZone: Rectangle = origin//route.head
 
   /* Position increment to be added at the next time interval */
   var positionIncrement: Position = new ZeroVector2D
@@ -171,8 +171,10 @@ class PedestrianSim(val origin: Rectangle,
     * @param posO      current position (general point)
     * @param route     initial route
     */
-  def this(oZone: Rectangle, dZone: Rectangle, entryTime: Time, posO: Position, route: List[Rectangle]) {
-    this(oZone, dZone, 1.34 + 0.2*ThreadLocalRandom.current().nextGaussian(), entryTime, route) // velocity taken from VS data
+
+
+  def this(oZone: Rectangle, dZone: Rectangle, entryTime: Time, posO: Position) {
+    this(oZone, dZone, 1.34 + 0.2*ThreadLocalRandom.current().nextGaussian(), entryTime) // velocity taken from VS data
 
     this.currentPosition = posO
   }

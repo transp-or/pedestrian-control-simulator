@@ -130,13 +130,14 @@ package object JSONReaders {
     * @param name name of the alternate connection set
     * @param conn2Add collection of connections to add
     */
-  private[JSONReaders] case class ConnectivityAlternatives_JSON(name: String, conn2Add: List[Connectivity_JSON], conn2Remove: List[Connectivity_JSON])
+  private[JSONReaders] case class ConnectivityAlternatives_JSON(name: String, frac: Double, conn2Add: List[Connectivity_JSON], conn2Remove: List[Connectivity_JSON])
 
   /**
     * Reads the JSON structures into a [[Connectivity_JSON]] object. No validation is done.
     */
   implicit val ConnectivityAlternatives_JSONReads: Reads[ConnectivityAlternatives_JSON] = (
     (JsPath \ "name").read[String] and
+      (JsPath \ "fraction_of_pop").read[Double] and
       (JsPath \ "connectivity_to_add").read[List[Connectivity_JSON]] and
       (JsPath \ "connectivity_to_remove").read[List[Connectivity_JSON]]
     ) (ConnectivityAlternatives_JSON.apply _)

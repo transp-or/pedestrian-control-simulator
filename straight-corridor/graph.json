@@ -13,7 +13,8 @@
       "x3": 8.9,
       "y3": 1.5,
       "x4": 0.1,
-      "y4": 1.5
+      "y4": 1.5,
+      "OD":true
     },
     {
       "name": "top",
@@ -26,7 +27,8 @@
       "x3": 8.9,
       "y3": 35,
       "x4": 0.1,
-      "y4": 35
+      "y4": 35,
+      "OD": true
     }
   ],
   "connectivity": [
@@ -173,39 +175,7 @@
         }
       ]
   }],
-  "alternate_graphs": [
-    {
-      "name": "notFollowingRules",
-      "connectivity_to_add": [
-        {
-          "node": "t1",
-          "connected_to": [
-            "t2"
-          ]
-        },
-        {
-          "node": "b2",
-          "connected_to": [
-            "b1"
-          ]
-        }
-      ],
-      "connectivity_to_remove": [
-        {
-          "node": "t2",
-          "connected_to": [
-            "t1"
-          ]
-        },
-        {
-          "node": "b1",
-          "connected_to": [
-            "b2"
-          ]
-        }
-      ]
-    }
-  ]
+  "alternate_graphs": []
 }
 
 

@@ -20,7 +20,7 @@ import scala.reflect.ClassTag
   * @param end          end time of the pedestrian creation
   * @param numberPeople number of people to create
   */
-class PedestrianGeneration[T <: PedestrianNOMAD](o: Rectangle, d: Rectangle, start: Time, numberPeople: Int, sim: NOMADGraphSimulator[T])(implicit tag: ClassTag[T]) extends Action[T] {
+class PedestrianGenerationTINF[T <: PedestrianNOMAD](o: Rectangle, d: Rectangle, start: Time, numberPeople: Int, sim: NOMADGraphSimulator[T])(implicit tag: ClassTag[T]) extends Action[T] {
 
   /** Poisson distribution
     *
