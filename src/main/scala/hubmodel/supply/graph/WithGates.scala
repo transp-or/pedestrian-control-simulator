@@ -8,9 +8,8 @@ trait WithGates {
   /** Puts a pedestrian in the queue in front of a gate. This method is called by the movement model after each
     * iteration and checks whether the pedestians have entered the queue.
     *
-    *
     * @param flowGates Collection of flow gates in which to possibly enqueue pedestrian.
-    * @param p pedestrian to enqueue.
+    * @param p         pedestrian to enqueue.
     */
   def enqueueInWaitingZone(flowGates: Iterable[FlowGate])(p: PedestrianSim): Unit = {
     val gate: Option[FlowGate] = flowGates.filterNot(p.freedFrom contains _.ID).find(fg => isInVertex(fg.startVertex)(p.currentPosition))

@@ -4,7 +4,7 @@ import hubmodel.tools.cells.Rectangle
 import hubmodel.{Acceleration, Direction, Position, Time}
 import myscala.math.vector.{Vector2D, ZeroVector2D}
 
-class PedestrianNOMAD(oZone: Rectangle, dZone: Rectangle, entryTime: Time, posO: Position) extends PedestrianSim(oZone, dZone, entryTime, posO) {
+class PedestrianNOMAD(oZone: Rectangle, dZone: Rectangle, entryTime: Time, posO: Position) extends PedestrianSim(oZone, dZone, entryTime, posO) with WithGraphID {
 
   def isVariableStep: Boolean = {true}
   var isolationTypePed: Int = 0

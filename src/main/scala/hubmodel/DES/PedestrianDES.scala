@@ -80,7 +80,7 @@ abstract class PedestrianDES[T <: PedestrianNOMAD](val startTime: Time,
     * @param t      time at which the action must be performed
     * @param action the action itself (class with execute method)
     */
-  class MyEvent(val t: Time, val action: Action[T]) extends Ordered[MyEvent] {
+  class MyEvent(val t: Time, val action: Action) extends Ordered[MyEvent] {
 
     // return 0 if the same, negative if this < that, positive if this > that (in terms of priority)
     override def compare(that: MyEvent): Int = {
@@ -115,7 +115,7 @@ abstract class PedestrianDES[T <: PedestrianNOMAD](val startTime: Time,
     * @param action the [[Action]] which must take place
     */
   @deprecated
-  def insertEventWithDelayOld[U <: Action[T]](delay: Time)(action: U): Unit = {
+  def insertEventWithDelayOld[U <: Action](delay: Time)(action: U): Unit = {
     if ((this.currentTime + delay) <= finalTime) eventList += new MyEvent(this.currentTime + delay, action)
   }
 
@@ -126,7 +126,7 @@ abstract class PedestrianDES[T <: PedestrianNOMAD](val startTime: Time,
     * @param delay  time after the [[currentTime]] at which the event must take place
     * @param action the [[Action]] which must take place
     */
-  def insertEventWithDelay[U <: Action[T]](delay: Time)(action: U): Unit = {
+  def insertEventWithDelay[U <: Action](delay: Time)(action: U): Unit = {
     if (this.currentTime + delay <= finalTime) eventList += new MyEvent(this.currentTime + delay, action)
   }
 
@@ -135,7 +135,7 @@ abstract class PedestrianDES[T <: PedestrianNOMAD](val startTime: Time,
     * @param action Child of the  [[Action]] class to inlcude in the event list
     * @tparam U [[Action]]
     */
-  def insertEventWithZeroDelay[U <: Action[T]](action: U): Unit = {
+  def insertEventWithZeroDelay[U <: Action](action: U): Unit = {
     eventList += new MyEvent(this.currentTime, action)
   }
 
@@ -147,7 +147,7 @@ abstract class PedestrianDES[T <: PedestrianNOMAD](val startTime: Time,
     * @param t      time after the [[currentTime]] at which the event must take place
     * @param action the [[Action]] which must take place
     */
-  def insertEventAtAbsolute[U <: Action[T]](t: Time)(action: U): Unit = {
+  def insertEventAtAbsolute[U <: Action](t: Time)(action: U): Unit = {
     if (startTime <= t && t < finalTime) eventList += new MyEvent(t, action)
   }
 
@@ -269,7 +269,7 @@ abstract class PedestrianDES[T <: PedestrianNOMAD](val startTime: Time,
     * In order to give access to the required data to each Action, the simulation itself is passed
     * as an argument. This makes it very general.
     */
-  abstract class GenericStartSim(sim: PedestrianDES[T]) extends Action[T]
+  abstract class GenericStartSim(sim: PedestrianDES[T]) extends Action
 
   /** Abstract run which must be overriden in implementation.
     * This will call the [[genericRun()]] method and pass the first start as an argument.

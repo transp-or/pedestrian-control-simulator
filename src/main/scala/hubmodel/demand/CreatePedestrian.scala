@@ -3,8 +3,7 @@ package hubmodel.demand
 import breeze.numerics.pow
 import hubmodel.DES.{Action, NOMADGraphSimulator}
 import hubmodel._
-import hubmodel.ped.{PedestrianNOMAD, PedestrianNOMADWithGraph}
-import hubmodel.supply.graph.RouteGraphMultiple
+import hubmodel.ped.{PedestrianNOMAD}
 import hubmodel.tools.cells.Rectangle
 
 import scala.reflect.ClassTag
@@ -12,7 +11,7 @@ import scala.reflect.ClassTag
 /**
   * Creates a pedestrian. A new pedestrian will be added when this event is executed.
   */
-class CreatePedestrian[T <: PedestrianNOMAD](o: Rectangle, d: Rectangle, sim: NOMADGraphSimulator[T])(implicit tag: ClassTag[T]) extends Action[T] {
+class CreatePedestrian[T <: PedestrianNOMAD](o: Rectangle, d: Rectangle, sim: NOMADGraphSimulator[T])(implicit tag: ClassTag[T]) extends Action {
 
   /**
     * Inserts a new pedestrian. The characteristics of this pedestrian are sampled on creation.
@@ -43,7 +42,7 @@ class CreatePedestrian[T <: PedestrianNOMAD](o: Rectangle, d: Rectangle, sim: NO
     //tag.runtimeClass.getConstructor(classOf[(Rectangle, Rectangle, Time, Position, List[Rectangle], String)]).newInstance(o, d, sim.currentTime, generationPoint, route, "").asInstanceOf[T]
     // inserts new pedestrian into population
 
-    val newPed: T = tag.runtimeClass.getConstructors()(0).newInstance(o, d, sim.currentTime.value, generationPoint).asInstanceOf[T]
+    val newPed: PedestrianNOMAD = new PedestrianNOMAD(o, d, sim.currentTime, generationPoint)
     sim.setFirstRoute(newPed)
 
 

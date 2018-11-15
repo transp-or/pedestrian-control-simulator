@@ -1,6 +1,7 @@
 import java.io.File
 
 import hubmodel.output.image.{DrawGraph, DrawWalls, DrawWallsAndGraph}
+import hubmodel.ped.PedestrianNOMAD
 import hubmodel.supply.continuous.ReadContinuousSpace
 import hubmodel.supply.graph.readGraph
 
@@ -41,7 +42,7 @@ object makePictures extends App {
   parser.parse(args, Config()) match {
 
     case Some(config) =>
-      val infraGraph = readGraph(config.graph.toString, false, false, false, false, false)
+      val infraGraph = readGraph[PedestrianNOMAD](config.graph.toString, false, false, false, false, false)
       val parserCont = new ReadContinuousSpace(config.walls.toString)
       val infraSF = parserCont.continuousSpace
 

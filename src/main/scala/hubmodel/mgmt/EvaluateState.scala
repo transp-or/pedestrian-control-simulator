@@ -19,7 +19,7 @@ import scala.collection.JavaConversions._
   *
   * @param sim simulation containing the data
   */
-class EvaluateState[T <: PedestrianNOMAD](sim: NOMADGraphSimulator[T]) extends Action[T] with Controller {
+class EvaluateState[T <: PedestrianNOMAD](sim: NOMADGraphSimulator[T]) extends Action with Controller {
 
   def computeDensity(): Unit = {
 

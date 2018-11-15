@@ -7,10 +7,10 @@ import hubmodel.DES.NOMADGraphSimulator
 import hubmodel.demand.{CreatePedestrian, PedestrianFlowFunction_New, PedestrianFlowPT_New, PedestrianFlow_New, ProcessTimeTable, PublicTransportSchedule, readDisaggDemand, readDisaggDemandTF, readPedestrianFlows, readSchedule, readScheduleTF}
 import hubmodel.output.image.{DrawControlDevicesAndWalls, DrawGraph, DrawWalls, DrawWallsAndGraph}
 import hubmodel.output.video.MovingPedestriansWithDensityWithWallVideo
-import hubmodel.ped.{PedestrianNOMAD, PedestrianSim, PedestrianTrait}
+import hubmodel.ped.{PedestrianNOMAD, PedestrianNOMADWithGraph, PedestrianSim, PedestrianTrait}
 import hubmodel.supply.{NodeID_New, NodeParent, StopID_New, TrainID_New}
 import hubmodel.supply.continuous.{MovableWall, ReadContinuousSpace}
-import hubmodel.supply.graph.{BinaryGate, Stop2Vertex, readGraph, readPTStop2GraphVertexMap}
+import hubmodel.supply.graph._
 import hubmodel.tools.cells.{DensityMeasuredArea, Rectangle}
 import myscala.math.vector.{Vector2D, Vector3D}
 import myscala.output.SeqOfSeqExtensions.SeqOfSeqWriter
@@ -26,6 +26,8 @@ import scala.util.{Failure, Success, Try}
 import hubmodel.TimeNumeric.mkOrderingOps
 import hubmodel.demand.flows.{ProcessDisaggregatePedestrianFlows, ProcessPedestrianFlows}
 
+import scala.reflect.ClassTag
+
 
 /**
   * Created by nicholas on 5/12/17.
@@ -33,7 +35,6 @@ import hubmodel.demand.flows.{ProcessDisaggregatePedestrianFlows, ProcessPedestr
 
 package object hubmodel {
 
-  type T = PedestrianNOMAD
 
   /* pedestrian isolations */
   val ISOLATED: Int = 0
@@ -186,11 +187,13 @@ package object hubmodel {
     bw.close()
   }
 
+  //type T <: PedestrianNOMAD
+
   /** Creates a simulation, but does not run it
     *
     * @return simulator ready to run
     */
-  def createSimulation(config: Config): NOMADGraphSimulator[T] = {
+  def createSimulation[T <: PedestrianNOMAD](config: Config)(implicit tag: ClassTag[T]): NOMADGraphSimulator[T] = {
 
 
     // checkValid(), just as in the plain SimpleLibContext.
@@ -208,7 +211,7 @@ package object hubmodel {
     val infraSF = new ReadContinuousSpace(config.getString("files.walls"))
 
     // Builds the graph used for route choice. This Graph is coposed of multiple different link types.
-    val (routeGraph, controlDevices) = readGraph(
+    val (routeGraph, controlDevices) = readGraph[T](
       config.getString("files.graph"),
       config.getBoolean("sim.use_flow_gates"),
       config.getBoolean("sim.use_binary_gates"),
@@ -264,9 +267,9 @@ package object hubmodel {
       */
     def conceptualNode2GraphNodes(conceptualNode: NodeParent): Iterable[Rectangle] = {
       conceptualNode match {
-        case x: TrainID_New => stop2Vertex.stop2Vertices(timeTable.timeTable(x).stop).map(n => routeGraph.vertexMap(n))
-        case x: NodeID_New => Iterable(routeGraph.vertexMap(x.ID))
-        case x: StopID_New => Iterable(routeGraph.vertexMap(x.ID.toString))
+        case x: TrainID_New => stop2Vertex.stop2Vertices(timeTable.timeTable(x).stop).map(n => routeGraph.vertexMapNew(n))
+        case x: NodeID_New => Iterable(routeGraph.vertexMapNew(x.ID))
+        case x: StopID_New => Iterable(routeGraph.vertexMapNew(x.ID.toString))
         case _ => throw new Exception("Track ID should not be there !")
       }
     }
@@ -327,7 +330,7 @@ package object hubmodel {
     * @param simulator simulator from which to extract the results
     * @return results from the simulation
     */
-  def collectResults(simulator: NOMADGraphSimulator[T]): ResultsContainerNew = {
+  def collectResults[T <: PedestrianNOMAD](simulator: NOMADGraphSimulator[T]): ResultsContainerNew = {
     if (simulator.exitCode == 0) {
       ResultsContainerNew(
         simulator.exitCode,
@@ -347,7 +350,7 @@ package object hubmodel {
     * @param prefix prefix to the file name
     * @param path path where to write the file, default is empty
     */
-  def writeResults(simulator: NOMADGraphSimulator[T], prefix: String = "", dir: Option[String], writeTrajectoriesVS: Boolean = false, writeTrajectoriesJSON: Boolean = false): Unit = {
+  def writeResults[T <: PedestrianNOMAD](simulator: NOMADGraphSimulator[T], prefix: String = "", dir: Option[String], writeTrajectoriesVS: Boolean = false, writeTrajectoriesJSON: Boolean = false): Unit = {
 
     // TODO: check if files exists and remove them if they are inside tmp, and warn about them if they are in output_dir
     val path: String = dir match {
@@ -458,7 +461,7 @@ package object hubmodel {
   def runSimulationWithVideo(config: Config): Unit = {
 
     // create simulation
-    val sim = createSimulation(config)
+    val sim = createSimulation[PedestrianNOMAD](config)
 
     // Creates images representing the walls, route graph and both overlaid.
     val wallsImage = new DrawWalls(sim.walls, config.getString("output.output_prefix") + "_wallsWithNames.png", showNames = true)
@@ -499,13 +502,13 @@ package object hubmodel {
     * @param simulator simulation to run
     * @return results collected from the simulation
     */
-  def runAndCollect(simulator: NOMADGraphSimulator[T]): ResultsContainerNew =  {
+  def runAndCollect[T <: PedestrianNOMAD](simulator: NOMADGraphSimulator[T]): ResultsContainerNew =  {
     timeBlock(simulator.run())
     collectResults(simulator)
   }
 
 
-  def runAndWriteResults(simulator: NOMADGraphSimulator[T], prefix: String = "", dir: Option[String], writeTrajectoriesVS: Boolean = false, writeTrajectoriesJSON: Boolean = false): Unit = {
+  def runAndWriteResults[T <: PedestrianNOMAD](simulator: NOMADGraphSimulator[T], prefix: String = "", dir: Option[String], writeTrajectoriesVS: Boolean = false, writeTrajectoriesJSON: Boolean = false): Unit = {
     timeBlock(simulator.run())
     writeResults(simulator, prefix, dir, writeTrajectoriesVS, writeTrajectoriesJSON)
   }

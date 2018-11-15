@@ -9,7 +9,7 @@ import hubmodel.ped.{PedestrianNOMAD, PedestrianNOMADWithGraph, PedestrianSim}
 import hubmodel.route.UpdateRoutes
 import hubmodel.supply.NodeParent
 import hubmodel.supply.continuous.{ContinuousSpace, Wall}
-import hubmodel.supply.graph.{RouteGraph, RouteGraphMultiple, RouteGraphParent, StartFlowGates}
+import hubmodel.supply.graph._
 import hubmodel.tools.cells.{DensityMeasuredArea, Rectangle, isInVertex}
 
 class NOMADGraphSimulator[T <: PedestrianNOMAD](st: Time,
@@ -20,10 +20,10 @@ class NOMADGraphSimulator[T <: PedestrianNOMAD](st: Time,
                           val evaluate_dt: Time,
                           val rebuildTreeInterval: Option[Time],
                           val spaceMicro: ContinuousSpace,
-                          val graph: RouteGraphParent[T],
+                          val graph: GraphContainer,
                           val timeTable: PublicTransportSchedule,
                           val stop2Vertices: NodeParent => Iterable[Rectangle],
-                          val controlDevices: ControlDevices) extends PedestrianDES[T](st, et, logDir) {
+                          val controlDevices: ControlDevices) extends PedestrianDES[PedestrianNOMAD](st, et, logDir) {
 
   /**
     * Access for the wall collection which is mostly contained in the SF infrastructrue file but some movable walls
@@ -36,15 +36,15 @@ class NOMADGraphSimulator[T <: PedestrianNOMAD](st: Time,
   def intermediateDestinationReached: PedestrianSim => Boolean = p => isInVertex(p.nextZone)(p.currentPosition)
 
   /* Updates the next destination */
-  val updateIntermediateDestination: T => Unit = ped => graph match {
-    case rs: RouteGraph[T] => { rs.processIntermediateArrival(ped) }
+  val updateIntermediateDestination: PedestrianNOMAD => Unit = ped => graph.processIntermediateArrival(ped)/* => graph match {
     case rm: RouteGraphMultiple[T] => { rm.processIntermediateArrival(ped) }
-  }
+    case rs: RouteGraph[T] => { rs.processIntermediateArrival(ped) }
+  }*/
 
   /* Computes the first route  */
-  val setFirstRoute: T => Unit = ped => graph match {
-    case rs: RouteGraph[T] => { rs.processIntermediateArrival(ped) }
-    case rm: RouteGraphMultiple[T] => { rm.setRouteFirst(ped) }
+  val setFirstRoute: PedestrianNOMAD => Unit = ped => graph match {
+    case rm: MultipleGraph => { rm.setRouteFirst(ped) }
+    case rs: SingleGraph => { rs.processIntermediateArrival(ped) }
   }
 
   /* checks if the pedestrian has reached is final destination */
@@ -90,7 +90,7 @@ class NOMADGraphSimulator[T <: PedestrianNOMAD](st: Time,
 
   val PTInducedFlows: collection.mutable.Map[Rectangle, PTInducedQueue[T]] = collection.mutable.Map()
 
-  val ODZones: Iterable[Rectangle] = this.graph.vertexMap.values.filter(_.isOD)
+  val ODZones: Iterable[Rectangle] = this.graph.vertexMapNew.values.filter(_.isOD)
 
   var regulatorIntegralAction: Double = 0.0
 
@@ -142,7 +142,7 @@ class NOMADGraphSimulator[T <: PedestrianNOMAD](st: Time,
     * Class to interrupt the simulation if some criteria is met. The idea is to prevent simulations running for
     * ridiculous times if some unfeasible situation has occured.
     */
-  private class SafeGuard() extends Action[T] {
+  private class SafeGuard() extends Action {
     override def execute(): Unit = {
       if (useFlowGates && controlDevices.flowGates.exists(fg => fg.pedestrianQueue.size > 100)) {
         abort(1)
@@ -179,7 +179,7 @@ class NOMADGraphSimulator[T <: PedestrianNOMAD](st: Time,
       Time,
       Option[Time],
       ContinuousSpace,
-      RouteGraphParent[T],
+      GraphContainer,
       PublicTransportSchedule,
       NodeParent => Iterable[Rectangle],
       ControlDevices

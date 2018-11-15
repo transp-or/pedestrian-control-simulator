@@ -5,6 +5,7 @@ import java.io.File
 import com.typesafe.config.Config
 import hubmodel.DES.NOMADGraphSimulator
 import hubmodel.mgmt.ControlDevices
+import hubmodel.ped.PedestrianNOMAD
 import hubmodel.supply.graph.FlowGateFunctional
 import hubmodel.{createSimulation, runAndWriteResults}
 import myscala.math.stats.ComputeStats
@@ -19,7 +20,7 @@ class ParameterExploration(config: Config) extends GridSearch {
 
   def exploreFlowGateFunctionalFormLinear(constantBounds: (Double, Double, Int), linearBounds: (Double, Double, Int)): Unit = {
 
-    val defaultParameters = createSimulation(config).getSetupArguments
+    val defaultParameters = createSimulation[PedestrianNOMAD](config).getSetupArguments
 
     val constantRange: NumericRange[Double] = constantBounds._1 to constantBounds._2 by (constantBounds._2 - constantBounds._1) / constantBounds._3
     val linearRange: NumericRange[Double] = {linearBounds._1 to linearBounds._2 by (linearBounds._2 - linearBounds._1) / linearBounds._3}
@@ -51,7 +52,7 @@ class ParameterExploration(config: Config) extends GridSearch {
         defaultParameters._11.flowSeparators.map(_.clone())
       )
 
-      val sim = new NOMADGraphSimulator(
+      val sim = new NOMADGraphSimulator[PedestrianNOMAD](
         defaultParameters._1,
         defaultParameters._2,
         Some(config.getString("output.log_dir")),

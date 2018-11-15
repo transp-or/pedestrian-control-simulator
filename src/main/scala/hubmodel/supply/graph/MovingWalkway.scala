@@ -22,7 +22,7 @@ class MovingWalkway(override val startVertex: Rectangle, override val endVertex:
   *
   * @param sim simulation environment
   */
-class StartFlowGates[T <: PedestrianNOMAD](sim: NOMADGraphSimulator[T]) extends Action[T] {
+class StartFlowGates[T <: PedestrianNOMAD](sim: NOMADGraphSimulator[T]) extends Action {
   override def execute(): Unit = {
     sim.eventLogger.trace("sim-time=" + sim.currentTime + ": started flow gates")
     sim.controlDevices.flowGates.foreach(fg => sim.insertEventWithZeroDelay(new fg.ReleasePedestrian(sim)))

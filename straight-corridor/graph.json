@@ -175,7 +175,40 @@
         }
       ]
   }],
-  "alternate_graphs": []
+  "alternate_graphs": [
+    {
+      "name": "notFollowingRules",
+      "fraction_of_pop": 0.25,
+      "connectivity_to_add": [
+        {
+          "node": "t1",
+          "connected_to": [
+            "b1"
+          ]
+        },
+        {
+          "node": "b2",
+          "connected_to": [
+            "t2"
+          ]
+        }
+      ],
+      "connectivity_to_remove": [
+        {
+          "node": "t2",
+          "connected_to": [
+            "b2"
+          ]
+        },
+        {
+          "node": "b1",
+          "connected_to": [
+            "t1"
+          ]
+        }
+      ]
+    }
+  ]
 }
 
 

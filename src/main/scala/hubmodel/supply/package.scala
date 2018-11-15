@@ -22,7 +22,9 @@ package hubmodel {
           case _ => false
         }
 
-      override def hashCode: Int = { this.ID.hashCode }
+      override def hashCode: Int = {
+        this.ID.hashCode
+      }
     }
 
     class NodeID_New(ID: String, val humanID: String) extends NodeParent(ID) {
@@ -31,13 +33,16 @@ package hubmodel {
       override def toString: ODIDOld = this.ID
 
       override def canEqual(a: Any): Boolean = a.isInstanceOf[NodeID_New]
+
       override def equals(that: Any): Boolean =
         that match {
           case that: NodeID_New => that.canEqual(this) && this.hashCode == that.hashCode
           case _ => false
         }
 
-      override def hashCode: Int = { this.ID.hashCode }
+      override def hashCode: Int = {
+        this.ID.hashCode
+      }
     }
 
     object NodeID_New {
@@ -50,13 +55,16 @@ package hubmodel {
       override def toString: ODIDOld = this.ID.toString
 
       override def canEqual(a: Any): Boolean = a.isInstanceOf[StopID_New]
+
       override def equals(that: Any): Boolean =
         that match {
           case that: StopID_New => that.canEqual(this) && this.hashCode == that.hashCode
           case _ => false
         }
 
-      override def hashCode: Int = { this.ID.hashCode }
+      override def hashCode: Int = {
+        this.ID.hashCode
+      }
     }
 
     object StopID_New {
@@ -69,13 +77,16 @@ package hubmodel {
       override def toString: ODIDOld = this.ID
 
       override def canEqual(a: Any): Boolean = a.isInstanceOf[TrainID_New]
+
       override def equals(that: Any): Boolean =
         that match {
           case that: TrainID_New => that.canEqual(this) && this.hashCode == that.hashCode
           case _ => false
         }
 
-      override def hashCode: Int = { this.ID.hashCode }
+      override def hashCode: Int = {
+        this.ID.hashCode
+      }
     }
 
     object TrainID_New {

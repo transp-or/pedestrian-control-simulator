@@ -7,7 +7,7 @@ import hubmodel._
 import hubmodel.ped.PedestrianNOMAD
 import hubmodel.tools.cells.Rectangle
 
-class ReleasePedPTInducedFlow[T <: PedestrianNOMAD](o: Rectangle, sim: NOMADGraphSimulator[T]) extends Action[T] {
+class ReleasePedPTInducedFlow[T <: PedestrianNOMAD](o: Rectangle, sim: NOMADGraphSimulator[T]) extends Action {
 
   override def execute(): Unit = {
     if (sim.PTInducedFlows(o).nonEmpty) {

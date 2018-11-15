@@ -6,6 +6,7 @@ import com.typesafe.config.{Config, ConfigFactory}
 import hubmodel.DES.NOMADGraphSimulator
 import hubmodel.demand.flows.ProcessPedestrianFlows
 import hubmodel.demand.{PedestrianFlowFunction_New, PedestrianFlowPT_New, PedestrianFlow_New, ProcessTimeTable, readPedestrianFlows}
+import hubmodel.ped.PedestrianNOMAD
 import hubmodel.{createSimulation, runAndWriteResults}
 import myscala.math.stats.ComputeStats
 import trackingdataanalysis.visualization.{HeatMap, PlotOptions}
@@ -25,7 +26,7 @@ class FlowSensitivity(config: Config) extends GridSearch {
       throw new IllegalArgumentException("repetitions must be positive ! repetitions=" + config.getInt("sim.nb_runs"))
     }
 
-    val defaultParameters = createSimulation(config).getSetupArguments
+    val defaultParameters = createSimulation[PedestrianNOMAD](config).getSetupArguments
 
     // checks if the output dir exists
     val outputDir = new File(config.getString("output.dir"))
@@ -36,7 +37,7 @@ class FlowSensitivity(config: Config) extends GridSearch {
     for (i <- (0.0 to maxMultipler by increments).par; j <- (0.0 to maxMultipler by increments).par; n <- (1 to config.getInt("sim.nb_runs")).par; if i >= j) {
 
       val devices = defaultParameters._11.clone()
-      val sim = new NOMADGraphSimulator(
+      val sim = new NOMADGraphSimulator[PedestrianNOMAD](
         defaultParameters._1,
         defaultParameters._2,
         Some(config.getString("output.log_dir")),

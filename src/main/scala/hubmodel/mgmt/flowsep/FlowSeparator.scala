@@ -79,7 +79,7 @@ class FlowSeparator(val startA: Position,
     new MovableWall("movable wall", this.start, this.end, SINGLELINE)
   }
 
-  class MoveFlowSeperator[T <: PedestrianNOMAD](sim: NOMADGraphSimulator[T]) extends Action[T] {
+  class MoveFlowSeperator[T <: PedestrianNOMAD](sim: NOMADGraphSimulator[T]) extends Action {
 
     override def execute(): Unit = {
       if ((currentTargetPosition._1 - start).norm > 0.0) {

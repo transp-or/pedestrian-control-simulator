@@ -11,7 +11,7 @@ abstract class MyEdgeWithGate(override val startVertex: Rectangle, override val 
   val width: Double = (end - start).norm
 
   // private container for the flow rate of the gate [pax/s]
-  private var _flowRate: Double = this.width*1.0
+  private var _flowRate: Double = this.width * 1.0
 
   // Container for storing the states of the flow gates
   val positionHistory: collection.mutable.ArrayBuffer[(Time, Double)] = collection.mutable.ArrayBuffer()
@@ -23,12 +23,14 @@ abstract class MyEdgeWithGate(override val startVertex: Rectangle, override val 
 
   /**
     * Getter method for the flow rate
+    *
     * @return flow rate
     */
   def flowRate: Double = this._flowRate
 
   /**
     * Updates the flow rate.
+    *
     * @param newFlowRate new flow rate
     */
   @Deprecated
@@ -38,6 +40,7 @@ abstract class MyEdgeWithGate(override val startVertex: Rectangle, override val 
 
   /**
     * Updates the flow rate and appends the value to the history of positions of the gates.
+    *
     * @param newFlowRate new flow rate
     * @param currentTime start of the time interval for which this flow rates is valid
     */
@@ -52,7 +55,7 @@ abstract class MyEdgeWithGate(override val startVertex: Rectangle, override val 
     *
     * @param sim simulation environment
     */
-  class ReleasePedestrian[T <: PedestrianNOMAD](sim: NOMADGraphSimulator[T]) extends Action[T] {
+  class ReleasePedestrian[T <: PedestrianNOMAD](sim: NOMADGraphSimulator[T]) extends Action {
 
     /** Executes the event.
       *
@@ -76,7 +79,7 @@ abstract class MyEdgeWithGate(override val startVertex: Rectangle, override val 
     * @param ped pedestrian to enqueue
     * @param sim simulator for getting the logger and other elements.
     */
-  class EnqueuePedestrian[T <: PedestrianNOMAD](ped: PedestrianSim, sim: NOMADGraphSimulator[T]) extends Action[T] {
+  class EnqueuePedestrian[T <: PedestrianNOMAD](ped: PedestrianSim, sim: NOMADGraphSimulator[T]) extends Action {
 
     override def execute(): Unit = {
       ped.isWaiting = true

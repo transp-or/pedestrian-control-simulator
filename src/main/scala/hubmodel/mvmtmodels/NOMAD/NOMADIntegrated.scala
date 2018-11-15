@@ -16,7 +16,7 @@ import nl.tudelft.pedestrians.collection.InfluenceAreaReturnPedData
 import nl.tudelft.pedestrians.utils.GeometryUtils
 import nomad.operational.InfluenceAreaReturnObsData
 
-class NOMADIntegrated[T <: PedestrianNOMAD](sim: NOMADGraphSimulator[T]) extends Action[T] {
+class NOMADIntegrated[T <: PedestrianNOMAD](sim: NOMADGraphSimulator[T]) extends Action {
 
   // initialise the in range and in collision time schedule
   //val isolatedTimeStepMillis: Double = 1000.0 * sim.sf_dt.value // NomadModel.model.simTime.getTimeStep

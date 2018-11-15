@@ -5,6 +5,7 @@ import java.nio.file.{Files, Paths}
 import com.typesafe.config.{Config, ConfigFactory}
 import hubmodel._
 import hubmodel.output.TRANSFORM.PopulationSummaryProcessingTRANSFORM
+import hubmodel.ped.{PedestrianNOMAD, PedestrianNOMADWithGraph}
 import hubmodel.results.PopulationSummaryProcessing
 import myscala.math.stats.{ComputeQuantiles, ComputeStats, computeQuantiles}
 import myscala.output.SeqOfSeqExtensions.SeqOfSeqWriter
@@ -67,7 +68,7 @@ object RunSimulation extends App {
 
   if (n > 0) {
     range.foreach(s => {
-      val sim = createSimulation(config)
+      val sim = createSimulation[PedestrianNOMAD](config)
       runAndWriteResults(sim, "sim_results_", if (!config.getIsNull("output.dir")) Some(config.getString("output.dir")) else {
         None
       }, config.getBoolean("output.write_trajectories_as_VS"), config.getBoolean("output.write_trajectories_as_JSON"))

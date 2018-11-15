@@ -25,7 +25,7 @@ import scala.reflect.ClassTag
   * @param rateFunction non homogenous function
   * @param sim simulator
   */
-class PedestrianGenerationNonHomogeneousRate[T <: PedestrianNOMAD](o: Rectangle, d: Rectangle, start: Time, end: Time, rateFunction: Time => Double, sim: NOMADGraphSimulator[T])(implicit tag: ClassTag[T]) extends Action[T] {
+class PedestrianGenerationNonHomogeneousRate[T <: PedestrianNOMAD](o: Rectangle, d: Rectangle, start: Time, end: Time, rateFunction: Time => Double, sim: NOMADGraphSimulator[T])(implicit tag: ClassTag[T]) extends Action {
 
   /** Maximum rate of the pedestrian generation rate, computed by sampling */
   private val rateMax: Double = start.value.to(end.value).by(0.01).map(v => rateFunction(Time(v.toDouble))).max

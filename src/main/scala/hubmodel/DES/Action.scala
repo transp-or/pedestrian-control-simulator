@@ -9,7 +9,7 @@ import scala.reflect.ClassTag
   * The only method which is mandatory is "execute". To give more control over what data is passed to the events,
   * the Actions which inherent from [[Action]] should take as arguments the simulation.
   */
-abstract class Action[T <: PedestrianNOMAD] {
+abstract class Action {
 
 
   /** Relative priority between different classes. The higher the value, the higher the priority. This means

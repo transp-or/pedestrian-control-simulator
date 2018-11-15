@@ -20,7 +20,7 @@ import scala.reflect.ClassTag
   * @param end          end time of the pedestrian creation
   * @param numberPeople number of people to create
   */
-class PedestrianGenerationOverInterval[T <: PedestrianNOMAD](o: Rectangle, d: Rectangle, start: Time, end: Time, numberPeople: Int, sim: NOMADGraphSimulator[T])(implicit tag: ClassTag[T]) extends Action[T] {
+class PedestrianGenerationOverInterval[T <: PedestrianNOMAD](o: Rectangle, d: Rectangle, start: Time, end: Time, numberPeople: Int, sim: NOMADGraphSimulator[T])(implicit tag: ClassTag[T]) extends Action {
 
   /** Poisson distribution
     *

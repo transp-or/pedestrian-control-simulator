@@ -9,7 +9,7 @@ package hubmodel.demand
   * @param train Train instance to insert
   * @param sim   simulation environment
   */
-/*class VehicleArrival(train: Train, sim: SFGraphSimulator) extends Action[T] {
+/*class VehicleArrival(train: Train, sim: SFGraphSimulator) extends Action {
 
   // start and end must be relative to train arrival !!!!
   def trainInducedFlow(t: Train): Vector[PedestrianFlow] = {

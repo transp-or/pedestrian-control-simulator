@@ -16,7 +16,7 @@ import scala.reflect.ClassTag
   *
   * @param sim simulator containing the data
   */
-class ProcessPedestrianFlows[T <: PedestrianNOMAD](pedestrianFlows: Iterable[PedestrianFlow_New], pedestrianFlowsFunction: Iterable[PedestrianFlowFunction_New], sim: NOMADGraphSimulator[T])(implicit tag: ClassTag[T]) extends Action[T] {
+class ProcessPedestrianFlows[T <: PedestrianNOMAD](pedestrianFlows: Iterable[PedestrianFlow_New], pedestrianFlowsFunction: Iterable[PedestrianFlowFunction_New], sim: NOMADGraphSimulator[T])(implicit tag: ClassTag[T]) extends Action {
 
   /**
     * Process the flows defined from zone to zone (not linked to PT). The flows are distributed between the

@@ -9,7 +9,7 @@ import hubmodel.supply.graph.{FlowGate, FlowGateFunctional}
 
 import scala.annotation.tailrec
 
-class DLQRGateController[T <: PedestrianNOMAD](sim: NOMADGraphSimulator[T]) extends Action[T] {
+class DLQRGateController[T <: PedestrianNOMAD](sim: NOMADGraphSimulator[T]) extends Action {
 
   def allocateSupply(totalInflow: Double, gates: Vector[String]): Map[String, Double] = {
     gates.map(g => g -> totalInflow / gates.size).toMap

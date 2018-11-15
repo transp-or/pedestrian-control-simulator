@@ -12,7 +12,7 @@ import hubmodel.DES.{Action, NOMADGraphSimulator}
   *
   * @param sim simulation environment
   */
-/*class UpdateBinaryGates(sim: SFGraphSimulator) extends Action[T] {
+/*class UpdateBinaryGates(sim: SFGraphSimulator) extends Action {
   val densityThresHold: Double = 1.0
   def computeDensity: Double = {sim.densityHistory.last._2}
 
@@ -35,7 +35,7 @@ import hubmodel.DES.{Action, NOMADGraphSimulator}
   *
   * @param sim simulation environment
   */
-/*class UpdateFlowGates(sim: SFGraphSimulator) extends Action[T] {
+/*class UpdateFlowGates(sim: SFGraphSimulator) extends Action {
   val p: Double = 1
   val flowMin: Double = 0.2 // pax/m/s
   val flowMax: Double = 1 // pax/m/s

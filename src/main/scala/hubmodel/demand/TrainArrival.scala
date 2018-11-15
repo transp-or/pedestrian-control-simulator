@@ -7,7 +7,7 @@ import hubmodel.ped.PedestrianNOMAD
 
 import scala.reflect.ClassTag
 
-class TrainArrival[T <: PedestrianNOMAD](train: Vehicle, tinf: Iterable[PedestrianFlowPT_New], sim: NOMADGraphSimulator[T])(implicit tag: ClassTag[T]) extends Action[T] {
+class TrainArrival[T <: PedestrianNOMAD](train: Vehicle, tinf: Iterable[PedestrianFlowPT_New], sim: NOMADGraphSimulator[T])(implicit tag: ClassTag[T]) extends Action {
 
   override def execute(): Unit = {
     sim.eventLogger.trace("time=" + sim.currentTime + ": train arrival")

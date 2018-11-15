@@ -81,7 +81,7 @@ class RectangleModifiable(name: String,
     (this.__A, this.__B, this.__C, this.__D).##
   }
 
-  override def toString: String = this.name + ", " + this.A + ", " + this.B + ", " + this.C + ", " + this.D
+  override def toString: String = this.name //+ ", " + this.A + ", " + this.B + ", " + this.C + ", " + this.D
 
 
   override def clone(): RectangleModifiable = new RectangleModifiable(

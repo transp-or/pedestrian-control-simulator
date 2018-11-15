@@ -6,7 +6,7 @@ import hubmodel.ped.{PedestrianNOMAD, PedestrianSim}
 import scala.reflect.ClassTag
 
 
-class UpdateRoutesGuo[T <: PedestrianNOMAD](sim: PedestrianDES[T]) extends Action[T] {
+class UpdateRoutesGuo[T <: PedestrianNOMAD](sim: PedestrianDES[T]) extends Action {
 
 
   override def execute(): Unit = ???

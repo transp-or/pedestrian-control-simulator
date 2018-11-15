@@ -56,8 +56,12 @@ trait BuildClosedPolygon {
     else {
       walls.find(w2 => w2.startPoint == p || w2.endPoint == p) match {
         case Some(connectingWall) => {
-          if (p == connectingWall.startPoint) {collectShells(connectingWall.endPoint, t, connectingWall.endPoint :: nodeSeq, walls.filterNot(w2 => w2.startPoint == p || w2.endPoint == p), shellSeq)}
-          else if (p == connectingWall.endPoint) {collectShells(connectingWall.startPoint, t, connectingWall.startPoint :: nodeSeq, walls.filterNot(w2 => w2.startPoint == p || w2.endPoint == p), shellSeq)}
+          if (p == connectingWall.startPoint) {
+            collectShells(connectingWall.endPoint, t, connectingWall.endPoint :: nodeSeq, walls.filterNot(w2 => w2.startPoint == p || w2.endPoint == p), shellSeq)
+          }
+          else if (p == connectingWall.endPoint) {
+            collectShells(connectingWall.startPoint, t, connectingWall.startPoint :: nodeSeq, walls.filterNot(w2 => w2.startPoint == p || w2.endPoint == p), shellSeq)
+          }
           else throw new Exception("wall has no connections: connectivity broken at " + p + ". Check wall coordinates !")
         }
         case None => throw new Exception("wall has no connections: connectivity broken at " + p + ". Check wall coordinates !")
