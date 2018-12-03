@@ -80,9 +80,9 @@ package object hubmodel {
     def *(m: Double) = new Time(this.value * m)
 
     def asReadable: String = {
-      val hours: Int = (value / 3600.0).setScale(0, RoundingMode.CEILING).toInt
-      val minutes: Int = ((value - hours * 3600) / 60.0).setScale(0, RoundingMode.CEILING).toInt
-      val seconds: Double = (value - hours * 3600 - minutes * 60).setScale(0, RoundingMode.CEILING).toInt
+      val hours: Int = (this.value / 3600.0).setScale(0, RoundingMode.FLOOR).toInt
+      val minutes: Int = ((this.value - hours * 3600)/60.0).setScale(0, RoundingMode.FLOOR).toInt
+      val seconds: Double = (this.value  - 3600 * hours - 60 * minutes).setScale(0, RoundingMode.FLOOR).toInt
       hours.toString + ":" + minutes.toString + ":" + seconds.toString
     }
 
@@ -232,7 +232,7 @@ package object hubmodel {
 
 
     // Loads the train time table used to create demand from trains
-    val (timeTable, stop2Vertex) = if (config.hasPath("files.timetable") && !config.getIsNull("files.timetable")) {
+    val (timeTable, stop2Vertex) = if (!config.getIsNull("files.timetable")) {
       (
         readSchedule(config.getString("files.timetable")),
         readPTStop2GraphVertexMap(config.getString("files.zones_to_vertices_map"))
@@ -250,9 +250,9 @@ package object hubmodel {
     }
 
     // Loads the disaggregate pedestrian demand.
-    val disaggPopulation: Iterable[(String, String, Time)] = if (config.hasPath("files.flows_TF") && config.getIsNull("files.flows_TF") && !config.getIsNull("files.disaggregate_demand")) {
+    val disaggPopulation: Iterable[(String, String, Time)] = if (config.getIsNull("files.flows_TF") && !config.getIsNull("files.disaggregate_demand")) {
       readDisaggDemand(config.getString("files.disaggregate_demand"))
-    } else if (config.hasPath("files.disaggregate_demand") && config.getIsNull("files.disaggregate_demand") && !config.getIsNull("files.flows_TF")) {
+    } else if (config.getIsNull("files.disaggregate_demand") && !config.getIsNull("files.flows_TF")) {
       readDisaggDemandTF(config.getString("files.flows_TF"))
     } else {
       println(" * using only standard pedestrian flows")
@@ -273,6 +273,7 @@ package object hubmodel {
         case _ => throw new Exception("Track ID should not be there !")
       }
     }
+
 
     // Loads the start time, end time and time intervals
     val simulationStartTime: Time = Time(config.getDouble("sim.start_time"))
@@ -304,7 +305,7 @@ package object hubmodel {
 
     if (disaggPopulation.nonEmpty) { sim.insertEventWithZeroDelay(new ProcessDisaggregatePedestrianFlows(disaggPopulation, sim)) }
 
-    val PTInducedFlows = flows._2
+    val PTInducedFlows = flows._2.toVector
     sim.insertEventWithZeroDelay(new ProcessTimeTable[T](timeTable, PTInducedFlows, sim))
     sim.insertEventWithZeroDelay(new ProcessPedestrianFlows[T](flows._1, flows._3, sim))
 

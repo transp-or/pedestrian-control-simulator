@@ -240,7 +240,7 @@ package hubmodel {
       val input: JsValue = Json.parse(try source.mkString finally source.close)
 
       input.validate[PublicTransportScheduleReaderTF] match {
-        case s: JsSuccess[PublicTransportScheduleReaderTF] => new PublicTransportSchedule(s.get.loc, s.get._timeTableInput.map(v => new Vehicle(TrainID_New(v.ID, ""), v.ID, StopID_New(v.stopID.toInt, ""), Some(v.arr), Some(v.dep), -1)))
+        case s: JsSuccess[PublicTransportScheduleReaderTF] => new PublicTransportSchedule(s.get.loc, s.get._timeTableInput.map(v => new Vehicle(TrainID_New(v.ID, ""), v.ID, StopID_New(v.stopID, ""), Some(v.arr), Some(v.dep), -1)))
         case e: JsError => throw new Error("Error while parsing train timetable: " + JsError.toJson(e).toString())
       }
     }

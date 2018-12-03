@@ -808,7 +808,7 @@ class NOMADIntegrated[T <: PedestrianNOMAD](sim: NOMADGraphSimulator[T]) extends
       // We do not check this because in this case the object that is in front must have a closest point
       // that will be more influential for the repel forces. Although this closest point
       // may not lie over the exact line that connects the refused closest point and the pedestrian.
-      if (closestPoint.distance(coordinate) - radius <= maxExtension) { // convert back the closest point to the local coordinates
+      if (closestPoint.distance(coordinate) <= 15 && closestPoint.distance(coordinate) - radius <= maxExtension) { // convert back the closest point to the local coordinates
         //closestPoint = pedestrian.getLevel().makeCoordinate2D(closestPoint);
         coordinatesInVicinity.add(new InfluenceAreaReturnObsData(obstacle, closestPoint))
       }

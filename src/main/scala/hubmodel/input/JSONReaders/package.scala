@@ -23,12 +23,12 @@ package object JSONReaders {
     * @param dep      departure time
     * @param capacity max capacity of the train
     */
-  private[JSONReaders] case class Vehicle_JSON(ID: String, trainType: String, track: Int, arr: Option[Time], dep: Option[Time], capacity: Int)
+  private[JSONReaders] case class Vehicle_JSON(ID: String, trainType: String, track: String, arr: Option[Time], dep: Option[Time], capacity: Int)
 
   implicit val trainReads: Reads[Vehicle_JSON] = (
     (JsPath \ "id").read[String](minLength[String](1)) and
       (JsPath \ "type").read[String] and
-      (JsPath \ "track").read[Int] and
+      (JsPath \ "track").read[String] and
       (JsPath \ "arrival-time").readNullable[Time] and
       (JsPath \ "departure-time").readNullable[Time] and
       (JsPath \ "capacity").read[Int]
@@ -36,18 +36,18 @@ package object JSONReaders {
 
   /** Pairs of tracks and corresponding nodes
     *
-    * @param track id of track, as [[TrackIDOld]]
+    * @param stop id of track, as [[TrackIDOld]]
     * @param nodes Vector of [[NodeIDOld]]
     */
-  private[JSONReaders] case class Track2Nodes_JSON(track: Int, nodes: Vector[NodeIDOld])
+  private[JSONReaders] case class Stop2Nodes_JSON(stop: String, nodes: Vector[NodeIDOld])
 
   private[JSONReaders] case class Zone2Nodes_JSON(zone: Int, nodes: Vector[NodeIDOld])
 
 
-  implicit val Stop2NodesReads: Reads[Track2Nodes_JSON] = (
-    (JsPath \ "stop").read[Int] and
+  implicit val Stop2NodesReads: Reads[Stop2Nodes_JSON] = (
+    (JsPath \ "stop").read[String] and
       (JsPath \ "nodes").read[Vector[NodeIDOld]]
-    ) (Track2Nodes_JSON.apply _)
+    ) (Stop2Nodes_JSON.apply _)
 
   implicit val Zone2NodesReads: Reads[Zone2Nodes_JSON] = (
     (JsPath \ "zone").read[Int] and
@@ -61,11 +61,11 @@ package object JSONReaders {
     * @param loc                    location of this map
     * @param Track2NodeMappingInput raw data
     */
-  case class Track2NodeMapping_JSON(loc: String, Track2NodeMappingInput: Vector[Track2Nodes_JSON], WalkingZones2NodeMappingInput: Vector[Zone2Nodes_JSON])
+  case class Track2NodeMapping_JSON(loc: String, Track2NodeMappingInput: Vector[Stop2Nodes_JSON], WalkingZones2NodeMappingInput: Vector[Zone2Nodes_JSON])
 
   implicit val track2nodeMappingReads: Reads[Track2NodeMapping_JSON] = (
     (JsPath \ "location").read[String] and
-      (JsPath \ "stop2nodes").read[Vector[Track2Nodes_JSON]] and
+      (JsPath \ "stop2nodes").read[Vector[Stop2Nodes_JSON]] and
       (JsPath \ "zone2nodes").read[Vector[Zone2Nodes_JSON]]
     ) (Track2NodeMapping_JSON.apply _)
 

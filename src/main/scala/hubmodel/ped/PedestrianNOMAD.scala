@@ -21,8 +21,8 @@ class PedestrianNOMAD(oZone: Rectangle, dZone: Rectangle, entryTime: Time, posO:
   var acceleration: Acceleration = new ZeroVector2D
   var nextPosition: Vector2D = this.currentPosition
   var nextVelocity: Vector2D = new ZeroVector2D
-  val aw: Double = 10
-  val s0: Double = 0.26
+  //val aw: Double = 10
+  //val s0: Double = 0.26
   val getRadius: Double = this.r
 
   def isStuck: Boolean = {

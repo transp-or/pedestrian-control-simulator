@@ -49,10 +49,10 @@ package hubmodel {
       def apply(id: String, humandID: String): NodeID_New = new NodeID_New(id, humandID)
     }
 
-    class StopID_New(ID: Int, humanID: String) extends NodeParent(ID.toString) {
-      def this(ID: Int) = this(ID, ID.toString)
+    class StopID_New(ID: String, humanID: String) extends NodeParent(ID.toString) {
+      def this(ID: String) = this(ID, ID.toString)
 
-      override def toString: ODIDOld = this.ID.toString
+      override def toString: ODIDOld = this.ID
 
       override def canEqual(a: Any): Boolean = a.isInstanceOf[StopID_New]
 
@@ -68,7 +68,7 @@ package hubmodel {
     }
 
     object StopID_New {
-      def apply(id: Int, humandID: String): StopID_New = new StopID_New(id, humandID)
+      def apply(id: String, humandID: String): StopID_New = new StopID_New(id, humandID)
     }
 
     class TrainID_New(ID: String, humanID: String) extends NodeParent(ID) {

@@ -49,7 +49,7 @@ class RouteGraph(protected val baseVertices: Iterable[Rectangle],
   this.vertexCollection.values.foreach(v => network.addVertex(v))
 
   // builds the edge set from the various strategies which modify the base graph.
-  val edgeCollection: Set[MyEdge] = (((standardEdges ++ flowGates ++ binaryGates ++ movingWalkways).toSet
+  val edgeCollection: Set[MyEdge] = (((standardEdges ++ flowGates ++ binaryGates ++ movingWalkways ++ levelChanges).toSet
     .filterNot(e => flowSeparators.flatMap(_.associatedConnectivity.map(_.startVertex.name)).toVector.contains(e.startVertex.name)
       || flowSeparators.flatMap(_.associatedConnectivity.map(_.startVertex.name)).toVector.contains(e.endVertex.name)
     ) ++ flowSeparators.flatMap(_.associatedConnectivity)) ++ edges2Add )-- edges2Remove
@@ -59,7 +59,14 @@ class RouteGraph(protected val baseVertices: Iterable[Rectangle],
   // adds the edges and sets the weights
   this.edgeCollection.foreach(e => {
     network.addEdge(e.startVertex, e.endVertex, e)
-    network.setEdgeWeight(e, e.length)
+    e match {
+      case lv: MyEdgeLevelChange => {
+        network.setEdgeWeight(e, 0.0)
+      }
+      case _ => {
+        network.setEdgeWeight(e, e.length)
+      }
+    }
   })
 
   //def vertices: Iterable[Rectangle] = this.vertexMapNew.values
@@ -85,10 +92,11 @@ class RouteGraph(protected val baseVertices: Iterable[Rectangle],
     */
   private def getShortestPath(o: Rectangle, d: Rectangle): List[Rectangle] = {
     Try(shortestPathBuilder.getPath(o, d)) match {
-      case Success(s) => {
+      case Success(s) if (s.getVertexList.size() > 0) => {
         s.getVertexList.asScala.toList
       }
-      case Failure(f) => throw f
+      case Failure(f) => { throw f }
+      case _ => {throw new IllegalAccessError("No route from " + o + " to " + d)}
     }
   }
 
@@ -96,7 +104,10 @@ class RouteGraph(protected val baseVertices: Iterable[Rectangle],
     * Determines whether there is a change in floor level when changing links. This is important as the pedestrians must be
     * "teleported" to the start of the other edge.
     */
-  private val isFloorChange: (Rectangle, Rectangle) => Boolean = (a, b) => this.levelChanges.map(e => (e.startVertex.ID, e.endVertex.ID)).exists(_ == (a.ID, b.ID))
+  private def isFloorChange(a: Rectangle, b: Rectangle): Boolean =  {
+    println((a.ID, b.ID), this.levelChanges)
+    this.levelChanges.map(e => (e.startVertex.ID, e.endVertex.ID)).exists(_ == (a.ID, b.ID))
+  }
 
   /**
     * Changes the pedestrian's intermediat destination when the current intermediat destination is reached.
@@ -104,11 +115,13 @@ class RouteGraph(protected val baseVertices: Iterable[Rectangle],
     * @param p pedestrian for whom to change destination
     */
   def processIntermediateArrival(p: PedestrianNOMAD): Unit = {
+    println(p.route)
     if (p.route.isEmpty) {
       p.route = this.getShortestPath(p.origin, p.finalDestination).tail
       p.nextZone = p.route.head
     }
     else if (this.isFloorChange(p.nextZone, p.route.head)) {
+      println("Changing level: " + p.nextZone + " to " + p.route.head)
       p.previousZone = p.route.head
       p.currentPosition = p.route.head.uniformSamplePointInside
       p.nextZone = p.route.tail.head

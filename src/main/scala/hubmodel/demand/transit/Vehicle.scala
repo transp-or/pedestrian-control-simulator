@@ -5,10 +5,12 @@ import hubmodel.supply.{NodeParent, StopID_New, TrainID_New}
 
 class Vehicle(val ID: TrainID_New, val trainType: String, val stop: StopID_New, val arr: Option[Time], val dep: Option[Time], val capacity: Int) {
 
-  val alightingPassengers: collection.mutable.ArrayBuffer[NodeParent] = collection.mutable.ArrayBuffer()
+  def alightingPassengers: Seq[NodeParent] = this._alightingPassengers
+
+  private val _alightingPassengers: collection.mutable.ArrayBuffer[NodeParent] = collection.mutable.ArrayBuffer()
 
   def addAlightingPassenger(dZone: NodeParent): Unit = {
-    this.alightingPassengers.append(dZone)
+    this._alightingPassengers.append(dZone)
   }
 
   /** Checks whether we are allowed to compare this object to another

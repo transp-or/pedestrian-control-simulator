@@ -83,7 +83,7 @@ class PedestrianSim(val origin: Rectangle,
   val r: Double = ThreadLocalRandom.current.nextDouble(0.2, 0.3)
   val a0: Double = 10//ThreadLocalRandom.current.nextDouble(8.0, 10.0)
   val r0: Double = 0.16//ThreadLocalRandom.current.nextDouble(0.10, 0.5)
-  val a1: Double = 1.67//ThreadLocalRandom.current.nextDouble(8.0, 10.0)
+  val a1: Double = 2.0//ThreadLocalRandom.current.nextDouble(8.0, 10.0)
   val r1: Double = 0.013 // ThreadLocalRandom.current.nextDouble(0.10, 0.5)
   val k0: Double = 1000//ThreadLocalRandom.current.nextDouble(800.0, 1000.0)
   val kappa: Double = 1000.0//ThreadLocalRandom.current.nextDouble(800.0, 1000.0)

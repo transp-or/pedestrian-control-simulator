@@ -2,9 +2,10 @@ package hubmodel.output
 
 import java.io.{BufferedWriter, File, FileWriter}
 
-import hubmodel.Time
+import hubmodel.{StopID, Time, VertexID}
 import hubmodel.TimeNumeric.mkOrderingOps
 import hubmodel.ped.PedestrianTrait
+import hubmodel.supply.StopID_New
 import myscala.math.stats.{Quantiles, computeQuantiles}
 import play.api.libs.json.{JsValue, Json, Writes}
 
@@ -30,7 +31,7 @@ package object TRANSFORM {
 
   implicit class PopulationSummaryProcessingTRANSFORM(pop: Iterable[(String, String, Double, Double, Double)]) {
 
-    def computeTT4TRANSFORM(quantiles: Seq[Double], startTime: Time, endTime: Time, fileName: String, startDay: String = "1970-01-01", endDay: String = "2100-12-31"): Unit = {
+    def computeTT4TRANSFORM(quantiles: Seq[Double], startTime: Time, endTime: Time, fileName: String, vertex2Stop: VertexID => String, startDay: String = "1970-01-01", endDay: String = "2100-12-31"): Unit = {
       val res: collection.mutable.Map[(String, String), collection.mutable.ArrayBuffer[Double]] = collection.mutable.Map()
       pop.foreach(p => {
         if (p._4 >= startTime.value || p._5 <= endTime.value) {
@@ -40,7 +41,7 @@ package object TRANSFORM {
       val file = new File(fileName)
       val bw = new BufferedWriter(new FileWriter(file))
       bw.write(Json.prettyPrint(Json.toJson(
-        res.map(kv => ODWithQuantiles(kv._1._1, kv._1._2, startDay + " " + startTime.asReadable, endDay + " " + endTime.asReadable, computeQuantiles(quantiles)(kv._2)))
+        res.map(kv => ODWithQuantiles(vertex2Stop(kv._1._1), vertex2Stop(kv._1._2), startDay + " " + startTime.asReadable, endDay + " " + endTime.asReadable, computeQuantiles(quantiles)(kv._2)))
       )))
       bw.close()
     }

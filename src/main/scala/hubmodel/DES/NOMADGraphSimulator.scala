@@ -7,7 +7,7 @@ import hubmodel.mvmtmodels.NOMAD.NOMADIntegrated
 import hubmodel.mvmtmodels.RebuildTree
 import hubmodel.ped.{PedestrianNOMAD, PedestrianNOMADWithGraph, PedestrianSim}
 import hubmodel.route.UpdateRoutes
-import hubmodel.supply.NodeParent
+import hubmodel.supply.{NodeParent, StopID_New}
 import hubmodel.supply.continuous.{ContinuousSpace, Wall}
 import hubmodel.supply.graph._
 import hubmodel.tools.cells.{DensityMeasuredArea, Rectangle, isInVertex}
