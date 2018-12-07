@@ -9,7 +9,7 @@ import hubmodel.output.image.{DrawControlDevicesAndWalls, DrawGraph, DrawWalls, 
 import hubmodel.output.video.MovingPedestriansWithDensityWithWallVideo
 import hubmodel.ped.{PedestrianNOMAD, PedestrianNOMADWithGraph, PedestrianSim, PedestrianTrait}
 import hubmodel.supply.{NodeID_New, NodeParent, StopID_New, TrainID_New}
-import hubmodel.supply.continuous.{MovableWall, ReadContinuousSpace}
+import hubmodel.supply.continuous.{ContinuousSpace, MovableWall, ReadContinuousSpace}
 import hubmodel.supply.graph._
 import hubmodel.tools.cells.{DensityMeasuredArea, Rectangle}
 import myscala.math.vector.{Vector2D, Vector3D}
@@ -25,6 +25,7 @@ import scala.math.BigDecimal.RoundingMode
 import scala.util.{Failure, Success, Try}
 import hubmodel.TimeNumeric.mkOrderingOps
 import hubmodel.demand.flows.{ProcessDisaggregatePedestrianFlows, ProcessPedestrianFlows}
+import hubmodel.mgmt.ControlDevices
 
 import scala.reflect.ClassTag
 
@@ -217,47 +218,15 @@ package object hubmodel {
       config.getBoolean("sim.use_binary_gates"),
       config.getBoolean("sim.use_amw"),
       config.getBoolean("sim.use_flow_sep"),
-      config.getBoolean("sim.measure_density")
+      config.getBoolean("sim.measure_density"),
+      config.getBoolean("sim.use_alternate_graphs")
     )
 
-    // Loads the pedestrian flows. These are either exogenous to the trains (from outside) or flows originating from trains.
-    val flows: (Iterable[PedestrianFlow_New], Iterable[PedestrianFlowPT_New], Iterable[PedestrianFlowFunction_New]) = if (!config.getIsNull("files.flows") && config.getBoolean("sim.use_flows")) {
-      readPedestrianFlows(config.getString("files.flows"))
-    } else if (!config.getIsNull("files.flows_TF") && config.getBoolean("sim.use_flows")) {
-      readPedestrianFlows(config.getString("files.flows_TF"))
-    } else {
-      println(" * using only disaggregate pedestrian demand")
-      (Iterable(), Iterable(), Iterable())
-    }
+    val flows = getFlows(config)
 
+    val (timeTable, stop2Vertex) = getPTSchedule(flows, config)
 
-    // Loads the train time table used to create demand from trains
-    val (timeTable, stop2Vertex) = if (!config.getIsNull("files.timetable")) {
-      (
-        readSchedule(config.getString("files.timetable")),
-        readPTStop2GraphVertexMap(config.getString("files.zones_to_vertices_map"))
-      )
-    } else if (config.hasPath("files.timetable_TF") && !config.getIsNull("files.timetable_TF")) {
-      (
-        readScheduleTF(config.getString("files.timetable_TF")),
-        readPTStop2GraphVertexMap(config.getString("files.zones_to_vertices_map"))
-      )
-    } else if (flows._2.isEmpty) {
-      println(" * no time table is required as PT induced flows are empty")
-      (new PublicTransportSchedule("unused", Vector()), new Stop2Vertex(Map(), Map()))
-    } else {
-      throw new IllegalArgumentException("both time tables files are set to null in config file")
-    }
-
-    // Loads the disaggregate pedestrian demand.
-    val disaggPopulation: Iterable[(String, String, Time)] = if (config.getIsNull("files.flows_TF") && !config.getIsNull("files.disaggregate_demand")) {
-      readDisaggDemand(config.getString("files.disaggregate_demand"))
-    } else if (config.getIsNull("files.disaggregate_demand") && !config.getIsNull("files.flows_TF")) {
-      readDisaggDemandTF(config.getString("files.flows_TF"))
-    } else {
-      println(" * using only standard pedestrian flows")
-      Iterable()
-    }
+    val disaggPopulation = getDisaggPopulation(config)
 
     /** Takes a conceptual node (train or on foot) and returns the set of "real" nodes (the ones used by the graph)
       * in which the pedestrians must be created.
@@ -291,7 +260,6 @@ package object hubmodel {
     val sim: NOMADGraphSimulator[T] = new NOMADGraphSimulator[T](
       simulationStartTime,
       simulationEndTime,
-      logDir = None,
       sf_dt = socialForceInterval,
       route_dt = routeUpdateInterval,
       evaluate_dt = evaluationInterval,
@@ -303,13 +271,71 @@ package object hubmodel {
       controlDevices = controlDevices
     )
 
-    if (disaggPopulation.nonEmpty) { sim.insertEventWithZeroDelay(new ProcessDisaggregatePedestrianFlows(disaggPopulation, sim)) }
+
+    insertDemandIntoSimulator[T](sim, disaggPopulation, flows, timeTable)
+
+
+    /*if (disaggPopulation.nonEmpty) { sim.insertEventWithZeroDelay(new ProcessDisaggregatePedestrianFlows(disaggPopulation, sim)) }
+
+    val PTInducedFlows = flows._2.toVector
+    sim.insertEventWithZeroDelay(new ProcessTimeTable[T](timeTable, PTInducedFlows, sim))
+    sim.insertEventWithZeroDelay(new ProcessPedestrianFlows[T](flows._1, flows._3, sim))
+*/
+    sim
+  }
+
+  // Loads the pedestrian flows. These are either exogenous to the trains (from outside) or flows originating from trains.
+  def getFlows(config: Config): (Iterable[PedestrianFlow_New], Iterable[PedestrianFlowPT_New], Iterable[PedestrianFlowFunction_New]) = if (!config.getIsNull("files.flows") && config.getBoolean("sim.use_flows")) {
+    readPedestrianFlows(config.getString("files.flows"))
+  } else if (!config.getIsNull("files.flows_TF") && config.getBoolean("sim.use_flows")) {
+    readPedestrianFlows(config.getString("files.flows_TF"))
+  } else {
+    println(" * using only disaggregate pedestrian demand")
+    (Iterable(), Iterable(), Iterable())
+  }
+
+  // Loads the train time table used to create demand from trains
+  def getPTSchedule(flows: (Iterable[PedestrianFlow_New], Iterable[PedestrianFlowPT_New], Iterable[PedestrianFlowFunction_New]), config: Config): (PublicTransportSchedule, Stop2Vertex) = {
+    if (!config.getIsNull("files.timetable")) {
+      (
+        readSchedule(config.getString("files.timetable")),
+        readPTStop2GraphVertexMap(config.getString("files.zones_to_vertices_map"))
+      )
+    } else if (config.hasPath("files.timetable_TF") && !config.getIsNull("files.timetable_TF")) {
+      (
+        readScheduleTF(config.getString("files.timetable_TF")),
+        readPTStop2GraphVertexMap(config.getString("files.zones_to_vertices_map"))
+      )
+    } else if (flows._2.isEmpty) {
+      println(" * no time table is required as PT induced flows are empty")
+      (new PublicTransportSchedule("unused", Vector()), new Stop2Vertex(Map(), Map()))
+    } else {
+      throw new IllegalArgumentException("both time tables files are set to null in config file")
+    }
+  }
+
+  // Loads the disaggregate pedestrian demand.
+  def getDisaggPopulation(config: Config): Iterable[(String, String, Time)] = if (config.getIsNull("files.flows_TF") && !config.getIsNull("files.disaggregate_demand")) {
+    readDisaggDemand(config.getString("files.disaggregate_demand"))
+  } else if (config.getIsNull("files.disaggregate_demand") && !config.getIsNull("files.flows_TF")) {
+    readDisaggDemandTF(config.getString("files.flows_TF"))
+  } else {
+    println(" * using only standard pedestrian flows")
+    Iterable()
+  }
+
+
+  def insertDemandIntoSimulator[T <: PedestrianNOMAD](sim: NOMADGraphSimulator[T],
+                                                      disaggPopulation: Iterable[(String, String, Time)],
+                                                      flows: (Iterable[PedestrianFlow_New], Iterable[PedestrianFlowPT_New], Iterable[PedestrianFlowFunction_New]),
+                                                      timeTable: PublicTransportSchedule)(implicit tag: ClassTag[T]): Unit = {
+
+    if (disaggPopulation.nonEmpty) { sim.insertEventWithZeroDelay(new ProcessDisaggregatePedestrianFlows[T](disaggPopulation, sim)) }
 
     val PTInducedFlows = flows._2.toVector
     sim.insertEventWithZeroDelay(new ProcessTimeTable[T](timeTable, PTInducedFlows, sim))
     sim.insertEventWithZeroDelay(new ProcessPedestrianFlows[T](flows._1, flows._3, sim))
 
-    sim
   }
 
   // ******************************************************************************************
@@ -552,4 +578,22 @@ package object hubmodel {
     // Reads the file passed as argument. Path is from execution path, i.e. where the program is run from (build.sbt usually)
     ConfigFactory.load(ConfigFactory.parseFile(new File(confFileContents)))
   }
+
+
+  type SimulatorParameters = (
+    Time,
+      Time,
+      Time,
+      Time,
+      Time,
+      Option[Time],
+      ContinuousSpace,
+      GraphContainer,
+      PublicTransportSchedule,
+      NodeParent => Iterable[Rectangle],
+      ControlDevices
+    )
+
 }
+
+

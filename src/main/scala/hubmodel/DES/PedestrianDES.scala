@@ -7,7 +7,7 @@ package hubmodel.DES
 import java.util.concurrent.ThreadLocalRandom
 
 import ch.qos.logback.classic.Level
-import com.typesafe.scalalogging.Logger
+import com.typesafe.scalalogging.{LazyLogging, Logger}
 import hubmodel.Position
 import hubmodel.TimeNumeric.mkOrderingOps
 import hubmodel.ped.{PedestrianNOMAD, PedestrianTrait}
@@ -30,13 +30,11 @@ import scala.util.Random
   *
   * @param startTime start time of the simulation
   * @param finalTime end time of the simulation
-  * @param logPath   path to the dir where the log files should be kept
   * @tparam T Type of the pedestrian class to use in the simulation
   *
   */
 abstract class PedestrianDES[T <: PedestrianNOMAD](val startTime: Time,
-                                                   val finalTime: Time,
-                                                   logPath: Option[String] = None) {
+                                                   val finalTime: Time) extends LazyLogging {
 
   ///////////////////////////////////////////////////////////////////////////////////////////////////
   ////////////////////////////// General parameters /////////////////////////////////////////////////
@@ -57,19 +55,16 @@ abstract class PedestrianDES[T <: PedestrianNOMAD](val startTime: Time,
   ///////////////////////////////////////////////////////////////////////////////////////////////////
 
   // Loggers for the execution of the events and the errors/warnings.
-  private val loggerPath: Option[String] = if (logPath.isDefined && logPath.get.last == '/') {
+  /*private val loggerPath: Option[String] = if (logPath.isDefined && logPath.get.last == '/') {
     logPath
   } else if (logPath.isDefined && logPath.get.last != '/') {
     Some(logPath.get + "/")
   } else {
     None
-  }
+  }*/
 
   /** Log for keeping track of events */
-  val eventLogger: Logger = new Log("log-DES-events" + ID, loggerPath, Level.TRACE).logger
-
-  /** Log for storing errors */
-  val errorLogger: Logger = new Log("log-DES-errors" + ID, loggerPath, Level.TRACE).logger
+  val eventLogger: Logger = logger
 
   ///////////////////////////////////////////////////////////////////////////////////////////////////
   ////////////////////////////// Action definition and manipulaiton /////////////////////////////////

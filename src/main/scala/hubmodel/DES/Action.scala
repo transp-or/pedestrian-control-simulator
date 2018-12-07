@@ -1,5 +1,6 @@
 package hubmodel.DES
 
+import com.typesafe.scalalogging.LazyLogging
 import hubmodel.ped.PedestrianNOMAD
 
 import scala.reflect.ClassTag
@@ -9,7 +10,7 @@ import scala.reflect.ClassTag
   * The only method which is mandatory is "execute". To give more control over what data is passed to the events,
   * the Actions which inherent from [[Action]] should take as arguments the simulation.
   */
-abstract class Action {
+abstract class Action extends LazyLogging {
 
 
   /** Relative priority between different classes. The higher the value, the higher the priority. This means

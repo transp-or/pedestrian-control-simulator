@@ -68,6 +68,7 @@ class MultipleGraph( fg: Iterable[FlowGate],
   }
 
   type T = MultipleGraph
+
   /**
     * Clones the graph, this should be thread safe and make hard copies of the objects os they can be used for
     * running multiple simulations at once.
@@ -80,6 +81,22 @@ class MultipleGraph( fg: Iterable[FlowGate],
     val graphs = new MultipleGraph(devices.flowGates, devices.binaryGates, devices.amws, devices.flowSeparators)
     this._graphCollection.foreach(g => {
       graphs.addGraph(g._1, g._2._1, g._2._2.vertexCollection.values, g._2._2.edgeCollection, Set(), Set(), g._2._2.levelChanges)
+    })
+    graphs
+  }
+
+  /**
+    * Clones the graph, this should be thread safe and make hard copies of the objects os they can be used for
+    * running multiple simulations at once.
+    *
+    * @param devices The new set of devices to use to make the graph. This way multiple graphs do not share control devices
+    * @return Copy of the graph.
+    */
+  def clone(devices: ControlDevices, populationFraction: PopulationFraction): MultipleGraph = {
+
+    val graphs = new MultipleGraph(devices.flowGates, devices.binaryGates, devices.amws, devices.flowSeparators)
+    this._graphCollection.foreach(g => {
+      graphs.addGraph(g._1, populationFraction, g._2._2.vertexCollection.values, g._2._2.edgeCollection, Set(), Set(), g._2._2.levelChanges)
     })
     graphs
   }

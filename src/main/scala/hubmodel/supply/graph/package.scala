@@ -13,6 +13,7 @@ import play.api.libs.json.{JsError, JsSuccess, JsValue, Json}
 
 import scala.io.BufferedSource
 import scala.reflect.ClassTag
+import scala.util.{Failure, Success, Try}
 
 package object graph {
 
@@ -28,7 +29,8 @@ package object graph {
                                       useBinarygates: Boolean,
                                       useAMWs: Boolean,
                                       useFlowSep: Boolean,
-                                      measureDensity: Boolean)(implicit tagT: ClassTag[T]): (GraphContainer, ControlDevices) = {
+                                      measureDensity: Boolean,
+                                      useAlternatGraphs: Boolean)(implicit tagT: ClassTag[T]): (GraphContainer, ControlDevices) = {
 
 
     val source: BufferedSource = scala.io.Source.fromFile(graphSpecificationFile)
@@ -132,6 +134,9 @@ package object graph {
           */
         def connections2Edges[U <: MyEdge](edges: Iterable[Connectivity_JSON])(implicit tag: ClassTag[U]): Set[U] = {
           edges.flatMap(c => c.conn.map(neigh => {
+            println(c)
+            println(neigh)
+            println(vertexMapReader)
             tag.runtimeClass.getConstructors()(0).newInstance(vertexMapReader(c.node), vertexMapReader(neigh)).asInstanceOf[U]
           })).toSet
         }
@@ -141,20 +146,31 @@ package object graph {
         val baseEdgeCollection: Vector[MyEdge] = (connections2Edges[MyEdge](s.get.standardConnections) ++ levelChanges).toVector //.flatMap(c => c.conn.map(neigh => new MyEdge(vertexMap(c.node), vertexMap(neigh)))) ++ levelChanges
 
 
+        val graph: Try[GraphContainer] = Try(
+          if ( !useAlternatGraphs && s.get.alternateConnections.isEmpty) {
+          //tagT.runtimeClass.getConstructors()(0).newInstance(v, baseEdgeCollection, levelChanges, fg, bg, mv, flowSeparators).asInstanceOf[T]
+          new SingleGraph(v, baseEdgeCollection, levelChanges, fg, bg, mv, flowSeparators)
+        } else if (useAlternatGraphs && s.get.alternateConnections.nonEmpty) {
+          val graphs = new MultipleGraph(fg, bg, mv, flowSeparators)
+          graphs.addGraph("reference", 1.0 - s.get.alternateConnections.foldLeft(0.0)((a, b) => a + b.frac), v, baseEdgeCollection, Set(), Set(), levelChanges)
+          s.get.alternateConnections.foreach(g => {
+            graphs.addGraph(g.name, g.frac, v, baseEdgeCollection, connections2Edges[MyEdge](g.conn2Add), connections2Edges[MyEdge](g.conn2Remove), levelChanges)
+          })
+          graphs
+        } else {
+          throw new IllegalArgumentException("Error processing graphs ! Requested alternate graphs but alternate_graphs JSON is empty !")
+        })
+
         // Returns the graph object and the control devices
         (
-          if (s.get.alternateConnections.isEmpty) {
-            //tagT.runtimeClass.getConstructors()(0).newInstance(v, baseEdgeCollection, levelChanges, fg, bg, mv, flowSeparators).asInstanceOf[T]
-            new SingleGraph(v, baseEdgeCollection, levelChanges, fg, bg, mv, flowSeparators)
+          graph match {
+            case Success(g) => g
+            case Failure(f) => {
+
+              new SingleGraph(v, baseEdgeCollection, levelChanges, fg, bg, mv, flowSeparators)
+            }
           }
-          else {
-            val graphs = new MultipleGraph(fg, bg, mv, flowSeparators)
-            graphs.addGraph("reference", 1.0 - s.get.alternateConnections.foldLeft(0.0)((a, b) => a + b.frac), v, baseEdgeCollection, Set(), Set(), levelChanges)
-            s.get.alternateConnections.foreach(g => {
-              graphs.addGraph(g.name, g.frac, v, baseEdgeCollection, connections2Edges[MyEdge](g.conn2Add), connections2Edges[MyEdge](g.conn2Remove), levelChanges)
-            })
-            graphs
-          },
+          ,
           new ControlDevices(monitoredAreas, mv, fg, bg, flowSeparators)
         )
 

@@ -18,5 +18,6 @@ abstract class GraphContainer(protected val flowGates: Iterable[FlowGate],
 
   type T <: GraphContainer
   def clone(devices: ControlDevices): T
+  def clone(devices: ControlDevices, populationFraction: Double): T
 
 }

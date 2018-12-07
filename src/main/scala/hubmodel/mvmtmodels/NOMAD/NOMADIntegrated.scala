@@ -196,6 +196,8 @@ class NOMADIntegrated[T <: PedestrianNOMAD](sim: NOMADGraphSimulator[T]) extends
 
   override def execute(): Unit = {
 
+    logger.trace("moving pedestrians @" + sim.currentTime)
+
     //sim.errorLogger.error("move peds @ " + sim.currentTime + ", nbr peds=" + sim.population.size)
 
     if (sim.useFlowSep) {
@@ -830,8 +832,8 @@ class NOMADIntegrated[T <: PedestrianNOMAD](sim: NOMADGraphSimulator[T]) extends
       // for the variable time step. However for the same simulation different using different
       // time steps will introduce different stochasticity. Therefore we consider the noise input
       // as noise/second.
-      acceleration.x += calculateNoise(dt, pedestrian.noise)
-      acceleration.y += calculateNoise(dt, pedestrian.noise)
+      //acceleration.x += calculateNoise(dt, pedestrian.noise)
+      //acceleration.y += calculateNoise(dt, pedestrian.noise)
     }
     //-------- limit the acceleration version1---------------//
     var adjustingFactor: Double = 1.0

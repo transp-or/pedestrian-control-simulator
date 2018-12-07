@@ -14,7 +14,6 @@ import hubmodel.tools.cells.{DensityMeasuredArea, Rectangle, isInVertex}
 
 class NOMADGraphSimulator[T <: PedestrianNOMAD](st: Time,
                           et: Time,
-                          logDir: Option[String],
                           val sf_dt: Time,
                           val route_dt: Time,
                           val evaluate_dt: Time,
@@ -23,7 +22,7 @@ class NOMADGraphSimulator[T <: PedestrianNOMAD](st: Time,
                           val graph: GraphContainer,
                           val timeTable: PublicTransportSchedule,
                           val stop2Vertices: NodeParent => Iterable[Rectangle],
-                          val controlDevices: ControlDevices) extends PedestrianDES[PedestrianNOMAD](st, et, logDir) {
+                          val controlDevices: ControlDevices) extends PedestrianDES[PedestrianNOMAD](st, et) {
 
   /**
     * Access for the wall collection which is mostly contained in the SF infrastructrue file but some movable walls
@@ -171,19 +170,7 @@ class NOMADGraphSimulator[T <: PedestrianNOMAD](st: Time,
     * Collects the parameters used for creating the simulation. The arguments are passed as a tuple.
     * @return
     */
-  def getSetupArguments: (
-    Time,
-      Time,
-      Time,
-      Time,
-      Time,
-      Option[Time],
-      ContinuousSpace,
-      GraphContainer,
-      PublicTransportSchedule,
-      NodeParent => Iterable[Rectangle],
-      ControlDevices
-    ) = (
+  def getSetupArguments: SimulatorParameters = (
     startTime,
     finalTime,
     sf_dt,

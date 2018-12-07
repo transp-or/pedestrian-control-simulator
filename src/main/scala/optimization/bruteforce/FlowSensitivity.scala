@@ -40,7 +40,6 @@ class FlowSensitivity(config: Config) extends GridSearch {
       val sim = new NOMADGraphSimulator[PedestrianNOMAD](
         defaultParameters._1,
         defaultParameters._2,
-        Some(config.getString("output.log_dir")),
         defaultParameters._3,
         defaultParameters._4,
         defaultParameters._5,
@@ -100,7 +99,7 @@ class FlowSensitivity(config: Config) extends GridSearch {
       }
     })
 
-    files("tt").map(ProcessTTFile).groupBy(tup => (tup._1, tup._2)).map(tup => (tup._1, ODs._1, ODs._2) -> (
+    files("tt").map(ProcessTTFile2Parameters).groupBy(tup => (tup._1, tup._2)).map(tup => (tup._1, ODs._1, ODs._2) -> (
       tup._2.flatMap(t => { t._3.getOrElse((ODs._1, ODs._2), Vector())}).stats,
       tup._2.flatMap(t => { t._3.getOrElse((ODs._2, ODs._1), Vector())}).stats
     )
@@ -119,7 +118,7 @@ class FlowSensitivity(config: Config) extends GridSearch {
       }
     })
 
-   files("tt").map(ProcessTTFile).
+   files("tt").map(ProcessTTFile2Parameters).
       flatMap(tup => tup._3.map(t => (tup._1, tup._2, t._1._1, t._1._2, t._2))).
       groupBy(tup => (tup._1, tup._2, tup._3, tup._4)).
       mapValues(v => v.flatMap(_._5).stats)

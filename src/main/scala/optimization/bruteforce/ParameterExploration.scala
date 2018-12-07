@@ -36,7 +36,10 @@ class ParameterExploration(config: Config) extends GridSearch {
       r.tasksupport = new ForkJoinTaskSupport(new scala.concurrent.forkjoin.ForkJoinPool(config.getInt("execution.threads")))
       r
     }
-    else { for (i <- constantRange; j <- linearRange; k <- 1 to config.getInt("sim.nb_runs")) yield {(i,j,k)} }
+
+
+    else {
+      for (i <- constantRange; j <- linearRange; k <- 1 to config.getInt("sim.nb_runs")) yield {(i,j,k)} }
 
     for (t <- range) {
 
@@ -55,7 +58,6 @@ class ParameterExploration(config: Config) extends GridSearch {
       val sim = new NOMADGraphSimulator[PedestrianNOMAD](
         defaultParameters._1,
         defaultParameters._2,
-        Some(config.getString("output.log_dir")),
         defaultParameters._3,
         defaultParameters._4,
         defaultParameters._5,
@@ -94,7 +96,7 @@ class ParameterExploration(config: Config) extends GridSearch {
         }
       })
 
-      val ttResults: Map[(Double, Double), (Int, Double, Double, Double, Double, Double)] = files("tt").map(ProcessTTFile).
+      val ttResults: Map[(Double, Double), (Int, Double, Double, Double, Double, Double)] = files("tt").map(ProcessTTFile2Parameters).
         flatMap(tup => tup._3.map(t => (tup._1, tup._2, t._1._1, t._1._2, t._2))).
         groupBy(tup => (tup._1, tup._2)).
         mapValues(v => v.flatMap(_._5).stats)
@@ -133,7 +135,7 @@ class ParameterExploration(config: Config) extends GridSearch {
       }
     })
 
-    files("tt").map(ProcessTTFile).
+    files("tt").map(ProcessTTFile2Parameters).
       flatMap(tup => tup._3.map(t => (tup._1, tup._2, t._1._1, t._1._2, t._2))).
       groupBy(tup => (tup._1, tup._2, tup._3, tup._4)).
       mapValues(v => v.flatMap(_._5).stats)

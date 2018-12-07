@@ -1,4 +1,5 @@
 import com.typesafe.config.{Config, ConfigFactory}
+import hubmodel.parseConfigFile
 import optimization.bruteforce.ParameterExploration
 
 
@@ -38,7 +39,9 @@ object ExploreParameters extends App {
   }
 
   // Reads the file passed as argument
-  val config: Config = ConfigFactory.load(confFile)
+  val config: Config = parseConfigFile(args)
+
+  println(config)
 
   val parameterGridSearch: ParameterExploration = new ParameterExploration(config)
 

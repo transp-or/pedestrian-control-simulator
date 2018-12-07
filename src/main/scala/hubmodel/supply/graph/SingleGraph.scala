@@ -42,4 +42,8 @@ class SingleGraph(private val baseVertices: Iterable[Rectangle],
   def clone(devices: ControlDevices): T = new SingleGraph(
     this.baseVertices, this.standardEdges, this.levelChanges, devices.flowGates, devices.binaryGates, devices.amws, devices.flowSeparators
   )
+
+  def clone(devices: ControlDevices, popFraction: Double): T = new SingleGraph(
+    this.baseVertices, this.standardEdges, this.levelChanges, devices.flowGates, devices.binaryGates, devices.amws, devices.flowSeparators
+  )
 }

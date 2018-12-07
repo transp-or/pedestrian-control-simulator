@@ -216,6 +216,9 @@ public class DXFReaderHubModel extends DXFReader {
         List<DXFLine> l_g = this.graphLayer.getDXFEntities(DXFConstants.ENTITY_TYPE_LINE);
         List<Edge> edges = new ArrayList<>();
 
+        List<Edge> levelChanges = new ArrayList<>();
+
+
 
         if (l_g != null) {
             for (int i = 0; i < l_g.size(); i++) {
@@ -235,30 +238,28 @@ public class DXFReaderHubModel extends DXFReader {
                 if (d.compareTo("") == 0){
                     System.out.print("missing zone at " + d + ", " +  l_g.get(i).getEndPoint() + "\n");
                 }
+
                 int edgeType = 0;
                 if (l_g.get(i).getLineWeight() == 0) {
                     edgeType = BI_DIR;
-                } else if (l_g.get(i).getLineWeight() == 5) {
+                    edges.add(new Edge(l_g.get(i).getStartPoint(), l_g.get(i).getEndPoint(), o, d, edgeType));
+                    edges.add(new Edge(l_g.get(i).getEndPoint(), l_g.get(i).getStartPoint(), d, o, edgeType));
+                } else if (l_g.get(i).getLineWeight() == 13) {
                     edgeType = UNI_DIR;
+                    edges.add(new Edge(l_g.get(i).getStartPoint(), l_g.get(i).getEndPoint(), o, d, edgeType));
+                }
+                else if (l_g.get(i).getLineWeight() == 5) {
+                    edgeType = UNI_DIR_UP;
+                    levelChanges.add(new Edge(l_g.get(i).getStartPoint(), l_g.get(i).getEndPoint(), o, d, edgeType));
                 }
                 else if (l_g.get(i).getLineWeight() == 9) {
-                    edgeType = UNI_DIR_UP;
-                }
-                else if (l_g.get(i).getLineWeight() == 13) {
                     edgeType = UNI_DIR_DOWN;
+                    levelChanges.add(new Edge(l_g.get(i).getStartPoint(), l_g.get(i).getEndPoint(), o, d, edgeType));
                 }
-                else if (l_g.get(i).getLineWeight() == 15) {
-                    edgeType = LEVEL_CHANGE;
-                }
-                edges.add(new Edge(l_g.get(i).getStartPoint(), l_g.get(i).getEndPoint(), o, d, edgeType));
-                if (edgeType == BI_DIR) {
-                    edges.add(new Edge(l_g.get(i).getEndPoint(), l_g.get(i).getStartPoint(), d, o, edgeType));
-                }
-
             }
         }
 
-
+        // Converts edges to connectivity for standard edges
         List<Connections> connections = new ArrayList<>();
         for (String n : zonesNames) {
             connections.add(new Connections(n));
@@ -266,6 +267,28 @@ public class DXFReaderHubModel extends DXFReader {
 
         for (Edge e : edges) {
             for (Connections c : connections) {
+                if (c.origin.compareTo(e.O) == 0) {
+                    c.conn.add(e.D);
+                }
+            }
+        }
+
+
+        // Converts edges to connectivity for level changes
+        HashSet<String> zonesNamesLevelChanges = new HashSet<>();
+        for (Edge lc : levelChanges) {
+            zonesNamesLevelChanges.add(lc.O);
+        }
+
+        System.out.print(zonesNamesLevelChanges);
+
+        List<Connections> levelChangeConnections = new ArrayList<>();
+        for (String n : zonesNamesLevelChanges) {
+            levelChangeConnections.add(new Connections(n));
+        }
+
+        for (Edge e : levelChanges) {
+            for (Connections c : levelChangeConnections) {
                 if (c.origin.compareTo(e.O) == 0) {
                     c.conn.add(e.D);
                 }
@@ -290,8 +313,16 @@ public class DXFReaderHubModel extends DXFReader {
                 str += ",";
             }
         }
-        str += "], \"flow_gates\": [], \"controlled_areas\": [], \"binary_gates\": [], \"flow_separators\": [], \"moving_walkways\": [], \"connectivity_level_change\": []" +
-                "}";
+        str += "], \"flow_gates\": [], \"controlled_areas\": [], \"binary_gates\": [], \"flow_separators\": [], \"moving_walkways\": [], \"alternate_graphs\": [], \"connectivity_level_change\": [";
+
+        for (int i = 0; i < levelChangeConnections.size(); i++) {
+            str += levelChangeConnections.get(i).toJSON();
+            if (i != levelChangeConnections.size() - 1) {
+                str += ",";
+            }
+        }
+
+        str += "]" + "}";
 
         ArrayList<String> strA = new ArrayList<String>();
         strA.add(str);
