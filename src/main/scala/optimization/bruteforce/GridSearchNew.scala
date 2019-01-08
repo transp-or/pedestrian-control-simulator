@@ -56,14 +56,14 @@ abstract class GridSearchNew[T <: ParameterModifications](val config: Config) ex
       ////////////////////////////////////////////////////////////////////////////////////////////////
 
       // Creates images representing the walls, route graph and both overlaid.
-      val wallsImage = new DrawWalls(sim.walls, config.getString("output.output_prefix") + "_wallsWithNames.png", showNames = true)
+      /*val wallsImage = new DrawWalls(sim.walls, config.getString("output.output_prefix") + "_wallsWithNames.png", showNames = true)
       sim.graph match {
         case rm: MultipleGraph => { rm.getGraphs.foreach(g =>  new DrawGraph(g._2._2.edgeCollection.map(e => (e.startVertex, e.endVertex)).toVector, config.getString("output.output_prefix") + "_graph_" + g._1 + ".png"))}
         case rs: SingleGraph => { new DrawGraph(sim.graph.edges.map(e => (e.startVertex, e.endVertex)).toVector, config.getString("output.output_prefix") + "_graph.png") }
       }
       val fullImage = new DrawWallsAndGraph(sim.walls, sim.graph.edges.map(e => (e.startVertex, e.endVertex)).toVector, config.getString("output.output_prefix") + "_wallsAndGraph.png")
       val devicesImage = new DrawControlDevicesAndWalls(config.getString("output.output_prefix") + "_wallsWithDevices.png", sim.walls, sim.controlDevices)
-
+*/
 
       ///////////////////////////////////////////////////////////////////////////////////////////////
 
