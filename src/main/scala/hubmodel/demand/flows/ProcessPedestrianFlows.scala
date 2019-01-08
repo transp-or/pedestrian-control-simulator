@@ -24,6 +24,7 @@ class ProcessPedestrianFlows[T <: PedestrianNOMAD](pedestrianFlows: Iterable[Ped
     */
   override def execute(): Unit = {
     sim.eventLogger.trace("time=" + sim.currentTime + ": inserting pedestrian flows")
+
     pedestrianFlows
       .foreach(flow => splitFractionsUniform(sim.stop2Vertices(flow.O), sim.stop2Vertices(flow.D), flow.f)
         .foreach(f => {

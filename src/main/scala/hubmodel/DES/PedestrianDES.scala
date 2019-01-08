@@ -191,7 +191,7 @@ abstract class PedestrianDES[T <: PedestrianNOMAD](val startTime: Time,
   def processCompletedPedestrian(condition: T => Boolean): Unit = {
     val completedPeds: Map[String, T] = this._populationNew.filter(kv => condition(kv._2)).toMap
     completedPeds.values.foreach(p => {
-      p.addHistory(this.currentTime)
+      p.updatePositionHistory(this.currentTime)
       p.reachedDestination = true
       p.exitTime = this.currentTime
     })
@@ -213,6 +213,7 @@ abstract class PedestrianDES[T <: PedestrianNOMAD](val startTime: Time,
     ID2Position = this._populationNew.mapValues(p => (p.ID, p.currentPosition)).values.toMap
     this.populationMTree.insertAll(ID2Position)
   }
+
 
   /**
     * Find the neighboours within a given radius to the current pedestrian.

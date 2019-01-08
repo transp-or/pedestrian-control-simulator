@@ -43,7 +43,9 @@ class SingleGraph(private val baseVertices: Iterable[Rectangle],
     this.baseVertices, this.standardEdges, this.levelChanges, devices.flowGates, devices.binaryGates, devices.amws, devices.flowSeparators
   )
 
-  def clone(devices: ControlDevices, popFraction: Double): T = new SingleGraph(
+  def clone2AlternateGraphs(devices: ControlDevices, popFraction: Double): T = new SingleGraph(
     this.baseVertices, this.standardEdges, this.levelChanges, devices.flowGates, devices.binaryGates, devices.amws, devices.flowSeparators
   )
+
+  override def toString: String = { this.graph.toString}
 }

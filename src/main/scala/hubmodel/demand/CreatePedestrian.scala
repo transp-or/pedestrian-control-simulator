@@ -42,10 +42,9 @@ class CreatePedestrian[T <: PedestrianNOMAD](o: Rectangle, d: Rectangle, sim: NO
     //tag.runtimeClass.getConstructor(classOf[(Rectangle, Rectangle, Time, Position, List[Rectangle], String)]).newInstance(o, d, sim.currentTime, generationPoint, route, "").asInstanceOf[T]
     // inserts new pedestrian into population
 
-    val newPed: PedestrianNOMAD = new PedestrianNOMAD(o, d, sim.currentTime, generationPoint)
+    val newPed: PedestrianNOMAD = new PedestrianNOMAD(o, d, sim.currentTime, generationPoint, sim.logFullPedestrianHistory)
     sim.setFirstRoute(newPed)
-
-
+    newPed.updateClosestWalls(sim.walls)
 
     sim.insertInPopulation(newPed)//new T(o, d, sim.currentTime, generationPoint, route, ""))
   }

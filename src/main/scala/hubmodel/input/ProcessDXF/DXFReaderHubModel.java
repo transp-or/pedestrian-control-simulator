@@ -208,6 +208,7 @@ public class DXFReaderHubModel extends DXFReader {
         for (int i = 0; i < zones.size(); i++) {
                 if (zones.get(i).name.compareTo("") == 0) {
                     zones.get(i).name = randomAlphabetic(10);
+                    zones.get(i).isOD = false;
                     zonesNames.add(zones.get(i).name);
                 }
             zonesNames.add(zones.get(i).name);

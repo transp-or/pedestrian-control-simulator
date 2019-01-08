@@ -20,6 +20,10 @@ class Zone {
         return bd.doubleValue();
     }
 
+    /**
+     * Is the zone and OD
+     */
+    boolean isOD = true;
 
     /**
      * Corners of the zone. Must be a rectangle for the hub model.
@@ -93,7 +97,7 @@ class Zone {
                 "\"y3\":" + this.c.getY()*scale  + "," +
                 "\"x4\":" + this.d.getX()*scale  + "," +
                 "\"y4\":" + this.d.getY()*scale  + "," +
-                "\"OD\": false" +
+                "\"OD\": " + this.isOD +
                 "}";
     }
 }

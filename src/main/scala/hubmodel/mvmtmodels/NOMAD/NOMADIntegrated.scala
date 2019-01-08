@@ -35,40 +35,6 @@ class NOMADIntegrated[T <: PedestrianNOMAD](sim: NOMADGraphSimulator[T]) extends
   val remainderInCollisionSeconds: Double = 0.0 //this.isolatedTimeStepSeconds % this.collisionTimeStepSeconds // SimulationTime.convertSimTime(this.remainderInCollisionMillis)
 
 
-  /** Finds the closest end point of a wall if the point is not on the wall
-    *
-    * @param point point which is not on the wall
-    * @param w     wall to finds end from
-    * @return closest end point of the wall to the point
-    */
-  protected def getClosestEndPoint(point: Position, w: Wall): Position = {
-    if ((w.startPoint - point).norm < (w.endPoint - point).norm) {
-      w.startPoint
-    }
-    else {
-      w.endPoint
-    }
-  }
-
-  /** Find the point used to compute the repulsive effects from the wall onto a pedestrian.
-    *
-    * @param pos Position of the pedestrian
-    * @param w   wall to calculate repulsion from
-    * @return position used to calculate repulsion
-    */
-  protected def getClosestPoint(pos: Position, w: Wall): Position = {
-    val wallDir: Position = (w.endPoint - w.startPoint).normalized
-
-    val proj: Position = {
-      val AP: Position = pos - w.startPoint
-      wallDir * (wallDir dot AP) // + w.startPoint
-    }
-    if (proj.dot(wallDir) > 0.0 && proj.norm <= (w.endPoint - w.startPoint).norm) proj + w.startPoint //computeProjection(pos, w)
-    //if (!isOnWall(proj, w)) getClosestEndPoint(pos, w)
-    else getClosestEndPoint(pos, w)
-  }
-
-
   protected def updatePedIsolation(currentTime: Time, p: PedestrianNOMAD): Unit = { // may should make a distinction and not update the isolation type for those pedestrians
     // that are in collision and maybe even those that are in-range at every step but just once in a while.
     // get the distance of the closest pedestrian in the simulation from this
@@ -81,7 +47,7 @@ class NOMADIntegrated[T <: PedestrianNOMAD](sim: NOMADGraphSimulator[T]) extends
       val closestDistance: Double = (p.currentPosition - closestPed.currentPosition).norm
       var isolationInterval = (closestDistance - 3.0 - 0.3) / (2 * 3.2)
 
-      val pedInsideIsoltionDistance: Iterable[PedestrianNOMAD] = sim.findNeighbours(p.ID, (3.0 - 0.3) / (2 * 3.2))
+      //val pedInsideIsoltionDistance: Iterable[PedestrianNOMAD] = sim.findNeighbours(p.ID, (3.0 - 0.3) / (2 * 3.2))
       val NEEDTOIMPLEMENTFINDCLOSESTNEIGOUR = closestDistance
 
       // PedestrianType.getPedsMaxRadius  = 0.3
@@ -211,7 +177,7 @@ class NOMADIntegrated[T <: PedestrianNOMAD](sim: NOMADGraphSimulator[T]) extends
       })
     }
 
-    sim.population.foreach(ped => {ped.addHistory(sim.currentTime)})
+    sim.population.foreach(ped => {ped.updatePositionHistory(sim.currentTime)})
     sim.population.filterNot(_.isWaiting).foreach(ped => {
 
       // The pedestrian step function deals with the state of the ped (entering, walking, activity) and is not reauired here.
@@ -238,7 +204,7 @@ class NOMADIntegrated[T <: PedestrianNOMAD](sim: NOMADGraphSimulator[T]) extends
         // be consistent with the time interval of the simulation and neglecting the in-between movements.
         // IN THIS CASE, ALWAYS UPDATE THE TRAVELLED DISTANCE
         //if (this.isUpdateWalkingData)
-        ped.travelDistance += (ped.currentPosition - ped.getHistoryPosition.last._2).norm
+        ped.travelDistance += (ped.currentPosition - ped.previousPosition).norm
         ped.previousMajorPosition = ped.currentPosition
 
         //ped.updatePreviousPositionAndSpeed(sim.currentTime)
@@ -259,14 +225,14 @@ class NOMADIntegrated[T <: PedestrianNOMAD](sim: NOMADGraphSimulator[T]) extends
         this.moveInRangeStep()
       } else { // else move all pedestrians with the isolation step
         this.pedestrianToMoveInIsolation.foreach(ped => {
-          walkPedestrian(ped, getPedInLevelVicinity_3D(ped, sim.population), getClosestCoordinates3D(ped, sim.walls), this.isolatedTimeStepSeconds)
+          walkPedestrian(ped, getPedInLevelVicinity_3D(ped, sim.population), getClosestCoordinates3D(ped), this.isolatedTimeStepSeconds)
         })
       }
 
     sim.processCompletedPedestrian(sim.finalDestinationReached)
-    sim.population.filter(sim.intermediateDestinationReached).foreach(p => sim.updateIntermediateDestination(p))
+    sim.population.filter(sim.intermediateDestinationReached).foreach(p => { sim.updateIntermediateDestination(p) })
 
-    sim.rebuildMTree()
+    //sim.rebuildMTree()
 
     // enqueues pedestrians in the waiting zones if gating is used
     if (sim.useFlowGates) {
@@ -316,7 +282,7 @@ class NOMADIntegrated[T <: PedestrianNOMAD](sim: NOMADGraphSimulator[T]) extends
   private def moveInRangeStep(): Unit = { // ask the pedestrians in isolation to move
     //this.pedestrianToMoveInIsolation.foreach this.isolatedTimeStepSeconds, currentTime)
     this.pedestrianToMoveInIsolation.foreach(ped => {
-      walkPedestrian(ped, getPedInLevelVicinity_3D(ped, sim.population), getClosestCoordinates3D(ped, sim.walls), this.isolatedTimeStepSeconds)
+      walkPedestrian(ped, getPedInLevelVicinity_3D(ped, sim.population), getClosestCoordinates3D(ped), this.isolatedTimeStepSeconds)
     })
     // for each in range step
     var rangeStep = this.rangeTimeStepSeconds
@@ -327,7 +293,7 @@ class NOMADIntegrated[T <: PedestrianNOMAD](sim: NOMADGraphSimulator[T]) extends
       //movePedestriansInQueues(this.rangeTimeStepSeconds, currentTime)
       // ask the in range pedestrians to perform the activity(walking included)
       this.pedestrianToMoveInRange.foreach(ped => {
-        walkPedestrian(ped, getPedInLevelVicinity_3D(ped, sim.population), getClosestCoordinates3D(ped, sim.walls), this.rangeTimeStepSeconds)
+        walkPedestrian(ped, getPedInLevelVicinity_3D(ped, sim.population), getClosestCoordinates3D(ped), this.rangeTimeStepSeconds)
       })
       //walkPedestrians(this.pedestrianToMoveInRange, this.rangeTimeStepSeconds, currentTime)
       //if (Pedestrian.isParallel) Pedestrian.updateParallel(this.pedestrianToMoveInRange)
@@ -335,8 +301,8 @@ class NOMADIntegrated[T <: PedestrianNOMAD](sim: NOMADGraphSimulator[T]) extends
       sim.population.foreach(ped => {
         ped.currentPosition = ped.nextPosition
         ped.currentVelocity = ped.nextVelocity
-        ped.travelDistance += (ped.currentPosition - ped.getHistoryPosition.last._2).norm
-        ped.addHistory(sim.currentTime + Time(rangeStep))
+        ped.travelDistance += (ped.currentPosition - ped.previousPosition).norm
+        ped.updatePositionHistory(sim.currentTime + Time(rangeStep))
       })
       rangeStep += this.rangeTimeStepSeconds
       rangeCounter += 1
@@ -346,7 +312,7 @@ class NOMADIntegrated[T <: PedestrianNOMAD](sim: NOMADGraphSimulator[T]) extends
     if (this.remainderInRangeSeconds > 0) {
       //movePedestriansInQueues(this.remainderInRangeSeconds, currentTime)
       this.pedestrianToMoveInRange.foreach(ped => {
-        walkPedestrian(ped, getPedInLevelVicinity_3D(ped, sim.population), getClosestCoordinates3D(ped, sim.walls), this.rangeTimeStepSeconds)
+        walkPedestrian(ped, getPedInLevelVicinity_3D(ped, sim.population), getClosestCoordinates3D(ped), this.rangeTimeStepSeconds)
       })
       //walkPedestrians(this.pedestrianToMoveInRange, this.remainderInRangeSeconds, currentTime)
       //if (Pedestrian.isParallel) Pedestrian.updateParallel(this.pedestrianToMoveInRange)
@@ -361,7 +327,7 @@ class NOMADIntegrated[T <: PedestrianNOMAD](sim: NOMADGraphSimulator[T]) extends
     // ask the pedestrians in isolation to move but do not update their position
     // in case of parallel walking
     this.pedestrianToMoveInIsolation.foreach(ped => {
-      walkPedestrian(ped, getPedInLevelVicinity_3D(ped, sim.population), getClosestCoordinates3D(ped, sim.walls), this.isolatedTimeStepSeconds)
+      walkPedestrian(ped, getPedInLevelVicinity_3D(ped, sim.population), getClosestCoordinates3D(ped), this.isolatedTimeStepSeconds)
     })
     //walkPedestrians(this.pedestrianToMoveInIsolation, this.isolatedTimeStepSeconds, currentTime)
     // for each in collision step
@@ -374,7 +340,7 @@ class NOMADIntegrated[T <: PedestrianNOMAD](sim: NOMADGraphSimulator[T]) extends
       //movePedestriansInQueues(this.collisionTimeStepSeconds, currentTime)
       // ask the in collision pedestrians to perform the activity(walking included)
       this.pedestrianToMoveInCollision.foreach(ped => {
-        walkPedestrian(ped, getPedInLevelVicinity_3D(ped, sim.population), getClosestCoordinates3D(ped, sim.walls), this.collisionTimeStepSeconds)
+        walkPedestrian(ped, getPedInLevelVicinity_3D(ped, sim.population), getClosestCoordinates3D(ped), this.collisionTimeStepSeconds)
       })
       //walkPedestrians(this.pedestrianToMoveInCollision, this.collisionTimeStepSeconds, currentTime)
       // check if the range step is reached
@@ -394,8 +360,8 @@ class NOMADIntegrated[T <: PedestrianNOMAD](sim: NOMADGraphSimulator[T]) extends
       sim.population.foreach(ped => {
           ped.currentPosition = ped.nextPosition
           ped.currentVelocity = ped.nextVelocity
-          ped.travelDistance += (ped.currentPosition - ped.getHistoryPosition.last._2).norm
-          ped.addHistory(sim.currentTime + Time(colStep))
+          ped.travelDistance += (ped.currentPosition - ped.previousPosition).norm
+          ped.updatePositionHistory(sim.currentTime + Time(colStep))
       })
       colStep += this.collisionTimeStepSeconds
       //colCounter += 1
@@ -405,14 +371,14 @@ class NOMADIntegrated[T <: PedestrianNOMAD](sim: NOMADGraphSimulator[T]) extends
     if (this.remainderInCollisionSeconds > 0) {
       //movePedestriansInQueues(this.remainderInCollisionSeconds, currentTime)
       this.pedestrianToMoveInCollision.foreach(ped => {
-        walkPedestrian(ped, getPedInLevelVicinity_3D(ped, sim.population), getClosestCoordinates3D(ped, sim.walls), this.collisionTimeStepSeconds)
+        walkPedestrian(ped, getPedInLevelVicinity_3D(ped, sim.population), getClosestCoordinates3D(ped), this.collisionTimeStepSeconds)
       })
       //walkPedestrians(this.pedestrianToMoveInCollision, this.remainderInCollisionSeconds, currentTime)
       //if (Pedestrian.isParallel) Pedestrian.updateParallel(this.pedestrianToMoveInCollision)
       // ask the in range to make the last step before the remainder
       if (rangeStep <= this.isolatedTimeStepSeconds) {
         this.pedestrianToMoveInRange.foreach(ped => {
-          walkPedestrian(ped, getPedInLevelVicinity_3D(ped, sim.population), getClosestCoordinates3D(ped, sim.walls), this.rangeTimeStepSeconds)
+          walkPedestrian(ped, getPedInLevelVicinity_3D(ped, sim.population), getClosestCoordinates3D(ped), this.rangeTimeStepSeconds)
         })
         //walkPedestrians(this.pedestrianToMoveInRange, this.rangeTimeStepSeconds, currentTime)
         //if (Pedestrian.isParallel) Pedestrian.updateParallel(this.pedestrianToMoveInRange)
@@ -420,7 +386,7 @@ class NOMADIntegrated[T <: PedestrianNOMAD](sim: NOMADGraphSimulator[T]) extends
     }
     if (this.remainderInRangeSeconds > 0) {
       this.pedestrianToMoveInRange.foreach(ped => {
-        walkPedestrian(ped, getPedInLevelVicinity_3D(ped, sim.population), getClosestCoordinates3D(ped, sim.walls), this.rangeTimeStepSeconds)
+        walkPedestrian(ped, getPedInLevelVicinity_3D(ped, sim.population), getClosestCoordinates3D(ped), this.rangeTimeStepSeconds)
       })
       //walkPedestrians(this.pedestrianToMoveInRange, this.remainderInRangeSeconds, currentTime)
       //if (Pedestrian.isParallel) Pedestrian.updateParallel(this.pedestrianToMoveInRange)
@@ -793,7 +759,8 @@ class NOMADIntegrated[T <: PedestrianNOMAD](sim: NOMADGraphSimulator[T]) extends
   }
 
 
-  def getClosestCoordinates3D(pedestrian: PedestrianNOMAD, obstacles: Iterable[Wall]): util.ArrayList[InfluenceAreaReturnObsData] = { // it has to be with the global coordinate because of the change of levels
+  def getClosestCoordinates3D(pedestrian: PedestrianNOMAD): util.ArrayList[InfluenceAreaReturnObsData] = { // it has to be with the global coordinate because of the change of levels
+    val obstacles = pedestrian.closeWalls
     val coordinate = new Coordinate(pedestrian.currentPosition.X, pedestrian.currentPosition.Y, 0.0)
     val coordinatesInVicinity = new util.ArrayList[InfluenceAreaReturnObsData]
     var closestPoint: Coordinate = null

@@ -30,8 +30,8 @@ class RouteGraph(protected val baseVertices: Iterable[Rectangle],
                  protected val binaryGates: Iterable[BinaryGate],
                  protected val movingWalkways: Iterable[MovingWalkway],
                  protected val flowSeparators: Iterable[FlowSeparator],
-                 edges2Add: Set[MyEdge] = Set(),
-                 edges2Remove: Set[MyEdge] = Set()) {
+                 val edges2Add: Set[MyEdge] = Set(),
+                 val edges2Remove: Set[MyEdge] = Set()) {
 
 
   val vertexCollection: Map[String, Rectangle] = this.baseVertices.map(v => v.name -> v).toMap ++
@@ -52,7 +52,7 @@ class RouteGraph(protected val baseVertices: Iterable[Rectangle],
   val edgeCollection: Set[MyEdge] = (((standardEdges ++ flowGates ++ binaryGates ++ movingWalkways ++ levelChanges).toSet
     .filterNot(e => flowSeparators.flatMap(_.associatedConnectivity.map(_.startVertex.name)).toVector.contains(e.startVertex.name)
       || flowSeparators.flatMap(_.associatedConnectivity.map(_.startVertex.name)).toVector.contains(e.endVertex.name)
-    ) ++ flowSeparators.flatMap(_.associatedConnectivity)) ++ edges2Add )-- edges2Remove
+    ) ++ flowSeparators.flatMap(_.associatedConnectivity)) ++ edges2Add ) -- edges2Remove
 
   //def edges: Set[MyEdge] = edgeCollection
 

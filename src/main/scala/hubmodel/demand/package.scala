@@ -241,7 +241,7 @@ package hubmodel {
 
       input.validate[PublicTransportScheduleReaderTF] match {
         case s: JsSuccess[PublicTransportScheduleReaderTF] => new PublicTransportSchedule(s.get.loc, s.get._timeTableInput.map(v => new Vehicle(TrainID_New(v.ID, ""), v.ID, StopID_New(v.stopID, ""), Some(v.arr), Some(v.dep), -1)))
-        case e: JsError => throw new Error("Error while parsing train timetable: " + JsError.toJson(e).toString())
+        case e: JsError => throw new Error("Error while parsing train timetable file: " + fileName + "\n" + JsError.toJson(e).toString())
       }
     }
 

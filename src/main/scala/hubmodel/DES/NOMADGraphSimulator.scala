@@ -4,13 +4,17 @@ import hubmodel._
 import hubmodel.demand.{PTInducedQueue, PedestrianFlowFunction_New, PedestrianFlowPT_New, PedestrianFlow_New, PublicTransportSchedule}
 import hubmodel.mgmt.{ControlDevices, EvaluateState}
 import hubmodel.mvmtmodels.NOMAD.NOMADIntegrated
-import hubmodel.mvmtmodels.RebuildTree
+import hubmodel.mvmtmodels.{RebuildPopulationTree, UpdateClosestWall}
 import hubmodel.ped.{PedestrianNOMAD, PedestrianNOMADWithGraph, PedestrianSim}
 import hubmodel.route.UpdateRoutes
 import hubmodel.supply.{NodeParent, StopID_New}
 import hubmodel.supply.continuous.{ContinuousSpace, Wall}
 import hubmodel.supply.graph._
 import hubmodel.tools.cells.{DensityMeasuredArea, Rectangle, isInVertex}
+import myscala.math.algo.MTree
+import myscala.math.vector.{Vector2D, norm}
+
+import scala.collection.immutable.HashMap
 
 class NOMADGraphSimulator[T <: PedestrianNOMAD](st: Time,
                           et: Time,
@@ -22,7 +26,8 @@ class NOMADGraphSimulator[T <: PedestrianNOMAD](st: Time,
                           val graph: GraphContainer,
                           val timeTable: PublicTransportSchedule,
                           val stop2Vertices: NodeParent => Iterable[Rectangle],
-                          val controlDevices: ControlDevices) extends PedestrianDES[PedestrianNOMAD](st, et) {
+                          val controlDevices: ControlDevices,
+                                                val logFullPedestrianHistory: Boolean = false) extends PedestrianDES[PedestrianNOMAD](st, et) {
 
   /**
     * Access for the wall collection which is mostly contained in the SF infrastructrue file but some movable walls
@@ -94,8 +99,6 @@ class NOMADGraphSimulator[T <: PedestrianNOMAD](st: Time,
   var regulatorIntegralAction: Double = 0.0
 
 
-
-
   /**
     * Class to initialize the simulation. The first calls to reccurent events like the [[NOMADIntegrated]]
     * and the [[EvaluateState]] are made.
@@ -130,7 +133,10 @@ class NOMADGraphSimulator[T <: PedestrianNOMAD](st: Time,
       if (sim.useFlowGates) sim.insertEventWithZeroDelay(new StartFlowGates(sim))
 
       // Uses the quad-tree for searching neighbours
-      if (sim.useTreeForNeighbourSearch) sim.insertEventWithDelay(new Time(0.0))(new RebuildTree(sim))
+      if (sim.useTreeForNeighbourSearch) sim.insertEventWithDelay(new Time(0.0))(new RebuildPopulationTree(sim))
+
+      // start the reccurrent update of walls.
+      sim.insertEventWithZeroDelay(new UpdateClosestWall(sim))
 
       // Uses the safeguard on pedestrian queues
       sim.insertEventWithZeroDelay(new SafeGuard())

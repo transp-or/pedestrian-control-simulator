@@ -33,14 +33,14 @@ class ComplianceVariation(complianceInterval: Double, c: Config) extends GridSea
       defaultParameters._5,
       defaultParameters._6,
       defaultParameters._7,
-      defaultParameters._8.clone(devices, paramMods.p),
+      defaultParameters._8.clone2AlternateGraphs(devices, paramMods.p),
       defaultParameters._9,
       defaultParameters._10,
       devices
     )
   }
 
-  def getRunPrefix(paramMods: ParameterModificationsCompliance): String = {paramMods.p.toString + "_params_"}
+  def getRunPrefix(paramMods: ParameterModificationsCompliance): String = { paramMods.p.toString + "_params_" }
 
 
   def processWrittenResults: Map[(Double), ((Int, Double, Double, Double, Double, Double), Iterable[Double])] = {
@@ -50,5 +50,4 @@ class ComplianceVariation(complianceInterval: Double, c: Config) extends GridSea
       groupBy(tup => tup._1).
       mapValues(v => (v.flatMap(_._4).stats, v.flatMap(_._4)))
   }
-
 }

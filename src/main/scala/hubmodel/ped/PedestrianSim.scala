@@ -3,7 +3,7 @@ package hubmodel.ped
 import java.util.concurrent.ThreadLocalRandom
 
 import breeze.numerics.round
-import hubmodel._
+import hubmodel.{Position, _}
 import hubmodel.tools.cells.Rectangle
 import myscala.math.vector.ZeroVector2D
 
@@ -26,10 +26,14 @@ import myscala.math.vector.ZeroVector2D
 class PedestrianSim(val origin: Rectangle,
                     val finalDestination: Rectangle,
                     val freeFlowVel: Double,
-                    val entryTime: Time) extends PedestrianTrait {
+                    val entryTime: Time,
+                    val logFullHistory: Boolean = false) extends PedestrianTrait {
 
   /** current position of the pedestrian */
   var currentPosition: Position = origin.uniformSamplePointInside
+
+  var previousPosition: Position = currentPosition
+
 
   // ******************************************************************************************
   //                                PRIVATE MEMBERS
@@ -44,7 +48,7 @@ class PedestrianSim(val origin: Rectangle,
   var currentDestination: Position = new Position(0,0)//route.head.uniformSamplePointInside
 
   // Checks that the velocity is realistic
-  assert(freeFlowVel > 0.0, "Unacceptable free flow velocity")
+  //assert(freeFlowVel > 0.0, "Unacceptable free flow velocity")
 
   /** current velocity, initialized to 0.0 */
   var currentVelocity: Velocity = new ZeroVector2D
@@ -100,10 +104,12 @@ class PedestrianSim(val origin: Rectangle,
   /** getter method for the history of the positions */
   def getHistoryPosition: Vector[(Time, Position)] = _historyPosition
 
+
   /** Adds the current position (currentPosition) to the history */
-  def addHistory(t: Time): Unit = {
+  def updatePositionHistory(t: Time): Unit = {
     //if (this.currentPosition != this._historyPosition.last._2) {
-      _historyPosition = _historyPosition :+ (t, this.currentPosition)
+      this.previousPosition = this.currentPosition
+      if (logFullHistory) {this._historyPosition = this._historyPosition :+ (t, this.currentPosition)}
     //}
   }
 
@@ -173,8 +179,8 @@ class PedestrianSim(val origin: Rectangle,
     */
 
 
-  def this(oZone: Rectangle, dZone: Rectangle, entryTime: Time, posO: Position) {
-    this(oZone, dZone, 1.34 + 0.2*ThreadLocalRandom.current().nextGaussian(), entryTime) // velocity taken from VS data
+  def this(oZone: Rectangle, dZone: Rectangle, entryTime: Time, posO: Position, logFullHistory: Boolean) {
+    this(oZone, dZone, 1.34 + 0.2*ThreadLocalRandom.current().nextGaussian(), entryTime, logFullHistory) // velocity taken from VS data
 
     this.currentPosition = posO
   }

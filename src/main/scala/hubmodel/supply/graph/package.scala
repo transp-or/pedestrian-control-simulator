@@ -134,9 +134,7 @@ package object graph {
           */
         def connections2Edges[U <: MyEdge](edges: Iterable[Connectivity_JSON])(implicit tag: ClassTag[U]): Set[U] = {
           edges.flatMap(c => c.conn.map(neigh => {
-            println(c)
-            println(neigh)
-            println(vertexMapReader)
+
             tag.runtimeClass.getConstructors()(0).newInstance(vertexMapReader(c.node), vertexMapReader(neigh)).asInstanceOf[U]
           })).toSet
         }
@@ -166,7 +164,6 @@ package object graph {
           graph match {
             case Success(g) => g
             case Failure(f) => {
-
               new SingleGraph(v, baseEdgeCollection, levelChanges, fg, bg, mv, flowSeparators)
             }
           }

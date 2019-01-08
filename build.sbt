@@ -5,7 +5,7 @@ scalaVersion := "2.12.6"
 fork in run := true
 
 javaOptions in run ++= Seq(
-  "-Xms1G", "-Xmx120G", "-XX:+UseConcMarkSweepGC"
+  "-Xms1G", "-Xmx12G", "-XX:+UseConcMarkSweepGC"
 )
 
 libraryDependencies ++= Seq(
@@ -48,7 +48,7 @@ mainClass in(Compile, packageBin) := Some("RunSimulation")
 lazy val dataFolders = Array("den-haag")
 
 lazy val files = Array()
-lazy val confFiles = Array("den-haag-debug.conf")
+lazy val confFiles = Array("den-haag-integration.conf", "den-haag-debug.conf")
 
 
 lazy val distribution = taskKey[Unit]("Copies all the required files and builds a standalone jar to distribute.")
@@ -56,7 +56,7 @@ distribution := {
   IO.copyFile(assembly.value.getAbsoluteFile, baseDirectory.value.getAbsoluteFile / "distribution/hub-model.jar")
   dataFolders.foreach(df => IO.copyDirectory(baseDirectory.value / df, baseDirectory.value / "distribution" / df))
   //files.foreach(f => IO.copyFile(baseDirectory.value / f, baseDirectory.value / "distribution" / f))
-  confFiles.foreach(f => IO.copyFile(baseDirectory.value / f, baseDirectory.value / "distribution" / f))
+  confFiles.foreach(f => IO.copyFile(baseDirectory.value / "resources/simulation" / f, baseDirectory.value / "distribution" / f))
   //sourceDirectory.value / "main" / "resources" listFiles() filter (f => f.getAbsolutePath.takeRight(9) == "test.conf") foreach (f => IO.copyFile(f, baseDirectory.value / "distribution" / f.getName))
 }
 

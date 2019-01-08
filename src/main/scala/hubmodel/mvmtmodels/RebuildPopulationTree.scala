@@ -8,7 +8,7 @@ import hubmodel.ped.PedestrianNOMAD
   *
   * @param sim simulator passed as argument
   */
-class RebuildTree[T <: PedestrianNOMAD](sim: NOMADGraphSimulator[T]) extends Action {
+class RebuildPopulationTree[T <: PedestrianNOMAD](sim: NOMADGraphSimulator[T]) extends Action {
 
   /** Triggers the execution of the m-tree by calling the [[NOMADGraphSimulator.rebuildMTree()]] method.
     *
@@ -22,7 +22,7 @@ class RebuildTree[T <: PedestrianNOMAD](sim: NOMADGraphSimulator[T]) extends Act
     sim.rebuildMTree()
 
     // inserts new rebuild tree event
-    sim.insertEventWithDelay(sim.rebuildTreeInterval.get)(new RebuildTree(sim))
+    sim.insertEventWithDelay(sim.rebuildTreeInterval.get)(new RebuildPopulationTree(sim))
   }
 
 

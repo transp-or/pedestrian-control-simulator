@@ -15,35 +15,35 @@ object ExploreComplianceFlowSep extends App {
   // Reads the file passed as argument
   val config: Config = parseConfigFile(args)
 
-  val complianceAnalysis: ComplianceVariation = new ComplianceVariation(0.25, config)
+  val complianceAnalysis: ComplianceVariation = new ComplianceVariation(0.1, config)
 
   complianceAnalysis.runSimulations()
 
   val results = complianceAnalysis.processWrittenResults
 
   results.map(r => {
-      new Histogram(config.getString("output.output_prefix") + "tt-histogram_" + r._1 + ".png",
-        r._2._2,
-        0.5,
-        "TT [pax/m^2]",
-        "Histogram of TT for " + r._1,
-        opts = PlotOptions(xmax = Some(75), xmin=Some(20), ymax=Some(0.05)))
+    new Histogram(config.getString("output.output_prefix") + "tt-histogram_" + r._1 + ".png",
+      r._2._2,
+      0.5,
+      "TT [pax/m^2]",
+      "Histogram of TT for " + r._1,
+      opts = PlotOptions(xmax = Some(50), xmin = Some(15), ymax = Some(0.05)))
     computeBoxPlotData(r._2._2.toVector)
-  }).map(v =>  (v._1, v._2, v._3, v._4, v._5)).toVector.writeToCSV(config.getString("output.output_prefix") + "_boxplots_travel_times.csv")
+  }).map(v => (v._1, v._2, v._3, v._4, v._5)).toVector.writeToCSV(config.getString("output.output_prefix") + "_boxplots_travel_times.csv")
 
   def computeBoxPlotData(data: Seq[Double]): (Double, Double, Double, Double, Double, Seq[Double]) = {
 
-    val quarters = computeQuantiles(Vector(25.0, 50.0 ,75.0))(data)
+    val quarters = computeQuantiles(Vector(25.0, 50.0, 75.0))(data)
     val lowerQuartile = quarters.values(0)
     val median = quarters.values(1)
     val upperQuartile = quarters.values(2)
 
-    val lowerWhisker = data.map(_ - (lowerQuartile - (upperQuartile-lowerQuartile)*1.5)).filter(_ >= 0).min + lowerQuartile - (upperQuartile-lowerQuartile)*1.5
-    val upperWhisker = data.map(_ - (upperQuartile + (upperQuartile-lowerQuartile)*1.5)).filter(_ <= 0).max + upperQuartile + (upperQuartile-lowerQuartile)*1.5
+    val lowerWhisker = data.map(_ - (lowerQuartile - (upperQuartile - lowerQuartile) * 1.5)).filter(_ >= 0).min + lowerQuartile - (upperQuartile - lowerQuartile) * 1.5
+    val upperWhisker = data.map(_ - (upperQuartile + (upperQuartile - lowerQuartile) * 1.5)).filter(_ <= 0).max + upperQuartile + (upperQuartile - lowerQuartile) * 1.5
 
     (median, lowerQuartile, upperQuartile, lowerWhisker, upperWhisker, data.filter(v => v < lowerWhisker || v > upperWhisker)
     )
 
   }
 
-  }
+}

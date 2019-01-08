@@ -1,14 +1,16 @@
 
 import java.io.File
-import java.nio.file.{Files, Paths}
+import java.nio.file.{DirectoryStream, Files, Path, Paths}
 
 import com.typesafe.config.{Config, ConfigFactory}
+import hubmodel.DES.NOMADGraphSimulator
 import hubmodel._
 import hubmodel.output.TRANSFORM.PopulationSummaryProcessingTRANSFORM
 import hubmodel.ped.{PedestrianNOMAD, PedestrianNOMADWithGraph}
 import hubmodel.results.PopulationSummaryProcessing
 import hubmodel.supply.StopID_New
 import hubmodel.supply.graph.readPTStop2GraphVertexMap
+import hubmodel.tools.IllegalSimulationInput
 import myscala.math.stats.{ComputeQuantiles, ComputeStats, computeQuantiles}
 import myscala.output.SeqOfSeqExtensions.SeqOfSeqWriter
 import myscala.output.SeqTuplesExtensions.SeqTuplesWriter
@@ -18,6 +20,8 @@ import scala.collection.GenIterable
 import scala.collection.JavaConverters._
 import scala.collection.parallel.ForkJoinTaskSupport
 import scala.io.Source
+import scala.collection.JavaConversions._
+import scala.util.Try
 
 
 /**
@@ -45,11 +49,64 @@ object RunSimulation extends App {
     throw new IllegalArgumentException("No simulation to run ! Check parameters in config file.")
   }*/
 
+
+  val demandSets: Option[Seq[(String, String)]] = if (config.getBoolean("sim.read_multiple_TF_demand_sets")) {
+
+    if (!((Paths.get(config.getString("files.TF_demand_sets")).toString == Paths.get(config.getString("files.flows_TF")).getParent.toString) &&
+      (Paths.get(config.getString("files.flows_TF")).getParent.toString == Paths.get(config.getString("files.timetable_TF")).getParent.toString))) {
+      throw new IllegalSimulationInput("Directories for multiple demand sets do not match !")
+    }
+
+    val multipleDemandStream: DirectoryStream[Path] = Files.newDirectoryStream(Paths.get(config.getString("files.TF_demand_sets")), "*.json")
+
+    val files: Vector[Path] = multipleDemandStream.toVector
+
+    multipleDemandStream.close()
+
+    val flowBaseName: String = Paths.get(config.getString("files.flows_TF")).getFileName.toString.replace(".json", "")
+    val timetableBaseName: String = Paths.get(config.getString("files.timetable_TF")).getFileName.toString.replace(".json", "")
+
+    try {
+      if (files.size % 2 != 0) {
+        throw new IllegalSimulationInput("Uneven number of files for multiple demand sets ! (" + files.size + " files found)")
+      } else if (files.isEmpty) {
+        throw new IllegalSimulationInput("No files for multiple demand sets !")
+      } else if (files.size == 2) {
+        println("Warning ! Only one set of demands used for the multiple demand inputs. ")
+        Some(
+          Seq((
+            files.find(_.getFileName.toString.contains(flowBaseName)).get.toString,
+            files.find(_.getFileName.toString.contains(timetableBaseName)).get.toString
+          )
+          )
+        )
+      } else {
+        Some(
+          files
+            .groupBy(f => f.getFileName.getFileName.toString.split("_").last.replace(".json", ""))
+            .map(grouped => (grouped._2.find(_.getFileName.toString.contains(flowBaseName)).get.toString, grouped._2.find(_.getFileName.toString.contains(timetableBaseName)).get.toString)).toVector
+        )
+      }
+    } catch {
+      case e: Exception => throw e
+    }
+  } else {
+    None
+  }
+
   val simulationStartTime: Time = Time(config.getDouble("sim.start_time"))
   val simulationEndTime: Time = Time(config.getDouble("sim.end_time"))
-  val n: Int = config.getInt("sim.nb_runs")
+  val n: Int = if (config.getBoolean("sim.read_multiple_TF_demand_sets")) {
+    println(" * using " + demandSets.get.size + " different pedestrian demand sets")
+    println(" * ignoring number of simulation runs")
+    demandSets.get.size
+  } else {
+    println(" * running " + config.getInt("sim.nb_runs") + " simulations")
+    config.getInt("sim.nb_runs")
+  }
   val runSimulationsInParallel: Boolean = config.getBoolean("execution.parallel")
   val evaluationInterval: Time = Time(config.getDouble("sim.evaluate_dt"))
+
 
   // Runs the simulations in parallel or sequential based on the config file.
 
@@ -67,11 +124,16 @@ object RunSimulation extends App {
     1 to n
   }
 
-
   if (n > 0) {
     range.foreach(s => {
-      val sim = createSimulation[PedestrianNOMAD](config)
-      runAndWriteResults(sim, config.getString("output.output_prefix")+"_", if (!config.getIsNull("output.dir")) Some(config.getString("output.dir")) else {
+      val sim =
+        if (demandSets.isDefined) {
+          createSimulation[PedestrianNOMAD](config, Some(demandSets.get(s-1)._1), Some(demandSets.get(s-1)._2))
+        }
+        else {
+          createSimulation[PedestrianNOMAD](config)
+        }
+      runAndWriteResults(sim, config.getString("output.output_prefix") + "_", if (!config.getIsNull("output.dir")) Some(config.getString("output.dir")) else {
         None
       }, config.getBoolean("output.write_trajectories_as_VS"), config.getBoolean("output.write_trajectories_as_JSON"))
       System.gc()
@@ -79,6 +141,7 @@ object RunSimulation extends App {
   } else {
     println("No more simulations to run !")
   }
+
 
   // Reads intermediate results
   val results: Vector[ResultsContainerRead] = readResults(if (!config.getIsNull("output.dir")) {
@@ -247,8 +310,9 @@ object RunSimulation extends App {
   if (config.getBoolean("output.write_tt_4_transform")) {
 
     val stop2Vertex = readPTStop2GraphVertexMap(config.getString("files.zones_to_vertices_map"))
+
     def vertices2Stops(vertexID: VertexID): String = {
-      val reversedMap: Map[String, String] = stop2Vertex.stop2Vertices.flatMap( kv => kv._2.map(v => v -> kv._1.toString))
+      val reversedMap: Map[String, String] = stop2Vertex.stop2Vertices.flatMap(kv => kv._2.map(v => v -> kv._1.toString))
       reversedMap.getOrElse(vertexID, vertexID.toString)
     }
 

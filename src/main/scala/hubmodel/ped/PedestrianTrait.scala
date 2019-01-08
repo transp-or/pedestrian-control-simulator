@@ -1,7 +1,10 @@
 package hubmodel.ped
 
 import hubmodel._
+import hubmodel.supply.continuous.Wall
 import hubmodel.tools.cells.Rectangle
+import hubmodel.mvmtmodels.NOMAD.getClosestPoint
+
 
 /**
   * Parent trait for different implementation of pedestrians. This can make functions more generic.
@@ -45,6 +48,16 @@ trait PedestrianTrait {
   /** has reached destination and has exited simulation */
   var reachedDestination: Boolean = false
 
+
+  /**
+    * List of closest walls to compute interactions with. Avoids search all walls every time.
+    */
+  var closeWalls: Iterable[Wall] = Vector()
+
+  def updateClosestWalls(walls: Iterable[Wall]): Unit = {
+    closeWalls = walls.filter(w => (this.currentPosition - getClosestPoint(this.currentPosition, w)).norm < DISTANCE_TO_CLOSE_WALLS)
+  }
+
   /**
     * Upper bounds the velocity with a value of 1.3*1.34.
     * This value is taken from the original paper on the Social Force Model.
@@ -57,7 +70,7 @@ trait PedestrianTrait {
     else desiredVel * ((1.3 * 1.34) / desiredVel.norm)
   }
 
-  def addHistory(t: Time): Unit
+  def updatePositionHistory(t: Time): Unit
 
   // ******************************************************************************************
   //                    FUNCTIONS FOR PRINTING THE PEDESTRIAN

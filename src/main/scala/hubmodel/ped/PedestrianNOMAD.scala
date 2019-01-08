@@ -4,7 +4,7 @@ import hubmodel.tools.cells.Rectangle
 import hubmodel.{Acceleration, Direction, Position, Time}
 import myscala.math.vector.{Vector2D, ZeroVector2D}
 
-class PedestrianNOMAD(oZone: Rectangle, dZone: Rectangle, entryTime: Time, posO: Position) extends PedestrianSim(oZone, dZone, entryTime, posO) with WithGraphID {
+class PedestrianNOMAD(oZone: Rectangle, dZone: Rectangle, entryTime: Time, posO: Position, logFullHistory: Boolean = false) extends PedestrianSim(oZone, dZone, entryTime, posO, logFullHistory) with WithGraphID {
 
   def isVariableStep: Boolean = {true}
   var isolationTypePed: Int = 0
@@ -30,7 +30,7 @@ class PedestrianNOMAD(oZone: Rectangle, dZone: Rectangle, entryTime: Time, posO:
     else false
   }
 
-  def updatePreviousPositionAndSpeed(t: Time): Unit = { this.addHistory(t) }
+  def updatePreviousPositionAndSpeed(t: Time): Unit = { this.updatePositionHistory(t) }
 
   /** Computes the direction based on the current position and the target position
     *

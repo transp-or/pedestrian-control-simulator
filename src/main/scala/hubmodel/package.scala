@@ -44,7 +44,11 @@ package object hubmodel {
 
   /* PARAMETERS */
 
-  // Length in meters of the othogonal extension of the "near region" for flow lines. This shouls be larger than the
+  // each pedestrians contains the list of walls which he is close to. This means there is no need to compute at every
+  // time step the interaction with all the walls.
+  val DISTANCE_TO_CLOSE_WALLS: Double = 15.0
+
+  // Length in meters of the othogonal extension of the "near region" for flow lines. This should be larger than the
   // maximum walking speed * the motion model clock (sf_dt) to ensure a pedestrian cannot "jump" over it. The larger the
   // value of the parameter, the more pedestrians will be checked to see if they cross the line..
   val FLOW_LINE_REGION_EXTENSION: Double = 2.0
@@ -123,7 +127,7 @@ package object hubmodel {
     *
     * @return UUID formatted as a String
     */
-  def generateUUID: String = RandomStringUtils.randomAlphanumeric(8)// java.util.UUID.randomUUID.toString
+  def generateUUID: String = RandomStringUtils.randomAlphabetic(1) + RandomStringUtils.randomAlphanumeric(8)// java.util.UUID.randomUUID.toString
 
 
   def writePopulationTrajectories(population: Iterable[PedestrianTrait], file: String): Unit = {
@@ -194,8 +198,12 @@ package object hubmodel {
     *
     * @return simulator ready to run
     */
-  def createSimulation[T <: PedestrianNOMAD](config: Config)(implicit tag: ClassTag[T]): NOMADGraphSimulator[T] = {
+  def createSimulation[T <: PedestrianNOMAD](config: Config, flows_TF: Option[String] = None, timetable_TF: Option[String] = None)(implicit tag: ClassTag[T]): NOMADGraphSimulator[T] = {
 
+
+    if ((timetable_TF.isEmpty && flows_TF.isDefined) || (timetable_TF.isDefined && flows_TF.isEmpty)) {
+      throw new IllegalArgumentException("Input to create function is wrong ! Either both optional arguments must be set or none of them")
+    }
 
     // checkValid(), just as in the plain SimpleLibContext.
     // Note that these fields are NOT lazy, because if we're going to
@@ -224,9 +232,13 @@ package object hubmodel {
 
     val flows = getFlows(config)
 
-    val (timeTable, stop2Vertex) = getPTSchedule(flows, config)
+    val (timeTable, stop2Vertex) =
+      if (timetable_TF.isEmpty && flows_TF.isEmpty) { getPTSchedule(flows, config) }
+      else { getPTSchedule(flows, timetable_TF.get, config) }
 
-    val disaggPopulation = getDisaggPopulation(config)
+    val disaggPopulation =
+      if (timetable_TF.isEmpty && flows_TF.isEmpty) { getDisaggPopulation(config) }
+      else { getDisaggPopulation(flows_TF.get)}
 
     /** Takes a conceptual node (train or on foot) and returns the set of "real" nodes (the ones used by the graph)
       * in which the pedestrians must be created.
@@ -268,19 +280,12 @@ package object hubmodel {
       graph = routeGraph,
       timeTable = timeTable,
       stop2Vertices = conceptualNode2GraphNodes,
-      controlDevices = controlDevices
+      controlDevices = controlDevices,
+      config.getBoolean("output.write_trajectories_as_VS") || config.getBoolean("output.write_trajectories_as_JSON")
     )
-
 
     insertDemandIntoSimulator[T](sim, disaggPopulation, flows, timeTable)
 
-
-    /*if (disaggPopulation.nonEmpty) { sim.insertEventWithZeroDelay(new ProcessDisaggregatePedestrianFlows(disaggPopulation, sim)) }
-
-    val PTInducedFlows = flows._2.toVector
-    sim.insertEventWithZeroDelay(new ProcessTimeTable[T](timeTable, PTInducedFlows, sim))
-    sim.insertEventWithZeroDelay(new ProcessPedestrianFlows[T](flows._1, flows._3, sim))
-*/
     sim
   }
 
@@ -293,6 +298,7 @@ package object hubmodel {
     println(" * using only disaggregate pedestrian demand")
     (Iterable(), Iterable(), Iterable())
   }
+
 
   // Loads the train time table used to create demand from trains
   def getPTSchedule(flows: (Iterable[PedestrianFlow_New], Iterable[PedestrianFlowPT_New], Iterable[PedestrianFlowFunction_New]), config: Config): (PublicTransportSchedule, Stop2Vertex) = {
@@ -314,6 +320,18 @@ package object hubmodel {
     }
   }
 
+  // Loads the train time table used to create demand from trains
+  def getPTSchedule(flows: (Iterable[PedestrianFlow_New], Iterable[PedestrianFlowPT_New], Iterable[PedestrianFlowFunction_New]),
+                    timetable_TF: String,
+                    config:  Config,
+                   ): (PublicTransportSchedule, Stop2Vertex) = {
+      (
+        readScheduleTF(timetable_TF),
+        readPTStop2GraphVertexMap(config.getString("files.zones_to_vertices_map"))
+      )
+  }
+
+
   // Loads the disaggregate pedestrian demand.
   def getDisaggPopulation(config: Config): Iterable[(String, String, Time)] = if (config.getIsNull("files.flows_TF") && !config.getIsNull("files.disaggregate_demand")) {
     readDisaggDemand(config.getString("files.disaggregate_demand"))
@@ -322,6 +340,11 @@ package object hubmodel {
   } else {
     println(" * using only standard pedestrian flows")
     Iterable()
+  }
+
+  // Loads the disaggregate pedestrian demand.
+  def getDisaggPopulation(flows_TF: String): Iterable[(String, String, Time)] = {
+      readDisaggDemandTF(flows_TF)
   }
 
 

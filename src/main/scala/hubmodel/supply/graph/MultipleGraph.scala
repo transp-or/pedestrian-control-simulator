@@ -20,6 +20,8 @@ class MultipleGraph( fg: Iterable[FlowGate],
   // Collection of graphs to choose from
   private val _graphCollection: collection.mutable.Map[String, AlternativeGraph] = collection.mutable.Map()
 
+  def getGraphs: Map[String, AlternativeGraph] = this._graphCollection.toMap
+
   // Accessor to the graph collection
  /* def graphs: Map[String, AlternativeGraph] = {
     this._graphCollection.toMap
@@ -59,11 +61,12 @@ class MultipleGraph( fg: Iterable[FlowGate],
   private def sampleGraphs: String = {
     val vectorizedIds: Vector[(String, Double)] = this._graphCollection.map(v => (v._1, v._2._1)).toVector
     val bins: Vector[Double] = this._graphCollection.map(v => (v._1, v._2._1)).toVector.scanLeft(0.0)(_ + _._2).tail
-    vectorizedIds(bins.indexWhere(_ > ThreadLocalRandom.current.nextDouble(0.0, 1.0)))._1
+    vectorizedIds(bins.indexWhere(_ > ThreadLocalRandom.current.nextDouble(0.00001, 0.999999)))._1
   }
 
   def setRouteFirst(ped: PedestrianNOMAD): Unit = {
-    ped.setGraph(this.sampleGraphs)
+    val graph = this.sampleGraphs
+    ped.setGraph(graph)
     this.processIntermediateArrival(ped)
   }
 
@@ -92,13 +95,21 @@ class MultipleGraph( fg: Iterable[FlowGate],
     * @param devices The new set of devices to use to make the graph. This way multiple graphs do not share control devices
     * @return Copy of the graph.
     */
-  def clone(devices: ControlDevices, populationFraction: PopulationFraction): MultipleGraph = {
+  def clone2AlternateGraphs(devices: ControlDevices, populationFraction: PopulationFraction): MultipleGraph = {
+
+    if (this._graphCollection.size != 2) {throw new Exception("Number of graphs is wrong for using this function !")}
 
     val graphs = new MultipleGraph(devices.flowGates, devices.binaryGates, devices.amws, devices.flowSeparators)
-    this._graphCollection.foreach(g => {
-      graphs.addGraph(g._1, populationFraction, g._2._2.vertexCollection.values, g._2._2.edgeCollection, Set(), Set(), g._2._2.levelChanges)
-    })
+    val refGraph = this._graphCollection("reference")
+    graphs.addGraph("reference", 1.0 - populationFraction, refGraph._2.vertexCollection.values, refGraph._2.edgeCollection, Set(), Set(), refGraph._2.levelChanges)
+
+    if (populationFraction > 0.0) {
+      val alternateGraph = this._graphCollection.filterNot(kv => kv._1 == "reference").head
+      graphs.addGraph(alternateGraph._1, populationFraction, alternateGraph._2._2.vertexCollection.values, alternateGraph._2._2.edgeCollection, alternateGraph._2._2.edges2Add, alternateGraph._2._2.edges2Remove, alternateGraph._2._2.levelChanges)
+    }
     graphs
   }
+
+  override def toString: String = {this._graphCollection.toString}
 
 }
