@@ -178,7 +178,7 @@
   "alternate_graphs": [
     {
       "name": "notFollowingRules",
-      "fraction_of_pop": 0.5,
+      "fraction_of_pop": 0.0,
       "connectivity_to_add": [
         {
           "node": "t1",
