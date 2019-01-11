@@ -272,8 +272,9 @@ object RunSimulation extends App {
   //val ODPairsToAnalyse: Iterable[(String, String)] = config.getStringList("results-analysis.o_nodes").asScala.zip(config.getStringList("results-analysis.d_nodes").asScala).map(t => (t._1, t._2))
 
 
-  /*
-  val ODGroupsToAnalyse: Seq[(Seq[String], Seq[String])] = Vector((Vector("top", "bottom"), Vector("left-top", "right-bottom")), (Vector("left-bottom", "right-top"), Vector("right-bottom", "left-top")))
+
+  //val ODGroupsToAnalyse: Seq[(Seq[String], Seq[String])] = Vector((Vector("top", "bottom"), Vector("left-top", "right-bottom")), (Vector("left-bottom", "right-top"), Vector("right-bottom", "left-top")))
+  val ODGroupsToAnalyse: Seq[(Seq[String], Seq[String])] = Vector((Vector("top"), Vector("bottom")), (Vector("bottom"), Vector("top")))
 
   def makeStringODGroups(group: (Seq[String], Seq[String])): String = group._1.mkString("_") + "_TO_" + group._2.mkString("_")
 
@@ -301,7 +302,7 @@ object RunSimulation extends App {
     }
     subPop._1.map(_._3).cutOfAfterQuantile(99).stats
   }).toVector.writeToCSV(config.getString("output.output_prefix") + "_statsByOD.csv", rowNames = Some(ODGroupsToAnalyse.map(makeStringODGroups)), columnNames = None)
-  */
+
 
   // ******************************************************************************************
   //                                  Processing for TRANS-FORM

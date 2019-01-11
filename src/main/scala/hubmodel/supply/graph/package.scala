@@ -71,7 +71,8 @@ package object graph {
 
           vertexMapReader --= s.get.flowSeparators.flatMap(_.overZone_1.collect({ case oZone if oZone.overridenZone.isDefined => oZone.overridenZone.get }))
           vertexMapReader --= s.get.flowSeparators.flatMap(_.overZone_2.collect({ case oZone if oZone.overridenZone.isDefined => oZone.overridenZone.get }))
-          vertexMapReader ++= s.get.flowSeparators.flatMap(_.overZone_1.map(oz => oz.name -> new RectangleModifiable(
+
+          /*vertexMapReader ++= s.get.flowSeparators.flatMap(_.overZone_1.map(oz => oz.name -> new RectangleModifiable(
             oz.name,
             (Vector2D(oz.x1(0), oz.y1(0)), Vector2D(oz.x1(1), oz.y1(1))),
             (Vector2D(oz.x2(0), oz.y2(0)), Vector2D(oz.x2(1), oz.y2(1))),
@@ -86,7 +87,7 @@ package object graph {
             (Vector2D(oz.x3(0), oz.y3(0)), Vector2D(oz.x3(1), oz.y3(1))),
             (Vector2D(oz.x4(0), oz.y4(0)), Vector2D(oz.x4(1), oz.y4(1))),
             false
-          ))).toMap
+          ))).toMap*/
 
           s.get.flowSeparators.map(fs => {
             val oz_1: Iterable[RectangleModifiable] = fs.overZone_1.map(oz => new RectangleModifiable(
@@ -106,6 +107,10 @@ package object graph {
               false
             ))
             val oldZones: Iterable[String] = fs.overZone_1.collect({ case oZone if oZone.overridenZone.isDefined => oZone.overridenZone.get }) ++ fs.overZone_2.collect({ case oZone if oZone.overridenZone.isDefined => oZone.overridenZone.get })
+
+            vertexMapReader ++= oz_1.map(z => z.name -> z)
+            vertexMapReader ++= oz_2.map(z => z.name -> z)
+
 
             new FlowSeparator(
               Vector2D(fs.x1a, fs.y1a),

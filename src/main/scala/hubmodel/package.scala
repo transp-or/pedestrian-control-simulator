@@ -281,7 +281,7 @@ package object hubmodel {
       timeTable = timeTable,
       stop2Vertices = conceptualNode2GraphNodes,
       controlDevices = controlDevices,
-      config.getBoolean("output.write_trajectories_as_VS") || config.getBoolean("output.write_trajectories_as_JSON")
+      config.getBoolean("output.write_trajectories_as_VS") || config.getBoolean("output.write_trajectories_as_JSON") || config.getBoolean("output.make_video")
     )
 
     insertDemandIntoSimulator[T](sim, disaggPopulation, flows, timeTable)

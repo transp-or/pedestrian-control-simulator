@@ -35,8 +35,8 @@ class RouteGraph(protected val baseVertices: Iterable[Rectangle],
 
 
   val vertexCollection: Map[String, Rectangle] = this.baseVertices.map(v => v.name -> v).toMap ++
-    flowSeparators.flatMap(fs => fs.associatedZonesStart.map(oz => oz.name -> oz)).toMap ++
-    flowSeparators.flatMap(fs => fs.associatedZonesEnd.map(oz => oz.name -> oz)).toMap --
+    flowSeparators.flatMap(fs => fs.associatedZonesStart.map(oz => oz.name -> oz)) ++
+    flowSeparators.flatMap(fs => fs.associatedZonesEnd.map(oz => oz.name -> oz)) --
     flowSeparators.flatMap(fs => fs.overridenZones)
 
   //def vertexMapNew: Map[String, Rectangle] = this.vertexCollection

@@ -31,12 +31,12 @@ class FlowSeparator(val startA: Position,
 
   private val fractionHistory: collection.mutable.ArrayBuffer[(Time, Double)] = collection.mutable.ArrayBuffer((Time(0.0), 0.5))
 
-  private val speed: Double = 0.5 // m/s fixed in a arbitrary manner
+  private val SPEED: Double = 0.25 // m/s fixed in a arbitrary manner
 
   var movingWallEventIsInserted: Boolean = false
 
   def flowSeparatorNeedsToMove(updateStep: Time): Boolean =  {
-    (this.start-this.currentTargetPosition._1).norm > this.speed*updateStep.value && (this.end-this.currentTargetPosition._2).norm > this.speed*updateStep.value
+    (this.start-this.currentTargetPosition._1).norm > this.SPEED*updateStep.value && (this.end-this.currentTargetPosition._2).norm > this.SPEED*updateStep.value
   }
 
   def getPositionHistory: IndexedSeq[(Time, Position, Position)] = positionHistory.toVector
@@ -81,14 +81,15 @@ class FlowSeparator(val startA: Position,
 
   class MoveFlowSeperator[T <: PedestrianNOMAD](sim: NOMADGraphSimulator[T]) extends Action {
 
+
     override def execute(): Unit = {
       if ((currentTargetPosition._1 - start).norm > 0.0) {
-        start = start + (currentTargetPosition._1 - start).normalized * (speed * sim.sf_dt.value.toDouble)
+        start = start + (currentTargetPosition._1 - start).normalized * (SPEED * sim.sf_dt.value.toDouble)
         associatedZonesStart.foreach(_.moveRectangle(sim.sf_dt))
       }
 
       if ((currentTargetPosition._2 - end).norm > 0.0) {
-        end = end + (currentTargetPosition._2 - end).normalized * (speed * sim.sf_dt.value.toDouble)
+        end = end + (currentTargetPosition._2 - end).normalized * (SPEED * sim.sf_dt.value.toDouble)
         associatedZonesEnd.foreach(_.moveRectangle(sim.sf_dt))
       }
 
