@@ -91,7 +91,7 @@ abstract class GridSearchNew[T <: ParameterModifications](val config: Config) ex
   }
 
   def groupResultsFiles: Map[String, List[File]] = { // reads the files and process the data
-    new File(outputDir.getFileName.toString).listFiles.filter(_.isFile).toList.groupBy(f => {
+    new File(outputDir.getParent.toString + "/" + outputDir.getFileName.toString).listFiles.filter(_.isFile).toList.groupBy(f => {
       f.getName match {
         case a if a.contains("_params_individual_density_") => "individual_density"
         case a if a.contains("_params_tt_") => "tt"

@@ -256,7 +256,7 @@ object RunSimulation extends App {
     results.map(r => r.tt.map(_._3).stats).writeToCSV(config.getString("output.output_prefix") + "_travel_times_stats.csv", rowNames = None, columnNames = Some(Vector("size", "mean", "variance", "median", "min", "max")))
 
     // creates hist data for all TT aggregated together
-    val data: Seq[Double] = results.flatMap(_.tt.map(_._3)).cutOfAfterQuantile(99)
+    val data: Seq[Double] = results.flatMap(_.tt.map(_._3))//.cutOfAfterQuantile(99)
     val binSize = 1.0
     val opts = PlotOptions(xmin = Some(10), xmax = Some(50), ymax = Some(0.25), width = 700, height = 400)
     new Histogram(config.getString("output.output_prefix") + "_travel_times_hist.png", data, binSize, "travel times [s]", "Fixed separator", opts)
