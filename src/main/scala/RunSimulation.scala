@@ -1,7 +1,9 @@
 
 import java.io.File
 import java.nio.file.{DirectoryStream, Files, Path, Paths}
+import java.util.concurrent.ThreadLocalRandom
 
+import ExploreComplianceFlowSep.computeBoxPlotData
 import com.typesafe.config.{Config, ConfigFactory}
 import hubmodel.DES.NOMADGraphSimulator
 import hubmodel._
@@ -14,6 +16,7 @@ import hubmodel.tools.IllegalSimulationInput
 import myscala.math.stats.{ComputeQuantiles, ComputeStats, computeQuantiles}
 import myscala.output.SeqOfSeqExtensions.SeqOfSeqWriter
 import myscala.output.SeqTuplesExtensions.SeqTuplesWriter
+import myscala.output.SeqExtension.SeqWriter
 import trackingdataanalysis.visualization.{Histogram, PlotOptions, ScatterPlot, computeHistogramDataWithXValues}
 
 import scala.collection.GenIterable
@@ -249,11 +252,49 @@ object RunSimulation extends App {
 
   }
 
+  /** Performs a bootstrap on the data. The paramater to compute is passed as an argument. The number of permutations
+    * to compute is also a parameter with a default value set to 100.
+    *
+    * @param data Sequence on which to perform the bootstrap
+    * @param parameterFunction the parameter to compute on the data
+    * @param r the number of permutations to compute, set to 100 by default
+    * @tparam T type of the data
+    * @return mean square error MSE
+    */
+  def bootstrapMSE[T: Numeric](data: Seq[T], parameterFunction: Seq[T] => Double, r: Int = 100): Double = {
+
+    // The parameter cocmputed on the original data
+    val param: Double = parameterFunction(data)
+
+    /** Sample with replacement the data into a collection of the same size as the original data.
+      *
+      * @param data data to resample
+      * @return Same size resampled collection
+      */
+    def sampleWithReplacement(data: Seq[T]): Seq[T] = {
+      Vector.fill(data.size)(ThreadLocalRandom.current().nextInt(data.size)).map(v => data(v))
+    }
+
+    // Performs the bootstrap and computes the MSE
+    0.to(r).by(1).foldLeft(0.0)((s, v) => s + math.pow(parameterFunction(sampleWithReplacement(data))-param, 2))
+  }
+
   // computes statistics on travel times and writes them
   if (config.getBoolean("output.write_tt_stats")) {
 
     // writes stattistcs about each run
-    results.map(r => r.tt.map(_._3).stats).writeToCSV(config.getString("output.output_prefix") + "_travel_times_stats.csv", rowNames = None, columnNames = Some(Vector("size", "mean", "variance", "median", "min", "max")))
+    val statsPerRun = results.map(r => {
+      r.tt.map(_._3).stats
+    })
+    statsPerRun.writeToCSV(config.getString("output.output_prefix") + "_travel_times_stats.csv", rowNames = None, columnNames = Some(Vector("size", "mean", "variance", "median", "min", "max")))
+
+    def mean(data: Seq[Double]): Double = {data.sum/data.size}
+    println("MSE=" + bootstrapMSE(statsPerRun.map(_._4), mean))
+
+    (for (i <- 1 to results.size) yield {
+      (i, bootstrapMSE(statsPerRun.take(i).map(_._4), mean))
+    }).toVector.writeToCSV(config.getString("output.output_prefix") + "-MSE.csv", rowNames = None, columnNames = Some(Vector("n", "mse")))
+
 
     // creates hist data for all TT aggregated together
     val data: Seq[Double] = results.flatMap(_.tt.map(_._3))//.cutOfAfterQuantile(99)
@@ -261,7 +302,8 @@ object RunSimulation extends App {
     val opts = PlotOptions(xmin = Some(10), xmax = Some(50), ymax = Some(0.25), width = 700, height = 400)
     new Histogram(config.getString("output.output_prefix") + "_travel_times_hist.png", data, binSize, "travel times [s]", "Fixed separator", opts)
     computeHistogramDataWithXValues(data, binSize, opts.xmin, opts.xmax).writeToCSV(config.getString("output.output_prefix") + "_travel_times_hist_data.csv", rowNames = None, columnNames = Some(Vector("x", "y")))
-    println(data.stats)
+    //println("stats: ", data.stats)
+    //println("boxplot: ", computeBoxPlotData(data))
     //println(computeHistogramDataWithXValues(data, binSize, opts.xmin, opts.xmax))
     //println("tt " + results.flatMap(_.tt.map(_._3)).cutOfAfterQuantile(99).stats)
     //println(computeQuantiles(Vector(65,70,75,80,85,90,95,97,99))(results.flatMap(_.tt.map(_._3)).cutOfAfterQuantile(99)))

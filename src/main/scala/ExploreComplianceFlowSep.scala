@@ -16,7 +16,7 @@ object ExploreComplianceFlowSep extends App {
   // Reads the file passed as argument
   val config: Config = parseConfigFile(args)
 
-  val complianceIntervals = 0.025
+  val complianceIntervals = 0.1
 
   val complianceAnalysis: ComplianceVariation = new ComplianceVariation(complianceIntervals, config, 0.5)
 
