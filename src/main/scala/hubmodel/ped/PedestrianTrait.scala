@@ -1,9 +1,9 @@
 package hubmodel.ped
 
 import hubmodel._
+import hubmodel.mvmtmodels.NOMAD.getClosestPoint
 import hubmodel.supply.continuous.Wall
 import hubmodel.tools.cells.Rectangle
-import hubmodel.mvmtmodels.NOMAD.getClosestPoint
 
 
 /**

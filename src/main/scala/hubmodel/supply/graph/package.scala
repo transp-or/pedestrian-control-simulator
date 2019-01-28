@@ -4,11 +4,9 @@ import hubmodel.Position
 import hubmodel.input.JSONReaders.{Connectivity_JSON, InfraGraphParser, Track2NodeMapping_JSON}
 import hubmodel.mgmt.ControlDevices
 import hubmodel.mgmt.flowsep.{FlowLine, FlowSeparator}
-import hubmodel.ped.{PedestrianNOMAD, PedestrianNOMADWithGraph, PedestrianSim}
-import hubmodel.supply.graph.RouteGraph
+import hubmodel.ped.PedestrianNOMAD
 import hubmodel.tools.cells.{DensityMeasuredArea, Rectangle, RectangleModifiable}
 import myscala.math.vector.Vector2D
-import nl.tudelft.pedestrians.agents.Pedestrian
 import play.api.libs.json.{JsError, JsSuccess, JsValue, Json}
 
 import scala.io.BufferedSource
@@ -29,6 +27,7 @@ package object graph {
                                       useBinarygates: Boolean,
                                       useAMWs: Boolean,
                                       useFlowSep: Boolean,
+                                      fixedFlowSep: Boolean,
                                       measureDensity: Boolean,
                                       useAlternatGraphs: Boolean)(implicit tagT: ClassTag[T]): (GraphContainer, ControlDevices) = {
 
@@ -173,7 +172,7 @@ package object graph {
             }
           }
           ,
-          new ControlDevices(monitoredAreas, mv, fg, bg, flowSeparators)
+          new ControlDevices(monitoredAreas, mv, fg, bg, flowSeparators, fixedFlowSep)
         )
 
       case e: JsError => throw new Error("Error while parsing graph specification file: " + JsError.toJson(e).toString())

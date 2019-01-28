@@ -1,8 +1,5 @@
 package hubmodel
 
-import hubmodel.ped.PedestrianSim
-import hubmodel.supply.graph.RouteGraph
-
 package object route {
 
   /*def processIntermediateArrival(graph: RouteGraph[])(p: PedestrianSim): Unit = {

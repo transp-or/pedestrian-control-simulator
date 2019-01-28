@@ -2,7 +2,6 @@ package hubmodel.mvmtmodels
 
 import hubmodel.DES.{Action, NOMADGraphSimulator}
 import hubmodel.ped.PedestrianNOMAD
-import hubmodel.mvmtmodels.NOMAD.getClosestPoint
 
 class UpdateClosestWall[T <: PedestrianNOMAD](sim: NOMADGraphSimulator[T]) extends Action {
 

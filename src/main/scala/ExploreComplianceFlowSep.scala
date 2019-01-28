@@ -1,10 +1,8 @@
-import RunSimulation.args
-import com.typesafe.config.{Config, ConfigFactory}
+import com.typesafe.config.Config
 import hubmodel.parseConfigFile
-import optimization.bruteforce.ComplianceVariation
-import myscala.math.stats.ComputeStats
 import myscala.math.stats.computeQuantiles
 import myscala.output.SeqTuplesExtensions.SeqTuplesWriter
+import optimization.bruteforce.ComplianceVariation
 import trackingdataanalysis.visualization.{Histogram, PlotOptions}
 
 object ExploreComplianceFlowSep extends App {

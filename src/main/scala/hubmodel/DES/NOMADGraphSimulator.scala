@@ -1,20 +1,16 @@
 package hubmodel.DES
 
 import hubmodel._
-import hubmodel.demand.{PTInducedQueue, PedestrianFlowFunction_New, PedestrianFlowPT_New, PedestrianFlow_New, PublicTransportSchedule}
+import hubmodel.demand.{PTInducedQueue, PublicTransportSchedule}
 import hubmodel.mgmt.{ControlDevices, EvaluateState}
 import hubmodel.mvmtmodels.NOMAD.NOMADIntegrated
 import hubmodel.mvmtmodels.{RebuildPopulationTree, UpdateClosestWall}
-import hubmodel.ped.{PedestrianNOMAD, PedestrianNOMADWithGraph, PedestrianSim}
+import hubmodel.ped.{PedestrianNOMAD, PedestrianSim}
 import hubmodel.route.UpdateRoutes
-import hubmodel.supply.{NodeParent, StopID_New}
+import hubmodel.supply.NodeParent
 import hubmodel.supply.continuous.{ContinuousSpace, Wall}
 import hubmodel.supply.graph._
 import hubmodel.tools.cells.{DensityMeasuredArea, Rectangle, isInVertex}
-import myscala.math.algo.MTree
-import myscala.math.vector.{Vector2D, norm}
-
-import scala.collection.immutable.HashMap
 
 class NOMADGraphSimulator[T <: PedestrianNOMAD](st: Time,
                           et: Time,
@@ -80,10 +76,14 @@ class NOMADGraphSimulator[T <: PedestrianNOMAD](st: Time,
     println(" * using m-tree for neighbour search")
   }
 
+
+
   /** Indicator whether flow separators are used */
   val useFlowSep: Boolean = controlDevices.flowSeparators.nonEmpty
-  if (useFlowSep) {
-    println(" * using flow separators")
+  if (useFlowSep && !controlDevices.fixedFlowSeparators) {
+    println(" * using dynamic flow separators")
+  } else {
+    println(" * using static flow separators")
   }
 
   // Zones where some KPI should be computed. They must be inititialized before they can be used.

@@ -10,7 +10,8 @@ class ControlDevices(val monitoredAreas: Iterable[DensityMeasuredArea],
                      val amws: Iterable[MovingWalkway],
                      val flowGates: Iterable[FlowGate],
                      val binaryGates: Iterable[BinaryGate],
-                     val flowSeparators: Iterable[FlowSeparator]) {
+                     val flowSeparators: Iterable[FlowSeparator],
+                     val fixedFlowSeparators: Boolean) {
 
   if (flowGates.nonEmpty && monitoredAreas.isEmpty) {
     throw new ControlDevicesException("flow gates present but no monitored area")
@@ -30,7 +31,8 @@ class ControlDevices(val monitoredAreas: Iterable[DensityMeasuredArea],
       amws,
       flowGates.map(_.clone()),
       binaryGates.map(_.clone()),
-      flowSeparators.map(_.clone())
+      flowSeparators.map(_.clone()),
+      fixedFlowSeparators
     )
   }
 }

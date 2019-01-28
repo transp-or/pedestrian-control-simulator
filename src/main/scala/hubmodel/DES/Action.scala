@@ -1,9 +1,6 @@
 package hubmodel.DES
 
 import com.typesafe.scalalogging.LazyLogging
-import hubmodel.ped.PedestrianNOMAD
-
-import scala.reflect.ClassTag
 
 /**
   * Parent to all actions which will appear in the DES.

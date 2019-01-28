@@ -1,4 +1,4 @@
-import com.typesafe.config.{Config, ConfigFactory}
+import com.typesafe.config.Config
 import hubmodel.parseConfigFile
 import optimization.bruteforce.ParameterExploration
 

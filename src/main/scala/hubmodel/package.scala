@@ -4,13 +4,15 @@ import java.nio.file.{Files, Paths}
 
 import com.typesafe.config.{Config, ConfigFactory}
 import hubmodel.DES.NOMADGraphSimulator
-import hubmodel.demand.{CreatePedestrian, PedestrianFlowFunction_New, PedestrianFlowPT_New, PedestrianFlow_New, ProcessTimeTable, PublicTransportSchedule, readDisaggDemand, readDisaggDemandTF, readPedestrianFlows, readSchedule, readScheduleTF}
+import hubmodel.demand.flows.{ProcessDisaggregatePedestrianFlows, ProcessPedestrianFlows}
+import hubmodel.demand.{PedestrianFlowFunction_New, PedestrianFlowPT_New, PedestrianFlow_New, ProcessTimeTable, PublicTransportSchedule, readDisaggDemand, readDisaggDemandTF, readPedestrianFlows, readSchedule, readScheduleTF}
+import hubmodel.mgmt.ControlDevices
 import hubmodel.output.image.{DrawControlDevicesAndWalls, DrawGraph, DrawWalls, DrawWallsAndGraph}
 import hubmodel.output.video.MovingPedestriansWithDensityWithWallVideo
-import hubmodel.ped.{PedestrianNOMAD, PedestrianNOMADWithGraph, PedestrianSim, PedestrianTrait}
-import hubmodel.supply.{NodeID_New, NodeParent, StopID_New, TrainID_New}
+import hubmodel.ped.{PedestrianNOMAD, PedestrianSim, PedestrianTrait}
 import hubmodel.supply.continuous.{ContinuousSpace, MovableWall, ReadContinuousSpace}
 import hubmodel.supply.graph._
+import hubmodel.supply.{NodeID_New, NodeParent, StopID_New, TrainID_New}
 import hubmodel.tools.cells.{DensityMeasuredArea, Rectangle}
 import myscala.math.vector.{Vector2D, Vector3D}
 import myscala.output.SeqOfSeqExtensions.SeqOfSeqWriter
@@ -22,12 +24,8 @@ import play.api.libs.json._
 
 import scala.collection.immutable.NumericRange
 import scala.math.BigDecimal.RoundingMode
-import scala.util.{Failure, Success, Try}
-import hubmodel.TimeNumeric.mkOrderingOps
-import hubmodel.demand.flows.{ProcessDisaggregatePedestrianFlows, ProcessPedestrianFlows}
-import hubmodel.mgmt.ControlDevices
-
 import scala.reflect.ClassTag
+import scala.util.{Failure, Success, Try}
 
 
 /**
@@ -226,6 +224,7 @@ package object hubmodel {
       config.getBoolean("sim.use_binary_gates"),
       config.getBoolean("sim.use_amw"),
       config.getBoolean("sim.use_flow_sep"),
+      config.getBoolean("sim.fixed_flow_sep"),
       config.getBoolean("sim.measure_density"),
       config.getBoolean("sim.use_alternate_graphs")
     )

@@ -1,9 +1,7 @@
 package optimization.bruteforce
 
 import com.typesafe.config.Config
-import hubmodel.{SimulatorParameters, createSimulation}
-import hubmodel.ped.PedestrianNOMAD
-
+import hubmodel.SimulatorParameters
 import myscala.math.stats.ComputeStats
 
 import scala.collection.GenIterable

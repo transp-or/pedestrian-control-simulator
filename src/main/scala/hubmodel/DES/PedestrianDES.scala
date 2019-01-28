@@ -6,18 +6,14 @@ package hubmodel.DES
 
 import java.util.concurrent.ThreadLocalRandom
 
-import ch.qos.logback.classic.Level
 import com.typesafe.scalalogging.{LazyLogging, Logger}
-import hubmodel.Position
 import hubmodel.TimeNumeric.mkOrderingOps
-import hubmodel.ped.{PedestrianNOMAD, PedestrianTrait}
-import hubmodel.tools.Log
-import hubmodel.{Time, distance}
+import hubmodel.ped.PedestrianNOMAD
+import hubmodel.{Position, Time, distance}
 import myscala.math.algo.MTree
 import myscala.math.vector.{Vector2D, norm}
 
 import scala.collection.immutable.HashMap
-import scala.reflect.ClassTag
 import scala.util.Random
 
 /**

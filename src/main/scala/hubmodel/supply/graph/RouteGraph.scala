@@ -2,7 +2,7 @@ package hubmodel.supply.graph
 
 import hubmodel.mgmt.ControlDevices
 import hubmodel.mgmt.flowsep.FlowSeparator
-import hubmodel.ped.{PedestrianNOMAD, PedestrianSim, PedestrianTrait}
+import hubmodel.ped.PedestrianNOMAD
 import hubmodel.tools.cells.Rectangle
 import org.jgrapht.alg.shortestpath.DijkstraShortestPath
 import org.jgrapht.graph.DefaultDirectedWeightedGraph

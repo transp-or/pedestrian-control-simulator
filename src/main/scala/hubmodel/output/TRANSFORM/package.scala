@@ -2,10 +2,9 @@ package hubmodel.output
 
 import java.io.{BufferedWriter, File, FileWriter}
 
-import hubmodel.{StopID, Time, VertexID}
 import hubmodel.TimeNumeric.mkOrderingOps
 import hubmodel.ped.PedestrianTrait
-import hubmodel.supply.StopID_New
+import hubmodel.{Time, VertexID}
 import myscala.math.stats.{Quantiles, computeQuantiles}
 import play.api.libs.json.{JsValue, Json, Writes}
 

@@ -6,7 +6,6 @@ package hubmodel.demand
 
 import hubmodel.DES.{Action, NOMADGraphSimulator}
 import hubmodel.ped.PedestrianNOMAD
-import hubmodel.supply.{NodeParent, TrainID_New}
 
 import scala.reflect.ClassTag
 

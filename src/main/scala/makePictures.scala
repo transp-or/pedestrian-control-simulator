@@ -42,7 +42,7 @@ object makePictures extends App {
   parser.parse(args, Config()) match {
 
     case Some(config) =>
-      val infraGraph = readGraph[PedestrianNOMAD](config.graph.toString, false, false, false, false, false, false)
+      val infraGraph = readGraph[PedestrianNOMAD](config.graph.toString, false, false, false, false, false, false, false)
       val parserCont = new ReadContinuousSpace(config.walls.toString)
       val infraSF = parserCont.continuousSpace
 

@@ -1,30 +1,21 @@
 
-import java.io.File
 import java.nio.file.{DirectoryStream, Files, Path, Paths}
-import java.util.concurrent.ThreadLocalRandom
 
-import ExploreComplianceFlowSep.computeBoxPlotData
-import com.typesafe.config.{Config, ConfigFactory}
-import hubmodel.DES.NOMADGraphSimulator
+import com.typesafe.config.Config
 import hubmodel._
 import hubmodel.output.TRANSFORM.PopulationSummaryProcessingTRANSFORM
-import hubmodel.ped.{PedestrianNOMAD, PedestrianNOMADWithGraph}
-import hubmodel.results.PopulationSummaryProcessing
-import hubmodel.supply.StopID_New
+import hubmodel.ped.PedestrianNOMAD
 import hubmodel.supply.graph.readPTStop2GraphVertexMap
 import hubmodel.tools.IllegalSimulationInput
-import myscala.math.stats.{ComputeQuantiles, ComputeStats, computeQuantiles}
+import myscala.math.stats.bootstrap.bootstrapMSE
+import myscala.math.stats.{ComputeQuantiles, ComputeStats}
 import myscala.output.SeqOfSeqExtensions.SeqOfSeqWriter
 import myscala.output.SeqTuplesExtensions.SeqTuplesWriter
-import myscala.output.SeqExtension.SeqWriter
 import trackingdataanalysis.visualization.{Histogram, PlotOptions, ScatterPlot, computeHistogramDataWithXValues}
 
 import scala.collection.GenIterable
-import scala.collection.JavaConverters._
-import scala.collection.parallel.ForkJoinTaskSupport
-import scala.io.Source
 import scala.collection.JavaConversions._
-import scala.util.Try
+import scala.collection.parallel.ForkJoinTaskSupport
 
 
 /**
@@ -252,33 +243,6 @@ object RunSimulation extends App {
 
   }
 
-  /** Performs a bootstrap on the data. The paramater to compute is passed as an argument. The number of permutations
-    * to compute is also a parameter with a default value set to 100.
-    *
-    * @param data Sequence on which to perform the bootstrap
-    * @param parameterFunction the parameter to compute on the data
-    * @param r the number of permutations to compute, set to 100 by default
-    * @tparam T type of the data
-    * @return mean square error MSE
-    */
-  def bootstrapMSE[T: Numeric](data: Seq[T], parameterFunction: Seq[T] => Double, r: Int = 100): Double = {
-
-    // The parameter cocmputed on the original data
-    val param: Double = parameterFunction(data)
-
-    /** Sample with replacement the data into a collection of the same size as the original data.
-      *
-      * @param data data to resample
-      * @return Same size resampled collection
-      */
-    def sampleWithReplacement(data: Seq[T]): Seq[T] = {
-      Vector.fill(data.size)(ThreadLocalRandom.current().nextInt(data.size)).map(v => data(v))
-    }
-
-    // Performs the bootstrap and computes the MSE
-    0.to(r).by(1).foldLeft(0.0)((s, v) => s + math.pow(parameterFunction(sampleWithReplacement(data))-param, 2))
-  }
-
   // computes statistics on travel times and writes them
   if (config.getBoolean("output.write_tt_stats")) {
 
@@ -289,10 +253,10 @@ object RunSimulation extends App {
     statsPerRun.writeToCSV(config.getString("output.output_prefix") + "_travel_times_stats.csv", rowNames = None, columnNames = Some(Vector("size", "mean", "variance", "median", "min", "max")))
 
     def mean(data: Seq[Double]): Double = {data.sum/data.size}
-    println("MSE=" + bootstrapMSE(statsPerRun.map(_._4), mean))
+    println(bootstrapMSE(statsPerRun.map(_._4), mean))
 
     (for (i <- 1 to results.size) yield {
-      (i, bootstrapMSE(statsPerRun.take(i).map(_._4), mean))
+      (i, bootstrapMSE(statsPerRun.take(i).map(_._4), mean).MSE)
     }).toVector.writeToCSV(config.getString("output.output_prefix") + "-MSE.csv", rowNames = None, columnNames = Some(Vector("n", "mse")))
 
 

@@ -1,7 +1,7 @@
 package hubmodel.route
 
 import hubmodel.DES.{Action, NOMADGraphSimulator}
-import hubmodel.ped.{PedestrianNOMAD, PedestrianTrait}
+import hubmodel.ped.PedestrianNOMAD
 
 
 

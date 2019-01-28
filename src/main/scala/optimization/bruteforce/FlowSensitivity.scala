@@ -5,7 +5,7 @@ import java.io.File
 import com.typesafe.config.{Config, ConfigFactory}
 import hubmodel.DES.NOMADGraphSimulator
 import hubmodel.demand.flows.ProcessPedestrianFlows
-import hubmodel.demand.{PedestrianFlowFunction_New, PedestrianFlowPT_New, PedestrianFlow_New, ProcessTimeTable, readPedestrianFlows}
+import hubmodel.demand.{PedestrianFlowFunction_New, PedestrianFlowPT_New, PedestrianFlow_New, readPedestrianFlows}
 import hubmodel.ped.PedestrianNOMAD
 import hubmodel.{createSimulation, runAndWriteResults}
 import myscala.math.stats.ComputeStats

@@ -1,6 +1,6 @@
 package hubmodel.supply.graph
 
-import hubmodel.{Position, Time}
+import hubmodel.Position
 import hubmodel.tools.cells.Rectangle
 
 /** Extension of [[hubmodel.supply.MyEdgeWithGate]] for the usage of "flow gates". The gates control the

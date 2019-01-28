@@ -1,6 +1,5 @@
 package hubmodel.demand.flows
 
-import hubmodel.TimeNumeric.mkOrderingOps
 import hubmodel.DES.{Action, NOMADGraphSimulator}
 import hubmodel.Time
 import hubmodel.demand.CreatePedestrian

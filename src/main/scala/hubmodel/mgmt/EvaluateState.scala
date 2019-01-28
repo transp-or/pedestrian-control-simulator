@@ -79,8 +79,7 @@ class EvaluateState[T <: PedestrianNOMAD](sim: NOMADGraphSimulator[T]) extends A
     sim.eventLogger.trace("sim-time=" + sim.currentTime + ": state evaluation")
     this.computeDensity()
     if (sim.useFlowGates || sim.useBinaryGates) { sim.insertEventWithZeroDelay(new DLQRGateController(sim)) }
-    if (sim.useFlowSep) {
-      //processIncomingFlows()
+    if (sim.useFlowSep && !sim.controlDevices.fixedFlowSeparators) {
       sim.controlDevices.flowSeparators.foreach(fs => {
         fs.updateWallTargetPosition(sim.currentTime)
         if ( !fs.movingWallEventIsInserted && fs.flowSeparatorNeedsToMove(sim.sf_dt) ) { sim.insertEventWithZeroDelay(new fs.MoveFlowSeperator(sim)) }

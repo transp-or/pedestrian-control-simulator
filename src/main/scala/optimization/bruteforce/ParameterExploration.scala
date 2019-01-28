@@ -52,7 +52,8 @@ class ParameterExploration(config: Config) extends GridSearch {
           Vector()
         },
         defaultParameters._11.binaryGates.map(_.clone()),
-        defaultParameters._11.flowSeparators.map(_.clone())
+        defaultParameters._11.flowSeparators.map(_.clone()),
+        defaultParameters._11.fixedFlowSeparators
       )
 
       val sim = new NOMADGraphSimulator[PedestrianNOMAD](

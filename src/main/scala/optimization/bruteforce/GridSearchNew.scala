@@ -1,17 +1,13 @@
 package optimization.bruteforce
 
 import java.io.File
-import java.nio._
 import java.nio.file.{Files, Path, Paths}
 
-import myscala.math.stats.ComputeStats
 import com.typesafe.config.Config
 import hubmodel.DES.NOMADGraphSimulator
-import hubmodel.output.image.{DrawControlDevicesAndWalls, DrawGraph, DrawWalls, DrawWallsAndGraph}
-import hubmodel.{SimulatorParameters, createSimulation, runAndWriteResults}
 import hubmodel.ped.PedestrianNOMAD
-import hubmodel.supply.graph.{MultipleGraph, SingleGraph}
-import hubmodel.{getDisaggPopulation, getFlows, getPTSchedule, insertDemandIntoSimulator}
+import hubmodel._
+import myscala.math.stats.ComputeStats
 
 import scala.collection.GenIterable
 

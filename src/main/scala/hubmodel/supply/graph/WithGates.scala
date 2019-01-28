@@ -1,6 +1,6 @@
 package hubmodel.supply.graph
 
-import hubmodel.ped.{PedestrianNOMAD, PedestrianSim, PedestrianTrait}
+import hubmodel.ped.{PedestrianNOMAD, PedestrianSim}
 import hubmodel.tools.cells.isInVertex
 
 trait WithGates {

@@ -4,10 +4,6 @@ import hubmodel.mgmt.ControlDevices
 import hubmodel.mgmt.flowsep.FlowSeparator
 import hubmodel.ped.PedestrianNOMAD
 import hubmodel.tools.cells.Rectangle
-import org.jgrapht.alg.shortestpath.DijkstraShortestPath
-import org.jgrapht.graph.DefaultDirectedWeightedGraph
-
-import scala.util.{Failure, Success, Try}
 
 class SingleGraph(private val baseVertices: Iterable[Rectangle],
                   private val standardEdges: Iterable[MyEdge],

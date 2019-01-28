@@ -1,9 +1,8 @@
 package hubmodel.demand
 
-import breeze.numerics.pow
 import hubmodel.DES.{Action, NOMADGraphSimulator}
 import hubmodel._
-import hubmodel.ped.{PedestrianNOMAD, PedestrianNOMADWithGraph}
+import hubmodel.ped.PedestrianNOMAD
 import hubmodel.tools.cells.Rectangle
 
 import scala.reflect.ClassTag

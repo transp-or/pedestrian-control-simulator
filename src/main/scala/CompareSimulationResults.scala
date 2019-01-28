@@ -1,8 +1,8 @@
 
 import com.typesafe.config.{Config, ConfigFactory}
-import org.apache.commons.math3.stat.inference.KolmogorovSmirnovTest
 import hubmodel._
-import myscala.math.stats.{ComputeQuantiles, ComputeStats, computeQuantiles}
+import myscala.math.stats.ComputeQuantiles
+import org.apache.commons.math3.stat.inference.KolmogorovSmirnovTest
 
 
 
