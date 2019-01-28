@@ -43,7 +43,7 @@ class EvaluateState[T <: PedestrianNOMAD](sim: NOMADGraphSimulator[T]) extends A
             (sim.currentTime, voronoiTessellations.filter(s => isInVertex(zone)(Vector2D(s.x, s.y))).foldLeft(0.0)((acc: Double, n: Site) => acc + 1.0 / (paxInZone * n.getPolygon.getArea)))
           )
           zone.paxIndividualDensityHistory.append(
-            (sim.currentTime, voronoiTessellations.filter(s => isInVertex(zone)(Vector2D(s.x, s.y))).map(1.0/_.getPolygon.getArea))
+            (sim.currentTime, voronoiTessellations.filter(s => isInVertex(zone)(Vector2D(s.x, s.y))).map(1.0 / _.getPolygon.getArea))
           )
         } catch {
           case e: Exception => {
@@ -78,11 +78,15 @@ class EvaluateState[T <: PedestrianNOMAD](sim: NOMADGraphSimulator[T]) extends A
   override def execute(): Unit = {
     sim.eventLogger.trace("sim-time=" + sim.currentTime + ": state evaluation")
     this.computeDensity()
-    if (sim.useFlowGates || sim.useBinaryGates) { sim.insertEventWithZeroDelay(new DLQRGateController(sim)) }
+    if (sim.useFlowGates || sim.useBinaryGates) {
+      sim.insertEventWithZeroDelay(new DLQRGateController(sim))
+    }
     if (sim.useFlowSep && !sim.controlDevices.fixedFlowSeparators) {
       sim.controlDevices.flowSeparators.foreach(fs => {
         fs.updateWallTargetPosition(sim.currentTime)
-        if ( !fs.movingWallEventIsInserted && fs.flowSeparatorNeedsToMove(sim.sf_dt) ) { sim.insertEventWithZeroDelay(new fs.MoveFlowSeperator(sim)) }
+        if (!fs.movingWallEventIsInserted && fs.flowSeparatorNeedsToMove(sim.sf_dt)) {
+          sim.insertEventWithZeroDelay(new fs.MoveFlowSeperator(sim))
+        }
         fs.inflowLinesStart.foreach(_.reinitialize())
         fs.inflowLinesEnd.foreach(_.reinitialize())
       })

@@ -112,15 +112,15 @@ package hubmodel {
       ) (SinusFunction.apply _)
 
     implicit val LinearFunctionReads: Reads[LinearFunction] = (
-        (JsPath \ "start").read[LocalTime] and
+      (JsPath \ "start").read[LocalTime] and
         (JsPath \ "end").read[LocalTime] and
         (JsPath \ "rate_at_start").read[Double] and
-          (JsPath \ "rate_at_end").read[Double] and
-          (JsPath \ "slope").read[Double]
+        (JsPath \ "rate_at_end").read[Double] and
+        (JsPath \ "slope").read[Double]
       ) (LinearFunction.apply _)
 
     implicit val ConstantFunctionReads: Reads[ConstantFunction] = (
-        (JsPath \ "start").read[LocalTime] and
+      (JsPath \ "start").read[LocalTime] and
         (JsPath \ "end").read[LocalTime] and
         (JsPath \ "rate").read[Double](min(0.0))
       ) (ConstantFunction.apply _)
@@ -204,12 +204,12 @@ package hubmodel {
     -----------------------------------------------------------------------------------*/
 
     case class Pedestrian_JSON(
-                               ID: String,
-                               oZone: String,
-                               dZone: String,
-                               entryTime: Double,
-                               exitTime: Double
-                             )
+                                ID: String,
+                                oZone: String,
+                                dZone: String,
+                                entryTime: Double,
+                                exitTime: Double
+                              )
 
     implicit val PedestrianJSONReads: Reads[Pedestrian_JSON] = (
       (JsPath \ "ID").read[String] and
@@ -220,19 +220,16 @@ package hubmodel {
       ) (Pedestrian_JSON.apply _)
 
 
+    def readSchedule(fileName: String): PublicTransportSchedule = {
 
+      val source: BufferedSource = scala.io.Source.fromFile(fileName)
+      val input: JsValue = Json.parse(try source.mkString finally source.close)
 
-
-  def readSchedule(fileName: String): PublicTransportSchedule = {
-
-    val source: BufferedSource = scala.io.Source.fromFile(fileName)
-    val input: JsValue = Json.parse(try source.mkString finally source.close)
-
-    input.validate[PublicTransportScheduleReader] match {
-      case s: JsSuccess[PublicTransportScheduleReader] => new PublicTransportSchedule(s.get.loc, s.get._timeTableInput.map(v => new Vehicle(TrainID_New(v.ID, ""), v.trainType, StopID_New(v.track, ""), v.arr, v.dep, v.capacity)))
-      case e: JsError => throw new Error("Error while parsing train timetable: " + JsError.toJson(e).toString())
+      input.validate[PublicTransportScheduleReader] match {
+        case s: JsSuccess[PublicTransportScheduleReader] => new PublicTransportSchedule(s.get.loc, s.get._timeTableInput.map(v => new Vehicle(TrainID_New(v.ID, ""), v.trainType, StopID_New(v.track, ""), v.arr, v.dep, v.capacity)))
+        case e: JsError => throw new Error("Error while parsing train timetable: " + JsError.toJson(e).toString())
+      }
     }
-  }
 
     def readScheduleTF(fileName: String): PublicTransportSchedule = {
 
@@ -248,13 +245,13 @@ package hubmodel {
     def readDisaggDemand(fileName: String): Vector[(String, String, Time)] = {
 
 
-        val source: BufferedSource = scala.io.Source.fromFile(fileName)
-        val input: JsValue = Json.parse(try source.mkString finally source.close)
+      val source: BufferedSource = scala.io.Source.fromFile(fileName)
+      val input: JsValue = Json.parse(try source.mkString finally source.close)
 
-        input.validate[Vector[Pedestrian_JSON]] match {
-          case s: JsSuccess[Vector[Pedestrian_JSON]] => s.get.map(p => (p.oZone, p.dZone, Time(p.entryTime)))
-          case e: JsError => throw new Error("Error while parsing disaggregate pedestrian: " + JsError.toJson(e).toString())
-        }
+      input.validate[Vector[Pedestrian_JSON]] match {
+        case s: JsSuccess[Vector[Pedestrian_JSON]] => s.get.map(p => (p.oZone, p.dZone, Time(p.entryTime)))
+        case e: JsError => throw new Error("Error while parsing disaggregate pedestrian: " + JsError.toJson(e).toString())
+      }
     }
 
     def readDisaggDemandTF(fileName: String): Vector[(String, String, Time)] = {
@@ -264,7 +261,7 @@ package hubmodel {
       val input: JsValue = Json.parse(try source.mkString finally source.close)
 
       input.validate[PedestrianCollectionReaderTF] match {
-        case s: JsSuccess[PedestrianCollectionReaderTF] => s.get.population.map(p => (p.oZone, p.dZone, Time(math.pow(10,8))))
+        case s: JsSuccess[PedestrianCollectionReaderTF] => s.get.population.map(p => (p.oZone, p.dZone, Time(math.pow(10, 8))))
         case e: JsError => throw new Error("Error while parsing disaggregate pedestrian for TF: " + JsError.toJson(e).toString())
       }
     }
@@ -292,7 +289,7 @@ package hubmodel {
 
 
       case class LinearPedestrianFlow(s: Time, e: Time, rateAtStart: Double, rateAtEnd: Double, slope: Double) extends PedestrianFlowFunction(s, e) {
-        if ((rateAtStart + slope * (this.end - this.start).value.toDouble - rateAtEnd).abs > math.pow(10,-5)) {
+        if ((rateAtStart + slope * (this.end - this.start).value.toDouble - rateAtEnd).abs > math.pow(10, -5)) {
           throw new IllegalArgumentException("Flow rate at end doesn't match computed flow rate ! " + (rateAtStart + slope * (this.end - this.start).value) + " != " + rateAtEnd)
         }
       }
@@ -308,8 +305,8 @@ package hubmodel {
         _pedestrianFlowData.functionalFlows.map(funcFlow => {
           val functions: Iterable[PedestrianFlowFunction] = (
             funcFlow.constantFunctions.map(cf => ConstantPedestrianFlow(Time(cf.start.toSecondOfDay), Time(cf.end.toSecondOfDay), cf.rate)) ++
-            funcFlow.linearFunctions.map(lf => LinearPedestrianFlow(Time(lf.start.toSecondOfDay), Time(lf.end.toSecondOfDay), lf.rateAtStart, lf.rateAtEnd, lf.slope)) ++
-            funcFlow.sinusFunctions.map(sf => SinPedestrianFlow(Time(sf.start.toSecondOfDay), Time(sf.end.toSecondOfDay), sf.periodStretch, sf.periodShift, sf.a, sf.b, sf.c, sf.maxFlow))
+              funcFlow.linearFunctions.map(lf => LinearPedestrianFlow(Time(lf.start.toSecondOfDay), Time(lf.end.toSecondOfDay), lf.rateAtStart, lf.rateAtEnd, lf.slope)) ++
+              funcFlow.sinusFunctions.map(sf => SinPedestrianFlow(Time(sf.start.toSecondOfDay), Time(sf.end.toSecondOfDay), sf.periodStretch, sf.periodShift, sf.a, sf.b, sf.c, sf.maxFlow))
             ).sorted(PedestrianFlowFunctionOrdering)
 
           if (!functions.dropRight(1).zip(functions.tail).forall(pair => pair._1.end == pair._2.start)) {
@@ -320,13 +317,13 @@ package hubmodel {
             functions.find(f => f.start <= t && t <= f.end) match {
               case Some(f) => f match {
                 case l: LinearPedestrianFlow => {
-                  l.rateAtStart + (t-l.start).value.toDouble * l.slope
+                  l.rateAtStart + (t - l.start).value.toDouble * l.slope
                 }
                 case c: ConstantPedestrianFlow => {
                   c.rate
                 }
                 case s: SinPedestrianFlow => {
-                  s.maxFlow * ((math.sin(t.value.toDouble*s.periodStretch+math.Pi*s.periodShift)+s.a)*s.b + s.c)
+                  s.maxFlow * ((math.sin(t.value.toDouble * s.periodStretch + math.Pi * s.periodShift) + s.a) * s.b + s.c)
                 }
                 case err => throw new NotImplementedError("This type of flow function is not implemented !")
               }
@@ -342,14 +339,16 @@ package hubmodel {
         })
       }
 
-        (
-          _pedestrianFlowData.flows.map(f => PedestrianFlow_New(NodeID_New(f.O, f.O.toString), NodeID_New(f.D, f.D.toString), f.start, f.end, f.f)),
-          _pedestrianFlowData.PTflows.map(f => { PedestrianFlowPT_New(f.origin, f.destination, f.f) }),
-          flowsFunction
-        )
-      }
+      (
+        _pedestrianFlowData.flows.map(f => PedestrianFlow_New(NodeID_New(f.O, f.O.toString), NodeID_New(f.D, f.D.toString), f.start, f.end, f.f)),
+        _pedestrianFlowData.PTflows.map(f => {
+          PedestrianFlowPT_New(f.origin, f.destination, f.f)
+        }),
+        flowsFunction
+      )
+    }
 
     // closing Demand package
 
-  }  // closing HubModel.HubInput package
+  } // closing HubModel.HubInput package
 }

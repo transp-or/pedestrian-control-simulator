@@ -22,21 +22,27 @@ class RegressionPlot(outputFile: String,
   val ymax: Double = if (opts.ymax.isEmpty) y.max else opts.ymax.get
 
   // completes abstract classes by implementing the mapping functions
-   def mapHCoord(v: Double): Int = mapHcoordLinear(xmin, xmax, opts.width-opts.border2HorizontalAxis-opts.border2VerticalAxis)(v)
-   def mapVCoord(v: Double): Int = mapVcoordLinear(ymin, ymax, opts.height-2*opts.border2HorizontalAxis)(v)
+  def mapHCoord(v: Double): Int = mapHcoordLinear(xmin, xmax, opts.width - opts.border2HorizontalAxis - opts.border2VerticalAxis)(v)
+
+  def mapVCoord(v: Double): Int = mapVcoordLinear(ymin, ymax, opts.height - 2 * opts.border2HorizontalAxis)(v)
+
   override def verticalTransformation: Int => Int = verticalMirrorTransformation(canvas.getHeight)
 
   def mapHCoordBD(x: BigDecimal): Int = 0
+
   def mapHcoordDrawingZone(x: Double): Int = 0
+
   def mapVcoordDrawingZone(x: Double): Int = 0
+
   def mapHcoordDrawingZoneBD(x: BigDecimal): Int = 0
+
   def mapVcoordDrawingZoneBD(x: BigDecimal): Int = 0
 
   def mapVCoordBD(x: BigDecimal): Int = 0
 
 
   // checks the data
-  assert(x.length == y.length, "x and y do not have the same length ! x.length="+x.length + ", y.length=" + y.length)
+  assert(x.length == y.length, "x and y do not have the same length ! x.length=" + x.length + ", y.length=" + y.length)
   assert(!slope.isInfinite || !slope.isNaN, "slope is null or NaN !")
   assert(!intercept.isInfinite || !intercept.isNaN, "intercept is null or NaN !")
 
@@ -48,7 +54,7 @@ class RegressionPlot(outputFile: String,
 
   // draws the specific components
   drawScatterPoints(gCanvas, x, y)
-  drawLinearRegression(gCanvas, x.max, slope, intercept = intercept, color=Color.BLUE)
+  drawLinearRegression(gCanvas, x.max, slope, intercept = intercept, color = Color.BLUE)
   drawAxis(gCanvas, Some((xmin, xmax, opts.xTickInterval, xLabel)), Some((ymin, ymax, opts.yTickInterval, yLabel)))
 
 

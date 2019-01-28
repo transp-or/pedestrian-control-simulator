@@ -38,7 +38,9 @@ class DrawGraph(edges: Vector[(Rectangle, Rectangle)],
     gImage.fillRect(0, 0, image.getWidth(), image.getHeight())
     gImage.setColor(Color.BLACK)
     draw(gImage, verticalTransformation)
-    if  (showNames) { drawNames(gImage, verticalTransformation) }
+    if (showNames) {
+      drawNames(gImage, verticalTransformation)
+    }
     ImageIO.write(image, filename.split("\\.").last, new java.io.File(filename))
   }
 
@@ -79,7 +81,7 @@ class DrawGraph(edges: Vector[(Rectangle, Rectangle)],
     g.transform(at)
 
     // Draw horizontal arrow starting in (0, 0)
-    g.fillPolygon(Array[Int]((0.25*len).toInt, (0.25*len).toInt - 5, (0.25*len).toInt - 5, (0.25*len).toInt), Array[Int](0, -5, 5, 0), 4)
+    g.fillPolygon(Array[Int]((0.25 * len).toInt, (0.25 * len).toInt - 5, (0.25 * len).toInt - 5, (0.25 * len).toInt), Array[Int](0, -5, 5, 0), 4)
     g.transform(at.createInverse())
   }
 

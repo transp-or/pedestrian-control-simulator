@@ -4,8 +4,8 @@ import hubmodel.demand.transit.Vehicle
 import hubmodel.supply.{StopID_New, TrainID_New}
 
 class PublicTransportSchedule(loc: String, _schedule: Vector[Vehicle]) {
-  val vehicle2Stop: Map[TrainID_New, StopID_New] = _schedule.map (t => t.ID -> t.stop).toMap
-  val timeTable: Map[TrainID_New, Vehicle] = _schedule.map (t => t.ID -> t).toMap
+  val vehicle2Stop: Map[TrainID_New, StopID_New] = _schedule.map(t => t.ID -> t.stop).toMap
+  val timeTable: Map[TrainID_New, Vehicle] = _schedule.map(t => t.ID -> t).toMap
   // map from the train's ID to the stop
   //val train2TrackMapNew: TrainID_New => TrackID_New = trainID => new TrackID_New(train2Track(trainID.ID), train2Track(trainID.ID).toString)
 

@@ -28,6 +28,7 @@ class SingleGraph(private val baseVertices: Iterable[Rectangle],
 
 
   type T = SingleGraph
+
   /**
     * Clones the graph, this should be thread safe and make hard copies of the objects os they can be used for
     * running multiple simulations at once.
@@ -43,5 +44,7 @@ class SingleGraph(private val baseVertices: Iterable[Rectangle],
     this.baseVertices, this.standardEdges, this.levelChanges, devices.flowGates, devices.binaryGates, devices.amws, devices.flowSeparators
   )
 
-  override def toString: String = { this.graph.toString}
+  override def toString: String = {
+    this.graph.toString
+  }
 }

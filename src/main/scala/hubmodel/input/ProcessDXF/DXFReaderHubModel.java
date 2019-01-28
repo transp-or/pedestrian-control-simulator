@@ -15,7 +15,6 @@ import static hubmodel.input.ProcessDXF.EdgeTypes.*;
 import static org.apache.commons.lang3.RandomStringUtils.randomAlphabetic;
 
 
-
 /**
  * Parser for CAD files for the hub model. Extends the {@link DXFReader} class with methods for reading specific
  * layers and writing the contents in the JSON format for the hub model. The DXF file must be saved as: R2013 ASCII
@@ -196,7 +195,9 @@ public class DXFReaderHubModel extends DXFReader {
         if (names_z != null) {
             for (int i = 0; i < names_z.size(); i++) {
                 System.out.print(names_z.get(i).getText());
-                if (names_z.get(i).getText().compareTo("") != 0) {zonesNames.add(names_z.get(i).getText());}
+                if (names_z.get(i).getText().compareTo("") != 0) {
+                    zonesNames.add(names_z.get(i).getText());
+                }
                 for (int j = 0; j < zones.size(); j++) {
                     if (zones.get(j).polygon.contains(names_z.get(i).getInsertPoint().getX(), names_z.get(i).getInsertPoint().getY())) {
                         zones.get(j).name = names_z.get(i).getText();
@@ -206,11 +207,11 @@ public class DXFReaderHubModel extends DXFReader {
         }
 
         for (int i = 0; i < zones.size(); i++) {
-                if (zones.get(i).name.compareTo("") == 0) {
-                    zones.get(i).name = randomAlphabetic(10);
-                    zones.get(i).isOD = false;
-                    zonesNames.add(zones.get(i).name);
-                }
+            if (zones.get(i).name.compareTo("") == 0) {
+                zones.get(i).name = randomAlphabetic(10);
+                zones.get(i).isOD = false;
+                zonesNames.add(zones.get(i).name);
+            }
             zonesNames.add(zones.get(i).name);
         }
 
@@ -218,7 +219,6 @@ public class DXFReaderHubModel extends DXFReader {
         List<Edge> edges = new ArrayList<>();
 
         List<Edge> levelChanges = new ArrayList<>();
-
 
 
         if (l_g != null) {
@@ -234,10 +234,10 @@ public class DXFReaderHubModel extends DXFReader {
                     }
                 }
                 if (o.compareTo("") == 0) {
-                    System.out.print("missing zone at " + o + ", " + l_g.get(i).getStartPoint()+ "\n");
+                    System.out.print("missing zone at " + o + ", " + l_g.get(i).getStartPoint() + "\n");
                 }
-                if (d.compareTo("") == 0){
-                    System.out.print("missing zone at " + d + ", " +  l_g.get(i).getEndPoint() + "\n");
+                if (d.compareTo("") == 0) {
+                    System.out.print("missing zone at " + d + ", " + l_g.get(i).getEndPoint() + "\n");
                 }
 
                 int edgeType = 0;
@@ -248,12 +248,10 @@ public class DXFReaderHubModel extends DXFReader {
                 } else if (l_g.get(i).getLineWeight() == 13) {
                     edgeType = UNI_DIR;
                     edges.add(new Edge(l_g.get(i).getStartPoint(), l_g.get(i).getEndPoint(), o, d, edgeType));
-                }
-                else if (l_g.get(i).getLineWeight() == 5) {
+                } else if (l_g.get(i).getLineWeight() == 5) {
                     edgeType = UNI_DIR_UP;
                     levelChanges.add(new Edge(l_g.get(i).getStartPoint(), l_g.get(i).getEndPoint(), o, d, edgeType));
-                }
-                else if (l_g.get(i).getLineWeight() == 9) {
+                } else if (l_g.get(i).getLineWeight() == 9) {
                     edgeType = UNI_DIR_DOWN;
                     levelChanges.add(new Edge(l_g.get(i).getStartPoint(), l_g.get(i).getEndPoint(), o, d, edgeType));
                 }

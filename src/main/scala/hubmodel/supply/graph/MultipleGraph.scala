@@ -7,10 +7,10 @@ import hubmodel.mgmt.flowsep.FlowSeparator
 import hubmodel.ped.PedestrianNOMAD
 import hubmodel.tools.cells.Rectangle
 
-class MultipleGraph( fg: Iterable[FlowGate],
-                     bg: Iterable[BinaryGate],
-                     mw: Iterable[MovingWalkway],
-                     fs: Iterable[FlowSeparator]
+class MultipleGraph(fg: Iterable[FlowGate],
+                    bg: Iterable[BinaryGate],
+                    mw: Iterable[MovingWalkway],
+                    fs: Iterable[FlowSeparator]
                    ) extends GraphContainer(fg, bg, mw, fs) {
 
 
@@ -23,19 +23,19 @@ class MultipleGraph( fg: Iterable[FlowGate],
   def getGraphs: Map[String, AlternativeGraph] = this._graphCollection.toMap
 
   // Accessor to the graph collection
- /* def graphs: Map[String, AlternativeGraph] = {
-    this._graphCollection.toMap
-  }
+  /* def graphs: Map[String, AlternativeGraph] = {
+     this._graphCollection.toMap
+   }
 
-  // Get the list of graph IDs
-  def graphID: collection.Set[String] = {
-    this._graphCollection.keySet
-  }
+   // Get the list of graph IDs
+   def graphID: collection.Set[String] = {
+     this._graphCollection.keySet
+   }
 
-  // Accessor to one specific graph by ID
-  def graph(id: String): AlternativeGraph = {
-    this._graphCollection(id)
-  }*/
+   // Accessor to one specific graph by ID
+   def graph(id: String): AlternativeGraph = {
+     this._graphCollection(id)
+   }*/
 
   // Adds a new [[RouteGraph]] object to the collection.
   def addGraph(id: String, frac: PopulationFraction, vertices: Iterable[Rectangle], edges: Iterable[MyEdge], edges2Add: Set[MyEdge], edges2Remove: Set[MyEdge], lc: Iterable[MyEdgeLevelChange]): Unit = {
@@ -43,7 +43,7 @@ class MultipleGraph( fg: Iterable[FlowGate],
       throw new Exception("ID is not unique for graph ! " + id)
     }
     else {
-      this._graphCollection += id -> (frac, new RouteGraph(vertices, edges, lc , this.flowGates, this.binaryGates, this.movingWalkways, this.flowSeparators, edges2Add, edges2Remove))
+      this._graphCollection += id -> (frac, new RouteGraph(vertices, edges, lc, this.flowGates, this.binaryGates, this.movingWalkways, this.flowSeparators, edges2Add, edges2Remove))
     }
   }
 
@@ -97,7 +97,9 @@ class MultipleGraph( fg: Iterable[FlowGate],
     */
   def clone2AlternateGraphs(devices: ControlDevices, populationFraction: PopulationFraction): MultipleGraph = {
 
-    if (this._graphCollection.size != 2) {throw new Exception("Number of graphs is wrong for using this function !")}
+    if (this._graphCollection.size != 2) {
+      throw new Exception("Number of graphs is wrong for using this function !")
+    }
 
     val graphs = new MultipleGraph(devices.flowGates, devices.binaryGates, devices.amws, devices.flowSeparators)
     val refGraph = this._graphCollection("reference")
@@ -110,6 +112,8 @@ class MultipleGraph( fg: Iterable[FlowGate],
     graphs
   }
 
-  override def toString: String = {this._graphCollection.toString}
+  override def toString: String = {
+    this._graphCollection.toString
+  }
 
 }

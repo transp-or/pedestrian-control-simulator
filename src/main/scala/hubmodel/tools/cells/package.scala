@@ -12,6 +12,8 @@ package object cells {
     * @param pos position ot check
     * @return boolean indicating if the point is inside the vertex
     */
-  def isInVertex(v: Rectangle)(pos: Position): Boolean = { v.isInside(pos) }
+  def isInVertex(v: Rectangle)(pos: Position): Boolean = {
+    v.isInside(pos)
+  }
 
 }

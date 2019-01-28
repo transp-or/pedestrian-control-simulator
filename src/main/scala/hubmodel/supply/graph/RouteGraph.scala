@@ -52,7 +52,7 @@ class RouteGraph(protected val baseVertices: Iterable[Rectangle],
   val edgeCollection: Set[MyEdge] = (((standardEdges ++ flowGates ++ binaryGates ++ movingWalkways ++ levelChanges).toSet
     .filterNot(e => flowSeparators.flatMap(_.associatedConnectivity.map(_.startVertex.name)).toVector.contains(e.startVertex.name)
       || flowSeparators.flatMap(_.associatedConnectivity.map(_.startVertex.name)).toVector.contains(e.endVertex.name)
-    ) ++ flowSeparators.flatMap(_.associatedConnectivity)) ++ edges2Add ) -- edges2Remove
+    ) ++ flowSeparators.flatMap(_.associatedConnectivity)) ++ edges2Add) -- edges2Remove
 
   //def edges: Set[MyEdge] = edgeCollection
 
@@ -95,8 +95,12 @@ class RouteGraph(protected val baseVertices: Iterable[Rectangle],
       case Success(s) if (s.getVertexList.size() > 0) => {
         s.getVertexList.asScala.toList
       }
-      case Failure(f) => { throw f }
-      case _ => {throw new IllegalAccessError("No route from " + o + " to " + d)}
+      case Failure(f) => {
+        throw f
+      }
+      case _ => {
+        throw new IllegalAccessError("No route from " + o + " to " + d)
+      }
     }
   }
 
@@ -104,7 +108,7 @@ class RouteGraph(protected val baseVertices: Iterable[Rectangle],
     * Determines whether there is a change in floor level when changing links. This is important as the pedestrians must be
     * "teleported" to the start of the other edge.
     */
-  private def isFloorChange(a: Rectangle, b: Rectangle): Boolean =  {
+  private def isFloorChange(a: Rectangle, b: Rectangle): Boolean = {
     //println((a.ID, b.ID), this.levelChanges)
     this.levelChanges.map(e => (e.startVertex.ID, e.endVertex.ID)).exists(_ == (a.ID, b.ID))
   }

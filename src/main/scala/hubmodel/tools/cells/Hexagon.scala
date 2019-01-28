@@ -46,5 +46,5 @@ class Hexagon(val center: Position, edgeLength: Double) extends Vertex {
     new Position(r * math.cos(a), r * math.sin(a))
   }
 
-  override def toString: String = "(" + this.center.X.toString + ", " +  this.center.Y.toString + ")"
+  override def toString: String = "(" + this.center.X.toString + ", " + this.center.Y.toString + ")"
 }

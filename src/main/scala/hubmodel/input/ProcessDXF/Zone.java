@@ -52,9 +52,9 @@ class Zone {
 
         // sets the four corner
         this.a = new Point(round(aIn.getX(), 3), round(aIn.getY(), 3), aIn.getZ());
-        this.b =  new Point(round(bIn.getX(), 3), round(bIn.getY(), 3), bIn.getZ());
-        this.c =  new Point(round(cIn.getX(), 3), round(cIn.getY(), 3), cIn.getZ());
-        this.d =  new Point(round(dIn.getX(), 3), round(dIn.getY(), 3), dIn.getZ());
+        this.b = new Point(round(bIn.getX(), 3), round(bIn.getY(), 3), bIn.getZ());
+        this.c = new Point(round(cIn.getX(), 3), round(cIn.getY(), 3), cIn.getZ());
+        this.d = new Point(round(dIn.getX(), 3), round(dIn.getY(), 3), dIn.getZ());
 
         // builds the Path2D object
         polygon = new Path2D.Double();
@@ -89,14 +89,14 @@ class Zone {
                 "\"name\": \"" + this.name.replace("{", "").replace("}", "") + "\"," +
                 "\"x\":" + 0.0 + "," +
                 "\"y\":" + 0.0 + "," +
-                "\"x1\":" + this.a.getX()*scale + "," +
-                "\"y1\":" + this.a.getY()*scale  + "," +
-                "\"x2\":" + this.b.getX()*scale  + "," +
-                "\"y2\":" + this.b.getY()*scale  + "," +
-                "\"x3\":" + this.c.getX()*scale  + "," +
-                "\"y3\":" + this.c.getY()*scale  + "," +
-                "\"x4\":" + this.d.getX()*scale  + "," +
-                "\"y4\":" + this.d.getY()*scale  + "," +
+                "\"x1\":" + this.a.getX() * scale + "," +
+                "\"y1\":" + this.a.getY() * scale + "," +
+                "\"x2\":" + this.b.getX() * scale + "," +
+                "\"y2\":" + this.b.getY() * scale + "," +
+                "\"x3\":" + this.c.getX() * scale + "," +
+                "\"y3\":" + this.c.getY() * scale + "," +
+                "\"x4\":" + this.d.getX() * scale + "," +
+                "\"y4\":" + this.d.getY() * scale + "," +
                 "\"OD\": " + this.isOD +
                 "}";
     }

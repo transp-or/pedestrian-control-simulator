@@ -89,7 +89,8 @@ class SingleDayAggregateProcessor(fileName: String,
             } else {
               (vidTime, p.ID, linearInterpolationPosition((p.h_x(minSecond._2), p.h_y(minSecond._2)), (p.h_x(minFirst._2), p.h_y(minFirst._2)), p.h_t(minSecond._2), p.h_t(minFirst._2), vidTime))
             }
-        }}.filter(tPos => z.isInside(tPos._3))
+          }
+        }.filter(tPos => z.isInside(tPos._3))
       }).groupBy(tup => tup._1).map(tup => (tup._1, tup._2.map(_._2))).toVector
     //val timeMap: Vector[(Double, Iterable[Int])] = collectIDByTime(times, this.pedSimplified, Vector())
     val res = timeMap.map(p => {
@@ -202,9 +203,9 @@ class SingleDayAggregateProcessor(fileName: String,
       }.filter(tPos => {
         z.isInside(tPos._2)
       })
-    }).groupBy(t => t._1).map(d => (d._1, d._2.size/z.area)).toVector
+    }).groupBy(t => t._1).map(d => (d._1, d._2.size / z.area)).toVector
 
-    println( ped.values.flatMap(p => {
+    println(ped.values.flatMap(p => {
       times.collect {
         case vidTime if {
           p.h_t.head <= vidTime && vidTime <= p.h_t.last
@@ -224,7 +225,9 @@ class SingleDayAggregateProcessor(fileName: String,
         z.isInside(tPos._2)
       })
     }).groupBy(t => t._1))
-    (res ++ (for (t <- times if !res.exists(_._1 == t)) yield {(t, 0.0)}).toVector).sortBy(_._1)
+    (res ++ (for (t <- times if !res.exists(_._1 == t)) yield {
+      (t, 0.0)
+    }).toVector).sortBy(_._1)
 
     /*times.collect{case t if {val idx: Int = p.h_t.indexWhere(_ > t); idx >= 0 && idx < p.h_t.size-1} => {
       val idx: Int = p.h_t.indexWhere(_ > t)
@@ -470,7 +473,8 @@ class SingleDayAggregateProcessor(fileName: String,
     val timeMap: Vector[(Double, Iterable[Int])] =
       ped.values.flatMap(p => {
         times.collect { case t if {
-          val idx: Int = p.h_t.indexWhere(_ > t); p.h_t.head <= t && p.h_t.last <= t && idx >= 0 && idx < p.h_t.size - 1
+          val idx: Int = p.h_t.indexWhere(_ > t);
+          p.h_t.head <= t && p.h_t.last <= t && idx >= 0 && idx < p.h_t.size - 1
         } => {
           val idx: Int = p.h_t.indexWhere(_ > t)
           (t, p.ID, linearInterpolationPosition((p.h_x(idx), p.h_y(idx)), (p.h_x(idx + 1), p.h_y(idx + 1)), p.h_t(idx), p.h_t(idx + 1), t))

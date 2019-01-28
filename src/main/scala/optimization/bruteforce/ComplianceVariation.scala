@@ -12,11 +12,15 @@ case class ParameterModificationsCompliance(p: Double, i: Int) extends Parameter
 class ComplianceVariation(complianceInterval: Double, c: Config, upperBoundCompliance: Double = 0.5) extends GridSearchNew[ParameterModificationsCompliance](c) {
 
   override val simulationRunsParameters: GenIterable[ParameterModificationsCompliance] = if (config.getBoolean("execution.parallel")) {
-    val r = (for (i <- BigDecimal(0.0) to BigDecimal(upperBoundCompliance) by BigDecimal(complianceInterval); k <- 1 to config.getInt("sim.nb_runs")) yield {ParameterModificationsCompliance(i.toDouble,k)}).par
+    val r = (for (i <- BigDecimal(0.0) to BigDecimal(upperBoundCompliance) by BigDecimal(complianceInterval); k <- 1 to config.getInt("sim.nb_runs")) yield {
+      ParameterModificationsCompliance(i.toDouble, k)
+    }).par
     r.tasksupport = new ForkJoinTaskSupport(new scala.concurrent.forkjoin.ForkJoinPool(config.getInt("execution.threads")))
     r
   } else {
-    for (i <- BigDecimal(0.0) to BigDecimal(upperBoundCompliance) by BigDecimal(complianceInterval); k <- 1 to config.getInt("sim.nb_runs")) yield {ParameterModificationsCompliance(i.toDouble,k)}
+    for (i <- BigDecimal(0.0) to BigDecimal(upperBoundCompliance) by BigDecimal(complianceInterval); k <- 1 to config.getInt("sim.nb_runs")) yield {
+      ParameterModificationsCompliance(i.toDouble, k)
+    }
   }
 
   def getParameters(paramMods: ParameterModificationsCompliance): SimulatorParameters = {
@@ -38,7 +42,9 @@ class ComplianceVariation(complianceInterval: Double, c: Config, upperBoundCompl
     )
   }
 
-  def getRunPrefix(paramMods: ParameterModificationsCompliance): String = { paramMods.p.toString + "_params_" }
+  def getRunPrefix(paramMods: ParameterModificationsCompliance): String = {
+    paramMods.p.toString + "_params_"
+  }
 
 
   def processWrittenResults: Map[(Double), ((Int, Double, Double, Double, Double, Double), Iterable[Double])] = {

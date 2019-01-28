@@ -30,18 +30,18 @@ class MovingPedestriansWithVoronoiDensity(outputFile: String,
   val cleanCanvas: BufferedImage = bkgdImage match {
     case Some(f) => ImageIO.read(new File(f))
     case None => {
-      val canv: BufferedImage = new BufferedImage(bkgdImageSizeMeters._1.round.toInt*30, bkgdImageSizeMeters._2.round.toInt*30, BufferedImage.TYPE_4BYTE_ABGR)
+      val canv: BufferedImage = new BufferedImage(bkgdImageSizeMeters._1.round.toInt * 30, bkgdImageSizeMeters._2.round.toInt * 30, BufferedImage.TYPE_4BYTE_ABGR)
       val gcanv: Graphics2D = canv.createGraphics()
       gcanv.setColor(Color.WHITE)
-      gcanv.fillRect(0, 0, bkgdImageSizeMeters._1.round.toInt*30, bkgdImageSizeMeters._2.round.toInt*30)
+      gcanv.fillRect(0, 0, bkgdImageSizeMeters._1.round.toInt * 30, bkgdImageSizeMeters._2.round.toInt * 30)
       canv
     }
   }
 
-  val canvasWidth: Int = if (cleanCanvas.getWidth % 2 == 0) cleanCanvas.getWidth else cleanCanvas.getWidth+1
-  val canvasHeight: Int = if (cleanCanvas.getHeight % 2 == 0) cleanCanvas.getHeight else cleanCanvas.getHeight+1
+  val canvasWidth: Int = if (cleanCanvas.getWidth % 2 == 0) cleanCanvas.getWidth else cleanCanvas.getWidth + 1
+  val canvasHeight: Int = if (cleanCanvas.getHeight % 2 == 0) cleanCanvas.getHeight else cleanCanvas.getHeight + 1
 
-  val dotSize: Double = 0.35*canvasWidth.toDouble/bkgdImageSizeMeters._1
+  val dotSize: Double = 0.35 * canvasWidth.toDouble / bkgdImageSizeMeters._1
 
   //val cleanCanvas: BufferedImage = ImageIO.read(new File(bkgdImage))
   //new BufferedImage(canvasWidth + 1, canvasHeight + 1, BufferedImage.TYPE_4BYTE_ABGR)
@@ -65,7 +65,12 @@ class MovingPedestriansWithVoronoiDensity(outputFile: String,
   def mapVcoord: Double => Int = mapVcoordLinear(0, bkgdImageSizeMeters._2, canvasHeight)
 
   // formatting of the data: aggregation by times of the positions.
-  val population2TimePositionList: Vector[(Double, Vector[Position])] = timeMap.map(l => (l._1, l._2.map(id => { pop(id).h_t.indexWhere(t => abs(t - l._1) < 0.05) match { case i if i >= 0 => DenseVector(pop(id).h_x(i), pop(id).h_y(i)) } }).toVector )).sortWith(_._1 < _._1)//MergeListsByTime(pop.flatMap(_.getHistoryPosition).toList, times2Show).sortWith(_._1 < _._1)
+  val population2TimePositionList: Vector[(Double, Vector[Position])] = timeMap.map(l => (l._1, l._2.map(id => {
+    pop(id).h_t.indexWhere(t => abs(t - l._1) < 0.05) match {
+      case i if i >= 0 => DenseVector(pop(id).h_x(i), pop(id).h_y(i))
+    }
+  }).toVector)).sortWith(_._1 < _._1)
+  //MergeListsByTime(pop.flatMap(_.getHistoryPosition).toList, times2Show).sortWith(_._1 < _._1)
   //println(population2TimePositionList.map(_._1).mkString("\n"))
   //println(population2TimePositionList.mkString("\n"))
   // List of times with corresponding ellipses to draw. For each time, the list of ellipses coreespond to the pedestrians.
@@ -107,7 +112,7 @@ class MovingPedestriansWithVoronoiDensity(outputFile: String,
       else if (1.0 / h.getPolygon.getArea <= 0.31) gPoints.setColor(new Color(0, 0, 255, 25))
       gPoints.fillPolygon(h.getPolygon.getXPoints.take(h.getPolygon.getNumPoints).map(x => mapHcoord(x)), h.getPolygon.getYPoints.take(h.getPolygon.getNumPoints).map(y => mapVcoord(y)), h.getPolygon.getNumPoints)
       gPoints.setColor(Color.BLACK)
-      gPoints.fillOval(mapHcoord(h.x), mapVcoord(h.y), 2,2)
+      gPoints.fillOval(mapHcoord(h.x), mapVcoord(h.y), 2, 2)
       gPoints.drawPolygon(h.getPolygon.getXPoints.take(h.getPolygon.getNumPoints).map(x => mapHcoord(x)), h.getPolygon.getYPoints.take(h.getPolygon.getNumPoints).map(y => mapVcoord(y)), h.getPolygon.getNumPoints)
       val w: Int = gPoints.getFontMetrics.stringWidth((1.0 / h.getPolygon.getArea).toString) / 2
       /*if (w.toDouble > 0.85*mapHcoord(h.edgeLength)) {
@@ -118,6 +123,7 @@ class MovingPedestriansWithVoronoiDensity(outputFile: String,
 
       //gPoints.drawString((1.0 / h.getPolygon.getArea).toString, mapHcoord(h.x) - w, mapVcoord(h.y))
     })
+
     /** Draws colored boxes showing densities inside areas */
     /*val box: BufferedImage = new BufferedImage(canvasWidth, canvasHeight, BufferedImage.TYPE_4BYTE_ABGR)
     if (densityMeasurements.nonEmpty) {
@@ -146,9 +152,9 @@ class MovingPedestriansWithVoronoiDensity(outputFile: String,
 
     /** combine images into one */
     def timeReadable(t: Int): String = {
-      val hours: Int = floor(t/3600000.0).toInt
-      val minutes: Int = floor((t - hours*3600000)/60000.0).toInt
-      val seconds: Double = t - hours*3600000 - minutes*60000
+      val hours: Int = floor(t / 3600000.0).toInt
+      val minutes: Int = floor((t - hours * 3600000) / 60000.0).toInt
+      val seconds: Double = t - hours * 3600000 - minutes * 60000
       hours.toString + ":" + minutes.toString + ":" + seconds.toString
     }
 

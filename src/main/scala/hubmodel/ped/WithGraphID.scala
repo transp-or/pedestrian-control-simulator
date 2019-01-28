@@ -12,6 +12,8 @@ trait WithGraphID {
     if (this.counterGraph == 0) {
       this.counterGraph = 1
       this._graph = str
-    } else { throw new UnsupportedOperationException("Graph can only be set once per pedestrian !")}
+    } else {
+      throw new UnsupportedOperationException("Graph can only be set once per pedestrian !")
+    }
   }
 }

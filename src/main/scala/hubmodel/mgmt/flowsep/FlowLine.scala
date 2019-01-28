@@ -21,14 +21,15 @@ class FlowLine(val start: Position, val end: Position, controlled: Int = 0) {
 
   /**
     * Determines if a given pedestrian has changed sides during
+    *
     * @param ped pedestrian to check
     * @return boolean indicating if the ped did cross the line
     */
   def crossesLineRight2Left(ped: PedestrianTrait): Boolean = {
     this.nearRegion.isInside(ped.currentPosition) && {
       // https://stackoverflow.com/questions/1560492/how-to-tell-whether-a-point-is-to-the-right-or-left-side-of-a-line/1560510#1560510
-      if ( math.signum((end.X-start.X) * (ped.currentPosition.Y - start.Y) - (end.Y - start.Y)*(ped.currentPosition.X - start.X)) == 1 &&
-        math.signum((end.X-start.X) * (ped.previousMajorPosition.Y - start.Y) - (end.Y - start.Y)*(ped.previousMajorPosition.X - start.X)) != 1 ) true
+      if (math.signum((end.X - start.X) * (ped.currentPosition.Y - start.Y) - (end.Y - start.Y) * (ped.currentPosition.X - start.X)) == 1 &&
+        math.signum((end.X - start.X) * (ped.previousMajorPosition.Y - start.Y) - (end.Y - start.Y) * (ped.previousMajorPosition.X - start.X)) != 1) true
       else false
     }
   }
@@ -38,6 +39,7 @@ class FlowLine(val start: Position, val end: Position, controlled: Int = 0) {
 
   /**
     * Adds all the pedestrians who crossed the line into [[pedsCrossedInInterval]]
+    *
     * @param pop
     */
   def collectPedestriansWhoCrossed(pop: Population): Unit = {
@@ -46,6 +48,7 @@ class FlowLine(val start: Position, val end: Position, controlled: Int = 0) {
 
   /**
     * Gets the number of pedestians who crossed the line (the size of the Set [[pedsCrossedInInterval]]
+    *
     * @return number of peds
     */
   def getPedestrianFlow: Int = this.pedsCrossedInInterval.size

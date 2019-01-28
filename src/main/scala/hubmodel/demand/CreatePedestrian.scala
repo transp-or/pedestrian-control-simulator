@@ -46,7 +46,7 @@ class CreatePedestrian[T <: PedestrianNOMAD](o: Rectangle, d: Rectangle, sim: NO
     sim.setFirstRoute(newPed)
     newPed.updateClosestWalls(sim.walls)
 
-    sim.insertInPopulation(newPed)//new T(o, d, sim.currentTime, generationPoint, route, ""))
+    sim.insertInPopulation(newPed) //new T(o, d, sim.currentTime, generationPoint, route, ""))
   }
 }
 

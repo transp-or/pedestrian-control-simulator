@@ -18,12 +18,12 @@ import scala.reflect.ClassTag
 /** Extension of [[Action]] which will insert a [[CreatePedestrian]] actions based on the non homogeneous arrival rate
   * of pedestrians.
   *
-  * @param o origin node
-  * @param d destination node
-  * @param start beginning of interval
-  * @param end end of interval
+  * @param o            origin node
+  * @param d            destination node
+  * @param start        beginning of interval
+  * @param end          end of interval
   * @param rateFunction non homogenous function
-  * @param sim simulator
+  * @param sim          simulator
   */
 class PedestrianGenerationNonHomogeneousRate[T <: PedestrianNOMAD](o: Rectangle, d: Rectangle, start: Time, end: Time, rateFunction: Time => Double, sim: NOMADGraphSimulator[T])(implicit tag: ClassTag[T]) extends Action {
 
@@ -37,7 +37,7 @@ class PedestrianGenerationNonHomogeneousRate[T <: PedestrianNOMAD](o: Rectangle,
 
     if (currentSimulationTime < this.end) {
       var s: Double = ThreadLocalRandom.current.nextDouble(0.0, 1.0)
-      while ( s > rateFunction(currentSimulationTime) / rateMax) {
+      while (s > rateFunction(currentSimulationTime) / rateMax) {
         interval = interval + Time(-math.log(ThreadLocalRandom.current.nextDouble(0.0, 1.0)) / rateMax)
         s = ThreadLocalRandom.current.nextDouble(0.0, 1.0)
       }

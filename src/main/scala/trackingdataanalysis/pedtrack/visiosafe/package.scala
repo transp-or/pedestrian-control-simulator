@@ -60,7 +60,7 @@ package object visiosafe {
     */
   implicit val FlowLine_JSONReads: Reads[FlowLine_JSON] = (
     (JsPath \ "name").read[String] and
-    (JsPath \ "x1").read[Double] and
+      (JsPath \ "x1").read[Double] and
       (JsPath \ "y1").read[Double] and
       (JsPath \ "x2").read[Double] and
       (JsPath \ "y2").read[Double] and

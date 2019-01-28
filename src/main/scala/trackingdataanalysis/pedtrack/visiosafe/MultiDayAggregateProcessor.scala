@@ -54,6 +54,7 @@ class MultiDayAggregateProcessor(files: Vector[String], zoneFile: String, tolera
     ped.foreach(pop => {
       val file = new File(pop._1.toString + "-" + fileName)
       val bw = new BufferedWriter(new FileWriter(file))
+
       def helper(data: Iterable[Pedestrian]): Unit = {
         if (data.size == 1) {
           bw.write(data.head.toJSON4HubModel)

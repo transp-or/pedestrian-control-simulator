@@ -13,8 +13,8 @@ import trackingdataanalysis.visualization.{HeatMap, PlotOptions}
 
 class FlowSensitivity(config: Config) extends GridSearch {
 
-  private val ODs: (String, String) = ("bottom","top")
-  private val ODReversed: (String, String) = ("top","bottom")
+  private val ODs: (String, String) = ("bottom", "top")
+  private val ODReversed: (String, String) = ("top", "bottom")
 
 
   def varyOpposingFlows(increments: Double, maxMultipler: Double = 1.0): Unit = {
@@ -52,7 +52,6 @@ class FlowSensitivity(config: Config) extends GridSearch {
       )
 
 
-
       // Loads the pedestrian flows. These are either exogenous to the trains (from outside) or flows originating from trains.
       val flows: (Iterable[PedestrianFlow_New], Iterable[PedestrianFlowPT_New], Iterable[PedestrianFlowFunction_New]) = if (!config.getIsNull("files.flows") && config.getBoolean("sim.use_flows")) {
         readPedestrianFlows(config.getString("files.flows"))
@@ -82,13 +81,17 @@ class FlowSensitivity(config: Config) extends GridSearch {
       sim.insertEventWithZeroDelay(new ProcessPedestrianFlows(newFlows._1, newFlows._3, sim))
 
 
-      runAndWriteResults(sim, i.toString + "_" + j.toString + "_params_", if (!config.getIsNull("output.dir")) {Some(config.getString("output.dir"))} else {None})
+      runAndWriteResults(sim, i.toString + "_" + j.toString + "_params_", if (!config.getIsNull("output.dir")) {
+        Some(config.getString("output.dir"))
+      } else {
+        None
+      })
       System.gc()
     }
 
   }
 
-  def processWrittenResultsSplitOD: Map[((Double, Double), String, String),((Int, Double, Double, Double, Double, Double), (Int, Double, Double, Double, Double, Double))] = {
+  def processWrittenResultsSplitOD: Map[((Double, Double), String, String), ((Int, Double, Double, Double, Double, Double), (Int, Double, Double, Double, Double, Double))] = {
 
     val outputDir = new File(config.getString("output.dir"))
 
@@ -100,8 +103,12 @@ class FlowSensitivity(config: Config) extends GridSearch {
     })
 
     files("tt").map(ProcessTTFile2Parameters).groupBy(tup => (tup._1, tup._2)).map(tup => (tup._1, ODs._1, ODs._2) -> (
-      tup._2.flatMap(t => { t._3.getOrElse((ODs._1, ODs._2), Vector())}).stats,
-      tup._2.flatMap(t => { t._3.getOrElse((ODs._2, ODs._1), Vector())}).stats
+      tup._2.flatMap(t => {
+        t._3.getOrElse((ODs._1, ODs._2), Vector())
+      }).stats,
+      tup._2.flatMap(t => {
+        t._3.getOrElse((ODs._2, ODs._1), Vector())
+      }).stats
     )
     )
   }
@@ -118,16 +125,16 @@ class FlowSensitivity(config: Config) extends GridSearch {
       }
     })
 
-   files("tt").map(ProcessTTFile2Parameters).
+    files("tt").map(ProcessTTFile2Parameters).
       flatMap(tup => tup._3.map(t => (tup._1, tup._2, t._1._1, t._1._2, t._2))).
       groupBy(tup => (tup._1, tup._2, tup._3, tup._4)).
       mapValues(v => v.flatMap(_._5).stats)
   }
 
 
-  def drawResults(results: Map[(Double, Double, String, String),(Int, Double, Double, Double, Double, Double)]): Unit = {
+  def drawResults(results: Map[(Double, Double, String, String), (Int, Double, Double, Double, Double, Double)]): Unit = {
 
-    val plotOptionsTT = PlotOptions(zmin=Some(28), zmax=Some(32))
+    val plotOptionsTT = PlotOptions(zmin = Some(28), zmax = Some(32))
     val plotOptionsVarTT = PlotOptions()
 
     new HeatMap(config.getString("output.output_prefix") + "_heatmap-mean-tt.png", results.map(r => (r._1._1, r._1._2, r._2._2)), "mean travel time", "bottom -> top multiplier", "top -> bottom multiplier", "Mean travel time", plotOptionsTT)
@@ -137,9 +144,9 @@ class FlowSensitivity(config: Config) extends GridSearch {
   }
 
 
-  def drawResultsSplitOD(results: Map[((Double, Double), String, String),((Int, Double, Double, Double, Double, Double), (Int, Double, Double, Double, Double, Double))]): Unit = {
+  def drawResultsSplitOD(results: Map[((Double, Double), String, String), ((Int, Double, Double, Double, Double, Double), (Int, Double, Double, Double, Double, Double))]): Unit = {
 
-    val plotOptionsTT = PlotOptions(zmin=Some(28), zmax=Some(32))
+    val plotOptionsTT = PlotOptions(zmin = Some(28), zmax = Some(32))
     val plotOptionsVarTT = PlotOptions()
 
     new HeatMap(config.getString("output.output_prefix") + "_heatmap-mean-tt-bottom-top.png", results.map(r => (r._1._1._1, r._1._1._2, r._2._1._2)), "mean travel time", "bottom -> top multiplier", "top -> bottom multiplier", "Mean travel time from bottom to top", plotOptionsTT)
@@ -154,24 +161,24 @@ class FlowSensitivity(config: Config) extends GridSearch {
 
   def drawComparisonResults(otherConfigFile: String): Unit = {
 
-    val otherResults: (Map[(Double, Double, String, String), (Int, Double, Double, Double, Double, Double)], Map[((Double, Double), String, String),((Int, Double, Double, Double, Double, Double), (Int, Double, Double, Double, Double, Double))]) = {
+    val otherResults: (Map[(Double, Double, String, String), (Int, Double, Double, Double, Double, Double)], Map[((Double, Double), String, String), ((Int, Double, Double, Double, Double, Double), (Int, Double, Double, Double, Double, Double))]) = {
       val flowSensOther: FlowSensitivity = new FlowSensitivity(ConfigFactory.load(otherConfigFile))
 
       (flowSensOther.processWrittenResults, flowSensOther.processWrittenResultsSplitOD)
     }
 
 
-    val resultsDiff: Map[(Double, Double, String, String),(Double, Double, Double)] =
+    val resultsDiff: Map[(Double, Double, String, String), (Double, Double, Double)] =
       this.processWrittenResults.map(r => r._1 -> (r._2._2 - otherResults._1(r._1)._2, r._2._3 - otherResults._1(r._1)._3, r._2._4 - otherResults._1(r._1)._4))
 
-    val plotOptionsTT = PlotOptions(zmin=Some(-0.5), zmax=Some(0.5))
-    val plotOptionsVarTT = PlotOptions(zmin=Some(-4), zmax=Some(4))
+    val plotOptionsTT = PlotOptions(zmin = Some(-0.5), zmax = Some(0.5))
+    val plotOptionsVarTT = PlotOptions(zmin = Some(-4), zmax = Some(4))
 
     new HeatMap(config.getString("output.output_prefix") + "_heatmap-difference-mean-tt.png", resultsDiff.map(r => (r._1._1, r._1._2, r._2._1)), "mean travel time", "bottom -> top multiplier", "top -> bottom multiplier", "Mean travel time", plotOptionsTT)
     new HeatMap(config.getString("output.output_prefix") + "_heatmap-difference-variance-tt.png", resultsDiff.map(r => (r._1._1, r._1._2, r._2._2)), "var travel time", "bottom -> top multiplier", "top -> bottom multiplier", "Variance of travel time", plotOptionsVarTT)
     new HeatMap(config.getString("output.output_prefix") + "_heatmap-difference-median-tt.png", resultsDiff.map(r => (r._1._1, r._1._2, r._2._3)), "median travel time", "bottom -> top multiplier", "top -> bottom multiplier", "Median of travel time", plotOptionsTT)
 
-    val resultsDiffSplitOD: Map[((Double, Double), String, String),((Double, Double, Double), (Double, Double, Double))] =
+    val resultsDiffSplitOD: Map[((Double, Double), String, String), ((Double, Double, Double), (Double, Double, Double))] =
       this.processWrittenResultsSplitOD.map(r => r._1 -> ((r._2._1._2 - otherResults._2(r._1)._1._2, r._2._1._3 - otherResults._2(r._1)._1._3, r._2._1._4 - otherResults._2(r._1)._1._4), (r._2._2._2 - otherResults._2(r._1)._2._2, r._2._2._3 - otherResults._2(r._1)._2._3, r._2._2._4 - otherResults._2(r._1)._2._4)))
 
     new HeatMap(config.getString("output.output_prefix") + "_heatmap-difference-mean-tt-bottom-top.png", resultsDiffSplitOD.map(r => (r._1._1._1, r._1._1._2, r._2._1._1)), "mean travel time", "bottom -> top multiplier", "top -> bottom multiplier", "Mean travel time from bottom to top", plotOptionsTT)

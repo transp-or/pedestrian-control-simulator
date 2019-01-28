@@ -3,7 +3,7 @@ package hubmodel.demand.transit
 import hubmodel.Time
 import hubmodel.supply.{ODIDOld, StopID_New, TrainID_New}
 
-class Train(ID: TrainID_New, trainType: String, track: StopID_New, arr: Option[Time], dep: Option[Time], capacity: Int) extends Vehicle(ID, trainType, track, arr, dep, capacity){
+class Train(ID: TrainID_New, trainType: String, track: StopID_New, arr: Option[Time], dep: Option[Time], capacity: Int) extends Vehicle(ID, trainType, track, arr, dep, capacity) {
 
   //val IDNew: TrainID_New = TrainID_New(ID, ID)
 

@@ -2,7 +2,7 @@ package trackingdataanalysis.pedtrack
 
 package simulation {
 
-//import AggDisagg.Pedestrian
+  //import AggDisagg.Pedestrian
 
   /**
     * Created by nicholas on 16/03/17.
@@ -30,5 +30,6 @@ package simulation {
       this.oZone.toString + "," + this.dZone.toString + "," + this.travelTime.toString + "," + this.travelDistance.toString
     }
   }
+
 }
 

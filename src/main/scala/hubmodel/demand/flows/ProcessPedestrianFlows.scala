@@ -46,7 +46,7 @@ class ProcessPedestrianFlows[T <: PedestrianNOMAD](pedestrianFlows: Iterable[Ped
             f._2,
             flow.start,
             flow.end,
-            (t: Time) => flow.f(t)*f._3,
+            (t: Time) => flow.f(t) * f._3,
             sim
           ))
         }))
@@ -54,6 +54,7 @@ class ProcessPedestrianFlows[T <: PedestrianNOMAD](pedestrianFlows: Iterable[Ped
 
   /**
     * Defines the name of the action.
+    *
     * @return string contaiing the name.
     */
   override def toString: String = "ProcessPedestrianFlows"

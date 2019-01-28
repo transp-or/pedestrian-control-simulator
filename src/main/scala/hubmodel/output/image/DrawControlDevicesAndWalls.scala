@@ -37,7 +37,7 @@ class DrawControlDevicesAndWalls(filename: String = "",
     g.transform(at)
 
     // Draw horizontal arrow starting in (0, 0)
-    g.fillPolygon(Array[Int]((0.25*len).toInt, (0.25*len).toInt - 5, (0.25*len).toInt - 5, (0.25*len).toInt), Array[Int](0, -5, 5, 0), 4)
+    g.fillPolygon(Array[Int]((0.25 * len).toInt, (0.25 * len).toInt - 5, (0.25 * len).toInt - 5, (0.25 * len).toInt), Array[Int](0, -5, 5, 0), 4)
     g.transform(at.createInverse())
   }
 
@@ -57,8 +57,8 @@ class DrawControlDevicesAndWalls(filename: String = "",
         gImage.drawPolygon(fl.nearRegion.corners.map(_.X).map(mappingFunctions._1).toArray, fl.nearRegion.corners.map(_.Y).map(mappingFunctions._2).map(verticalTransformation).toArray, 4)
 
         // draws inflow direction
-        val inflowDirStart: Vector2D = fl.start + (fl.end-fl.start)*0.5 - (fl.end-fl.start).orthogonal*2.0*0.5
-        val inflowDirEnd: Vector2D = fl.start + (fl.end-fl.start)*0.5 + (fl.end-fl.start).orthogonal*2.0*0.5
+        val inflowDirStart: Vector2D = fl.start + (fl.end - fl.start) * 0.5 - (fl.end - fl.start).orthogonal * 2.0 * 0.5
+        val inflowDirEnd: Vector2D = fl.start + (fl.end - fl.start) * 0.5 + (fl.end - fl.start).orthogonal * 2.0 * 0.5
         gImage.drawLine(
           mappingFunctions._1(inflowDirStart.X),
           verticalTransformation(mappingFunctions._2(inflowDirStart.Y)),
@@ -81,8 +81,8 @@ class DrawControlDevicesAndWalls(filename: String = "",
       )
 
       // draws inflow direction
-      val inflowDirStart: Vector2D = fg.start + (fg.end-fg.start)*0.5 - (fg.end-fg.start).orthogonal*2.0*0.5
-      val inflowDirEnd: Vector2D = fg.start + (fg.end-fg.start)*0.5 + (fg.end-fg.start).orthogonal*2.0*0.5
+      val inflowDirStart: Vector2D = fg.start + (fg.end - fg.start) * 0.5 - (fg.end - fg.start).orthogonal * 2.0 * 0.5
+      val inflowDirEnd: Vector2D = fg.start + (fg.end - fg.start) * 0.5 + (fg.end - fg.start).orthogonal * 2.0 * 0.5
       gImage.drawLine(
         mappingFunctions._1(inflowDirStart.X),
         verticalTransformation(mappingFunctions._2(inflowDirStart.Y)),

@@ -45,7 +45,7 @@ class RectangleModifiable(name: String,
 
     if ((this.B - this.BTarget).norm > 0.0) this.B = this.B + (this.BTarget - this.B).normalized * (speed * dt.value.toDouble)
 
-    if  ((this.C - this.CTarget).norm > 0.0) this.C = this.C + (this.CTarget - this.C).normalized * (speed * dt.value.toDouble)
+    if ((this.C - this.CTarget).norm > 0.0) this.C = this.C + (this.CTarget - this.C).normalized * (speed * dt.value.toDouble)
 
     if ((this.D - this.DTarget).norm > 0.0) this.D = this.D + (this.DTarget - this.D).normalized * (speed * dt.value.toDouble)
   }
@@ -85,6 +85,6 @@ class RectangleModifiable(name: String,
 
   override def clone(): RectangleModifiable = new RectangleModifiable(
     this.name, this.__A, this.__B, this.__C, this.__D, this.isOD
-    )
+  )
 
 }

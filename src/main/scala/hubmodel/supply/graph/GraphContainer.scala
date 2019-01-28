@@ -17,7 +17,9 @@ abstract class GraphContainer(protected val flowGates: Iterable[FlowGate],
   def processIntermediateArrival(ped: PedestrianNOMAD): Unit
 
   type T <: GraphContainer
+
   def clone(devices: ControlDevices): T
+
   def clone2AlternateGraphs(devices: ControlDevices, populationFraction: Double): T
 
 }

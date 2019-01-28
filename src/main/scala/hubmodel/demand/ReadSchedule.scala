@@ -1,4 +1,5 @@
 package hubmodel.demand
+
 /*
 @deprecated
 class ReadSchedule(fileName: String) {

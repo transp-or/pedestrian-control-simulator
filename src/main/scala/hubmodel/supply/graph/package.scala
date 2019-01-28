@@ -149,19 +149,19 @@ package object graph {
 
 
         val graph: Try[GraphContainer] = Try(
-          if ( !useAlternatGraphs && s.get.alternateConnections.isEmpty) {
-          //tagT.runtimeClass.getConstructors()(0).newInstance(v, baseEdgeCollection, levelChanges, fg, bg, mv, flowSeparators).asInstanceOf[T]
-          new SingleGraph(v, baseEdgeCollection, levelChanges, fg, bg, mv, flowSeparators)
-        } else if (useAlternatGraphs && s.get.alternateConnections.nonEmpty) {
-          val graphs = new MultipleGraph(fg, bg, mv, flowSeparators)
-          graphs.addGraph("reference", 1.0 - s.get.alternateConnections.foldLeft(0.0)((a, b) => a + b.frac), v, baseEdgeCollection, Set(), Set(), levelChanges)
-          s.get.alternateConnections.foreach(g => {
-            graphs.addGraph(g.name, g.frac, v, baseEdgeCollection, connections2Edges[MyEdge](g.conn2Add), connections2Edges[MyEdge](g.conn2Remove), levelChanges)
+          if (!useAlternatGraphs && s.get.alternateConnections.isEmpty) {
+            //tagT.runtimeClass.getConstructors()(0).newInstance(v, baseEdgeCollection, levelChanges, fg, bg, mv, flowSeparators).asInstanceOf[T]
+            new SingleGraph(v, baseEdgeCollection, levelChanges, fg, bg, mv, flowSeparators)
+          } else if (useAlternatGraphs && s.get.alternateConnections.nonEmpty) {
+            val graphs = new MultipleGraph(fg, bg, mv, flowSeparators)
+            graphs.addGraph("reference", 1.0 - s.get.alternateConnections.foldLeft(0.0)((a, b) => a + b.frac), v, baseEdgeCollection, Set(), Set(), levelChanges)
+            s.get.alternateConnections.foreach(g => {
+              graphs.addGraph(g.name, g.frac, v, baseEdgeCollection, connections2Edges[MyEdge](g.conn2Add), connections2Edges[MyEdge](g.conn2Remove), levelChanges)
+            })
+            graphs
+          } else {
+            throw new IllegalArgumentException("Error processing graphs ! Requested alternate graphs but alternate_graphs JSON is empty !")
           })
-          graphs
-        } else {
-          throw new IllegalArgumentException("Error processing graphs ! Requested alternate graphs but alternate_graphs JSON is empty !")
-        })
 
         // Returns the graph object and the control devices
         (

@@ -25,7 +25,7 @@ class DrawWallsAndGraph(walls: Iterable[Wall], edges: Vector[(Rectangle, Rectang
   )
 
   val wallImage = new DrawWalls(walls, mapFun = Some(mappingFunctions), imHeight = Some(IMAGE_HEIGHT), showNames = showNames)
-  val graphImage = new DrawGraph(edges, mapFun = Some(mappingFunctions), imHeight = Some(IMAGE_HEIGHT),showNames = showNames)
+  val graphImage = new DrawGraph(edges, mapFun = Some(mappingFunctions), imHeight = Some(IMAGE_HEIGHT), showNames = showNames)
 
   val image: BufferedImage = new BufferedImage(IMAGE_WIDTH, wallImage.imageHeight, BufferedImage.TYPE_4BYTE_ABGR)
   val verticalTransformation: Int => Int = verticalMirrorTransformation(image.getHeight)
@@ -37,6 +37,8 @@ class DrawWallsAndGraph(walls: Iterable[Wall], edges: Vector[(Rectangle, Rectang
   wallImage.draw(gImage, verticalTransformation)
   gImage.setColor(Color.RED)
   graphImage.draw(gImage, verticalTransformation)
-  if (showNames) { graphImage.drawNames(gImage, verticalTransformation) }
+  if (showNames) {
+    graphImage.drawNames(gImage, verticalTransformation)
+  }
   ImageIO.write(image, filename.split("\\.").last, new java.io.File(filename))
 }

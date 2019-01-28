@@ -15,20 +15,27 @@ class ScatterPlot3D(outputFile: String,
                     opts: PlotOptions = PlotOptions()) extends DrawingComponents(opts.border2HorizontalAxis, opts.border2VerticalAxis, (opts.width, opts.height)) with VisualizationTools {
 
   // completes abstract classes by implementing the mapping functions
-   def mapHCoord(v: Double): Int = mapHcoordLinear(x.min, x.max, opts.width-opts.border2HorizontalAxis-opts.border2VerticalAxis)(v)
-   def mapVCoord(v: Double): Int= mapVcoordLinear(y.min, y.max, opts.height-2*opts.border2HorizontalAxis)(v)
+  def mapHCoord(v: Double): Int = mapHcoordLinear(x.min, x.max, opts.width - opts.border2HorizontalAxis - opts.border2VerticalAxis)(v)
+
+  def mapVCoord(v: Double): Int = mapVcoordLinear(y.min, y.max, opts.height - 2 * opts.border2HorizontalAxis)(v)
+
   override def verticalTransformation: Int => Int = verticalMirrorTransformation(canvas.getHeight)
 
   def mapHCoordBD(x: BigDecimal): Int = 0
+
   def mapHcoordDrawingZone(x: Double): Int = 0
+
   def mapVcoordDrawingZone(x: Double): Int = 0
+
   def mapHcoordDrawingZoneBD(x: BigDecimal): Int = 0
+
   def mapVcoordDrawingZoneBD(x: BigDecimal): Int = 0
-      def mapVCoordBD(x: BigDecimal): Int = 0
+
+  def mapVCoordBD(x: BigDecimal): Int = 0
 
 
   // checks the data
-  assert(x.length == y.length, "x and y do not have the same length ! x.length="+x.length + ", y.length=" + y.length)
+  assert(x.length == y.length, "x and y do not have the same length ! x.length=" + x.length + ", y.length=" + y.length)
 
 
   // builds the background based on the size passed as argument

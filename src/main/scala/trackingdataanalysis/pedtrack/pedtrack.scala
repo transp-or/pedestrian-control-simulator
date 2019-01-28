@@ -1,16 +1,15 @@
 package trackingdataanalysis.pedtrack
 
 
-
 /**
-  *  Gives the list of filters which should be implemented
+  * Gives the list of filters which should be implemented
   */
 trait FunctionsOnPedestrianMaps {
 
   /** Returns pedestrian which entered after start and exited before end
     *
     * @param start entry time limit
-    * @param end exit time limit
+    * @param end   exit time limit
     * @return the filtered list of pedestrians. Type is unspecified as it will depend on the input type
     */
   def filterByTime(start: Long, end: Long): Any
@@ -117,22 +116,22 @@ case class DataSpecification(private val _file: String) {
     else _file.slice(cityStart + city.length + 1 + 11, extensionStart)
   }
 
-  val fileName: String = _file.drop(_file.lastIndexOf("/")+1).dropRight(4)
+  val fileName: String = _file.drop(_file.lastIndexOf("/") + 1).dropRight(4)
 
   override def toString: String = this.city + "-" + this.date.toString + "-" + this.location
 }
 
 /** Time identifier
   *
-  * @param Y year
-  * @param M month
-  * @param D day
-  * @param h hours
-  * @param m minute
-  * @param s second
+  * @param Y  year
+  * @param M  month
+  * @param D  day
+  * @param h  hours
+  * @param m  minute
+  * @param s  second
   * @param ms millisecond, default = 0
   */
-case class Time(Y: Int, M: Int, D: Int, h: Int, m: Int, s: Int, ms: Int = 0){
+case class Time(Y: Int, M: Int, D: Int, h: Int, m: Int, s: Int, ms: Int = 0) {
 
   /** Number of seconds from 00:00 of the day */
   val toSecondsOfDay: Double = h * 3600.0 + m * 60.0 + s + ms.toDouble / 1000.0
@@ -149,7 +148,7 @@ case class Time(Y: Int, M: Int, D: Int, h: Int, m: Int, s: Int, ms: Int = 0){
     *
     * @return formated as a String
     */
-  override def toString: String = "%04d-%02d-%02d %02d:%02d:%02d:%03d".format(Y,M,D,h,m,s,ms)
+  override def toString: String = "%04d-%02d-%02d %02d:%02d:%02d:%03d".format(Y, M, D, h, m, s, ms)
 
 } // end of Time
 

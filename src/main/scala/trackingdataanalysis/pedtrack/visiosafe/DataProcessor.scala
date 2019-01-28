@@ -10,7 +10,7 @@ import trackingdataanalysis.pedtrack.{Pedestrian, time2Seconds}
 abstract class DataProcessor(zoneFile: String, tolerance: Double) {
 
   /** Map from zone_ID to Zone. */
-  val zones: Map[Int, Zone] = (for (l <- io.Source.fromFile(zoneFile).getLines.drop(1)) yield l.split(",").map(_.trim.toInt).head -> new Zone(l.split(",").map(_.trim.toDouble/1000.0))).toMap
+  val zones: Map[Int, Zone] = (for (l <- io.Source.fromFile(zoneFile).getLines.drop(1)) yield l.split(",").map(_.trim.toInt).head -> new Zone(l.split(",").map(_.trim.toDouble / 1000.0))).toMap
   //println(zones.values.map(z => (z.A, z.B, z.C, z.D).toString).mkString("\n"))
   /** Takes as input the file containing the data and returns the data aggregated by pedestrian. The aggregation takes
     * process is done by matching the ID to already existing processed IDs and then updates the variables.
@@ -24,19 +24,18 @@ abstract class DataProcessor(zoneFile: String, tolerance: Double) {
     for (l <- bufferedSource.getLines) {
       val cols = l.split(",").map(str => str.toInt)
       if (ped.contains(cols.last)) {
-        ped(cols.last).updatePedestrian(cols(8).toDouble/1000.0, cols(9).toDouble/1000.0, time2Seconds(cols))
+        ped(cols.last).updatePedestrian(cols(8).toDouble / 1000.0, cols(9).toDouble / 1000.0, time2Seconds(cols))
       }
-      else ped += (cols.last -> new Pedestrian(cols.last, (cols(8).toDouble/1000.0, cols(9).toDouble/1000.0), time2Seconds(cols)))
+      else ped += (cols.last -> new Pedestrian(cols.last, (cols(8).toDouble / 1000.0, cols(9).toDouble / 1000.0), time2Seconds(cols)))
     }
     bufferedSource.close()
     ped
   }
 
 
-
   /** Returns boolean indicating whether point is in rectangle. Requires the breeze.linalg package.
     *
-    * @param pos point to check
+    * @param pos  point to check
     * @param rect coordinates of rectangle
     * @return boolean indicating if point is inside rectangle
     */
@@ -51,9 +50,7 @@ abstract class DataProcessor(zoneFile: String, tolerance: Double) {
 
   /** Returns the zone in which a point is located
     *
-    *
-    *
-    * @param pos point to find owernship
+    * @param pos      point to find owernship
     * @param mapZones Map storing the zones
     * @return Int naming the zone, -1 if none found
     */
@@ -89,9 +86,9 @@ abstract class DataProcessor(zoneFile: String, tolerance: Double) {
     * tolerance.
     *
     * @param times collection of times for which to collect the pedestrian IDs
-    * @param pop pedestrian population
-    * @param acc accumulator
-    * @param tol tolerance on the times (t +- tol)
+    * @param pop   pedestrian population
+    * @param acc   accumulator
+    * @param tol   tolerance on the times (t +- tol)
     * @return map with the times as keys and the IDs of pedestrians as values
     */
   protected def collectIDByTime(times: Seq[Double], pop: Iterable[(Int, Seq[Double], Seq[Double], Seq[Double])], acc: Vector[(Double, Iterable[Int])]): Vector[(Double, Iterable[Int])] = {
@@ -100,10 +97,10 @@ abstract class DataProcessor(zoneFile: String, tolerance: Double) {
       collectIDByTime(
         times.tail,
         pop,
-        acc :+ (times.head -> pop.filter(p => p._2.indexWhere(t => times.head-tolerance <= t && t < times.head+tolerance) >= 0 ).map(_._1).toVector.distinct)
-      )}
+        acc :+ (times.head -> pop.filter(p => p._2.indexWhere(t => times.head - tolerance <= t && t < times.head + tolerance) >= 0).map(_._1).toVector.distinct)
+      )
+    }
   }
-
 
 
   /*protected def collectIDByTime(times: Seq[Double], pop: Map[Int, Vector[(Double, (Double, Double))]]): Vector[(Double, Iterable[Int])] = {
@@ -112,24 +109,31 @@ abstract class DataProcessor(zoneFile: String, tolerance: Double) {
   }*/
 
   def linearInterpolationPosition(x1: (Double, Double), x2: (Double, Double), t1: Double, t2: Double, tDesired: Double): (Double, Double) = {
-    if (t1 > t2) { throw new IllegalArgumentException("t1 is larger than t2 ! t1=" + t1 + ", t2="+t2)}
-    else if (tDesired < t1 || t2 < tDesired) {throw new IllegalArgumentException("desired time is outside of interval for linear interpolation: " + t1 + ", " + t2 + ", " + tDesired)}
-    val frac: Double = (tDesired - t1)/(t2-t1)
-    (x1._1 + frac*(x2._1-x1._1), x1._2 + frac*(x2._2-x1._2))
+    if (t1 > t2) {
+      throw new IllegalArgumentException("t1 is larger than t2 ! t1=" + t1 + ", t2=" + t2)
+    }
+    else if (tDesired < t1 || t2 < tDesired) {
+      throw new IllegalArgumentException("desired time is outside of interval for linear interpolation: " + t1 + ", " + t2 + ", " + tDesired)
+    }
+    val frac: Double = (tDesired - t1) / (t2 - t1)
+    (x1._1 + frac * (x2._1 - x1._1), x1._2 + frac * (x2._2 - x1._2))
   }
 
   /** Returns the index of the inteval in which the argument lies
     *
-    * @param t value wanted to be placed
+    * @param t     value wanted to be placed
     * @param times vector in which to place the argument
     * @return index of the correct position
     */
-  def findInterval(t: Double, times: Vector[Double]): Int = { times.indexWhere(_ > t) }
+  def findInterval(t: Double, times: Vector[Double]): Int = {
+    times.indexWhere(_ > t)
+  }
 
   /** Based on the functions passed as argument, computes the metrics per time window of all the pedestrians satisfying
     * the predicate "filter".
-    * @param filter predicate used to filter the population
-    * @param pedFunc extracts the metric from an individual
+    *
+    * @param filter     predicate used to filter the population
+    * @param pedFunc    extracts the metric from an individual
     * @param windowFunc computes the index of the window in which the pedestrian belongs
     * @param metricFunc computes the statistics of the metric
     * @return map where the keys are the time intervals and the values the statstics of the metric

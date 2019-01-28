@@ -140,7 +140,7 @@ class MovingPedestriansWithDensityWithWallVideo(outputFile: String,
     val flowSepImage = new BufferedImage(canvasWidth, canvasHeight, BufferedImage.TYPE_4BYTE_ABGR)
     if (flowSeparators.nonEmpty) {
       val gFlowSepImage = flowSepImage.createGraphics()
-      flowSeparators.foreach( fg => {
+      flowSeparators.foreach(fg => {
         fg.getPositionHistory.reverse.find(t => times2Show(i).value > t._1.value) match {
           case Some(s) => {
             gFlowSepImage.setStroke(new BasicStroke(5))
@@ -149,7 +149,7 @@ class MovingPedestriansWithDensityWithWallVideo(outputFile: String,
               mapHcoord(s._2.X),
               verticalTransformation(mapVcoord(s._2.Y)),
               mapHcoord(s._3.X),
-                verticalTransformation(mapVcoord(s._3.Y))
+              verticalTransformation(mapVcoord(s._3.Y))
             )
           }
           case _ => {}

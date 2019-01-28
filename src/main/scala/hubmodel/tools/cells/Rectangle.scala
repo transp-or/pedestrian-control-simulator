@@ -7,7 +7,7 @@ import myscala.math.vector.Vector2D
 
 class Rectangle(val name: String, C1: Position, C2: Position, C3: Position, C4: Position, val isOD: Boolean) extends Vertex {
 
-  if (Vector(C1, C2, C3, C4).map(_.X).distinct.size != 2 || Vector(C1, C2, C3, C4).map(_.Y).distinct.size != 2){
+  if (Vector(C1, C2, C3, C4).map(_.X).distinct.size != 2 || Vector(C1, C2, C3, C4).map(_.Y).distinct.size != 2) {
     throw new IllegalArgumentException("Corners of rectangle do not make orthogonal rectangle ! + id=" + name)
   }
 
@@ -16,12 +16,12 @@ class Rectangle(val name: String, C1: Position, C2: Position, C3: Position, C4: 
   val xMax: Double = Vector(C1, C2, C3, C4).map(_.X).max
   val yMax: Double = Vector(C1, C2, C3, C4).map(_.Y).max
 
-  protected var A: Position = Vector(C1, C2 ,C3, C4).find(p => p.X == xMin && p.Y == yMin).get
-  protected var B: Position = Vector(C1, C2 ,C3, C4).find(p => p.X == xMax && p.Y == yMin).get
-  protected var C: Position = Vector(C1, C2 ,C3, C4).find(p => p.X == xMax && p.Y == yMax).get
-  protected var D: Position = Vector(C1, C2 ,C3, C4).find(p => p.X == xMin && p.Y == yMax).get
+  protected var A: Position = Vector(C1, C2, C3, C4).find(p => p.X == xMin && p.Y == yMin).get
+  protected var B: Position = Vector(C1, C2, C3, C4).find(p => p.X == xMax && p.Y == yMin).get
+  protected var C: Position = Vector(C1, C2, C3, C4).find(p => p.X == xMax && p.Y == yMax).get
+  protected var D: Position = Vector(C1, C2, C3, C4).find(p => p.X == xMin && p.Y == yMax).get
 
-  if (A.Y != B.Y){
+  if (A.Y != B.Y) {
     throw new IllegalArgumentException("First two points don't have same Y coordinates for rectangle \"" + this.name + "\", A=" + A + ", B=" + B)
   } else if (C.Y != D.Y) {
     throw new IllegalArgumentException("Last two points don't have same Y coordinates for rectangle \"" + this.name + "\"")

@@ -84,15 +84,15 @@ package object hubmodel {
 
     def asReadable: String = {
       val hours: Int = (this.value / 3600.0).setScale(0, RoundingMode.FLOOR).toInt
-      val minutes: Int = ((this.value - hours * 3600)/60.0).setScale(0, RoundingMode.FLOOR).toInt
-      val seconds: Double = (this.value  - 3600 * hours - 60 * minutes).setScale(0, RoundingMode.FLOOR).toInt
+      val minutes: Int = ((this.value - hours * 3600) / 60.0).setScale(0, RoundingMode.FLOOR).toInt
+      val seconds: Double = (this.value - 3600 * hours - 60 * minutes).setScale(0, RoundingMode.FLOOR).toInt
       hours.toString + ":" + minutes.toString + ":" + seconds.toString
     }
 
     def asVisioSafe: String = {
       val h: Int = (this.value / 3600.0).setScale(0, RoundingMode.FLOOR).toInt
-      val min: Int = ((this.value - h * 3600)/60.0).setScale(0, RoundingMode.FLOOR).toInt
-      val s: Int = (this.value  - 3600 * h - 60 * min).setScale(0, RoundingMode.FLOOR).toInt
+      val min: Int = ((this.value - h * 3600) / 60.0).setScale(0, RoundingMode.FLOOR).toInt
+      val s: Int = (this.value - 3600 * h - 60 * min).setScale(0, RoundingMode.FLOOR).toInt
       val ms: Int = (1000 * (this.value - 3600 * h - 60 * min - s)).round(new MathContext(4, java.math.RoundingMode.HALF_UP)).toInt
       h.toString + "," + min.toString + "," + s.toString + "," + ms.toString
     }
@@ -120,12 +120,11 @@ package object hubmodel {
   }
 
 
-
   /** Generation of a pseudo-UUID. This can be used to generate unique identifiers for objects.
     *
     * @return UUID formatted as a String
     */
-  def generateUUID: String = RandomStringUtils.randomAlphabetic(1) + RandomStringUtils.randomAlphanumeric(8)// java.util.UUID.randomUUID.toString
+  def generateUUID: String = RandomStringUtils.randomAlphabetic(1) + RandomStringUtils.randomAlphanumeric(8) // java.util.UUID.randomUUID.toString
 
 
   def writePopulationTrajectories(population: Iterable[PedestrianTrait], file: String): Unit = {
@@ -171,7 +170,9 @@ package object hubmodel {
 
   def writeODJSON(pop: Iterable[PedestrianSim], ODZones: Iterable[String], file: String): Unit = {
     def buildStringFromIDs(IDs: Iterable[String]): String = {
-      if (IDs.isEmpty)  { "" }
+      if (IDs.isEmpty) {
+        ""
+      }
       else IDs.mkString("\"", "\", \"", "\"")
     }
 
@@ -232,12 +233,20 @@ package object hubmodel {
     val flows = getFlows(config)
 
     val (timeTable, stop2Vertex) =
-      if (timetable_TF.isEmpty && flows_TF.isEmpty) { getPTSchedule(flows, config) }
-      else { getPTSchedule(flows, timetable_TF.get, config) }
+      if (timetable_TF.isEmpty && flows_TF.isEmpty) {
+        getPTSchedule(flows, config)
+      }
+      else {
+        getPTSchedule(flows, timetable_TF.get, config)
+      }
 
     val disaggPopulation =
-      if (timetable_TF.isEmpty && flows_TF.isEmpty) { getDisaggPopulation(config) }
-      else { getDisaggPopulation(flows_TF.get)}
+      if (timetable_TF.isEmpty && flows_TF.isEmpty) {
+        getDisaggPopulation(config)
+      }
+      else {
+        getDisaggPopulation(flows_TF.get)
+      }
 
     /** Takes a conceptual node (train or on foot) and returns the set of "real" nodes (the ones used by the graph)
       * in which the pedestrians must be created.
@@ -265,7 +274,6 @@ package object hubmodel {
 
     // number of simulations to run
     val n: Int = config.getInt("sim.nb_runs")
-
 
 
     val sim: NOMADGraphSimulator[T] = new NOMADGraphSimulator[T](
@@ -322,12 +330,12 @@ package object hubmodel {
   // Loads the train time table used to create demand from trains
   def getPTSchedule(flows: (Iterable[PedestrianFlow_New], Iterable[PedestrianFlowPT_New], Iterable[PedestrianFlowFunction_New]),
                     timetable_TF: String,
-                    config:  Config,
+                    config: Config,
                    ): (PublicTransportSchedule, Stop2Vertex) = {
-      (
-        readScheduleTF(timetable_TF),
-        readPTStop2GraphVertexMap(config.getString("files.zones_to_vertices_map"))
-      )
+    (
+      readScheduleTF(timetable_TF),
+      readPTStop2GraphVertexMap(config.getString("files.zones_to_vertices_map"))
+    )
   }
 
 
@@ -343,7 +351,7 @@ package object hubmodel {
 
   // Loads the disaggregate pedestrian demand.
   def getDisaggPopulation(flows_TF: String): Iterable[(String, String, Time)] = {
-      readDisaggDemandTF(flows_TF)
+    readDisaggDemandTF(flows_TF)
   }
 
 
@@ -352,7 +360,9 @@ package object hubmodel {
                                                       flows: (Iterable[PedestrianFlow_New], Iterable[PedestrianFlowPT_New], Iterable[PedestrianFlowFunction_New]),
                                                       timeTable: PublicTransportSchedule)(implicit tag: ClassTag[T]): Unit = {
 
-    if (disaggPopulation.nonEmpty) { sim.insertEventWithZeroDelay(new ProcessDisaggregatePedestrianFlows[T](disaggPopulation, sim)) }
+    if (disaggPopulation.nonEmpty) {
+      sim.insertEventWithZeroDelay(new ProcessDisaggregatePedestrianFlows[T](disaggPopulation, sim))
+    }
 
     val PTInducedFlows = flows._2.toVector
     sim.insertEventWithZeroDelay(new ProcessTimeTable[T](timeTable, PTInducedFlows, sim))
@@ -364,10 +374,10 @@ package object hubmodel {
   //                    Runs the simulation, creates video and outputs results
   // ******************************************************************************************
 
-  case class ResultsContainerNew(exitCode:Int, completedPeds: Vector[PedestrianSim], uncompletedPeds: Vector[PedestrianSim], densityZones: Map[String, DensityMeasuredArea])
+  case class ResultsContainerNew(exitCode: Int, completedPeds: Vector[PedestrianSim], uncompletedPeds: Vector[PedestrianSim], densityZones: Map[String, DensityMeasuredArea])
 
   // Container for the results from a simulation. This type chould be modified if the collectResults function is modified
-  case class ResultsContainerRead(tt: Vector[(String, String, Double, Double, Double)], monitoredAreaDensity: Option[(Vector[Double] , Vector[Vector[Double]])], monitoredAreaIndividualDensity: Option[Vector[(BigDecimal, BigDecimal)]])
+  case class ResultsContainerRead(tt: Vector[(String, String, Double, Double, Double)], monitoredAreaDensity: Option[(Vector[Double], Vector[Vector[Double]])], monitoredAreaIndividualDensity: Option[Vector[(BigDecimal, BigDecimal)]])
 
   /** Used to extract the desired results from the simulator. Avoids keeping all information in memory.
     *
@@ -395,9 +405,10 @@ package object hubmodel {
   /**
     * Writes the main results from a simulation to csv files. This is needed when running dozens of simulations as the
     * RAM fills up too quickly otherwise.
+    *
     * @param simulator simulator with completed results
-    * @param prefix prefix to the file name
-    * @param path path where to write the file, default is empty
+    * @param prefix    prefix to the file name
+    * @param path      path where to write the file, default is empty
     */
   def writeResults[T <: PedestrianNOMAD](simulator: NOMADGraphSimulator[T], prefix: String = "", dir: Option[String], writeTrajectoriesVS: Boolean = false, writeTrajectoriesJSON: Boolean = false): Unit = {
 
@@ -415,7 +426,7 @@ package object hubmodel {
     }
 
     if (simulator.exitCode == 0) {
-      simulator.populationCompleted.map(p => (p.origin.name, p.finalDestination.name, p.travelTime.value, p.entryTime.value, p.exitTime.value)).writeToCSV(prefix + "tt_"+simulator.ID+".csv", path)
+      simulator.populationCompleted.map(p => (p.origin.name, p.finalDestination.name, p.travelTime.value, p.entryTime.value, p.exitTime.value)).writeToCSV(prefix + "tt_" + simulator.ID + ".csv", path)
       if (simulator.criticalAreas.nonEmpty) {
         (simulator.criticalAreas.head._2.densityHistory.map(_._1.value).toVector +: simulator.criticalAreas.map(_._2.densityHistory.map(_._2).toVector).toVector).writeToCSV(prefix + "density_" + simulator.ID + ".csv", path)
         simulator.criticalAreas.head._2.paxIndividualDensityHistory.flatMap(v => Vector.fill(v._2.size)(v._1.value).zip(v._2)).toVector.writeToCSV(prefix + "individual_densities_" + simulator.ID + ".csv", path)
@@ -429,13 +440,14 @@ package object hubmodel {
 
     if (writeTrajectoriesJSON) {
       println("Writing Trajectories as JSON to file for viz")
-      writePopulationTrajectoriesJSON(simulator.populationCompleted ++ simulator.population,  prefix + "_simulation_trajectories_" + simulator.ID + ".json", (simulator.startTime.value) to (simulator.finalTime.value) by (simulator.sf_dt.value))
-      writeODJSON(simulator.populationCompleted ++ simulator.population, simulator.ODZones.map(_.name) ,prefix + "_ped_IDS_per_OD_" + simulator.ID + ".json")
+      writePopulationTrajectoriesJSON(simulator.populationCompleted ++ simulator.population, prefix + "_simulation_trajectories_" + simulator.ID + ".json", (simulator.startTime.value) to (simulator.finalTime.value) by (simulator.sf_dt.value))
+      writeODJSON(simulator.populationCompleted ++ simulator.population, simulator.ODZones.map(_.name), prefix + "_ped_IDS_per_OD_" + simulator.ID + ".json")
     }
   }
 
   /**
     * Reads the files located in the argument and processes them to an  Iterable of [[ResultsContainerRead]] object.
+    *
     * @param path dir where the files are located
     * @return Iterable containing the results
     */
@@ -450,7 +462,7 @@ package object hubmodel {
     }
 
     // reads the files populates a map based on the keyword present in the name
-    val files: Map[String, Map[String, File]] = outputDir.listFiles.filter(_.isFile).toList.groupBy(f => f.getName.substring(f.getName.indexOf(".csv")-10, f.getName.indexOf(".csv"))).map(kv => kv._1 -> kv._2.map(f => {
+    val files: Map[String, Map[String, File]] = outputDir.listFiles.filter(_.isFile).toList.groupBy(f => f.getName.substring(f.getName.indexOf(".csv") - 10, f.getName.indexOf(".csv"))).map(kv => kv._1 -> kv._2.map(f => {
       f.getName match {
         case a if a.contains("_tt_") => "tt"
         case b if b.contains("_density_") => "density"
@@ -475,22 +487,24 @@ package object hubmodel {
 
 
       // process density file
-        val density: Option[(Vector[Double], Vector[Vector[Double]])] =
-          if (sr._2.keySet.contains("density")) {
+      val density: Option[(Vector[Double], Vector[Vector[Double]])] =
+        if (sr._2.keySet.contains("density")) {
           val in = scala.io.Source.fromFile(sr._2("density"))
           val data = (for (line <- in.getLines) yield {
             line.split(",").map(_.trim.toDouble)
           }).toVector
           in.close
           Some((data.map(_ (0)), data.map(a => a.tail.toVector))) //data.map(_.toVector).toVector
-        } else { None }
+        } else {
+          None
+        }
 
 
       // process individual density measurements
-        val densityPerIndividual: Option[Vector[(BigDecimal, BigDecimal)]] =
-          if (sr._2.keySet.contains("individual_densities")) {
-            val in = scala.io.Source.fromFile(sr._2("individual_densities"))
-            val data = (for (line <- in.getLines if !line.contains("Infinity")) yield {
+      val densityPerIndividual: Option[Vector[(BigDecimal, BigDecimal)]] =
+        if (sr._2.keySet.contains("individual_densities")) {
+          val in = scala.io.Source.fromFile(sr._2("individual_densities"))
+          val data = (for (line <- in.getLines if !line.contains("Infinity")) yield {
             Try(line.split(",").map(v => BigDecimal(v.trim))) match {
               case Success(s) => (s(0), s(1));
               case Failure(f) => throw new IllegalArgumentException("error parsing string to BigDecimal: " + line.split(",").map(v => v.trim).mkString(",") + ", " + sr._2("individual_densities") + ", " + f)
@@ -498,7 +512,9 @@ package object hubmodel {
           }).toVector
           in.close
           Some(data)
-        } else { None }
+        } else {
+          None
+        }
 
       ResultsContainerRead(tt, density, densityPerIndividual)
     })
@@ -515,8 +531,12 @@ package object hubmodel {
     // Creates images representing the walls, route graph and both overlaid.
     new DrawWalls(sim.walls, config.getString("output.output_prefix") + "_wallsWithNames.png", showNames = true)
     sim.graph match {
-      case rm: MultipleGraph => { rm.getGraphs.foreach(g =>  new DrawGraph(g._2._2.edgeCollection.map(e => (e.startVertex, e.endVertex)).toVector, config.getString("output.output_prefix") + "_graph_" + g._1 + ".png"))}
-      case rs: SingleGraph => { new DrawGraph(sim.graph.edges.map(e => (e.startVertex, e.endVertex)).toVector, config.getString("output.output_prefix") + "_graph.png") }
+      case rm: MultipleGraph => {
+        rm.getGraphs.foreach(g => new DrawGraph(g._2._2.edgeCollection.map(e => (e.startVertex, e.endVertex)).toVector, config.getString("output.output_prefix") + "_graph_" + g._1 + ".png"))
+      }
+      case rs: SingleGraph => {
+        new DrawGraph(sim.graph.edges.map(e => (e.startVertex, e.endVertex)).toVector, config.getString("output.output_prefix") + "_graph.png")
+      }
     }
     new DrawWallsAndGraph(sim.walls, sim.graph.edges.map(e => (e.startVertex, e.endVertex)).toVector, config.getString("output.output_prefix") + "_wallsAndGraph.png")
     new DrawControlDevicesAndWalls(config.getString("output.output_prefix") + "_wallsWithDevices.png", sim.walls, sim.controlDevices)
@@ -528,7 +548,7 @@ package object hubmodel {
 
     if (config.getBoolean("output.write_trajectories_as_JSON")) {
       println("Writing trajectory data as JSON...")
-      writePopulationTrajectoriesJSON(sim.populationCompleted ++ sim.population,  config.getString("output.output_prefix") + "_simulation_trajectories_" + sim.ID + ".json", (sim.startTime.value) to (sim.finalTime.value) by (sim.sf_dt.value))
+      writePopulationTrajectoriesJSON(sim.populationCompleted ++ sim.population, config.getString("output.output_prefix") + "_simulation_trajectories_" + sim.ID + ".json", (sim.startTime.value) to (sim.finalTime.value) by (sim.sf_dt.value))
     }
 
     println("Making video of simulation, this can take some time...")
@@ -554,7 +574,7 @@ package object hubmodel {
     * @param simulator simulation to run
     * @return results collected from the simulation
     */
-  def runAndCollect[T <: PedestrianNOMAD](simulator: NOMADGraphSimulator[T]): ResultsContainerNew =  {
+  def runAndCollect[T <: PedestrianNOMAD](simulator: NOMADGraphSimulator[T]): ResultsContainerNew = {
     timeBlock(simulator.run())
     collectResults(simulator)
   }

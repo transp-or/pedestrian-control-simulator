@@ -5,11 +5,17 @@ package trackingdataanalysis.pedtrack
   */
 trait PedestrianTrait {
   def oZone: Int
+
   def dZone: Int
+
   def travelTime: Double
+
   def travelDistance: Double
+
   def meanVelocity: Double
+
   def entryTime: Double
+
   def exitTime: Double
 
   /** returns the OD pair as a tuple */

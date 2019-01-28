@@ -175,8 +175,10 @@ case class PedestrianFlow(O: String, D: String, private val _start: LocalTime, p
 case class PedestrianFlowFunction(O: String, D: String, constantFunctions: Vector[ConstantFunction], linearFunctions: Vector[LinearFunction], sinusFunctions: Vector[SinusFunction])
 
 case class LinearFunction(start: LocalTime, end: LocalTime, rateAtStart: Double, rateAtEnd: Double, slope: Double)
+
 case class ConstantFunction(start: LocalTime, end: LocalTime, rate: Double)
-case class SinusFunction(start: LocalTime, end: LocalTime, periodStretch: Double, periodShift: Double, a:Double, b: Double, c: Double, maxFlow: Double)
+
+case class SinusFunction(start: LocalTime, end: LocalTime, periodStretch: Double, periodShift: Double, a: Double, b: Double, c: Double, maxFlow: Double)
 
 case class PTFlow(private val _origin: String, private val _destination: String, f: Double) {
   val origin: TrainID_New = if (_origin.charAt(0) == 'T') new TrainID_New(_origin.substring(2))

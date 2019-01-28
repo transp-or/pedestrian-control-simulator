@@ -20,11 +20,11 @@ class Edge {
 
     /**
      * Type of connection:
-     *  - bidirectional: BI_DIR
-     *  - unidirectional flat: UNI_DIR
-     *  - unidirectional stairs up: UNI_DIR_UP
-     *  - unidirectional stairs down UNI_DIR_DOWN
-     *  - change level: LEVEL_CHANGE
+     * - bidirectional: BI_DIR
+     * - unidirectional flat: UNI_DIR
+     * - unidirectional stairs up: UNI_DIR_UP
+     * - unidirectional stairs down UNI_DIR_DOWN
+     * - change level: LEVEL_CHANGE
      */
     int type;
 
@@ -33,8 +33,8 @@ class Edge {
      *
      * @param aIn start node physical position
      * @param bIn end node physical position
-     * @param o origin node name
-     * @param d destination node name
+     * @param o   origin node name
+     * @param d   destination node name
      */
     Edge(Point aIn, Point bIn, String o, String d, int type) {
         this.a = aIn;

@@ -36,7 +36,7 @@ package object JSONReaders {
 
   /** Pairs of tracks and corresponding nodes
     *
-    * @param stop id of track, as [[TrackIDOld]]
+    * @param stop  id of track, as [[TrackIDOld]]
     * @param nodes Vector of [[NodeIDOld]]
     */
   private[JSONReaders] case class Stop2Nodes_JSON(stop: String, nodes: Vector[NodeIDOld])
@@ -53,7 +53,6 @@ package object JSONReaders {
     (JsPath \ "zone").read[Int] and
       (JsPath \ "nodes").read[Vector[NodeIDOld]]
     ) (Zone2Nodes_JSON.apply _)
-
 
 
   /** Container for the track to nodes mapping
@@ -127,7 +126,7 @@ package object JSONReaders {
   /**
     * Connections leading from one specific vertex to all connected vertices.
     *
-    * @param name name of the alternate connection set
+    * @param name     name of the alternate connection set
     * @param conn2Add collection of connections to add
     */
   private[JSONReaders] case class ConnectivityAlternatives_JSON(name: String, frac: Double, conn2Add: List[Connectivity_JSON], conn2Remove: List[Connectivity_JSON])
@@ -217,15 +216,15 @@ package object JSONReaders {
     * done between the lines. Each argument (except the name field) is a vector containing the extremities of the
     * corodinates.
     *
-    * @param name human readable ID of the zone
-    * @param x1   bottom left
-    * @param y1   bottom left
-    * @param x2   bottom right
-    * @param y2   bottom right
-    * @param x3   top right
-    * @param y3   top right
-    * @param x4   top left
-    * @param y4   top left
+    * @param name          human readable ID of the zone
+    * @param x1            bottom left
+    * @param y1            bottom left
+    * @param x2            bottom right
+    * @param y2            bottom right
+    * @param x3            top right
+    * @param y3            top right
+    * @param x4            top left
+    * @param y4            top left
     * @param overridenZone name of the zone this zone replaces
     *
     */

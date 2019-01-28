@@ -17,6 +17,7 @@ class DensityMeasuredArea(name: String, A: Position, B: Position, C: Position, D
   /**
     * Initializes the containers at the start of the simulation with values of 0. This assume that the simulation is
     * started allways from an empty state.
+    *
     * @param startTime time of the first measurement
     */
   def initializeContainers(startTime: Time): Unit = {

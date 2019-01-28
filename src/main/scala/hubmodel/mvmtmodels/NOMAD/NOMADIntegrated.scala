@@ -122,7 +122,7 @@ class NOMADIntegrated[T <: PedestrianNOMAD](sim: NOMADGraphSimulator[T]) extends
   def updateIsolation(time: Time, p: PedestrianNOMAD): Unit = {
     if (p.isVariableStep) {
       //if (p.isolationTimePed < time.value) {
-        updatePedIsolation(time, p)
+      updatePedIsolation(time, p)
       //}
 
       if (p.isolationTimeObs < time.value) {
@@ -176,7 +176,9 @@ class NOMADIntegrated[T <: PedestrianNOMAD](sim: NOMADGraphSimulator[T]) extends
       })
     }
 
-    sim.population.foreach(ped => {ped.updatePositionHistory(sim.currentTime)})
+    sim.population.foreach(ped => {
+      ped.updatePositionHistory(sim.currentTime)
+    })
     sim.population.filterNot(_.isWaiting).foreach(ped => {
 
       // The pedestrian step function deals with the state of the ped (entering, walking, activity) and is not reauired here.
@@ -219,17 +221,19 @@ class NOMADIntegrated[T <: PedestrianNOMAD](sim: NOMADGraphSimulator[T]) extends
     if (this.pedestrianToMoveInCollision.nonEmpty) {
       this.moveInCollisionStep()
     } else if (this.pedestrianToMoveInRange.nonEmpty) { // if at least one is in range and the rest is at isolation or in range
-        // then the smallest simulation step is in range
-        //this.pedestrianToMoveInRange.foreach(p => println(p.currentPosition))
-        this.moveInRangeStep()
-      } else { // else move all pedestrians with the isolation step
-        this.pedestrianToMoveInIsolation.foreach(ped => {
-          walkPedestrian(ped, getPedInLevelVicinity_3D(ped, sim.population), getClosestCoordinates3D(ped), this.isolatedTimeStepSeconds)
-        })
-      }
+      // then the smallest simulation step is in range
+      //this.pedestrianToMoveInRange.foreach(p => println(p.currentPosition))
+      this.moveInRangeStep()
+    } else { // else move all pedestrians with the isolation step
+      this.pedestrianToMoveInIsolation.foreach(ped => {
+        walkPedestrian(ped, getPedInLevelVicinity_3D(ped, sim.population), getClosestCoordinates3D(ped), this.isolatedTimeStepSeconds)
+      })
+    }
 
     sim.processCompletedPedestrian(sim.finalDestinationReached)
-    sim.population.filter(sim.intermediateDestinationReached).foreach(p => { sim.updateIntermediateDestination(p) })
+    sim.population.filter(sim.intermediateDestinationReached).foreach(p => {
+      sim.updateIntermediateDestination(p)
+    })
 
     //sim.rebuildMTree()
 
@@ -357,10 +361,10 @@ class NOMADIntegrated[T <: PedestrianNOMAD](sim: NOMADGraphSimulator[T]) extends
       }*/
 
       sim.population.foreach(ped => {
-          ped.currentPosition = ped.nextPosition
-          ped.currentVelocity = ped.nextVelocity
-          ped.travelDistance += (ped.currentPosition - ped.previousPosition).norm
-          ped.updatePositionHistory(sim.currentTime + Time(colStep))
+        ped.currentPosition = ped.nextPosition
+        ped.currentVelocity = ped.nextVelocity
+        ped.travelDistance += (ped.currentPosition - ped.previousPosition).norm
+        ped.updatePositionHistory(sim.currentTime + Time(colStep))
       })
       colStep += this.collisionTimeStepSeconds
       //colCounter += 1
@@ -632,7 +636,7 @@ class NOMADIntegrated[T <: PedestrianNOMAD](sim: NOMADGraphSimulator[T]) extends
           val tempDx = new Vector3d
           tempDx.x = otherX + otherVx * thisAT - thisX - thisVx * thisAT
           tempDx.y = otherY + otherVy * thisAT - thisY - thisVy * thisAT
-          if (tempDx.x > 100  || tempDx.y > 100) {
+          if (tempDx.x > 100 || tempDx.y > 100) {
             println("stop")
           }
           //tempDx.z = 0.0;
@@ -677,9 +681,9 @@ class NOMADIntegrated[T <: PedestrianNOMAD](sim: NOMADGraphSimulator[T]) extends
         // NEED TO DEAL CORRECLY WITH OBSTACLES NM
         // check if dpq is smaller then the max extent and
         // if the pedestrian is not behind an obstacle and therefore not visible to _pedestrian
-        if (dpq <= extension//!! ATTENTION should be present!!!
-          // BUT has an enormous impact in the performance
-          ) { // if yes then add him and the necessary data to the return list
+        if (dpq <= extension //!! ATTENTION should be present!!!
+        // BUT has an enormous impact in the performance
+        ) { // if yes then add him and the necessary data to the return list
           tempList.add(new InfluenceAreaReturnPedData(null, otherSpeed, otherRadius, dx, dxn, dxt, dpq, gpq, front, vDir))
         }
       }
@@ -871,7 +875,7 @@ class NOMADIntegrated[T <: PedestrianNOMAD](sim: NOMADGraphSimulator[T]) extends
   protected def insertNextEvent(): Unit = sim.insertEventWithDelay(Time(this.isolatedTimeStepSeconds))(new NOMADIntegrated(sim))
 
 
-  def getPedInLevelVicinity_3D(thisPedestrian: PedestrianNOMAD, pedestrians: Iterable[PedestrianNOMAD]/*, obstacles: java.util.ArrayList[InfrastructureObject]*/): java.util.ArrayList[InfluenceAreaReturnPedData] = {
+  def getPedInLevelVicinity_3D(thisPedestrian: PedestrianNOMAD, pedestrians: Iterable[PedestrianNOMAD] /*, obstacles: java.util.ArrayList[InfrastructureObject]*/): java.util.ArrayList[InfluenceAreaReturnPedData] = {
 
     val tempList = new java.util.ArrayList[InfluenceAreaReturnPedData]
     // for each pedestrian from the list

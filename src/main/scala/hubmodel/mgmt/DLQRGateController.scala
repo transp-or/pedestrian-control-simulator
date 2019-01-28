@@ -37,8 +37,9 @@ class DLQRGateController[T <: PedestrianNOMAD](sim: NOMADGraphSimulator[T]) exte
           fg.setFlowRate(
             math.min(fg.functionalForm(sim.criticalAreas(fg.monitoredArea).paxIndividualDensityHistory.last._2.count(_ > sim.criticalAreas(fg.monitoredArea).targetDensity)), 10.0),
             sim.currentTime
-          )// pax above target density
-          /*fg.flowRate = math.min(fg.functionalForm(sim.criticalAreas(fg.monitoredArea).targetDensity - sim.criticalAreas(fg.monitoredArea).densityHistory.last._2), 10.0)*/ // mean voronoi density
+          ) // pax above target density
+          /*fg.flowRate = math.min(fg.functionalForm(sim.criticalAreas(fg.monitoredArea).targetDensity - sim.criticalAreas(fg.monitoredArea).densityHistory.last._2), 10.0)*/
+          // mean voronoi density
 
         }
         case fg: FlowGate => {

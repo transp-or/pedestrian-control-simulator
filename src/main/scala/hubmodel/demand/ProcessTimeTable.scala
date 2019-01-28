@@ -23,7 +23,9 @@ class ProcessTimeTable[T <: PedestrianNOMAD](timeTable: PublicTransportSchedule,
     sim.eventLogger.trace("time=" + sim.currentTime + ": inserting vehicles")
     timeTable.timeTable
       .filter(t => t._2.arr.isDefined)
-      .foreach(t => sim.insertEventAtAbsolute(t._2.arr.get) { new TrainArrival(t._2, PTInducedFlows.filter(tinf => tinf.O == t._1), sim) })
+      .foreach(t => sim.insertEventAtAbsolute(t._2.arr.get) {
+        new TrainArrival(t._2, PTInducedFlows.filter(tinf => tinf.O == t._1), sim)
+      })
   }
 
   override def toString: String = "ProcessTimeTable"

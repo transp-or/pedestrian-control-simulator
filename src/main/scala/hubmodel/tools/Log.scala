@@ -12,7 +12,7 @@ import com.typesafe.scalalogging.Logger
   * @param level level to use, default is set DEBUG
   */
 class Log(name: String, dir: Option[String], level: Level = Level.DEBUG) {
-  val logger: Logger = Logger(name)//getILoggerFactory//.asInstanceOf[LoggerContext]
+  val logger: Logger = Logger(name) //getILoggerFactory//.asInstanceOf[LoggerContext]
   /*private val ple = new PatternLayoutEncoder
   ple.setPattern("%date %level [%thread] %logger{10} [%file:%line] %msg%n")
   ple.setContext(lc)

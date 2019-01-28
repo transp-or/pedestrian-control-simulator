@@ -45,7 +45,7 @@ class PedestrianSim(val origin: Rectangle,
   var route: List[Rectangle] = List()
 
   /** intermediate destination of the pedestrian */
-  var currentDestination: Position = new Position(0,0)//route.head.uniformSamplePointInside
+  var currentDestination: Position = new Position(0, 0) //route.head.uniformSamplePointInside
 
   // Checks that the velocity is realistic
   //assert(freeFlowVel > 0.0, "Unacceptable free flow velocity")
@@ -69,9 +69,9 @@ class PedestrianSim(val origin: Rectangle,
   val freedFrom: scala.collection.mutable.ArrayBuffer[String] = scala.collection.mutable.ArrayBuffer()
 
   /** target zone */
-  var nextZone: Rectangle = finalDestination//route.head
+  var nextZone: Rectangle = finalDestination //route.head
 
-  var previousZone: Rectangle = origin//route.head
+  var previousZone: Rectangle = origin //route.head
 
   /* Position increment to be added at the next time interval */
   var positionIncrement: Position = new ZeroVector2D
@@ -85,16 +85,24 @@ class PedestrianSim(val origin: Rectangle,
   // ******************************************************************************************
 
   val r: Double = ThreadLocalRandom.current.nextDouble(0.2, 0.3)
-  val a0: Double = 10//ThreadLocalRandom.current.nextDouble(8.0, 10.0)
-  val r0: Double = 0.16//ThreadLocalRandom.current.nextDouble(0.10, 0.5)
-  val a1: Double = 2.0//ThreadLocalRandom.current.nextDouble(8.0, 10.0)
+  val a0: Double = 10
+  //ThreadLocalRandom.current.nextDouble(8.0, 10.0)
+  val r0: Double = 0.16
+  //ThreadLocalRandom.current.nextDouble(0.10, 0.5)
+  val a1: Double = 2.0
+  //ThreadLocalRandom.current.nextDouble(8.0, 10.0)
   val r1: Double = 0.013 // ThreadLocalRandom.current.nextDouble(0.10, 0.5)
-  val k0: Double = 1000//ThreadLocalRandom.current.nextDouble(800.0, 1000.0)
-  val kappa: Double = 1000.0//ThreadLocalRandom.current.nextDouble(800.0, 1000.0)
-  val ief: Double = 3.0//ThreadLocalRandom.current.nextDouble(0.5, 6.0)
-  val ieb: Double = 0.65//ThreadLocalRandom.current.nextDouble(0.5, 6.0)
-  val c0plus: Double = 0.9//ThreadLocalRandom.current.nextDouble(0.7, 1.5)
-  val c0min: Double = 0.9//ThreadLocalRandom.current.nextDouble(0.7, 1.5)
+  val k0: Double = 1000
+  //ThreadLocalRandom.current.nextDouble(800.0, 1000.0)
+  val kappa: Double = 1000.0
+  //ThreadLocalRandom.current.nextDouble(800.0, 1000.0)
+  val ief: Double = 3.0
+  //ThreadLocalRandom.current.nextDouble(0.5, 6.0)
+  val ieb: Double = 0.65
+  //ThreadLocalRandom.current.nextDouble(0.5, 6.0)
+  val c0plus: Double = 0.9
+  //ThreadLocalRandom.current.nextDouble(0.7, 1.5)
+  val c0min: Double = 0.9 //ThreadLocalRandom.current.nextDouble(0.7, 1.5)
 
 
   // ******************************************************************************************
@@ -108,8 +116,10 @@ class PedestrianSim(val origin: Rectangle,
   /** Adds the current position (currentPosition) to the history */
   def updatePositionHistory(t: Time): Unit = {
     //if (this.currentPosition != this._historyPosition.last._2) {
-      this.previousPosition = this.currentPosition
-      if (logFullHistory) {this._historyPosition = this._historyPosition :+ (t, this.currentPosition)}
+    this.previousPosition = this.currentPosition
+    if (logFullHistory) {
+      this._historyPosition = this._historyPosition :+ (t, this.currentPosition)
+    }
     //}
   }
 
@@ -131,7 +141,6 @@ class PedestrianSim(val origin: Rectangle,
     this.currentVelocity = boundVelocity(this.currentVelocity + velocityIncrement)
     this.velocityIncrement = new ZeroVector2D
   }
-
 
 
   // ******************************************************************************************
@@ -180,7 +189,7 @@ class PedestrianSim(val origin: Rectangle,
 
 
   def this(oZone: Rectangle, dZone: Rectangle, entryTime: Time, posO: Position, logFullHistory: Boolean) {
-    this(oZone, dZone, 1.34 + 0.2*ThreadLocalRandom.current().nextGaussian(), entryTime, logFullHistory) // velocity taken from VS data
+    this(oZone, dZone, 1.34 + 0.2 * ThreadLocalRandom.current().nextGaussian(), entryTime, logFullHistory) // velocity taken from VS data
 
     this.currentPosition = posO
   }

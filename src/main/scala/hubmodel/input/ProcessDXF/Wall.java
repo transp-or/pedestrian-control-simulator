@@ -53,10 +53,10 @@ class Wall {
     String toJSON(Double scale) {
         return "{" +
                 "\"comment\": \"\", " +
-                "\"x1\":" + this.a.getX()*scale + "," +
-                "\"y1\":" + this.a.getY()*scale + "," +
-                "\"x2\":" + this.b.getX()*scale + "," +
-                "\"y2\":" + this.b.getY()*scale + "," +
+                "\"x1\":" + this.a.getX() * scale + "," +
+                "\"y1\":" + this.a.getY() * scale + "," +
+                "\"x2\":" + this.b.getX() * scale + "," +
+                "\"y2\":" + this.b.getY() * scale + "," +
                 "\"type\":" + this.type +
                 "}";
     }

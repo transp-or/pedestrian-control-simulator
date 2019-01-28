@@ -14,7 +14,9 @@ class Histogram(outputFile: String,
                 title: String,
                 opts: PlotOptions = PlotOptions()) extends DrawingComponents(opts.border2HorizontalAxis, opts.border2VerticalAxis, (opts.width, opts.height)) with VisualizationTools {
 
-  if (x.isEmpty) { throw new IllegalArgumentException("Data for histogram is empty !")}
+  if (x.isEmpty) {
+    throw new IllegalArgumentException("Data for histogram is empty !")
+  }
 
   val xmin: Double = if (opts.xmin.isDefined) opts.xmin.get else x.min
   val xmax: Double = if (opts.xmax.isDefined) opts.xmax.get else x.max
@@ -22,18 +24,26 @@ class Histogram(outputFile: String,
   // process data
   val intervals: NumericRange[Double] = xmin.to(xmax).by(binSize)
 
-  val binnedData: Vector[(Int, Double)] =  computeHistogramData(x, binSize, opts.xmin, opts.xmax)
+  val binnedData: Vector[(Int, Double)] = computeHistogramData(x, binSize, opts.xmin, opts.xmax)
 
   // completes abstract classes by implementing the mapping functions
-   def mapHCoord(v: Double): Int = mapHcoordLinear(xmin, xmax, opts.width-opts.border2HorizontalAxis-opts.border2VerticalAxis)(v)
-   def mapVCoord(v: Double): Int = mapVcoordLinear(if (opts.ymin.isDefined) opts.ymin.get else 0.0, if (opts.ymax.isDefined) opts.ymax.get else 1.2*binnedData.map(_._2).max, opts.height-2*opts.border2HorizontalAxis)(v)//1.2*binnedData.map(_._2).max(v)
+  def mapHCoord(v: Double): Int = mapHcoordLinear(xmin, xmax, opts.width - opts.border2HorizontalAxis - opts.border2VerticalAxis)(v)
+
+  def mapVCoord(v: Double): Int = mapVcoordLinear(if (opts.ymin.isDefined) opts.ymin.get else 0.0, if (opts.ymax.isDefined) opts.ymax.get else 1.2 * binnedData.map(_._2).max, opts.height - 2 * opts.border2HorizontalAxis)(v)
+
+  //1.2*binnedData.map(_._2).max(v)
   override def verticalTransformation: Int => Int = verticalMirrorTransformation(canvas.getHeight)
 
   def mapHCoordBD(x: BigDecimal): Int = 0
+
   def mapHcoordDrawingZone(x: Double): Int = 0
+
   def mapVcoordDrawingZone(x: Double): Int = 0
+
   def mapHcoordDrawingZoneBD(x: BigDecimal): Int = 0
+
   def mapVcoordDrawingZoneBD(x: BigDecimal): Int = 0
+
   def mapVCoordBD(x: BigDecimal): Int = 0
 
 
@@ -43,7 +53,7 @@ class Histogram(outputFile: String,
   gCanvas.setColor(Color.WHITE)
   gCanvas.fillRect(0, 0, canvas.getWidth(), canvas.getHeight())
 
-  drawAxis(gCanvas, None, Some((if (opts.ymin.isDefined) opts.ymin.get else 0.0, if (opts.ymax.isDefined) opts.ymax.get else 1.2*binnedData.map(_._2).max, 0.01, "frequency"))) // 1.2*binnedData.map(_._2).max,1.2*binnedData.map(_._2).max/10.0
+  drawAxis(gCanvas, None, Some((if (opts.ymin.isDefined) opts.ymin.get else 0.0, if (opts.ymax.isDefined) opts.ymax.get else 1.2 * binnedData.map(_._2).max, 0.01, "frequency"))) // 1.2*binnedData.map(_._2).max,1.2*binnedData.map(_._2).max/10.0
   drawHistogram(gCanvas, binnedData, intervals.toVector, xLabel)
   drawTitle(gCanvas, title)
 

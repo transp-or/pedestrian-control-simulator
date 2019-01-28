@@ -16,7 +16,7 @@ class MonitoredAreaReader(file: String) {
         (
           new NewZone(s.get.ma.name, (s.get.ma.x1, s.get.ma.y1), (s.get.ma.x2, s.get.ma.y2), (s.get.ma.x3, s.get.ma.y3), (s.get.ma.x4, s.get.ma.y4)),
           s.get.fl.map(data => new FlowLineDA(
-            data.name,  ((data.x1, data.y1), (data.x2, data.y2)),
+            data.name, ((data.x1, data.y1), (data.x2, data.y2)),
             if (data.inflow_type == "CONTROLLED") CONTROLLED else if (data.inflow_type == "UNCONTROLLED") UNCONTROLLED else throw new IllegalArgumentException("Inflow type from JSON file is wrong ! " + data.inflow_type))
           )
         )

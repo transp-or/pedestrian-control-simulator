@@ -20,8 +20,8 @@ class FlowSeparator(val startA: Position,
 
   val ID: String = generateUUID
 
-  var start: Position = startA + (startB - startA)*0.5
-  var end: Position = endA + (endB - endA)*0.5
+  var start: Position = startA + (startB - startA) * 0.5
+  var end: Position = endA + (endB - endA) * 0.5
 
   private var currentTargetPosition: (Position, Position) = (start, end)
 
@@ -35,8 +35,8 @@ class FlowSeparator(val startA: Position,
 
   var movingWallEventIsInserted: Boolean = false
 
-  def flowSeparatorNeedsToMove(updateStep: Time): Boolean =  {
-    (this.start-this.currentTargetPosition._1).norm > this.SPEED*updateStep.value && (this.end-this.currentTargetPosition._2).norm > this.SPEED*updateStep.value
+  def flowSeparatorNeedsToMove(updateStep: Time): Boolean = {
+    (this.start - this.currentTargetPosition._1).norm > this.SPEED * updateStep.value && (this.end - this.currentTargetPosition._2).norm > this.SPEED * updateStep.value
   }
 
   def getPositionHistory: IndexedSeq[(Time, Position, Position)] = positionHistory.toVector
@@ -54,22 +54,26 @@ class FlowSeparator(val startA: Position,
 
     flowHistory.append((time, this.inflowLinesStart.map(_.getPedestrianFlow).sum, this.inflowLinesEnd.map(_.getPedestrianFlow).sum))
 
-    val rawFrac: Double = if (flowHistory.last._2 == 0 && flowHistory.last._3 == 0)  { 0.5 }
-    else {  flowHistory.last._2.toDouble / (flowHistory.last._2.toDouble + flowHistory.last._3.toDouble) }
+    val rawFrac: Double = if (flowHistory.last._2 == 0 && flowHistory.last._3 == 0) {
+      0.5
+    }
+    else {
+      flowHistory.last._2.toDouble / (flowHistory.last._2.toDouble + flowHistory.last._3.toDouble)
+    }
 
-    val frac: Double = if (rawFrac < 0.0 ) 0.0
+    val frac: Double = if (rawFrac < 0.0) 0.0
     else if (rawFrac.isNaN || rawFrac.isInfinite) 1.0
     else if (rawFrac > 0.9) 1.0
     else rawFrac
 
-    if ( math.abs(frac - this.fractionHistory.last._2)/this.fractionHistory.last._2 > FLOW_SEPARATOR_UPDATE ) {
+    if (math.abs(frac - this.fractionHistory.last._2) / this.fractionHistory.last._2 > FLOW_SEPARATOR_UPDATE) {
       this.currentTargetPosition = (this.startA + (this.startB - this.startA) * frac, this.endA + (this.endB - this.endA) * frac)
       this.associatedZonesStart.foreach(_.setTargetPosition(frac))
       this.associatedZonesEnd.foreach(_.setTargetPosition(frac))
-     /* println(frac)
-      println(this.currentTargetPosition)
-      this.associatedZonesStart.foreach(println)
-      this.associatedZonesEnd.foreach(println)*/
+      /* println(frac)
+       println(this.currentTargetPosition)
+       this.associatedZonesStart.foreach(println)
+       this.associatedZonesEnd.foreach(println)*/
 
     }
     this.fractionHistory.append((time, frac))
@@ -95,7 +99,7 @@ class FlowSeparator(val startA: Position,
 
       positionHistory.append((sim.currentTime, start, end))
 
-      if ( flowSeparatorNeedsToMove(sim.sf_dt) ) {
+      if (flowSeparatorNeedsToMove(sim.sf_dt)) {
         sim.insertEventWithDelay(sim.sf_dt)(new MoveFlowSeperator(sim))
         movingWallEventIsInserted = true
       } else {

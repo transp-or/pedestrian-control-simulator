@@ -13,21 +13,22 @@ import hubmodel.supply.graph._
 import hubmodel.tools.cells.{DensityMeasuredArea, Rectangle, isInVertex}
 
 class NOMADGraphSimulator[T <: PedestrianNOMAD](st: Time,
-                          et: Time,
-                          val sf_dt: Time,
-                          val route_dt: Time,
-                          val evaluate_dt: Time,
-                          val rebuildTreeInterval: Option[Time],
-                          val spaceMicro: ContinuousSpace,
-                          val graph: GraphContainer,
-                          val timeTable: PublicTransportSchedule,
-                          val stop2Vertices: NodeParent => Iterable[Rectangle],
-                          val controlDevices: ControlDevices,
+                                                et: Time,
+                                                val sf_dt: Time,
+                                                val route_dt: Time,
+                                                val evaluate_dt: Time,
+                                                val rebuildTreeInterval: Option[Time],
+                                                val spaceMicro: ContinuousSpace,
+                                                val graph: GraphContainer,
+                                                val timeTable: PublicTransportSchedule,
+                                                val stop2Vertices: NodeParent => Iterable[Rectangle],
+                                                val controlDevices: ControlDevices,
                                                 val logFullPedestrianHistory: Boolean = false) extends PedestrianDES[PedestrianNOMAD](st, et) {
 
   /**
     * Access for the wall collection which is mostly contained in the SF infrastructrue file but some movable walls
     * are found in the [[ControlDevices]] infrastructure file.
+    *
     * @return collection of [[Wall]] to interact with pedestrians.
     */
   def walls: Iterable[Wall] = spaceMicro.walls ++ controlDevices.flowSeparators.map(_.getWall)
@@ -36,15 +37,20 @@ class NOMADGraphSimulator[T <: PedestrianNOMAD](st: Time,
   def intermediateDestinationReached: PedestrianSim => Boolean = p => isInVertex(p.nextZone)(p.currentPosition)
 
   /* Updates the next destination */
-  val updateIntermediateDestination: PedestrianNOMAD => Unit = ped => graph.processIntermediateArrival(ped)/* => graph match {
-    case rm: RouteGraphMultiple[T] => { rm.processIntermediateArrival(ped) }
-    case rs: RouteGraph[T] => { rs.processIntermediateArrival(ped) }
-  }*/
+  val updateIntermediateDestination: PedestrianNOMAD => Unit = ped => graph.processIntermediateArrival(ped)
+  /* => graph match {
+      case rm: RouteGraphMultiple[T] => { rm.processIntermediateArrival(ped) }
+      case rs: RouteGraph[T] => { rs.processIntermediateArrival(ped) }
+    }*/
 
   /* Computes the first route  */
   val setFirstRoute: PedestrianNOMAD => Unit = ped => graph match {
-    case rm: MultipleGraph => { rm.setRouteFirst(ped) }
-    case rs: SingleGraph => { rs.processIntermediateArrival(ped) }
+    case rm: MultipleGraph => {
+      rm.setRouteFirst(ped)
+    }
+    case rs: SingleGraph => {
+      rs.processIntermediateArrival(ped)
+    }
   }
 
   /* checks if the pedestrian has reached is final destination */
@@ -70,12 +76,11 @@ class NOMADGraphSimulator[T <: PedestrianNOMAD](st: Time,
     println(" * using binary gates")
   }
 
-    /** Indicator whether an m-tree is used to perform neighbour search */
+  /** Indicator whether an m-tree is used to perform neighbour search */
   val useTreeForNeighbourSearch: Boolean = rebuildTreeInterval.isDefined
   if (useTreeForNeighbourSearch) {
     println(" * using m-tree for neighbour search")
   }
-
 
 
   /** Indicator whether flow separators are used */
@@ -102,6 +107,7 @@ class NOMADGraphSimulator[T <: PedestrianNOMAD](st: Time,
   /**
     * Class to initialize the simulation. The first calls to reccurent events like the [[NOMADIntegrated]]
     * and the [[EvaluateState]] are made.
+    *
     * @param sim simulation object
     */
   class StartSim(sim: NOMADGraphSimulator[T]) extends super.GenericStartSim(sim) {
@@ -174,6 +180,7 @@ class NOMADGraphSimulator[T <: PedestrianNOMAD](st: Time,
 
   /**
     * Collects the parameters used for creating the simulation. The arguments are passed as a tuple.
+    *
     * @return
     */
   def getSetupArguments: SimulatorParameters = (

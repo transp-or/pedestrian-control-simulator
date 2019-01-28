@@ -43,7 +43,7 @@ class CreatePedestrianWithInsertion[T <: PedestrianNOMAD](o: Rectangle, d: Recta
     //tag.runtimeClass.getConstructor(classOf[(Rectangle, Rectangle, BigDecimal, Position, List[Rectangle])]).newInstance(o, d, sim.currentTime.value, generationPoint, route).asInstanceOf[T]
     timeGenerator(sim.currentTime) collect {
       case t: Time => {
-        sim.insertEventWithDelay(t) (new CreatePedestrianWithInsertion (o, d, sim, timeGenerator) )
+        sim.insertEventWithDelay(t)(new CreatePedestrianWithInsertion(o, d, sim, timeGenerator))
       }
     }
   }
