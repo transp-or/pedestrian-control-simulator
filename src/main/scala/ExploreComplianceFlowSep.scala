@@ -1,7 +1,9 @@
 import com.typesafe.config.Config
 import hubmodel.parseConfigFile
-import myscala.math.stats.computeQuantiles
 import myscala.output.SeqTuplesExtensions.SeqTuplesWriter
+import myscala.math.stats.computeQuantile
+import myscala.math.stats.computeBoxPlotData
+import myscala.math.stats.bootstrap.bootstrapMSE
 import optimization.bruteforce.ComplianceVariation
 import trackingdataanalysis.visualization.{Histogram, PlotOptions}
 
@@ -20,30 +22,33 @@ object ExploreComplianceFlowSep extends App {
 
   complianceAnalysis.runSimulations()
 
-  val results = complianceAnalysis.processWrittenResults
+  def mean(data: Seq[Double]): Double = {data.sum/data.size}
+  def median(data: Seq[Double]): Double = computeQuantile(50.0)(data).value.toDouble
+  def quant(data: Seq[Double]): Double = computeQuantile(75.0)(data).value.toDouble
+
+
+  val results = complianceAnalysis.processWrittenResults(quant)
+
 
   results.map(r => {
+/*
+    // creates histograms
     new Histogram(config.getString("output.output_prefix") + "tt-histogram_" + r._1 + ".png",
-      r._2._2,
+      r._2._1,
       0.5,
       "TT [pax/m^2]",
       "Histogram of TT for compliance: " + r._1,
       opts = PlotOptions(xmax = Some(50), xmin = Some(15), ymax = Some(0.05)))
-    (r._1, computeBoxPlotData(r._2._2.toVector))
-  }).map(v => (v._1, v._2._1, v._2._2, v._2._3, v._2._4, v._2._5 , v._2._6.size, 0.8*complianceIntervals)).toVector.writeToCSV(config.getString("output.output_prefix") + "_boxplots_travel_times.csv", rowNames=None, columnNames = Some(Vector("compliance", "median", "lowerquartile", "upperquartile", "lowerwhisker", "upperwhiskier", "outliercount", "boxplotwidth")))
+*/
+    // creates boxplot data
+    (r._1, computeBoxPlotData(r._2._1.toVector), bootstrapMSE(r._2._1.toVector, mean))
+  }).map(v => (v._1, v._2.median, v._2.lowerQuartile, v._2.upperQuartile, v._2.lowerWhisker, v._2.upperWhisker , v._2.outliers.size, 0.8*complianceIntervals, v._2.mean, v._3.MSE)).toVector.sortBy(_._1).writeToCSV(config.getString("output.output_prefix") + "-boxplots-travel-times-75quantile.csv", rowNames=None, columnNames = Some(Vector("compliance", "median", "lowerquartile", "upperquartile", "lowerwhisker", "upperwhiskier", "outliercount", "boxplotwidth")))
 
-  def computeBoxPlotData(data: Seq[Double]): (Double, Double, Double, Double, Double, Seq[Double]) = {
 
-    val quarters = computeQuantiles(Vector(25.0, 50.0, 75.0))(data)
-    val lowerQuartile = quarters.values(0)
-    val median = quarters.values(1)
-    val upperQuartile = quarters.values(2)
+  val resultsByOD = complianceAnalysis.processWrittenResultsByOD(quant)
 
-    val lowerWhisker = data.map(_ - (lowerQuartile - (upperQuartile - lowerQuartile) * 1.5)).filter(_ >= 0).min + lowerQuartile - (upperQuartile - lowerQuartile) * 1.5
-    val upperWhisker = data.map(_ - (upperQuartile + (upperQuartile - lowerQuartile) * 1.5)).filter(_ <= 0).max + upperQuartile + (upperQuartile - lowerQuartile) * 1.5
-
-    (median, lowerQuartile, upperQuartile, lowerWhisker, upperWhisker, data.filter(v => v < lowerWhisker || v > upperWhisker)
-    )
-  }
+  resultsByOD.flatMap(r => {
+    r._2._1.map(u => (r._1, u._1, computeBoxPlotData(u._2.toVector)))
+  }).groupBy(_._2).foreach(g => g._2.map(t => (t._1, t._3.mean, t._3.median,t._3.lowerQuartile, t._3.upperQuartile,t._3.lowerWhisker, t._3.upperWhisker, t._3.outliers.size, 0.8*complianceIntervals)).toVector.sortBy(_._1).writeToCSV(config.getString("output.output_prefix") + "-" + g._1._1 + "-TO-" + g._1._2 +"-boxplots-travel-times-75quantile.csv", rowNames=None, columnNames = Some(Vector("compliance", "mean", "median", "lowerquartile", "upperquartile", "lowerwhisker", "upperwhisker", "outliercount", "boxplotwidth"))))
 
 }

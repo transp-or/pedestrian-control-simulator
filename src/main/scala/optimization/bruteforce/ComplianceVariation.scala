@@ -47,11 +47,23 @@ class ComplianceVariation(complianceInterval: Double, c: Config, upperBoundCompl
   }
 
 
-  def processWrittenResults: Map[(Double), ((Int, Double, Double, Double, Double, Double), Iterable[Double])] = {
+  def processWrittenResults(func: Seq[Double] => Double): Map[(Double), (Iterable[Double], Iterable[Iterable[Double]])] = {
 
     groupResultsFiles("tt").map(ProcessTTFile1Parameter).
       flatMap(tup => tup._2.map(t => (tup._1, t._1._1, t._1._2, t._2))).
       groupBy(tup => tup._1).
-      mapValues(v => (v.flatMap(_._4).stats, v.flatMap(_._4)))
+      mapValues(v => (v.map(d => func(d._4)), v.map(_._4)))
+  }
+
+  def processWrittenResultsByOD(func: Seq[Double] => Double): Map[(Double), (Map[(String, String),Iterable[Double]], Iterable[Iterable[Double]])] = {
+    groupResultsFiles("tt").map(ProcessTTFile1Parameter).
+      flatMap(tup => tup._2.map(t => (tup._1, t._1._1, t._1._2, t._2))).
+      groupBy(tup => tup._1).
+      mapValues(v => {
+        (
+          v.groupBy(p => (p._2, p._3)).map(r => r._1 -> r._2.map(p => func(p._4))),
+          v.map(_._4)
+        )
+      })
   }
 }

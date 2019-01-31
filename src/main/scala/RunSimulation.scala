@@ -11,6 +11,7 @@ import myscala.math.stats.bootstrap.bootstrapMSE
 import myscala.math.stats.{ComputeQuantiles, ComputeStats}
 import myscala.output.SeqOfSeqExtensions.SeqOfSeqWriter
 import myscala.output.SeqTuplesExtensions.SeqTuplesWriter
+import myscala.math.stats.computeBoxPlotData
 import trackingdataanalysis.visualization.{Histogram, PlotOptions, ScatterPlot, computeHistogramDataWithXValues}
 
 import scala.collection.GenIterable
@@ -250,6 +251,9 @@ object RunSimulation extends App {
     val statsPerRun = results.map(r => {
       r.tt.map(_._3).stats
     })
+
+    Vector((0.0, computeBoxPlotData(statsPerRun.map(_._4)).toCSV, 0.8)).writeToCSV(config.getString("output.output_prefix") + "-travel-time-median-boxplot.csv", rowNames = None, columnNames = Some(Vector("pos", "mean", "median", "lq", "uq", "lw", "uw", "outliersize", "boxplotwidth")))
+
     statsPerRun.writeToCSV(config.getString("output.output_prefix") + "_travel_times_stats.csv", rowNames = None, columnNames = Some(Vector("size", "mean", "variance", "median", "min", "max")))
 
     def mean(data: Seq[Double]): Double = {data.sum/data.size}
