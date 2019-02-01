@@ -282,37 +282,37 @@ object RunSimulation extends App {
   //val ODPairsToAnalyse: Iterable[(String, String)] = config.getStringList("results-analysis.o_nodes").asScala.zip(config.getStringList("results-analysis.d_nodes").asScala).map(t => (t._1, t._2))
 
 
+  if (config.getBoolean("output.analyze_od_groups")) {
+    //val ODGroupsToAnalyse: Seq[(Seq[String], Seq[String])] = Vector((Vector("top", "bottom"), Vector("left-top", "right-bottom")), (Vector("left-bottom", "right-top"), Vector("right-bottom", "left-top")))
+    val ODGroupsToAnalyse: Seq[(Seq[String], Seq[String])] = Vector((Vector("top"), Vector("bottom")), (Vector("bottom"), Vector("top")))
 
-  //val ODGroupsToAnalyse: Seq[(Seq[String], Seq[String])] = Vector((Vector("top", "bottom"), Vector("left-top", "right-bottom")), (Vector("left-bottom", "right-top"), Vector("right-bottom", "left-top")))
-  val ODGroupsToAnalyse: Seq[(Seq[String], Seq[String])] = Vector((Vector("top"), Vector("bottom")), (Vector("bottom"), Vector("top")))
+    def makeStringODGroups(group: (Seq[String], Seq[String])): String = group._1.mkString("_") + "_TO_" + group._2.mkString("_")
 
-  def makeStringODGroups(group: (Seq[String], Seq[String])): String = group._1.mkString("_") + "_TO_" + group._2.mkString("_")
+    def findInterval(t: Double, times: Vector[BigDecimal]): Double = {
+      times(times.indexWhere(_ > t)).toDouble
+    }
 
-  def findInterval(t: Double, times: Vector[BigDecimal]): Double = {
-    times(times.indexWhere(_ > t)).toDouble
+    def pedWindows: Tuple5[String, String, Double, Double, Double] => Double = ped => findInterval(ped._4, (simulationStartTime.value to simulationEndTime.value by evaluationInterval.value).toVector)
+
+    def pedFilter: Tuple5[String, String, Double, Double, Double] => Boolean = ped => true //ODPairsToAnalyse.exists(_ == (ped._1, ped._2))
+
+    def pedData: Tuple5[String, String, Double, Double, Double] => Double = ped => ped._3
+
+    val populationGrouped: Iterable[Vector[(String, String, Double, Double, Double)]] = ODGroupsToAnalyse.map(g => results.flatMap(_.tt).filter(tt => g._1.contains(tt._1) && g._2.contains(tt._2)))
+
+    populationGrouped.zip(ODGroupsToAnalyse).map(subPop => {
+      //val ttByIntervals: Map[Double, (Int, Double, Double,Double, Double, Double)] = subPop.aggregateMetricByTimeWindow(pedFilter, pedData, pedWindows)
+      if (subPop._1.isEmpty) {
+        println("Empty subPop: " + subPop._2)
+      }
+      else {
+        val tt = subPop._1.map(_._3).cutOfAfterQuantile(99)
+        new Histogram(config.getString("output.output_prefix") + makeStringODGroups(subPop._2) + "-travel-time.png", tt, 1.0, "travel time [s]", "Travel time for " + makeStringODGroups(subPop._2), PlotOptions(xmin = Some(10), xmax = Some(70), ymax = Some(0.35)))
+        computeHistogramDataWithXValues(tt, 1.0, Some(10), Some(50)).writeToCSV(config.getString("output.output_prefix") + makeStringODGroups(subPop._2) + "-travel-time-hist-data.csv")
+      }
+      subPop._1.map(_._3).cutOfAfterQuantile(99).stats
+    }).toVector.writeToCSV(config.getString("output.output_prefix") + "_statsByOD.csv", rowNames = Some(ODGroupsToAnalyse.map(makeStringODGroups)), columnNames = None)
   }
-
-  def pedWindows: Tuple5[String, String, Double, Double, Double] => Double = ped => findInterval(ped._4, (simulationStartTime.value to simulationEndTime.value by evaluationInterval.value).toVector)
-
-  def pedFilter: Tuple5[String, String, Double, Double, Double] => Boolean = ped => true //ODPairsToAnalyse.exists(_ == (ped._1, ped._2))
-
-  def pedData: Tuple5[String, String, Double, Double, Double] => Double = ped => ped._3
-
-  val populationGrouped: Iterable[Vector[(String, String, Double, Double, Double)]] = ODGroupsToAnalyse.map(g => results.flatMap(_.tt).filter(tt => g._1.contains(tt._1) && g._2.contains(tt._2)))
-
-  populationGrouped.zip(ODGroupsToAnalyse).map(subPop => {
-    //val ttByIntervals: Map[Double, (Int, Double, Double,Double, Double, Double)] = subPop.aggregateMetricByTimeWindow(pedFilter, pedData, pedWindows)
-    if (subPop._1.isEmpty) {
-      println("Empty subPop: " + subPop._2)
-    }
-    else {
-      val tt = subPop._1.map(_._3).cutOfAfterQuantile(99)
-      new Histogram(config.getString("output.output_prefix") + makeStringODGroups(subPop._2) + "-travel-time.png", tt, 1.0, "travel time [s]", "Travel time for " + makeStringODGroups(subPop._2), PlotOptions(xmin = Some(10), xmax = Some(70), ymax = Some(0.35)))
-      computeHistogramDataWithXValues(tt, 1.0, Some(10), Some(50)).writeToCSV(config.getString("output.output_prefix") + makeStringODGroups(subPop._2) + "-travel-time-hist-data.csv")
-    }
-    subPop._1.map(_._3).cutOfAfterQuantile(99).stats
-  }).toVector.writeToCSV(config.getString("output.output_prefix") + "_statsByOD.csv", rowNames = Some(ODGroupsToAnalyse.map(makeStringODGroups)), columnNames = None)
-
 
   // ******************************************************************************************
   //                                  Processing for TRANS-FORM

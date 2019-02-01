@@ -226,7 +226,7 @@
   "alternate_graphs": [
     {
       "name": "notFollowingRules",
-      "fraction_of_pop": 0.25,
+      "fraction_of_pop": 0.15,
       "connectivity_to_add": [
         {
           "node": "top",
