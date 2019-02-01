@@ -7,7 +7,7 @@ import hubmodel.DES.NOMADGraphSimulator
 import hubmodel.demand.flows.ProcessPedestrianFlows
 import hubmodel.demand.{PedestrianFlowFunction_New, PedestrianFlowPT_New, PedestrianFlow_New, readPedestrianFlows}
 import hubmodel.ped.PedestrianNOMAD
-import hubmodel.{createSimulation, runAndWriteResults}
+import hubmodel.{Time, createSimulation, runAndWriteResults}
 import myscala.math.stats.ComputeStats
 import trackingdataanalysis.visualization.{HeatMap, PlotOptions}
 
@@ -34,7 +34,7 @@ class FlowSensitivity(config: Config) extends GridSearch {
       throw new IllegalArgumentException("Output dir for files does not exist ! dir=" + config.getString("output.dir"))
     }
 
-    for (i <- (0.0 to maxMultipler by increments).par; j <- (0.0 to maxMultipler by increments).par; n <- (1 to config.getInt("sim.nb_runs")).par; if i >= j) {
+    for (i <- (0.0 to maxMultipler by increments).par; /*j <- (0.0 to maxMultipler by increments).par;*/ n <- (1 to config.getInt("sim.nb_runs")).par/*; if i >= j*/) {
 
       val devices = defaultParameters._11.clone()
       val sim = new NOMADGraphSimulator[PedestrianNOMAD](
@@ -68,20 +68,20 @@ class FlowSensitivity(config: Config) extends GridSearch {
             PedestrianFlow_New(flow.O, flow.D, flow.start, flow.end, flow.f * i)
           }
           else if (flow.O.ID == "top" && flow.D.ID == "bottom") {
-            PedestrianFlow_New(flow.O, flow.D, flow.start, flow.end, flow.f * j)
+            PedestrianFlow_New(flow.O, flow.D, flow.start, flow.end, flow.f * i)
           }
           else {
             throw new NoSuchElementException("this flow does not exist in this setup")
           }
         }),
         flows._2,
-        flows._3
+        flows._3.map(pf => PedestrianFlowFunction_New(pf.O, pf.D, pf.start, pf.end, (t: Time) => pf.f(t)*i))
       )
 
       sim.insertEventWithZeroDelay(new ProcessPedestrianFlows(newFlows._1, newFlows._3, sim))
 
 
-      runAndWriteResults(sim, i.toString + "_" + j.toString + "_params_", if (!config.getIsNull("output.dir")) {
+      runAndWriteResults(sim, i.toString + "_" + i.toString + "_params_", if (!config.getIsNull("output.dir")) {
         Some(config.getString("output.dir"))
       } else {
         None

@@ -13,12 +13,12 @@ object ExploreSensitivityFlows extends App {
 
 
   val flowRatioSensitivity: FlowSensitivity = new FlowSensitivity(config)
-  flowRatioSensitivity.varyOpposingFlows(1.0/10.0, 1.5)
+  flowRatioSensitivity.varyOpposingFlows(1.0/5.0, 9.0)
 
   val results = flowRatioSensitivity.processWrittenResults
-  flowRatioSensitivity.drawResults(results)
+  //flowRatioSensitivity.drawResults(results)
 
   val resultsSplitOD = flowRatioSensitivity.processWrittenResultsSplitOD
-  flowRatioSensitivity.drawResultsSplitOD(resultsSplitOD)
+  //flowRatioSensitivity.drawResultsSplitOD(resultsSplitOD)
 
 }
