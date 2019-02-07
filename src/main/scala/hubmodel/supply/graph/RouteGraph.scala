@@ -118,9 +118,6 @@ class RouteGraph(protected val baseVertices: Iterable[Rectangle],
     * @param p pedestrian for whom to change destination
     */
   def processIntermediateArrival(p: PedestrianNOMAD): Unit = {
-    if (p.nextZone.name == "YZaHxRhTLZ"){
-      println("debug")
-    }
     //println(p.route)
     if (p.route.isEmpty) {
       p.route = this.getShortestPath(p.origin, p.finalDestination).tail
@@ -138,9 +135,6 @@ class RouteGraph(protected val baseVertices: Iterable[Rectangle],
     else {
       p.previousZone = p.nextZone
       p.route = this.getShortestPath(p.previousZone, p.finalDestination).tail
-      if (p.route.size < 1) {
-        println("debug")
-      }
       p.nextZone = p.route.head
       p.route = p.route.tail
     }
