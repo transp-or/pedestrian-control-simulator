@@ -1,10 +1,15 @@
 package hubmodel.input.ProcessDXF;
 
+import org.apache.commons.lang3.ArrayUtils;
 import org.kabeja.dxf.helpers.Point;
 
 import java.awt.geom.Path2D;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 
 /**
  * Representation of a zone in the CAD file. These zones are used by the route choice model for computing the route
@@ -50,11 +55,30 @@ class Zone {
      */
     Zone(Point aIn, Point bIn, Point cIn, Point dIn) {
 
+        List<Double> x = new ArrayList<>();
+        x.add(aIn.getX());
+        x.add(bIn.getX());
+        x.add(cIn.getX());
+        x.add(dIn.getX());
+
+        Double xMin = Collections.min(x);
+        Double xMax = Collections.max(x);
+
+        List<Double> y = new ArrayList<>();
+        y.add(aIn.getY());
+        y.add(bIn.getY());
+        y.add(cIn.getY());
+        y.add(dIn.getY());
+
+        Double yMin = Collections.min(y);
+        Double yMax = Collections.max(y);
+
+
         // sets the four corner
-        this.a = new Point(round(aIn.getX(), 3), round(aIn.getY(), 3), aIn.getZ());
-        this.b = new Point(round(bIn.getX(), 3), round(bIn.getY(), 3), bIn.getZ());
-        this.c = new Point(round(cIn.getX(), 3), round(cIn.getY(), 3), cIn.getZ());
-        this.d = new Point(round(dIn.getX(), 3), round(dIn.getY(), 3), dIn.getZ());
+        this.a = new Point(round(xMin, 3), round(yMin, 3), aIn.getZ());
+        this.b = new Point(round(xMax, 3), round(yMin, 3), bIn.getZ());
+        this.c = new Point(round(xMax, 3), round(yMax, 3), cIn.getZ());
+        this.d = new Point(round(xMin, 3), round(yMax, 3), dIn.getZ());
 
         // builds the Path2D object
         polygon = new Path2D.Double();

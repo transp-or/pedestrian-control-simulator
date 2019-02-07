@@ -109,7 +109,6 @@ class RouteGraph(protected val baseVertices: Iterable[Rectangle],
     * "teleported" to the start of the other edge.
     */
   private def isFloorChange(a: Rectangle, b: Rectangle): Boolean = {
-    //println((a.ID, b.ID), this.levelChanges)
     this.levelChanges.map(e => (e.startVertex.ID, e.endVertex.ID)).exists(_ == (a.ID, b.ID))
   }
 
@@ -119,22 +118,31 @@ class RouteGraph(protected val baseVertices: Iterable[Rectangle],
     * @param p pedestrian for whom to change destination
     */
   def processIntermediateArrival(p: PedestrianNOMAD): Unit = {
+    if (p.nextZone.name == "YZaHxRhTLZ"){
+      println("debug")
+    }
     //println(p.route)
     if (p.route.isEmpty) {
       p.route = this.getShortestPath(p.origin, p.finalDestination).tail
       p.nextZone = p.route.head
+      p.route = p.route.tail
     }
     else if (this.isFloorChange(p.nextZone, p.route.head)) {
       //println("Changing level: " + p.nextZone + " to " + p.route.head)
       p.previousZone = p.route.head
       p.currentPosition = p.route.head.uniformSamplePointInside
+      p.previousPosition = p.currentPosition
       p.nextZone = p.route.tail.head
       p.route = this.getShortestPath(p.nextZone, p.finalDestination).tail
     }
     else {
       p.previousZone = p.nextZone
-      p.route = this.getShortestPath(p.nextZone, p.finalDestination).tail
+      p.route = this.getShortestPath(p.previousZone, p.finalDestination).tail
+      if (p.route.size < 1) {
+        println("debug")
+      }
       p.nextZone = p.route.head
+      p.route = p.route.tail
     }
     p.setCurrentDestination(p.nextZone.uniformSamplePointInside)
   }

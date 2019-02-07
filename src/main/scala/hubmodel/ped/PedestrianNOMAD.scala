@@ -59,7 +59,6 @@ class PedestrianNOMAD(oZone: Rectangle, dZone: Rectangle, entryTime: Time, posO:
       //println("ped " + this.ID + " is stuck")
       this.nextZone = this.previousZone
       this.currentDestination = this.previousZone.uniformSamplePointInside
-
     }
 
     this.desiredDirection = computeDesiredDirection(this.currentPosition, this.currentDestination) //computePathFollowingComponent(this).normalized

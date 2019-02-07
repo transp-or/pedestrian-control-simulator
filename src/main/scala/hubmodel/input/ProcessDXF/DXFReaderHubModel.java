@@ -169,10 +169,10 @@ public class DXFReaderHubModel extends DXFReader {
         if (lwpl_z != null) {
             for (int j = 0; j < lwpl_z.size(); j++) {
                 zones.add(new Zone(
-                                lwpl_z.get(j).getVertex(0).getPoint(),
                                 lwpl_z.get(j).getVertex(1).getPoint(),
                                 lwpl_z.get(j).getVertex(2).getPoint(),
-                                lwpl_z.get(j).getVertex(3).getPoint()
+                                lwpl_z.get(j).getVertex(3).getPoint(),
+                                lwpl_z.get(j).getVertex(0).getPoint()
                         )
                 );
 
@@ -182,10 +182,10 @@ public class DXFReaderHubModel extends DXFReader {
         if (pl_z != null) {
             for (int j = 0; j < pl_z.size(); j++) {
                 zones.add(new Zone(
-                                pl_z.get(j).getVertex(0).getPoint(),
                                 pl_z.get(j).getVertex(1).getPoint(),
                                 pl_z.get(j).getVertex(2).getPoint(),
-                                pl_z.get(j).getVertex(3).getPoint()
+                                pl_z.get(j).getVertex(3).getPoint(),
+                                pl_z.get(j).getVertex(0).getPoint()
                         )
                 );
 

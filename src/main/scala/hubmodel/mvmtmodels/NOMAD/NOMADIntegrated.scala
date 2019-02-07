@@ -231,9 +231,8 @@ class NOMADIntegrated[T <: PedestrianNOMAD](sim: NOMADGraphSimulator[T]) extends
     }
 
     sim.processCompletedPedestrian(sim.finalDestinationReached)
-    sim.population.filter(sim.intermediateDestinationReached).foreach(p => {
-      sim.updateIntermediateDestination(p)
-    })
+
+    sim.population.filter(sim.intermediateDestinationReached).foreach(p => { sim.updateIntermediateDestination(p) })
 
     //sim.rebuildMTree()
 
@@ -305,7 +304,8 @@ class NOMADIntegrated[T <: PedestrianNOMAD](sim: NOMADGraphSimulator[T]) extends
         ped.currentPosition = ped.nextPosition
         ped.currentVelocity = ped.nextVelocity
         ped.travelDistance += (ped.currentPosition - ped.previousPosition).norm
-        ped.updatePositionHistory(sim.currentTime + Time(rangeStep))
+        ped.previousPosition = ped.currentPosition
+        //ped.updatePositionHistory(sim.currentTime + Time(rangeStep))
       })
       rangeStep += this.rangeTimeStepSeconds
       rangeCounter += 1
@@ -364,7 +364,8 @@ class NOMADIntegrated[T <: PedestrianNOMAD](sim: NOMADGraphSimulator[T]) extends
         ped.currentPosition = ped.nextPosition
         ped.currentVelocity = ped.nextVelocity
         ped.travelDistance += (ped.currentPosition - ped.previousPosition).norm
-        ped.updatePositionHistory(sim.currentTime + Time(colStep))
+        ped.previousPosition = ped.currentPosition
+        //ped.updatePositionHistory(sim.currentTime + Time(colStep))
       })
       colStep += this.collisionTimeStepSeconds
       //colCounter += 1
