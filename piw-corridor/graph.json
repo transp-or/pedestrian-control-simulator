@@ -14,7 +14,8 @@
       "y3": 16.0,
       "x4": 87.0,
       "y4": 16.0,
-      "OD": true
+      "OD": true,
+      "maximum_rate": 1.8
     },
     {
       "name": "13",
@@ -28,7 +29,8 @@
       "y3": 12.5,
       "x4": 87.0,
       "y4": 12.5,
-      "OD": true
+      "OD": true,
+      "maximum_rate": 1.8
 
     },
     {
@@ -43,7 +45,8 @@
       "y3": 15.5,
       "x4": 82.5,
       "y4": 15.5,
-      "OD": false
+      "OD": false,
+      "maximum_rate": null
 
     },
     {
@@ -58,7 +61,8 @@
       "y3": 12.0,
       "x4": 82.5,
       "y4": 12.0,
-      "OD": false
+      "OD": false,
+      "maximum_rate": null
 
     },
     {
@@ -73,7 +77,8 @@
       "y3": 16.0,
       "x4": 3.0,
       "y4": 16.0,
-      "OD": true
+      "OD": true,
+      "maximum_rate": 1.8
 
     },
     {
@@ -88,7 +93,8 @@
       "y3": 8.040,
       "x4": 6.5,
       "y4": 8.040,
-      "OD": true
+      "OD": true,
+      "maximum_rate": 1.8
 
     },
     {
@@ -103,7 +109,8 @@
       "y3": 8.040,
       "x4": 9.179,
       "y4": 8.040,
-      "OD": true
+      "OD": true,
+      "maximum_rate": 1.8
 
     },
     {
@@ -118,7 +125,8 @@
       "y3": 11,
       "x4": 7,
       "y4": 11,
-      "OD": false
+      "OD": false,
+      "maximum_rate": null
 
     },
     {
@@ -133,7 +141,8 @@
       "y3": 11,
       "x4": 9.5,
       "y4": 11,
-      "OD": false
+      "OD": false,
+      "maximum_rate": null
 
     },
     {
@@ -148,7 +157,8 @@
       "y3": 23.1,
       "x4": 9.179,
       "y4": 23.1,
-      "OD": true
+      "OD": true,
+      "maximum_rate": 1.8
 
     },
     {
@@ -163,7 +173,8 @@
       "y3": 15.5,
       "x4": 7.0,
       "y4": 15.5,
-      "OD": false
+      "OD": false,
+      "maximum_rate": null
 
     },
     {
@@ -178,7 +189,8 @@
       "y3": 15.5,
       "x4": 21,
       "y4": 15.5,
-      "OD": false
+      "OD": false,
+      "maximum_rate": null
 
     },
     {
@@ -193,7 +205,8 @@
       "y3": 15.5,
       "x4": 36.0,
       "y4": 15.5,
-      "OD": false
+      "OD": false,
+      "maximum_rate": null
     },
     {
       "name": "d",
@@ -207,7 +220,8 @@
       "y3": 15.5,
       "x4": 51,
       "y4": 15.5,
-      "OD": false
+      "OD": false,
+      "maximum_rate": null
 
     },
     {
@@ -222,7 +236,8 @@
       "y3": 15.5,
       "x4": 72,
       "y4": 15.5,
-      "OD": false
+      "OD": false,
+      "maximum_rate": null
 
     },
     {
@@ -237,7 +252,8 @@
       "y3": 6,
       "x4": 23,
       "y4": 6,
-      "OD": true
+      "OD": true,
+      "maximum_rate": 1.8
 
     },
     {
@@ -252,7 +268,8 @@
       "y3": 9.5,
       "x4": 23,
       "y4": 9.5,
-      "OD": false
+      "OD": false,
+      "maximum_rate": null
 
     },
     {
@@ -267,7 +284,8 @@
       "y3": 10.5,
       "x4": 23,
       "y4": 10.5,
-      "OD": false
+      "OD": false,
+      "maximum_rate": null
 
     },
     {
@@ -282,7 +300,8 @@
       "y3": 24,
       "x4": 22,
       "y4": 24,
-      "OD": true
+      "OD": true,
+      "maximum_rate": 1.8
 
     },
     {
@@ -297,7 +316,8 @@
       "y3": 18,
       "x4": 22,
       "y4": 18,
-      "OD": false
+      "OD": false,
+      "maximum_rate": null
 
     },
     {
@@ -312,7 +332,8 @@
       "y3": 17,
       "x4": 22,
       "y4": 17,
-      "OD": false
+      "OD": false,
+      "maximum_rate": null
     },
     {
       "name": "7",
@@ -326,7 +347,8 @@
       "y3": 6,
       "x4": 36.5,
       "y4": 6,
-      "OD": false
+      "OD": false,
+      "maximum_rate": 1.8
     },
     {
       "name": "7a",
@@ -340,7 +362,8 @@
       "y3": 9.5,
       "x4": 36.5,
       "y4": 9.5,
-      "OD": false
+      "OD": false,
+      "maximum_rate": null
     },
     {
       "name": "7b",
@@ -354,7 +377,8 @@
       "y3": 10.5,
       "x4": 36.5,
       "y4": 10.5,
-      "OD": false
+      "OD": false,
+      "maximum_rate": null
     },
     {
       "name": "8",
@@ -368,7 +392,8 @@
       "y3": 24,
       "x4": 35.7,
       "y4": 24,
-      "OD": true
+      "OD": true,
+      "maximum_rate": 1.8
     },
     {
       "name": "8a",
@@ -382,7 +407,8 @@
       "y3": 18,
       "x4": 35.7,
       "y4": 18,
-      "OD": false
+      "OD": false,
+      "maximum_rate": null
     },
     {
       "name": "8b",
@@ -396,7 +422,8 @@
       "y3": 16.9,
       "x4": 35.7,
       "y4": 16.9,
-      "OD": false
+      "OD": false,
+      "maximum_rate": null
     },
     {
       "name": "9",
@@ -410,7 +437,8 @@
       "y3": 5,
       "x4": 51.5,
       "y4": 5,
-      "OD": true
+      "OD": true,
+      "maximum_rate": 1.8
     },
     {
       "name": "9a",
@@ -424,7 +452,8 @@
       "y3": 9.5,
       "x4": 51.5,
       "y4": 9.5,
-      "OD": false
+      "OD": false,
+      "maximum_rate": null
     },
     {
       "name": "9b",
@@ -438,7 +467,8 @@
       "y3": 10.5,
       "x4": 51.5,
       "y4": 10.5,
-      "OD": false
+      "OD": false,
+      "maximum_rate": null
     },
     {
       "name": "10",
@@ -452,7 +482,8 @@
       "y3": 24.12,
       "x4": 51.5,
       "y4": 24.12,
-      "OD": true
+      "OD": true,
+      "maximum_rate": 1.8
     },
     {
       "name": "10a",
@@ -466,7 +497,8 @@
       "y3": 18,
       "x4": 51.5,
       "y4": 18,
-      "OD": false
+      "OD": false,
+      "maximum_rate": null
     },
     {
       "name": "10b",
@@ -480,7 +512,8 @@
       "y3": 17,
       "x4": 51.5,
       "y4": 17,
-      "OD": false
+      "OD": false,
+      "maximum_rate": null
     },
     {
       "name": "11",
@@ -494,7 +527,8 @@
       "y3": 5,
       "x4": 72.5,
       "y4": 5,
-      "OD": true
+      "OD": true,
+      "maximum_rate": 1.8
     },
     {
       "name": "11a",
@@ -508,7 +542,8 @@
       "y3": 7.70,
       "x4": 72.5,
       "y4": 7.70,
-      "OD": false
+      "OD": false,
+      "maximum_rate": null
     },
     {
       "name": "11b",
@@ -522,7 +557,8 @@
       "y3": 8.71,
       "x4": 72.5,
       "y4": 8.71,
-      "OD": false
+      "OD": false,
+      "maximum_rate": null
     },
     {
       "name": "12",
@@ -536,7 +572,8 @@
       "y3": 24,
       "x4": 76.5,
       "y4": 24,
-      "OD": true
+      "OD": true,
+      "maximum_rate": 1.8
     },
     {
       "name": "12a",
@@ -550,7 +587,8 @@
       "y3": 18.1,
       "x4": 76.5,
       "y4": 18.1,
-      "OD": false
+      "OD": false,
+      "maximum_rate": null
     },
     {
       "name": "12b",
@@ -564,7 +602,8 @@
       "y3": 17.08,
       "x4": 76.5,
       "y4": 17.08,
-      "OD": false
+      "OD": false,
+      "maximum_rate": null
     }
   ],
   "connectivity": [

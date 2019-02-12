@@ -14,7 +14,8 @@
       "y3": 1.5,
       "x4": 0.1,
       "y4": 1.5,
-      "OD":true
+      "OD":true,
+      "maximum_rate": null
     },
     {
       "name": "top",
@@ -28,7 +29,8 @@
       "y3": 35,
       "x4": 0.1,
       "y4": 35,
-      "OD": true
+      "OD": true,
+      "maximum_rate": null
     }
   ],
   "connectivity": [
@@ -87,7 +89,9 @@
           "y3": [3.5,3.5],
           "x4": [0.1,0.1],
           "y4": [3.5,3.5],
-          "overrides": null
+          "overrides": null,
+          "OD": true,
+          "maximum_rate": null
         },
         {
           "name": "b2",
@@ -99,7 +103,9 @@
           "y3": [1.5,1.5],
           "x4": [2.2,7.2],
           "y4": [1.5,1.5],
-          "overrides": null
+          "overrides": null,
+          "OD": true,
+          "maximum_rate": null
         },
         {
           "name": "b22",
@@ -111,7 +117,9 @@
           "y3": [1.5,1.5],
           "x4": [0.1,0.1],
           "y4": [1.5,1.5],
-          "overrides": null
+          "overrides": null,
+          "OD": true,
+          "maximum_rate": null
         },
         {
           "name": "b11",
@@ -123,7 +131,9 @@
           "y3": [3.5,3.5],
           "x4": [2.2,7.2],
           "y4": [3.5,3.5],
-          "overrides": null
+          "overrides": null,
+          "OD": true,
+          "maximum_rate": null
         }
       ],
       "overriden_zones_2": [
@@ -137,7 +147,9 @@
           "y3": [34.9, 34.9],
           "x4": [0.1,0.1],
           "y4": [34.9, 34.9],
-          "overrides": null
+          "overrides": null,
+          "OD": true,
+          "maximum_rate": null
         },
         {
           "name": "t11",
@@ -149,7 +161,9 @@
           "y3": [34.9, 34.9],
           "x4": [5.25,5.25],
           "y4": [34.9, 34.9],
-          "overrides": null
+          "overrides": null,
+          "OD": true,
+          "maximum_rate": null
         },
         {
           "name": "t2",
@@ -161,7 +175,9 @@
           "y3": [32.5, 32.5],
           "x4": [3.0,7.5],
           "y4": [32.5, 32.5],
-          "overrides": null
+          "overrides": null,
+          "OD": true,
+          "maximum_rate": null
         },
         {
           "name": "t22",
@@ -173,7 +189,9 @@
           "y3": [32.5, 32.5],
           "x4": [0.1,0.1],
           "y4": [32.5, 32.5],
-          "overrides": null
+          "overrides": null,
+          "OD": true,
+          "maximum_rate": null
         }
       ],
       "overriden_connections": [
@@ -226,7 +244,7 @@
   "alternate_graphs": [
     {
       "name": "notFollowingRules",
-      "fraction_of_pop": 0.15,
+      "fraction_of_pop": 0.05,
       "connectivity_to_add": [
         {
           "node": "top",

@@ -1,6 +1,6 @@
 package hubmodel.tools.cells
 
-import hubmodel.{Position, VertexID, generateUUID}
+import hubmodel.{Position, Time, VertexID, generateUUID}
 
 trait Vertex {
 
@@ -19,6 +19,8 @@ trait Vertex {
   def name: String
 
   def isOD: Boolean
+
+  def generationRate: Double
 
   // unique identifier
   def uniformSamplePointInside: Position

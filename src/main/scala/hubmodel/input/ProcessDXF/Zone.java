@@ -121,7 +121,8 @@ class Zone {
                 "\"y3\":" + this.c.getY() * scale + "," +
                 "\"x4\":" + this.d.getX() * scale + "," +
                 "\"y4\":" + this.d.getY() * scale + "," +
-                "\"OD\": " + this.isOD +
+                "\"OD\": " + this.isOD + "," +
+                "\"maximum_rate\": null" +
                 "}";
     }
 }

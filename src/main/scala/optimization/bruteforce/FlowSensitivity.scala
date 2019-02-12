@@ -1,6 +1,7 @@
 package optimization.bruteforce
 
 import java.io.File
+import java.nio.file.{Files, Path, Paths}
 
 import com.typesafe.config.{Config, ConfigFactory}
 import hubmodel.DES.NOMADGraphSimulator
@@ -16,6 +17,10 @@ class FlowSensitivity(config: Config) extends GridSearch {
   private val ODs: (String, String) = ("bottom", "top")
   private val ODReversed: (String, String) = ("top", "bottom")
 
+  def mean(data: Seq[Double]): Double = {data.sum/data.size}
+
+
+
 
   def varyOpposingFlows(increments: Double, maxMultipler: Double = 1.0): Unit = {
 
@@ -23,7 +28,7 @@ class FlowSensitivity(config: Config) extends GridSearch {
       throw new IllegalArgumentException("increment must be contained between 0.0 and 1.0 ! increments=" + increments)
     }
     if (config.getInt("sim.nb_runs") <= 0) {
-      throw new IllegalArgumentException("repetitions must be positive ! repetitions=" + config.getInt("sim.nb_runs"))
+      println("No simulations to perform, only reading results !")//throw new IllegalArgumentException("repetitions must be positive ! repetitions=" + config.getInt("sim.nb_runs"))
     }
 
     val defaultParameters = createSimulation[PedestrianNOMAD](config).getSetupArguments
@@ -91,7 +96,7 @@ class FlowSensitivity(config: Config) extends GridSearch {
 
   }
 
-  def processWrittenResultsSplitOD: Map[((Double, Double), String, String), ((Int, Double, Double, Double, Double, Double), (Int, Double, Double, Double, Double, Double))] = {
+  /*def processWrittenResultsSplitOD: Map[((Double, Double), String, String), ((Int, Double, Double, Double, Double, Double), (Int, Double, Double, Double, Double, Double))] = {
 
     val outputDir = new File(config.getString("output.dir"))
 
@@ -111,10 +116,46 @@ class FlowSensitivity(config: Config) extends GridSearch {
       }).stats
     )
     )
+  }*/
+
+  // checks if the output dir exists for writing the results
+  val outputDir: Path = Paths.get(config.getString("output.dir"))
+  if (!Files.exists(outputDir) || !Files.isDirectory(outputDir)) {
+    Files.createDirectory(outputDir)
+  }
+
+  def groupResultsFiles: Map[String, List[File]] = { // reads the files and process the data
+    new File(outputDir.getParent.toString + "/" + outputDir.getFileName.toString).listFiles.filter(_.isFile).toList.groupBy(f => {
+      f.getName match {
+        case a if a.contains("_params_individual_density_") => "individual_density"
+        case a if a.contains("_params_tt_") => "tt"
+        case a if a.contains("_params_density_") => "density"
+      }
+    })
+  }
+
+  def processWrittenResults(func: Seq[Double] => Double): Map[(Double, Double), (Iterable[Double], Iterable[Iterable[Double]])] = {
+
+    groupResultsFiles("tt").map(ProcessTTFile2Parameters).
+      flatMap(tup => tup._3.map(t => (tup._1, tup._2, t._1._1, t._1._2, t._2))).
+      groupBy(tup => (tup._1, tup._2)).
+      mapValues(v => (v.map(d => func(d._5)), v.map(_._5)))
   }
 
 
-  def processWrittenResults: Map[(Double, Double, String, String), (Int, Double, Double, Double, Double, Double)] = {
+  def processWrittenResultsByOD(func: Seq[Double] => Double): Map[(Double), (Map[(String, String),Iterable[Double]], Iterable[Iterable[Double]])] = {
+    groupResultsFiles("tt").map(ProcessTTFile1Parameter).
+      flatMap(tup => tup._2.map(t => (tup._1, t._1._1, t._1._2, t._2))).
+      groupBy(tup => tup._1).
+      mapValues(v => {
+        (
+          v.groupBy(p => (p._2, p._3)).map(r => r._1 -> r._2.map(p => func(p._4))),
+          v.map(_._4)
+        )
+      })
+  }
+/*
+  def processWrittenResultsOld(func: Seq[Double] => Double): Map[(Double, Double), (Iterable[Double], Iterable[Iterable[Double]])] = {
     println(config.getString("output.dir"))
     val outputDir = new File(config.getString("output.dir"))
 
@@ -128,8 +169,8 @@ class FlowSensitivity(config: Config) extends GridSearch {
     files("tt").map(ProcessTTFile2Parameters).
       flatMap(tup => tup._3.map(t => (tup._1, tup._2, t._1._1, t._1._2, t._2))).
       groupBy(tup => (tup._1, tup._2, tup._3, tup._4)).
-      mapValues(v => v.flatMap(_._5).stats)
-  }
+      map(kv => (kv._1._1, kv._1._2) -> (kv._2.map(d => func(d._5)), kv._2.map(v => v._5)))
+  }*/
 
 
   def drawResults(results: Map[(Double, Double, String, String), (Int, Double, Double, Double, Double, Double)]): Unit = {
@@ -159,12 +200,12 @@ class FlowSensitivity(config: Config) extends GridSearch {
 
   }
 
-  def drawComparisonResults(otherConfigFile: String): Unit = {
+  /*def drawComparisonResults(otherConfigFile: String): Unit = {
 
     val otherResults: (Map[(Double, Double, String, String), (Int, Double, Double, Double, Double, Double)], Map[((Double, Double), String, String), ((Int, Double, Double, Double, Double, Double), (Int, Double, Double, Double, Double, Double))]) = {
       val flowSensOther: FlowSensitivity = new FlowSensitivity(ConfigFactory.load(otherConfigFile))
 
-      (flowSensOther.processWrittenResults, flowSensOther.processWrittenResultsSplitOD)
+      (flowSensOther.processWrittenResults(mean), flowSensOther.processWrittenResultsSplitOD)
     }
 
 
@@ -188,7 +229,7 @@ class FlowSensitivity(config: Config) extends GridSearch {
     new HeatMap(config.getString("output.output_prefix") + "_heatmap-difference-mean-tt-top-bottom.png", resultsDiffSplitOD.map(r => (r._1._1._1, r._1._1._2, r._2._2._1)), "mean travel time", "bottom -> top multiplier", "top -> bottom multiplier", "Mean travel time from top to bottom", plotOptionsTT)
     new HeatMap(config.getString("output.output_prefix") + "_heatmap-difference-variance-tt-top-bottom.png", resultsDiffSplitOD.map(r => (r._1._1._1, r._1._1._2, r._2._2._2)), "var travel time", "bottom -> top multiplier", "top -> bottom multiplier", "Variance travel time from top to bottom", plotOptionsVarTT)
     new HeatMap(config.getString("output.output_prefix") + "_heatmap-difference-median-tt-top-bottom.png", resultsDiffSplitOD.map(r => (r._1._1._1, r._1._1._2, r._2._2._3)), "median travel time", "bottom -> top multiplier", "top -> bottom multiplier", "Median travel time from top to bottom", plotOptionsTT)
-  }
+  }*/
 
 
 }

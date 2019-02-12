@@ -22,7 +22,8 @@ class RectangleModifiable(name: String,
                           private val __B: (Position, Position),
                           private val __C: (Position, Position),
                           private val __D: (Position, Position),
-                          od: Boolean) extends Rectangle(name, (__A._1 + __A._2) * 0.5, (__B._1 + __B._2) * 0.5, (__C._1 + __C._2) * 0.5, (__D._1 + __D._2) * 0.5, od) {
+                          od: Boolean,
+                          genRate: Option[Double]) extends Rectangle(name, (__A._1 + __A._2) * 0.5, (__B._1 + __B._2) * 0.5, (__C._1 + __C._2) * 0.5, (__D._1 + __D._2) * 0.5, od, genRate) {
 
   A = (__A._1 + __A._2) * 0.5
   B = (__B._1 + __B._2) * 0.5
@@ -84,7 +85,7 @@ class RectangleModifiable(name: String,
 
 
   override def clone(): RectangleModifiable = new RectangleModifiable(
-    this.name, this.__A, this.__B, this.__C, this.__D, this.isOD
+    this.name, this.__A, this.__B, this.__C, this.__D, this.isOD, Some(this.generationRate)
   )
 
 }

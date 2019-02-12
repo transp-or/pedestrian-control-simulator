@@ -21,6 +21,8 @@ class ProcessDisaggregatePedestrianFlows[T <: PedestrianNOMAD](eventCollection: 
       } else if (ec._1.contains("t_") && ec._2.contains("t_")) {
         if (sim.timeTable.timeTable.find(_._1.ID == ec._1.drop(2)).isDefined && sim.timeTable.timeTable.find(_._1.ID == ec._2.drop(2)).isDefined) {
           sim.timeTable.timeTable.find(_._1.ID == ec._1.drop(2)).get._2.addAlightingPassenger(TrainID_New(ec._2.drop(2), ""))
+        } else {
+          throw new Exception("Pedestrian's vehicle does not exist ! O=" + ec._1 + ", D=" + ec._2)
         }
       } else if (ec._1.contains("z_") && ec._2.contains("t_")) {
         sim.insertEventAtAbsolute(ec._3)(new CreatePedestrian(sim.graph.vertexMapNew(ec._1.drop(2)), sim.graph.vertexMapNew(ec._2.drop(2)), sim))

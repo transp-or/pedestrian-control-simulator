@@ -2,10 +2,10 @@ package hubmodel.tools.cells
 
 import java.util.concurrent.ThreadLocalRandom
 
-import hubmodel.{Position, generateUUID}
+import hubmodel.{Position, Time, generateUUID}
 import myscala.math.vector.Vector2D
 
-class Rectangle(val name: String, C1: Position, C2: Position, C3: Position, C4: Position, val isOD: Boolean) extends Vertex {
+class Rectangle(val name: String, C1: Position, C2: Position, C3: Position, C4: Position, val isOD: Boolean, genRate: Option[Double]) extends Vertex {
 
   if (Vector(C1, C2, C3, C4).map(_.X).distinct.size != 2 || Vector(C1, C2, C3, C4).map(_.Y).distinct.size != 2) {
     throw new IllegalArgumentException("Corners of rectangle do not make orthogonal rectangle ! + id=" + name)
@@ -40,6 +40,9 @@ class Rectangle(val name: String, C1: Position, C2: Position, C3: Position, C4: 
   // collection of corners
   val corners: Vector[Position] = Vector(A, B, C, D)
 
+  // Rate in pedestrians/second at which to generate pedestrians inside this cell.
+  val generationRate: Double = if (genRate.isDefined) {genRate.get} else {100.0}
+
 
   /** Is the point inside the vertex ?
     *
@@ -55,13 +58,16 @@ class Rectangle(val name: String, C1: Position, C2: Position, C3: Position, C4: 
     else false
   }
 
-
+  /**
+    * Generate a point inside the rectangle with uniform probabilities in both directions
+    * @return
+    */
   def uniformSamplePointInside: Position = {
     Vector2D(ThreadLocalRandom.current.nextDouble(A.X + 0.1, B.X - 0.1), ThreadLocalRandom.current.nextDouble(A.Y + 0.1, D.Y - 0.1))
   }
 
-  def this(center: Position, hSide: Double, vSide: Double, od: Boolean) {
-    this(generateUUID, center + Vector2D(-0.5 * hSide, -0.5 * vSide), center + Vector2D(0.5 * hSide, -0.5 * vSide), center + Vector2D(0.5 * hSide, 0.5 * vSide), center + Vector2D(-0.5 * hSide, 0.5 * vSide), od)
+  def this(center: Position, hSide: Double, vSide: Double, od: Boolean, genRate: Option[Double]) {
+    this(generateUUID, center + Vector2D(-0.5 * hSide, -0.5 * vSide), center + Vector2D(0.5 * hSide, -0.5 * vSide), center + Vector2D(0.5 * hSide, 0.5 * vSide), center + Vector2D(-0.5 * hSide, 0.5 * vSide), od, genRate)
   }
 
   /** Checks whether another object equals this one by comparing the positions associated to the vertex

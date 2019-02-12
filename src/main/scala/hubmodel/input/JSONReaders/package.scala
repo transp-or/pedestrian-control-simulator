@@ -87,7 +87,7 @@ package object JSONReaders {
     * @param x4   top left x-coord
     * @param y4   top left y-coord
     */
-  private[JSONReaders] case class Vertex_JSON(name: String, x1: Double, y1: Double, x2: Double, y2: Double, x3: Double, y3: Double, x4: Double, y4: Double, OD: Boolean)
+  private[JSONReaders] case class Vertex_JSON(name: String, x1: Double, y1: Double, x2: Double, y2: Double, x3: Double, y3: Double, x4: Double, y4: Double, OD: Boolean, rate: Option[Double])
 
   /**
     * Reads a JSON structure into a [[Vertex_JSON]] object. No validation on the arguments is done.
@@ -102,7 +102,8 @@ package object JSONReaders {
       (JsPath \ "y3").read[Double] and
       (JsPath \ "x4").read[Double] and
       (JsPath \ "y4").read[Double] and
-      (JsPath \ "OD").read[Boolean]
+      (JsPath \ "OD").read[Boolean] and
+      (JsPath \ "maximum_rate").readNullable[Double]
     ) (Vertex_JSON.apply _)
 
 
@@ -237,7 +238,9 @@ package object JSONReaders {
                                                       y3: Vector[Double],
                                                       x4: Vector[Double],
                                                       y4: Vector[Double],
-                                                      overridenZone: Option[String])
+                                                      isOD: Boolean,
+                                                      overridenZone: Option[String],
+                                                      maxRate: Option[Double])
 
   /**
     * Reads the JSON structure into a [[VertexOverride_JSON]] object. No validation on arguments is done.
@@ -252,7 +255,9 @@ package object JSONReaders {
       (JsPath \ "y3").read[Vector[Double]] and
       (JsPath \ "x4").read[Vector[Double]] and
       (JsPath \ "y4").read[Vector[Double]] and
-      (JsPath \ "overrides").readNullable[String]
+      (JsPath \ "OD").read[Boolean] and
+      (JsPath \ "overrides").readNullable[String] and
+      (JsPath \ "maximum_rate").readNullable[Double]
     ) (VertexOverride_JSON.apply _)
 
   /**

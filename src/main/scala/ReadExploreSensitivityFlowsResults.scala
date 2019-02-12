@@ -6,7 +6,7 @@ object ReadExploreSensitivityFlowsResults extends App {
   // ******************************************************************************************
   //                    Read CLI arguments and process parameters file
   // ******************************************************************************************
-
+/*
   // Used to parse command line inputs
   case class CLInput(conf: String = "")
 
@@ -53,6 +53,6 @@ object ReadExploreSensitivityFlowsResults extends App {
     println(config.getString("output.compare_results_to"))
     flowSens.drawComparisonResults("simulation/flow-sensitivity-fixed-sep.conf")
   }
-
+*/
 
 }

@@ -8,6 +8,8 @@ import myscala.math.vector.Vector2D
 
 class Hexagon(val center: Position, edgeLength: Double) extends Vertex {
 
+  val generationRate: Double = 100
+
   val isOD: Boolean = false
 
   val name: String = generateUUID

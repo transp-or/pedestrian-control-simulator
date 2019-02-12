@@ -32,7 +32,7 @@ class PedestrianGenerationTINF[T <: PedestrianNOMAD](o: Rectangle, d: Rectangle,
     val rate: Double = numberPeople / duration
     var t: Double = -math.log(ThreadLocalRandom.current.nextDouble(0.0, 1.0) / rate)
     Iterator.continually {
-      t = t - math.log(ThreadLocalRandom.current.nextDouble(0.0, 1.0)) / rate;
+      t = t - math.log(ThreadLocalRandom.current.nextDouble(0.0, 1.0)) / rate
       t
     }.takeWhile(v => v < duration).map(new Time(_))
   }
@@ -52,11 +52,7 @@ class PedestrianGenerationTINF[T <: PedestrianNOMAD](o: Rectangle, d: Rectangle,
         new ReleasePedPTInducedFlow(o, sim)
       }
     }
-    tinfQueue.appendPeds(Vector.fill((1.5 * numberPeople).toInt) {
-      new CreatePedestrian(o, d, sim)
-
-
-    })
+    tinfQueue.appendPeds(Vector.fill(numberPeople) { new CreatePedestrian(o, d, sim) })
     //arrivalTimes.
   }
 
