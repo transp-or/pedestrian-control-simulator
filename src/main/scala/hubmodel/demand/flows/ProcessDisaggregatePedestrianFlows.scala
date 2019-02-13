@@ -1,7 +1,10 @@
 package hubmodel.demand.flows
 
+import java.util.concurrent.ThreadLocalRandom
+
 import hubmodel.DES.{Action, NOMADGraphSimulator}
 import hubmodel.Time
+import hubmodel.TimeNumeric.mkOrderingOps
 import hubmodel.demand.CreatePedestrian
 import hubmodel.ped.PedestrianNOMAD
 import hubmodel.supply.{StopID_New, TrainID_New}
@@ -12,7 +15,7 @@ class ProcessDisaggregatePedestrianFlows[T <: PedestrianNOMAD](eventCollection: 
 
   def execute(): Unit = {
     eventCollection
-      .filter(ec => ec._1 != ec._2) //ec => ((sim.startTime <= ec._3 && ec._3 <= sim.finalTime)))// && ec._1 != "-1" && ec._2 != "-1" && sim.graph.vertexMapNew.keySet.contains(ec._1.drop(2)) && sim.graph.vertexMapNew.keySet.contains(ec._2.drop(2)))
+      .filter(ec => ec._1 != ec._2)// && ec._1 != "-1" && ec._2 != "-1" && sim.graph.vertexMapNew.keySet.contains(ec._1.drop(2)) && sim.graph.vertexMapNew.keySet.contains(ec._2.drop(2)))
       .foreach(ec => {
       if (ec._1.contains("z_") && ec._2.contains("z_")) {
         sim.insertEventAtAbsolute(ec._3)(new CreatePedestrian(sim.graph.vertexMapNew(ec._1.drop(2)), sim.graph.vertexMapNew(ec._2.drop(2)), sim))
@@ -25,9 +28,14 @@ class ProcessDisaggregatePedestrianFlows[T <: PedestrianNOMAD](eventCollection: 
           throw new Exception("Pedestrian's vehicle does not exist ! O=" + ec._1 + ", D=" + ec._2)
         }
       } else if (ec._1.contains("z_") && ec._2.contains("t_")) {
-        sim.insertEventAtAbsolute(ec._3)(new CreatePedestrian(sim.graph.vertexMapNew(ec._1.drop(2)), sim.graph.vertexMapNew(ec._2.drop(2)), sim))
+        val possibleZoneIDs: Seq[String] = sim.stop2Vertices(TrainID_New(ec._2.drop(2), "")).map(_.name).toVector
+        sim.insertEventAtAbsolute(ec._3)(new CreatePedestrian(
+          sim.graph.vertexMapNew(ec._1.drop(2)),
+          sim.graph.vertexMapNew(possibleZoneIDs(ThreadLocalRandom.current.nextInt(possibleZoneIDs.size))),
+          sim))
       } else {
-        sim.insertEventAtAbsolute(ec._3)(new CreatePedestrian(sim.graph.vertexMapNew(ec._1.drop(2)), sim.graph.vertexMapNew(ec._2.drop(2)), sim))
+        throw new Exception("Case not covered")
+        //sim.insertEventAtAbsolute(ec._3)(new CreatePedestrian(sim.graph.vertexMapNew(ec._1.drop(2)), sim.graph.vertexMapNew(ec._2.drop(2)), sim))
       }
     })
   }

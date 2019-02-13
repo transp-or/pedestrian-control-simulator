@@ -8,38 +8,94 @@ import hubmodel.DES.NOMADGraphSimulator
 import hubmodel.demand.flows.ProcessPedestrianFlows
 import hubmodel.demand.{PedestrianFlowFunction_New, PedestrianFlowPT_New, PedestrianFlow_New, readPedestrianFlows}
 import hubmodel.ped.PedestrianNOMAD
-import hubmodel.{Time, createSimulation, runAndWriteResults}
+import hubmodel._
 import myscala.math.stats.ComputeStats
 import trackingdataanalysis.visualization.{HeatMap, PlotOptions}
 
-class FlowSensitivity(config: Config) extends GridSearch {
+import scala.collection.GenIterable
+import scala.collection.parallel.ForkJoinTaskSupport
+
+class FlowVariation(flowInterval: Double, config: Config, lowerBoundFlow: Double = 1, upperBoundFlow: Double = 2) extends GridSearchNew[ParameterModificationsFlow](config) {
 
   private val ODs: (String, String) = ("bottom", "top")
   private val ODReversed: (String, String) = ("top", "bottom")
 
-  def mean(data: Seq[Double]): Double = {data.sum/data.size}
+  def mean(data: Seq[Double]): Double = {
+    data.sum / data.size
+  }
 
+  override val simulationRunsParameters: GenIterable[ParameterModificationsFlow] = if (config.getBoolean("execution.parallel")) {
+    val r = (for (i <- BigDecimal(lowerBoundFlow) to BigDecimal(upperBoundFlow) by BigDecimal(flowInterval); k <- 1 to config.getInt("sim.nb_runs")) yield {
+      ParameterModificationsFlow(i.toDouble)
+    }).par
+    r.tasksupport = new ForkJoinTaskSupport(new scala.concurrent.forkjoin.ForkJoinPool(config.getInt("execution.threads")))
+    r
+  } else {
+    for (i <- BigDecimal(lowerBoundFlow) to BigDecimal(upperBoundFlow) by BigDecimal(flowInterval); k <- 1 to config.getInt("sim.nb_runs")) yield {
+      ParameterModificationsFlow(i.toDouble)
+    }
+  }
 
+  def getRunPrefix(paramMods: ParameterModificationsFlow): String = {
+    paramMods.maximumFlow.toString + "_params_"
+  }
 
+  def getFlowMods(paramMods: ParameterModificationsFlow): (Iterable[PedestrianFlow_New], Iterable[PedestrianFlowPT_New], Iterable[PedestrianFlowFunction_New]) = {
+    val flows = getFlows(config)
 
+    (flows._1.map(flow => {
+      if (flow.O.ID == "bottom" && flow.D.ID == "top") {
+        PedestrianFlow_New(flow.O, flow.D, flow.start, flow.end, flow.f * paramMods.maximumFlow)
+      }
+      else if (flow.O.ID == "top" && flow.D.ID == "bottom") {
+        PedestrianFlow_New(flow.O, flow.D, flow.start, flow.end, flow.f * paramMods.maximumFlow)
+      }
+      else {
+        throw new NoSuchElementException("this flow does not exist in this setup")
+      }
+    }),
+      flows._2,
+      flows._3.map(pf => PedestrianFlowFunction_New(pf.O, pf.D, pf.start, pf.end, (t: Time) => pf.f(t) * paramMods.maximumFlow))
+    )
+  }
+
+  def getParameters(paramMods: ParameterModificationsFlow): SimulatorParameters = {
+
+    val devices = defaultParameters._11.clone()
+    (
+      defaultParameters._1,
+      defaultParameters._2,
+      defaultParameters._3,
+      defaultParameters._4,
+      defaultParameters._5,
+      defaultParameters._6,
+      defaultParameters._7,
+      defaultParameters._8.clone2AlternateGraphs(devices, 0.1),
+      defaultParameters._9,
+      defaultParameters._10,
+      devices
+    )
+  }
+
+/*
   def varyOpposingFlows(increments: Double, maxMultipler: Double = 1.0): Unit = {
 
     if (increments <= 0.0 || increments > maxMultipler) {
       throw new IllegalArgumentException("increment must be contained between 0.0 and 1.0 ! increments=" + increments)
     }
     if (config.getInt("sim.nb_runs") <= 0) {
-      println("No simulations to perform, only reading results !")//throw new IllegalArgumentException("repetitions must be positive ! repetitions=" + config.getInt("sim.nb_runs"))
+      println("No simulations to perform, only reading results !") //throw new IllegalArgumentException("repetitions must be positive ! repetitions=" + config.getInt("sim.nb_runs"))
     }
 
     val defaultParameters = createSimulation[PedestrianNOMAD](config).getSetupArguments
 
     // checks if the output dir exists
-    val outputDir = new File(config.getString("output.dir"))
+    /*val outputDir = new File(config.getString("output.dir"))
     if (!outputDir.exists || !outputDir.isDirectory) {
       throw new IllegalArgumentException("Output dir for files does not exist ! dir=" + config.getString("output.dir"))
-    }
+    }*/
 
-    for (i <- (0.0 to maxMultipler by increments).par; /*j <- (0.0 to maxMultipler by increments).par;*/ n <- (1 to config.getInt("sim.nb_runs")).par/*; if i >= j*/) {
+    for (i <- (1.0 to maxMultipler by increments).par; /*j <- (0.0 to maxMultipler by increments).par;*/ n <- (1 to config.getInt("sim.nb_runs")).par /*; if i >= j*/ ) {
 
       val devices = defaultParameters._11.clone()
       val sim = new NOMADGraphSimulator[PedestrianNOMAD](
@@ -80,7 +136,7 @@ class FlowSensitivity(config: Config) extends GridSearch {
           }
         }),
         flows._2,
-        flows._3.map(pf => PedestrianFlowFunction_New(pf.O, pf.D, pf.start, pf.end, (t: Time) => pf.f(t)*i))
+        flows._3.map(pf => PedestrianFlowFunction_New(pf.O, pf.D, pf.start, pf.end, (t: Time) => pf.f(t) * i))
       )
 
       sim.insertEventWithZeroDelay(new ProcessPedestrianFlows(newFlows._1, newFlows._3, sim))
@@ -94,7 +150,7 @@ class FlowSensitivity(config: Config) extends GridSearch {
       System.gc()
     }
 
-  }
+  }*/
 
   /*def processWrittenResultsSplitOD: Map[((Double, Double), String, String), ((Int, Double, Double, Double, Double, Double), (Int, Double, Double, Double, Double, Double))] = {
 
@@ -119,29 +175,18 @@ class FlowSensitivity(config: Config) extends GridSearch {
   }*/
 
   // checks if the output dir exists for writing the results
-  val outputDir: Path = Paths.get(config.getString("output.dir"))
+  /*val outputDir: Path = Paths.get(config.getString("output.dir"))
   if (!Files.exists(outputDir) || !Files.isDirectory(outputDir)) {
     Files.createDirectory(outputDir)
+  }*/
+
+
+  def processWrittenResults(func: Seq[Double] => Double): Map[(Double), (Iterable[Double], Iterable[Iterable[Double]])] = {
+    groupResultsFiles("tt").map(ProcessTTFile1Parameter).
+      flatMap(tup => tup._2.map(t => (tup._1, t._1._1, t._1._2, t._2))).
+      groupBy(tup => tup._1).
+      mapValues(v => (v.map(d => func(d._4)), v.map(_._4)))
   }
-
-  def groupResultsFiles: Map[String, List[File]] = { // reads the files and process the data
-    new File(outputDir.getParent.toString + "/" + outputDir.getFileName.toString).listFiles.filter(_.isFile).toList.groupBy(f => {
-      f.getName match {
-        case a if a.contains("_params_individual_density_") => "individual_density"
-        case a if a.contains("_params_tt_") => "tt"
-        case a if a.contains("_params_density_") => "density"
-      }
-    })
-  }
-
-  def processWrittenResults(func: Seq[Double] => Double): Map[(Double, Double), (Iterable[Double], Iterable[Iterable[Double]])] = {
-
-    groupResultsFiles("tt").map(ProcessTTFile2Parameters).
-      flatMap(tup => tup._3.map(t => (tup._1, tup._2, t._1._1, t._1._2, t._2))).
-      groupBy(tup => (tup._1, tup._2)).
-      mapValues(v => (v.map(d => func(d._5)), v.map(_._5)))
-  }
-
 
   def processWrittenResultsByOD(func: Seq[Double] => Double): Map[(Double), (Map[(String, String),Iterable[Double]], Iterable[Iterable[Double]])] = {
     groupResultsFiles("tt").map(ProcessTTFile1Parameter).
@@ -154,25 +199,26 @@ class FlowSensitivity(config: Config) extends GridSearch {
         )
       })
   }
+
+  /*
+    def processWrittenResultsOld(func: Seq[Double] => Double): Map[(Double, Double), (Iterable[Double], Iterable[Iterable[Double]])] = {
+      println(config.getString("output.dir"))
+      val outputDir = new File(config.getString("output.dir"))
+
+      val files: Map[String, List[File]] = outputDir.listFiles.filter(_.isFile).toList.groupBy(f => {
+        f.getName match {
+          case a if a.contains("_params_tt_") => "tt"
+          case b if b.contains("_params_density_") => "density"
+        }
+      })
+
+      files("tt").map(ProcessTTFile2Parameters).
+        flatMap(tup => tup._3.map(t => (tup._1, tup._2, t._1._1, t._1._2, t._2))).
+        groupBy(tup => (tup._1, tup._2, tup._3, tup._4)).
+        map(kv => (kv._1._1, kv._1._2) -> (kv._2.map(d => func(d._5)), kv._2.map(v => v._5)))
+    }*/
+
 /*
-  def processWrittenResultsOld(func: Seq[Double] => Double): Map[(Double, Double), (Iterable[Double], Iterable[Iterable[Double]])] = {
-    println(config.getString("output.dir"))
-    val outputDir = new File(config.getString("output.dir"))
-
-    val files: Map[String, List[File]] = outputDir.listFiles.filter(_.isFile).toList.groupBy(f => {
-      f.getName match {
-        case a if a.contains("_params_tt_") => "tt"
-        case b if b.contains("_params_density_") => "density"
-      }
-    })
-
-    files("tt").map(ProcessTTFile2Parameters).
-      flatMap(tup => tup._3.map(t => (tup._1, tup._2, t._1._1, t._1._2, t._2))).
-      groupBy(tup => (tup._1, tup._2, tup._3, tup._4)).
-      map(kv => (kv._1._1, kv._1._2) -> (kv._2.map(d => func(d._5)), kv._2.map(v => v._5)))
-  }*/
-
-
   def drawResults(results: Map[(Double, Double, String, String), (Int, Double, Double, Double, Double, Double)]): Unit = {
 
     val plotOptionsTT = PlotOptions(zmin = Some(28), zmax = Some(32))
@@ -198,7 +244,7 @@ class FlowSensitivity(config: Config) extends GridSearch {
     new HeatMap(config.getString("output.output_prefix") + "_heatmap-variance-tt-top-bottom.png", results.map(r => (r._1._1._1, r._1._1._2, r._2._2._3)), "var travel time", "bottom -> top multiplier", "top -> bottom multiplier", "Variance travel time from top to bottom", plotOptionsVarTT)
     new HeatMap(config.getString("output.output_prefix") + "_heatmap-median-tt-top-bottom.png", results.map(r => (r._1._1._1, r._1._1._2, r._2._2._4)), "median travel time", "bottom -> top multiplier", "top -> bottom multiplier", "Median travel time from top to bottom", plotOptionsTT)
 
-  }
+  }*/
 
   /*def drawComparisonResults(otherConfigFile: String): Unit = {
 

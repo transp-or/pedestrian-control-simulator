@@ -60,12 +60,11 @@ package object JSONReaders {
     * @param loc                    location of this map
     * @param Track2NodeMappingInput raw data
     */
-  case class Track2NodeMapping_JSON(loc: String, Track2NodeMappingInput: Vector[Stop2Nodes_JSON], WalkingZones2NodeMappingInput: Vector[Zone2Nodes_JSON])
+  case class Track2NodeMapping_JSON(loc: String, Track2NodeMappingInput: Vector[Stop2Nodes_JSON])
 
   implicit val track2nodeMappingReads: Reads[Track2NodeMapping_JSON] = (
     (JsPath \ "location").read[String] and
-      (JsPath \ "stop2nodes").read[Vector[Stop2Nodes_JSON]] and
-      (JsPath \ "zone2nodes").read[Vector[Zone2Nodes_JSON]]
+      (JsPath \ "stop2nodes").read[Vector[Stop2Nodes_JSON]]
     ) (Track2NodeMapping_JSON.apply _)
 
 

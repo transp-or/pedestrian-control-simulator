@@ -7,11 +7,11 @@ import com.typesafe.config.Config
 import hubmodel.DES.NOMADGraphSimulator
 import hubmodel.ped.PedestrianNOMAD
 import hubmodel._
+import hubmodel.demand.{PedestrianFlowFunction_New, PedestrianFlowPT_New, PedestrianFlow_New}
 import myscala.math.stats.ComputeStats
 
 import scala.collection.GenIterable
 
-class ParameterModifications(i: Int)
 
 
 abstract class GridSearchNew[T <: ParameterModifications](val config: Config) extends GridSearch {
@@ -24,12 +24,16 @@ abstract class GridSearchNew[T <: ParameterModifications](val config: Config) ex
     Files.createDirectory(outputDir)
   }
 
+  //val flows: (Iterable[PedestrianFlow_New], Iterable[PedestrianFlowPT_New], Iterable[PedestrianFlowFunction_New]) = getFlows(config)
+
 
   val simulationRunsParameters: GenIterable[T]
 
   def getParameters(paramMods: T): SimulatorParameters
 
   def getRunPrefix(paramMods: T): String
+
+  def getFlowMods(paramMods: T): (Iterable[PedestrianFlow_New], Iterable[PedestrianFlowPT_New], Iterable[PedestrianFlowFunction_New])
 
   def runSimulations(): Unit = {
     for (p <- simulationRunsParameters) {
@@ -63,7 +67,7 @@ abstract class GridSearchNew[T <: ParameterModifications](val config: Config) ex
 
       ///////////////////////////////////////////////////////////////////////////////////////////////
 
-      val flows = getFlows(config)
+      val flows: (Iterable[PedestrianFlow_New], Iterable[PedestrianFlowPT_New], Iterable[PedestrianFlowFunction_New]) = getFlowMods(p)
 
       val (timeTable, stop2Vertex) = getPTSchedule(flows, config)
 

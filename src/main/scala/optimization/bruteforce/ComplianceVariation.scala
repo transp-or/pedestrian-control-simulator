@@ -2,24 +2,24 @@ package optimization.bruteforce
 
 import com.typesafe.config.Config
 import hubmodel.SimulatorParameters
-import myscala.math.stats.ComputeStats
+import hubmodel.demand.{PedestrianFlowFunction_New, PedestrianFlowPT_New, PedestrianFlow_New}
+import hubmodel.getFlows
 
 import scala.collection.GenIterable
 import scala.collection.parallel.ForkJoinTaskSupport
 
-case class ParameterModificationsCompliance(p: Double, i: Int) extends ParameterModifications(i)
 
 class ComplianceVariation(complianceInterval: Double, c: Config, upperBoundCompliance: Double = 0.5) extends GridSearchNew[ParameterModificationsCompliance](c) {
 
   override val simulationRunsParameters: GenIterable[ParameterModificationsCompliance] = if (config.getBoolean("execution.parallel")) {
     val r = (for (i <- BigDecimal(0.0) to BigDecimal(upperBoundCompliance) by BigDecimal(complianceInterval); k <- 1 to config.getInt("sim.nb_runs")) yield {
-      ParameterModificationsCompliance(i.toDouble, k)
+      ParameterModificationsCompliance(i.toDouble)
     }).par
     r.tasksupport = new ForkJoinTaskSupport(new scala.concurrent.forkjoin.ForkJoinPool(config.getInt("execution.threads")))
     r
   } else {
     for (i <- BigDecimal(0.0) to BigDecimal(upperBoundCompliance) by BigDecimal(complianceInterval); k <- 1 to config.getInt("sim.nb_runs")) yield {
-      ParameterModificationsCompliance(i.toDouble, k)
+      ParameterModificationsCompliance(i.toDouble)
     }
   }
 
@@ -35,7 +35,7 @@ class ComplianceVariation(complianceInterval: Double, c: Config, upperBoundCompl
       defaultParameters._5,
       defaultParameters._6,
       defaultParameters._7,
-      defaultParameters._8.clone2AlternateGraphs(devices, paramMods.p),
+      defaultParameters._8.clone2AlternateGraphs(devices, paramMods.complianceRate),
       defaultParameters._9,
       defaultParameters._10,
       devices
@@ -43,8 +43,10 @@ class ComplianceVariation(complianceInterval: Double, c: Config, upperBoundCompl
   }
 
   def getRunPrefix(paramMods: ParameterModificationsCompliance): String = {
-    paramMods.p.toString + "_params_"
+    paramMods.complianceRate.toString + "_params_"
   }
+
+  def getFlowMods(paramMods: ParameterModificationsCompliance): (Iterable[PedestrianFlow_New], Iterable[PedestrianFlowPT_New], Iterable[PedestrianFlowFunction_New]) = getFlows(config)
 
 
   def processWrittenResults(func: Seq[Double] => Double): Map[(Double), (Iterable[Double], Iterable[Iterable[Double]])] = {

@@ -263,7 +263,6 @@ package object hubmodel {
       }
     }
 
-
     // Loads the start time, end time and time intervals
     val simulationStartTime: Time = Time(config.getDouble("sim.start_time"))
     val simulationEndTime: Time = Time(config.getDouble("sim.end_time"))
@@ -321,7 +320,7 @@ package object hubmodel {
       )
     } else if (flows._2.isEmpty) {
       println(" * no time table is required as PT induced flows are empty")
-      (new PublicTransportSchedule("unused", Vector()), new Stop2Vertex(Map(), Map()))
+      (new PublicTransportSchedule("unused", Vector()), new Stop2Vertex(Map()))
     } else {
       throw new IllegalArgumentException("both time tables files are set to null in config file")
     }
@@ -582,6 +581,9 @@ package object hubmodel {
 
   def runAndWriteResults[T <: PedestrianNOMAD](simulator: NOMADGraphSimulator[T], prefix: String = "", dir: Option[String], writeTrajectoriesVS: Boolean = false, writeTrajectoriesJSON: Boolean = false): Unit = {
     timeBlock(simulator.run())
+    println(simulator.population.count(_.graph == "reference") + simulator.populationCompleted.count(_.graph == "reference"))
+    println(simulator.population.count(_.graph != "reference") + simulator.populationCompleted.count(_.graph != "reference"))
+
     writeResults(simulator, prefix, dir, writeTrajectoriesVS, writeTrajectoriesJSON)
   }
 

@@ -1,5 +1,5 @@
 import com.typesafe.config.{Config, ConfigFactory}
-import optimization.bruteforce.FlowSensitivity
+import optimization.bruteforce.FlowVariation
 
 object ReadExploreSensitivityFlowsResults extends App {
 

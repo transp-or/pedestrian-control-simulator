@@ -171,7 +171,7 @@ package object graph {
     val input: JsValue = Json.parse(try source.mkString finally source.close)
 
     input.validate[Track2NodeMapping_JSON] match {
-      case s: JsSuccess[Track2NodeMapping_JSON] => new Stop2Vertex(s.get.Track2NodeMappingInput.map(t => StopID_New(t.stop, "") -> t.nodes).toMap, s.get.WalkingZones2NodeMappingInput.map(t => NodeID_New(t.zone.toString, "") -> t.nodes).toMap)
+      case s: JsSuccess[Track2NodeMapping_JSON] => new Stop2Vertex(s.get.Track2NodeMappingInput.map(t => StopID_New(t.stop, "") -> t.nodes).toMap)
       case e: JsError => throw new Error("Error while parsing zones to nodes mapping: " + JsError.toJson(e).toString())
     }
   }
