@@ -4,6 +4,7 @@ import hubmodel.DES.{Action, NOMADGraphSimulator}
 import hubmodel._
 import hubmodel.demand.transit.Vehicle
 import hubmodel.ped.PedestrianNOMAD
+import hubmodel.supply.{StopID_New, TrainID_New}
 
 import scala.reflect.ClassTag
 
@@ -14,9 +15,14 @@ class TrainArrival[T <: PedestrianNOMAD](train: Vehicle, tinf: Seq[PedestrianFlo
     (train.alightingPassengers.groupBy(v => v).map(kv => {
       PedestrianFlowPT_New(train.ID, kv._2.head, kv._2.size)
     }) ++ tinf)
-      .flatMap(pedFlow => splitFractionsUniform(sim.stop2Vertices(pedFlow.O), sim.stop2Vertices(pedFlow.D), pedFlow.f))
+      .flatMap(pedFlow => {
+        pedFlow.D match {
+          case t: TrainID_New => { splitFractionsUniform(sim.stop2Vertices(pedFlow.O), sim.stop2Vertices(pedFlow.D), pedFlow.f).map(d => (d._1, d._2,d._3, true))}
+          case _ => { splitFractionsUniform(sim.stop2Vertices(pedFlow.O), sim.stop2Vertices(pedFlow.D), pedFlow.f).map(d => (d._1, d._2,d._3, false)) }
+        }
+      })
       .foreach(flow => sim.insertEventWithZeroDelay {
-        new PedestrianGenerationTINF(flow._1, flow._2, new Time(0.0), math.round(flow._3).toInt, sim)
+        new PedestrianGenerationTINF(flow._1, flow._2, flow._4, new Time(0.0), math.round(flow._3).toInt, sim)
       })
   }
 }

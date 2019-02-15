@@ -38,7 +38,7 @@ class CreatePedestrianWithInsertion[T <: PedestrianNOMAD](o: Rectangle, d: Recta
     }*/
 
     // inserts new pedestrian into population
-    sim.insertEventWithZeroDelay(new CreatePedestrian(o, d, sim))
+    sim.insertEventWithZeroDelay(new CreatePedestrian(o, d, false, sim))
     //sim.insertInPopulation(tag.runtimeClass.getConstructor(classOf[(Rectangle, Rectangle, BigDecimal, Position, List[Rectangle])]).newInstance(o, d, sim.currentTime.value, generationPoint, route).asInstanceOf[T])
     //tag.runtimeClass.getConstructor(classOf[(Rectangle, Rectangle, BigDecimal, Position, List[Rectangle])]).newInstance(o, d, sim.currentTime.value, generationPoint, route).asInstanceOf[T]
     timeGenerator(sim.currentTime) collect {

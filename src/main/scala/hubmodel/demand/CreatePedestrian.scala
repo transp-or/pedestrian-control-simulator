@@ -1,6 +1,5 @@
 package hubmodel.demand
 
-import breeze.numerics.pow
 import hubmodel.DES.{Action, NOMADGraphSimulator}
 import hubmodel._
 import hubmodel.ped.PedestrianNOMAD
@@ -11,7 +10,7 @@ import scala.reflect.ClassTag
 /**
   * Creates a pedestrian. A new pedestrian will be added when this event is executed.
   */
-class CreatePedestrian[T <: PedestrianNOMAD](o: Rectangle, d: Rectangle, sim: NOMADGraphSimulator[T])(implicit tag: ClassTag[T]) extends Action {
+class CreatePedestrian[T <: PedestrianNOMAD](o: Rectangle, d: Rectangle, val isTransfer: Boolean, sim: NOMADGraphSimulator[T])(implicit tag: ClassTag[T]) extends Action {
 
   /**
     * Inserts a new pedestrian. The characteristics of this pedestrian are sampled on creation.
@@ -21,7 +20,7 @@ class CreatePedestrian[T <: PedestrianNOMAD](o: Rectangle, d: Rectangle, sim: NO
     *
     * If problems inside zone on creation this is a good place to start.
     */
-  override def execute(): Unit = {
+  override def execute(): String = {
     sim.eventLogger.trace("time=" + sim.currentTime + ": pedestrian created")
 
     // the shortest path method returns the origin node as the first element of the route.
@@ -32,7 +31,7 @@ class CreatePedestrian[T <: PedestrianNOMAD](o: Rectangle, d: Rectangle, sim: NO
     val generationPoint: Position = {
       var pos: Position = o.uniformSamplePointInside
       var it: Int = 0
-      while (it < 100 && sim.population.exists(ped => pow((ped.currentPosition.X - pos.X) * (ped.currentPosition.X - pos.X) + (ped.currentPosition.Y - pos.Y) * (ped.currentPosition.Y - pos.Y), 0.5) < 0.5)) {
+      while (it < 100 && sim.population.exists(ped => math.pow((ped.currentPosition.X - pos.X) * (ped.currentPosition.X - pos.X) + (ped.currentPosition.Y - pos.Y) * (ped.currentPosition.Y - pos.Y), 0.5) < 0.5)) {
         pos = o.uniformSamplePointInside
         it = it + 1
       }
@@ -47,6 +46,8 @@ class CreatePedestrian[T <: PedestrianNOMAD](o: Rectangle, d: Rectangle, sim: NO
     newPed.updateClosestWalls(sim.walls)
 
     sim.insertInPopulation(newPed) //new T(o, d, sim.currentTime, generationPoint, route, ""))
+
+    newPed.ID
   }
 }
 

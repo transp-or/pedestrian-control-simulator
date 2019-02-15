@@ -320,7 +320,7 @@ package object hubmodel {
       )
     } else if (flows._2.isEmpty) {
       println(" * no time table is required as PT induced flows are empty")
-      (new PublicTransportSchedule("unused", Vector()), new Stop2Vertex(Map()))
+      (new PublicTransportSchedule("unused", Vector()), new Stop2Vertex(Map(), Vector(Vector())))
     } else {
       throw new IllegalArgumentException("both time tables files are set to null in config file")
     }
@@ -339,7 +339,7 @@ package object hubmodel {
 
 
   // Loads the disaggregate pedestrian demand.
-  def getDisaggPopulation(config: Config): Iterable[(String, String, Option[Time], Option[String], Option[String])] = if (config.getIsNull("files.flows_TF") && !config.getIsNull("files.disaggregate_demand")) {
+  def getDisaggPopulation(config: Config): Iterable[(String, String, Option[Time])] = if (config.getIsNull("files.flows_TF") && !config.getIsNull("files.disaggregate_demand")) {
     readDisaggDemand(config.getString("files.disaggregate_demand"))
   } else if (config.getIsNull("files.disaggregate_demand") && !config.getIsNull("files.flows_TF")) {
     readDisaggDemandTF(config.getString("files.flows_TF"))
@@ -409,7 +409,7 @@ package object hubmodel {
     * @param prefix    prefix to the file name
     * @param path      path where to write the file, default is empty
     */
-  def writeResults[T <: PedestrianNOMAD](simulator: NOMADGraphSimulator[T], prefix: String = "", dir: Option[String], writeTrajectoriesVS: Boolean = false, writeTrajectoriesJSON: Boolean = false): Unit = {
+  def writeResults[T <: PedestrianNOMAD](simulator: NOMADGraphSimulator[T], prefix: String = "", dir: Option[String], writeTrajectoriesVS: Boolean = false, writeTrajectoriesJSON: Boolean = false, writeTRANSFORMTT: Boolean = false): Unit = {
 
     // TODO: check if files exists and remove them if they are inside tmp, and warn about them if they are in output_dir
     val path: String = dir match {
@@ -425,7 +425,7 @@ package object hubmodel {
     }
 
     if (simulator.exitCode == 0) {
-      simulator.populationCompleted.map(p => (p.origin.name, p.finalDestination.name, p.travelTime.value, p.entryTime.value, p.exitTime.value)).writeToCSV(prefix + "tt_" + simulator.ID + ".csv", path)
+      simulator.populationCompleted.filter(p => simulator.transferringPassengers.contains(p.ID)).map(p => (p.origin.name, p.finalDestination.name, p.travelTime.value, p.entryTime.value, p.exitTime.value)).writeToCSV(prefix + "tt_" + simulator.ID + ".csv", path)
       if (simulator.criticalAreas.nonEmpty) {
         (simulator.criticalAreas.head._2.densityHistory.map(_._1.value).toVector +: simulator.criticalAreas.map(_._2.densityHistory.map(_._2).toVector).toVector).writeToCSV(prefix + "density_" + simulator.ID + ".csv", path)
         simulator.criticalAreas.head._2.paxIndividualDensityHistory.flatMap(v => Vector.fill(v._2.size)(v._1.value).zip(v._2)).toVector.writeToCSV(prefix + "individual_densities_" + simulator.ID + ".csv", path)
@@ -579,12 +579,12 @@ package object hubmodel {
   }
 
 
-  def runAndWriteResults[T <: PedestrianNOMAD](simulator: NOMADGraphSimulator[T], prefix: String = "", dir: Option[String], writeTrajectoriesVS: Boolean = false, writeTrajectoriesJSON: Boolean = false): Unit = {
+  def runAndWriteResults[T <: PedestrianNOMAD](simulator: NOMADGraphSimulator[T], prefix: String = "", dir: Option[String], writeTrajectoriesVS: Boolean = false, writeTrajectoriesJSON: Boolean = false, writeTRANSFORMTT:Boolean = false): Unit = {
     timeBlock(simulator.run())
     println(simulator.population.count(_.graph == "reference") + simulator.populationCompleted.count(_.graph == "reference"))
     println(simulator.population.count(_.graph != "reference") + simulator.populationCompleted.count(_.graph != "reference"))
 
-    writeResults(simulator, prefix, dir, writeTrajectoriesVS, writeTrajectoriesJSON)
+    writeResults(simulator, prefix, dir, writeTrajectoriesVS, writeTrajectoriesJSON, writeTRANSFORMTT)
   }
 
 

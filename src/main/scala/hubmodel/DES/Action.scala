@@ -20,7 +20,7 @@ abstract class Action extends LazyLogging {
   /** Method which is called to do stuff. This method must be overriden for all subclasses of [[Action]].
     * The method will modifiy some elements of the simulation.
     */
-  def execute(): Unit
+  def execute(): Any
 
   override def toString: String = this.getClass.getSimpleName
 

@@ -310,6 +310,16 @@
       ]
     }
   ],
+  "groupingForWalkingTimeDistribution": [
+["3040-a", "3040-b", "3040-c", "2037-a", "2037-b", "2037-c"],
+    ["2021-a", "2021-b", "2021-c", "3017-a", "3017-b", "3017-c"],
+    ["8002", "8003"],
+    ["8004", "8005"],
+    ["8006", "8007"],
+   ["8008", "8009"],
+    ["8010", "8011"],
+    ["1501-1517-bottom", "1517", "1501", "1501-1517-top"]
+  ],
   "walkingStops2Nodes": {
     "defaultDistribution": [
       {
@@ -323,7 +333,8 @@
       {
         "node": "north-entrance-1",
         "probability": 0.15
-      },{
+      },
+      {
         "node": "north-entrance-2",
         "probability": 0.15
       },

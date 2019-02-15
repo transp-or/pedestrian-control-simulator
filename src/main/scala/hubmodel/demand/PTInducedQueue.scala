@@ -5,7 +5,7 @@ import java.util.concurrent.ThreadLocalRandom
 import hubmodel.ped.PedestrianNOMAD
 import hubmodel.tools.cells.Rectangle
 
-class PTInducedQueue[T <: PedestrianNOMAD](val id: Rectangle) {
+class PTInducedQueue[T <: PedestrianNOMAD]() {
 
   private val _queue: collection.mutable.ArrayBuffer[CreatePedestrian[T]] = collection.mutable.ArrayBuffer()
 

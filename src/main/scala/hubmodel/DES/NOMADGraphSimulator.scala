@@ -103,6 +103,8 @@ class NOMADGraphSimulator[T <: PedestrianNOMAD](st: Time,
 
   var regulatorIntegralAction: Double = 0.0
 
+  val transferringPassengers: collection.mutable.Set[String] = collection.mutable.Set()
+
 
   /**
     * Class to initialize the simulation. The first calls to reccurent events like the [[NOMADIntegrated]]

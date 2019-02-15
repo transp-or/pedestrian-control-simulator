@@ -16,15 +16,13 @@ package object TRANSFORM {
       (JsPath \ "arrival_time").read[Time]
     ) (Vehicle_JSON_TF.apply _)
 
-  case class Pedestrian_JSON_TF(ID: String, oZone: String, dZone: String, oTime: Option[Double], originalOStop: Option[String], originalDStop: Option[String])
+  case class Pedestrian_JSON_TF(ID: String, oZone: String, dZone: String, oTime: Option[Double])
 
   implicit val Pedestrian_JSON_TF_Reads: Reads[Pedestrian_JSON_TF] = (
     (JsPath \ "pass_id").read[String] and
       (JsPath \ "origin").read[String] and
       (JsPath \ "destination").read[String] and
-      (JsPath \ "origin_time").readNullable[Double] and
-      (JsPath \ "original_origin_stop").readNullable[String] and
-      (JsPath \ "original_destination_stop").readNullable[String]
+      (JsPath \ "origin_time").readNullable[Double]
     ) (Pedestrian_JSON_TF.apply _)
 
   private[JSONReaders] case class PTSchedule_JSON_TF(loc: String, _timeTableInput: Vector[Vehicle_JSON_TF])

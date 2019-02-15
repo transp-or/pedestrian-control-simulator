@@ -20,7 +20,7 @@ import scala.reflect.ClassTag
   * @param end          end time of the pedestrian creation
   * @param numberPeople number of people to create
   */
-class PedestrianGenerationTINF[T <: PedestrianNOMAD](o: Rectangle, d: Rectangle, start: Time, numberPeople: Int, sim: NOMADGraphSimulator[T])(implicit tag: ClassTag[T]) extends Action {
+class PedestrianGenerationTINF[T <: PedestrianNOMAD](o: Rectangle, d: Rectangle, isTransfer: Boolean, start: Time, numberPeople: Int, sim: NOMADGraphSimulator[T])(implicit tag: ClassTag[T]) extends Action {
 
   /** Poisson distribution
     *
@@ -44,19 +44,14 @@ class PedestrianGenerationTINF[T <: PedestrianNOMAD](o: Rectangle, d: Rectangle,
     */
   override def execute(): Unit = {
     sim.eventLogger.trace("time=" + sim.currentTime + ": generating " + numberPeople + " pedestrians at " + start)
-    //println((end-start).toLong, numberPeople, sim.randU, Vector())
-    //poissonProcessIterator(end.value-start.value, numberPeople).foreach(t => {sim.insertEventWithDelayNew(add(start,t))(new CreatePedestrian(o, d, sim))})
-    val tinfQueue: PTInducedQueue[T] = sim.PTInducedFlows.getOrElseUpdate(o, new PTInducedQueue(o))
+    val tinfQueue: PTInducedQueue[T] = sim.PTInducedFlows.getOrElseUpdate(o, new PTInducedQueue)
     if (tinfQueue.isEmpty) {
       sim.insertEventWithDelay(new Time(-math.log(ThreadLocalRandom.current.nextDouble(0.0, 1.0) / sim.PTInducedFlows(o).rate))) {
         new ReleasePedPTInducedFlow(o, sim)
       }
     }
-    tinfQueue.appendPeds(Vector.fill(numberPeople) { new CreatePedestrian(o, d, sim) })
-    //arrivalTimes.
+    tinfQueue.appendPeds(Vector.fill(numberPeople) { new CreatePedestrian(o, d, isTransfer, sim) })
   }
-
-  //override def toString: NodeIDOld = this.o + ", " + this.d + ", " + this.start + ", " + this.numberPeople
 }
 
 

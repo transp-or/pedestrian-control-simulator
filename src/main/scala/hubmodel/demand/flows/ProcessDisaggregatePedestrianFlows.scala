@@ -18,7 +18,7 @@ class ProcessDisaggregatePedestrianFlows[T <: PedestrianNOMAD](eventCollection: 
       .filter(ec => ec._1 != ec._2)// && ec._1 != "-1" && ec._2 != "-1" && sim.graph.vertexMapNew.keySet.contains(ec._1.drop(2)) && sim.graph.vertexMapNew.keySet.contains(ec._2.drop(2)))
       .foreach(ec => {
       if (ec._1.contains("z_") && ec._2.contains("z_")) {
-        sim.insertEventAtAbsolute(ec._3.get)(new CreatePedestrian(sim.graph.vertexMapNew(ec._1.drop(2)), sim.graph.vertexMapNew(ec._2.drop(2)), sim))
+        sim.insertEventAtAbsolute(ec._3.get)(new CreatePedestrian(sim.graph.vertexMapNew(ec._1.drop(2)), sim.graph.vertexMapNew(ec._2.drop(2)), false, sim))
       } else if (ec._1.contains("t_") && ec._2.contains("z_")) {
         sim.timeTable.timeTable.find(_._1.ID == ec._1.drop(2)).get._2.addAlightingPassenger(StopID_New(ec._2.drop(2), ""))
       } else if (ec._1.contains("t_") && ec._2.contains("t_")) {
@@ -32,6 +32,7 @@ class ProcessDisaggregatePedestrianFlows[T <: PedestrianNOMAD](eventCollection: 
         sim.insertEventAtAbsolute(ec._3.get)(new CreatePedestrian(
           sim.graph.vertexMapNew(ec._1.drop(2)),
           sim.graph.vertexMapNew(possibleZoneIDs(ThreadLocalRandom.current.nextInt(possibleZoneIDs.size))),
+          false,
           sim))
       } else {
         throw new Exception("Case not covered")

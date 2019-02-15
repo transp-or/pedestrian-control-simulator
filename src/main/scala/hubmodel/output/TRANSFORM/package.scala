@@ -28,20 +28,20 @@ package object TRANSFORM {
     }
   }
 
-  implicit class PopulationSummaryProcessingTRANSFORM(pop: Iterable[(String, String, Double, Double, Double)]) {
+  implicit class PopulationSummaryProcessingTRANSFORM(pop: Iterable[((Int, String), (Int, String), Double, Double, Double)]) {
 
-    def computeTT4TRANSFORM(quantiles: Seq[Double], startTime: Time, endTime: Time, fileName: String, vertex2Stop: VertexID => String, startDay: String = "1970-01-01", endDay: String = "2100-12-31"): Unit = {
-      val res: collection.mutable.Map[(String, String), collection.mutable.ArrayBuffer[Double]] = collection.mutable.Map()
-      pop.foreach(p => {
+    def computeTT4TRANSFORM(quantiles: Seq[Double], startTime: Time, endTime: Time, fileName: String, vertex2Stop: ((Int, VertexID)) => String, startDay: String = "1970-01-01", endDay: String = "2100-12-31"): Unit = {
+      val res: collection.mutable.Map[((String, String), (String, String)), collection.mutable.ArrayBuffer[Double]] = collection.mutable.Map()
+        pop.foreach(p => {
         if (p._4 >= startTime.value || p._5 <= endTime.value) {
-          res.getOrElseUpdate((vertex2Stop(p._1), vertex2Stop(p._2)), collection.mutable.ArrayBuffer()).append(p._3)
+          res.getOrElseUpdate((if (p._1._1 == -1) {(p._1._2, p._1._2)} else {(p._1._1.toString, p._1._2)}, if (p._2._1 == -1){(p._2._2, p._2._2)} else {(p._2._1.toString, p._2._2)}), collection.mutable.ArrayBuffer()).append(p._3)
         }
       })
       val file = new File(fileName)
       val bw = new BufferedWriter(new FileWriter(file))
       bw.write(Json.prettyPrint(Json.toJson(
         res.map(kv => {
-          ODWithQuantiles(kv._1._1, kv._1._2, startDay + " " + startTime.asReadable, endDay + " " + endTime.asReadable, computeQuantiles(quantiles)(kv._2))
+          ODWithQuantiles(kv._1._1._2, kv._1._2._2, startDay + " " + startTime.asReadable, endDay + " " + endTime.asReadable, computeQuantiles(quantiles)(res.filter(r => r._1._1._1 == kv._1._1._1 && r._1._2._1 == kv._1._2._1).flatMap(_._2).toVector))
         })
       )))
       bw.close()
