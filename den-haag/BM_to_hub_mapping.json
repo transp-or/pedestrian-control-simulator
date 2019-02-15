@@ -314,19 +314,22 @@
     "defaultDistribution": [
       {
         "node": "west-entrance",
-        "probability": 0.15
+        "probability": 0.5
       },
       {
         "node": "east-entrance",
         "probability": 0.15
       },
       {
-        "node": "north-entrance",
-        "probability": 0.6
+        "node": "north-entrance-1",
+        "probability": 0.15
+      },{
+        "node": "north-entrance-2",
+        "probability": 0.15
       },
       {
         "node": "bike-storage",
-        "probability": 0.1
+        "probability": 0.05
       }
     ],
     "stopSpecificDistribution": [

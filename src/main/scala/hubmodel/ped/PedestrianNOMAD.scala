@@ -35,9 +35,9 @@ class PedestrianNOMAD(oZone: Rectangle, dZone: Rectangle, entryTime: Time, posO:
     else false
   }
 
-  def updatePreviousPositionAndSpeed(t: Time): Unit = {
+  /*def updatePreviousPositionAndSpeed(t: Time): Unit = {
     this.updatePositionHistory(t)
-  }
+  }*/
 
   /** Computes the direction based on the current position and the target position
     *

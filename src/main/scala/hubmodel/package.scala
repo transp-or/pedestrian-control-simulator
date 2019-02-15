@@ -339,7 +339,7 @@ package object hubmodel {
 
 
   // Loads the disaggregate pedestrian demand.
-  def getDisaggPopulation(config: Config): Iterable[(String, String, Time)] = if (config.getIsNull("files.flows_TF") && !config.getIsNull("files.disaggregate_demand")) {
+  def getDisaggPopulation(config: Config): Iterable[(String, String, Option[Time], Option[String], Option[String])] = if (config.getIsNull("files.flows_TF") && !config.getIsNull("files.disaggregate_demand")) {
     readDisaggDemand(config.getString("files.disaggregate_demand"))
   } else if (config.getIsNull("files.disaggregate_demand") && !config.getIsNull("files.flows_TF")) {
     readDisaggDemandTF(config.getString("files.flows_TF"))
@@ -349,13 +349,13 @@ package object hubmodel {
   }
 
   // Loads the disaggregate pedestrian demand.
-  def getDisaggPopulation(flows_TF: String): Iterable[(String, String, Time)] = {
+  def getDisaggPopulation(flows_TF: String): Iterable[(String, String, Option[Time])] = {
     readDisaggDemandTF(flows_TF)
   }
 
 
   def insertDemandIntoSimulator[T <: PedestrianNOMAD](sim: NOMADGraphSimulator[T],
-                                                      disaggPopulation: Iterable[(String, String, Time)],
+                                                      disaggPopulation: Iterable[(String, String, Option[Time])],
                                                       flows: (Iterable[PedestrianFlow_New], Iterable[PedestrianFlowPT_New], Iterable[PedestrianFlowFunction_New]),
                                                       timeTable: PublicTransportSchedule)(implicit tag: ClassTag[T]): Unit = {
 

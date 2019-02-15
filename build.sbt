@@ -48,7 +48,7 @@ mainClass in(Compile, packageBin) := Some("RunSimulation")
 lazy val dataFolders = Array("den-haag")
 
 lazy val files = Array()
-lazy val confFiles = Array("den-haag-integration.conf", "den-haag-debug.conf")
+lazy val confFiles = Array("den-haag-integration.conf")
 
 
 lazy val distribution = taskKey[Unit]("Copies all the required files and builds a standalone jar to distribute.")

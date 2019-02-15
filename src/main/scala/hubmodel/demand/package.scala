@@ -242,26 +242,25 @@ package hubmodel {
       }
     }
 
-    def readDisaggDemand(fileName: String): Vector[(String, String, Time)] = {
+    def readDisaggDemand(fileName: String): Vector[(String, String, Option[Time])] = {
 
 
       val source: BufferedSource = scala.io.Source.fromFile(fileName)
       val input: JsValue = Json.parse(try source.mkString finally source.close)
 
       input.validate[Vector[Pedestrian_JSON]] match {
-        case s: JsSuccess[Vector[Pedestrian_JSON]] => s.get.map(p => (p.oZone, p.dZone, Time(p.entryTime)))
+        case s: JsSuccess[Vector[Pedestrian_JSON]] => s.get.map(p => (p.oZone, p.dZone, Some(Time(p.entryTime))))
         case e: JsError => throw new Error("Error while parsing disaggregate pedestrian: " + JsError.toJson(e).toString())
       }
     }
 
-    def readDisaggDemandTF(fileName: String): Vector[(String, String, Time)] = {
-
+    def readDisaggDemandTF(fileName: String): Vector[(String, String, Option[Time], Option[String], Option[String])] = {
 
       val source: BufferedSource = scala.io.Source.fromFile(fileName)
       val input: JsValue = Json.parse(try source.mkString finally source.close)
 
       input.validate[PedestrianCollectionReaderTF] match {
-        case s: JsSuccess[PedestrianCollectionReaderTF] => s.get.population.map(p => (p.oZone, p.dZone, Time(math.pow(10, 8))))
+        case s: JsSuccess[PedestrianCollectionReaderTF] => s.get.population.map(p => (p.oZone, p.dZone, if (p.oTime.isDefined) { Some(Time(p.oTime.get)) } else { None }, p.originalOStop, p.originalDStop))
         case e: JsError => throw new Error("Error while parsing disaggregate pedestrian for TF: " + JsError.toJson(e).toString())
       }
     }
