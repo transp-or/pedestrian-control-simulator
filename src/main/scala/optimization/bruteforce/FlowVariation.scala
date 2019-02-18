@@ -70,7 +70,7 @@ class FlowVariation(flowInterval: Double, config: Config, lowerBoundFlow: Double
       defaultParameters._5,
       defaultParameters._6,
       defaultParameters._7,
-      defaultParameters._8.clone2AlternateGraphs(devices, 0.1),
+      defaultParameters._8.clone2AlternateGraphs(devices, 0.05),
       defaultParameters._9,
       defaultParameters._10,
       devices
