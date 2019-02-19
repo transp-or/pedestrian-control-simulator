@@ -4,9 +4,11 @@ import java.io.{BufferedWriter, File, FileWriter}
 
 import hubmodel.TimeNumeric.mkOrderingOps
 import hubmodel.ped.PedestrianTrait
-import hubmodel.{Time, VertexID}
+import hubmodel.supply.graph.{Stop2Vertex}
+import hubmodel.{GroupID, Time, VertexID}
 import myscala.math.stats.{Quantiles, computeQuantiles}
 import play.api.libs.json.{JsValue, Json, Writes}
+
 
 package object TRANSFORM {
 
@@ -28,20 +30,44 @@ package object TRANSFORM {
     }
   }
 
-  implicit class PopulationSummaryProcessingTRANSFORM(pop: Iterable[((Int, String), (Int, String), Double, Double, Double)]) {
+  implicit class PopulationSummaryProcessingTRANSFORM(pop: Iterable[(VertexID, VertexID, Double, Double, Double)]) {
 
-    def computeTT4TRANSFORM(quantiles: Seq[Double], startTime: Time, endTime: Time, fileName: String, vertex2Stop: ((Int, VertexID)) => String, startDay: String = "1970-01-01", endDay: String = "2100-12-31"): Unit = {
-      val res: collection.mutable.Map[((String, String), (String, String)), collection.mutable.ArrayBuffer[Double]] = collection.mutable.Map()
-        pop.foreach(p => {
-        if (p._4 >= startTime.value || p._5 <= endTime.value) {
-          res.getOrElseUpdate((if (p._1._1 == -1) {(p._1._2, p._1._2)} else {(p._1._1.toString, p._1._2)}, if (p._2._1 == -1){(p._2._2, p._2._2)} else {(p._2._1.toString, p._2._2)}), collection.mutable.ArrayBuffer()).append(p._3)
-        }
-      })
+    case class ZoneName(hub: VertexID, stop: String, group: Int)
+
+    def computeTT4TRANSFORM(quantiles: Seq[Double], startTime: Time, endTime: Time, fileName: String, stop2Vertex: Stop2Vertex, startDay: String = "1970-01-01", endDay: String = "2100-12-31"): Unit = {
+
+      def stopGrouping(vertexID: VertexID): GroupID = {
+        stop2Vertex.grouping4TRANSFORM.indexWhere(groups => groups.contains(vertexID))
+      }
+
+      val reversedMap: Map[String, String] = stop2Vertex.stop2Vertices.flatMap(kv => kv._2.map(v => v -> kv._1.toString))
+
+      def vertices2Stops(vertexID: VertexID): String = {
+        reversedMap.getOrElse(vertexID, vertexID.toString)
+      }
+
+      val popRenamed: Iterable[(ZoneName, ZoneName, Double, Double, Double)] = pop.map(p => (ZoneName(p._1, vertices2Stops(p._1), stopGrouping(p._1)), ZoneName(p._2, vertices2Stops(p._2), stopGrouping(p._2)), p._3, p._4, p._5))
+
+      val res = popRenamed
+        .filter(p => p._4 >= startTime.value || p._5 <= endTime.value)
+        .groupBy(p => (if (p._1.group == -1) {
+          p._1.hub
+        } else {
+          p._1.group
+        }, if (p._2.group == -1) {
+          p._2.hub
+        } else {
+          p._2.group
+        }))
+        .map(kv => kv._1 -> kv._2.groupBy(g => (g._1.stop, g._2.stop)))
+        .flatMap(g => g._2.map(ig => (ig._1._1, ig._1._2, g._2.flatMap(v => v._2.map(_._3)))))
+
+
       val file = new File(fileName)
       val bw = new BufferedWriter(new FileWriter(file))
       bw.write(Json.prettyPrint(Json.toJson(
         res.map(kv => {
-          ODWithQuantiles(kv._1._1._2, kv._1._2._2, startDay + " " + startTime.asReadable, endDay + " " + endTime.asReadable, computeQuantiles(quantiles)(res.filter(r => r._1._1._1 == kv._1._1._1 && r._1._2._1 == kv._1._2._1).flatMap(_._2).toVector))
+          ODWithQuantiles(kv._1, kv._1, startDay + " " + startTime.asReadable, endDay + " " + endTime.asReadable, computeQuantiles(quantiles)(kv._3.toSeq))
         })
       )))
       bw.close()

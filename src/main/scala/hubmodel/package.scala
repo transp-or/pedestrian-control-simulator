@@ -34,6 +34,9 @@ import scala.util.{Failure, Success, Try}
 
 package object hubmodel {
 
+  type GroupID = Int
+
+
 
   /* pedestrian isolations */
   val ISOLATED: Int = 0
@@ -85,8 +88,8 @@ package object hubmodel {
     def asReadable: String = {
       val hours: Int = (this.value / 3600.0).setScale(0, RoundingMode.FLOOR).toInt
       val minutes: Int = ((this.value - hours * 3600) / 60.0).setScale(0, RoundingMode.FLOOR).toInt
-      val seconds: Double = (this.value - 3600 * hours - 60 * minutes).setScale(0, RoundingMode.FLOOR).toInt
-      hours.toString + ":" + minutes.toString + ":" + seconds.toString
+      val seconds: Int = (this.value - 3600 * hours - 60 * minutes).setScale(0, RoundingMode.FLOOR).toInt
+      f"${hours}%02d" + ":" + f"${minutes}%02d" + ":" + f"${seconds}%02d"
     }
 
     def asVisioSafe: String = {
@@ -587,9 +590,6 @@ package object hubmodel {
 
   def runAndWriteResults[T <: PedestrianNOMAD](simulator: NOMADGraphSimulator[T], prefix: String = "", dir: Option[String], writeTrajectoriesVS: Boolean = false, writeTrajectoriesJSON: Boolean = false, writeTRANSFORMTT:Boolean = false): Unit = {
     timeBlock(simulator.run())
-    println(simulator.population.count(_.graph == "reference") + simulator.populationCompleted.count(_.graph == "reference"))
-    println(simulator.population.count(_.graph != "reference") + simulator.populationCompleted.count(_.graph != "reference"))
-
     writeResults(simulator, prefix, dir, writeTrajectoriesVS, writeTrajectoriesJSON, writeTRANSFORMTT)
   }
 

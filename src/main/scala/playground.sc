@@ -291,9 +291,5 @@ println(formulaParser.evaluate("height*perimeter(radius)")) // 502.6548245743669
 println(formulaParser.evaluate("m/sqrt(1-v^2/c^2)"))  // 80.00000000003415
 */
 
-
-val t1 = (1,2,3,4)
-
-
-t1.productIterator.toVector
-val t2 = (7,8,9)
+val expr = 1.2
+f"${expr}%02d"

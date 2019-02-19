@@ -326,18 +326,9 @@ object RunSimulation extends App {
 
     val stop2Vertex = readPTStop2GraphVertexMap(config.getString("files.zones_to_vertices_map"))
 
-    def stopGrouping(vertexID: VertexID): (Int, VertexID) = {
-      (stop2Vertex.grouping4TRANSFORM.indexWhere(groups => groups.contains(vertexID)), vertexID)
-    }
 
-    def vertices2Stops(vertexID: (Int,VertexID )): String = {
-      val reversedMap: Map[String, String] = stop2Vertex.stop2Vertices.flatMap(kv => kv._2.map(v => v -> kv._1.toString))
-      reversedMap.getOrElse(vertexID._2, vertexID.toString)
-    }
-
-
-
-
-    results.flatten(_.tt).map(d => (stopGrouping(d._1), stopGrouping(d._2), d._3, d._4, d._5)).computeTT4TRANSFORM(0.0.to(100.0).by(config.getDouble("output.write_tt_4_transform_quantile_interval")), simulationStartTime, simulationEndTime, config.getString("output.write_tt_4_transform_file_name"), vertices2Stops)
+    results
+      .flatten(_.tt)
+      .computeTT4TRANSFORM(0.0.to(100.0).by(config.getDouble("output.write_tt_4_transform_quantile_interval")), simulationStartTime, simulationEndTime, config.getString("output.write_tt_4_transform_file_name"), stop2Vertex)
   }
 }
