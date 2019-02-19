@@ -67,7 +67,7 @@ package object TRANSFORM {
       val bw = new BufferedWriter(new FileWriter(file))
       bw.write(Json.prettyPrint(Json.toJson(
         res.map(kv => {
-          ODWithQuantiles(kv._1, kv._1, startDay + " " + startTime.asReadable, endDay + " " + endTime.asReadable, computeQuantiles(quantiles)(kv._3.toSeq))
+          ODWithQuantiles(kv._1, kv._2, startDay + " " + startTime.asReadable, endDay + " " + endTime.asReadable, computeQuantiles(quantiles)(kv._3.toSeq))
         })
       )))
       bw.close()
