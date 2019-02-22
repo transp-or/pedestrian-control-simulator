@@ -196,7 +196,7 @@ abstract class PedestrianDES[T <: PedestrianNOMAD](val startTime: Time,
   }
 
   // Quad-tree for searching for neighboring pedestrians.
-  private var populationMTree: MTree[Position] = new MTree(norm: (Position, Position) => Double)
+  private var populationMTree: MTree[Position] = new MTree(norm: (Position, Position) => Double, 30)
 
   // Mapping from a peestrian ID to a position
   private var ID2Position: Map[String, Position] = HashMap()
@@ -214,12 +214,12 @@ abstract class PedestrianDES[T <: PedestrianNOMAD](val startTime: Time,
   /**
     * Find the neighboours within a given radius to the current pedestrian.
     *
-    * @param id id of the pedestrian to whom one wished to search
-    * @param r  raidus
+    * @param id id of the pedestrian to whom one wishes to search
+    * @param r  radius
     * @return collection of pedestrian whithin this range
     */
   def findNeighbours(id: String, r: Double): Iterable[T] = {
-    this.populationMTree.findInRange(id, this.ID2Position(id), r).filterNot(_ == id).map(id => this._populationNew.getOrElse(id, throw new IndexOutOfBoundsException(id))).filterNot(_.reachedDestination)
+    this.populationMTree.findInRange(id, this.ID2Position(id), r).filterNot(p => p == id || !this._populationNew.keySet.contains(p)).map(id => this._populationNew.getOrElse(id, throw new IndexOutOfBoundsException(id))).filterNot(_.reachedDestination)
   }
 
   ///////////////////////////////////////////////////////////////////////////////////////////////////

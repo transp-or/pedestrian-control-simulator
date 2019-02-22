@@ -20,7 +20,7 @@ libraryDependencies ++= Seq(
   "com.typesafe.scala-logging" %% "scala-logging" % "3.9.0",
   "org.scalactic" %% "scalactic" % "3.0.1",
   "transpor.tools" % "power-voronoi" % "1.0",
-  "com.github.NicholasMolyneaux" %% "scala-custom" % "1.1.4",
+  "com.github.NicholasMolyneaux" %% "scala-custom" % "1.2.0.1",
   "transpor.tools" % "dxf-parser" % "1.0",
   "nl.tudelft.pedestrians" % "nomad" % "1.0",
   "org.scala-lang.modules" %% "scala-parser-combinators" % "1.1.1",

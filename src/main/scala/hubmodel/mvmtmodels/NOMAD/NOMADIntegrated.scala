@@ -192,7 +192,7 @@ class NOMADIntegrated[T <: PedestrianNOMAD](sim: NOMADGraphSimulator[T]) extends
         // check if it is time for the pedestrian to check his isolation times
 
         ped.updateDesiredSpeed()
-        this.updateIsolation(sim.currentTime, ped)
+        //this.updateIsolation(sim.currentTime, ped) // NOT CURRENTLY USED TO REMOVED TO SPEED UP
         ped.travelTime = sim.currentTime - ped.entryTime
 
         // the distance travelled could be calculated directly in the move method
@@ -343,7 +343,7 @@ class NOMADIntegrated[T <: PedestrianNOMAD](sim: NOMADGraphSimulator[T]) extends
       //movePedestriansInQueues(this.collisionTimeStepSeconds, currentTime)
       // ask the in collision pedestrians to perform the activity(walking included)
       this.pedestrianToMoveInCollision.foreach(ped => {
-        walkPedestrian(ped, getPedInLevelVicinity_3D(ped, sim.population), getClosestCoordinates3D(ped), this.collisionTimeStepSeconds)
+        walkPedestrian(ped, getPedInLevelVicinity_3D(ped, ped.closePeds/*sim.population.filter(p => (p.currentPosition- ped.currentPosition).norm <= 10)*/), getClosestCoordinates3D(ped), this.collisionTimeStepSeconds)
       })
       //walkPedestrians(this.pedestrianToMoveInCollision, this.collisionTimeStepSeconds, currentTime)
       // check if the range step is reached
@@ -773,7 +773,8 @@ class NOMADIntegrated[T <: PedestrianNOMAD](sim: NOMADGraphSimulator[T]) extends
     // for each obstacle
     for (obstacle <- obstacles) { // only check this object if it is repealing
       //if (obstacle.asInstanceOf[NomadObstacle].isRepel) { // get the closest point // SKIPPED THIS BECAUSE WANT TO SIMPLIFY THINGS NM
-      closestPoint = new Coordinate(getClosestPoint(Vector2D(coordinate.x, coordinate.y), obstacle).X, getClosestPoint(Vector2D(coordinate.x, coordinate.y), obstacle).Y)
+      val closestPointNOMAD = getClosestPoint(Vector2D(coordinate.x, coordinate.y), obstacle)
+      closestPoint = new Coordinate(closestPointNOMAD.X, closestPointNOMAD.Y)
       // check if the closest point of a obstacle is behind another obstacle
       // if yes it will not be added to the return list.
       // ATTENTION! it can be that there would be other points visible to the pedestrian

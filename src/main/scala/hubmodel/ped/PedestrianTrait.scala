@@ -54,6 +54,7 @@ trait PedestrianTrait {
     */
   var closeWalls: Iterable[Wall] = Vector()
 
+
   def updateClosestWalls(walls: Iterable[Wall]): Unit = {
     closeWalls = walls.filter(w => (this.currentPosition - getClosestPoint(this.currentPosition, w)).norm < DISTANCE_TO_CLOSE_WALLS)
   }

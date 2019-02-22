@@ -47,7 +47,7 @@ package object hubmodel {
 
   // each pedestrians contains the list of walls which he is close to. This means there is no need to compute at every
   // time step the interaction with all the walls.
-  val DISTANCE_TO_CLOSE_WALLS: Double = 15.0
+  val DISTANCE_TO_CLOSE_WALLS: Double = 10.0
 
   // Length in meters of the othogonal extension of the "near region" for flow lines. This should be larger than the
   // maximum walking speed * the motion model clock (sf_dt) to ensure a pedestrian cannot "jump" over it. The larger the

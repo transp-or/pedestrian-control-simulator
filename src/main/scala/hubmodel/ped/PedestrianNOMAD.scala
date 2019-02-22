@@ -10,6 +10,9 @@ class PedestrianNOMAD(oZone: Rectangle, dZone: Rectangle, entryTime: Time, posO:
     true
   }
 
+  var closePeds: Iterable[PedestrianNOMAD] = Vector()
+
+
   var isolationTypePed: Int = 0
   var isolationTypeObs: Int = 0
   val isInvisible: Boolean = false
