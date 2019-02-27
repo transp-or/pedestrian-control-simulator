@@ -647,6 +647,19 @@ package object hubmodel {
       ControlDevices
     )
 
+  class SimulationParametersClass(val start: Time,
+                                  val end: Time,
+                                  val mvmtUpdate: Time,
+                                  val routeUpdate: Time,
+                                  val evaluateFrequency: Time,
+                                  val rebuildTreeInterval: Option[Time],
+                                  val microSpace: ContinuousSpace,
+                                  val graph: GraphContainer,
+                                  val timeTable: PublicTransportSchedule,
+                                  val stop2Vertex: NodeParent => Iterable[Rectangle],
+                                  val controlDevices: ControlDevices,
+                                  val writeTrajectoryData: Boolean)
+
 }
 
 

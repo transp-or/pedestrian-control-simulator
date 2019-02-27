@@ -1,5 +1,6 @@
 package hubmodel.mgmt
 
+import hubmodel.mgmt.flowgate.FunctionalForm
 import hubmodel.mgmt.flowsep.FlowSeparator
 import hubmodel.supply.graph._
 import hubmodel.tools.ControlDevicesException
@@ -35,4 +36,17 @@ class ControlDevices(val monitoredAreas: Iterable[DensityMeasuredArea],
       fixedFlowSeparators
     )
   }
+
+  def cloneModifyFlowGates(f: FunctionalForm): ControlDevices = {
+    new ControlDevices(
+      monitoredAreas.map(_.clone()),
+      amws,
+      flowGates.map(fg => fg match {
+        case fgFunc: FlowGateFunctional => {fgFunc.cloneModifyFunctionForm(f)}
+        case fg: FlowGate => {fg.clone()}
+      }),
+      binaryGates.map(_.clone()),
+      flowSeparators.map(_.clone()),
+      fixedFlowSeparators
+    )  }
 }

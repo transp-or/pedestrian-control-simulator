@@ -1,6 +1,7 @@
 package hubmodel.supply.graph
 
 import hubmodel.Position
+import hubmodel.mgmt.flowgate.FunctionalForm
 import hubmodel.tools.cells.Rectangle
 
 /** Extension of [[hubmodel.supply.MyEdgeWithGate]] for the usage of "flow gates". The gates control the
@@ -34,4 +35,14 @@ class FlowGateFunctional(startVertex: Rectangle, endVertex: Rectangle, start: Po
   override def canEqual(other: Any): Boolean = other.isInstanceOf[FlowGateFunctional]
 
   override def toString: String = "FlowGateFunctional. ID=" + this.ID + ", o=" + startVertex + ", d=" + endVertex + ", cst=" + functionalForm(0.0) + ", slope=" + (functionalForm(1.0) - functionalForm(0.0))
+
+  /**
+    * Copies this flow gate but changed the function linking the density to the controlled flow.
+    * @param newFunctionForm new functional form
+    * @return copy of the flow gate
+    */
+  def cloneModifyFunctionForm(newFunctionForm: FunctionalForm): FlowGateFunctional = {
+    new FlowGateFunctional(this.startVertex, this.endVertex, this.start, this.end, this.monitoredArea, newFunctionForm.functionalForm)
+  }
 }
+

@@ -46,7 +46,9 @@ package object TRANSFORM {
         reversedMap.getOrElse(vertexID, vertexID.toString)
       }
 
-      val popRenamed: Iterable[(ZoneName, ZoneName, Double, Double, Double)] = pop.map(p => (ZoneName(p._1, vertices2Stops(p._1), stopGrouping(p._1)), ZoneName(p._2, vertices2Stops(p._2), stopGrouping(p._2)), p._3, p._4, p._5))
+      val popRenamed: Iterable[(ZoneName, ZoneName, Double, Double, Double)] = pop
+        .map(p => (ZoneName(p._1, vertices2Stops(p._1), stopGrouping(p._1)), ZoneName(p._2, vertices2Stops(p._2), stopGrouping(p._2)), p._3, p._4, p._5))
+        .filter(p => stop2Vertex.stop2Vertices.keySet.map(_.toString).contains(p._1.stop) && stop2Vertex.stop2Vertices.keySet.map(_.toString).contains(p._2.stop))
 
       val res = popRenamed
         .filter(p => p._4 >= startTime.value || p._5 <= endTime.value)

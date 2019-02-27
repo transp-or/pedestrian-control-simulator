@@ -24,9 +24,6 @@ abstract class GridSearchNew[T <: ParameterModifications](val config: Config) ex
     Files.createDirectory(outputDir)
   }
 
-  //val flows: (Iterable[PedestrianFlow_New], Iterable[PedestrianFlowPT_New], Iterable[PedestrianFlowFunction_New]) = getFlows(config)
-
-
   val simulationRunsParameters: GenIterable[T]
 
   def getParameters(paramMods: T): SimulatorParameters

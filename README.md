@@ -4,11 +4,29 @@ thesis. The specification of the input formats for running the simulation and in
 can be found below. At this stage, a very brief summray of the key steps is provided:
 
 1. install scala and sbt
-2. download and publish locally the tools repository from https://github.com/NicholasMolyneaux/tools
-3. download and compile this project
-4. write the configuration file
-5. create the input files (infrastructure and demand)
-6. run the simulation
+2. download and publish locally the dxf-parser and the power-voronoi packages from https://github.com/NicholasMolyneaux/tools
+3. get and install the NOMAD pedestrian model (not openly available, please contact me)
+4. download and compile this project
+5. write the configuration file
+6. create the input files (infrastructure and demand)
+7. run the simulation
+
+## Dependencies ##
+The code depends on multiple libraries, most of which can be automatically downloaded from maven thanks to sbt. There
+are a few libraries which have been developped/adapetd in-house and have not be uploaded to maven. 
+Most of these libraries are available on github (https://github.com/NicholasMolyneaux/tools). They can be compiled and packaged
+locally thanks to sbt as well (see their READMEs). There is one package which is not open-source. This is the NOMAD pedestrian simulator.
+Please contact me directly (nicolas.molyneaux@gmail.com) to discuss possible solutions. 
+
+The full liss of dependencies can be found in the *build.sbt* file. The three dependencies which must be installed manually are listed below: 
+```sbtshell
+libraryDependencies ++= Seq(
+  "transpor.tools" % "power-voronoi" % "1.0",
+  "transpor.tools" % "dxf-parser" % "1.0",
+  "nl.tudelft.pedestrians" % "nomad" % "1.0"
+)
+```
+Once these packages are installed, the hub-simulator can be compiled. This can be done bm simply calling **compile** from sbt. 
 
 # Input data #
 The input data is composed of two categories of files: the infrastructure specification and the deman specification.
@@ -302,33 +320,6 @@ The hub simulator is coded in Scala (https://www.scala-lang.org/) and the compil
 sbt (https://www.scala-sbt.org/). This combination makes the sharing of the code convient and the integration of packages
 simple thanks to the large database available at Maven (https://mvnrepository.com/). Therefore to be able to compile the
 hub-model one needs to install **scala** and **sbt**. 
-## Dependencies ##
-The code depends on multiple mutliples, most of which can be automatically downloaded from maven thanks to sbt. There
-are a few libraries which have been developped in-house, meaning they cannot be downloaded automatically from maven. 
-These libraries are available on github (https://github.com/NicholasMolyneaux/tools). They can be compiled and packaged
-locally thanks to sbt as well.
-```sbtshell
-libraryDependencies ++= Seq(
-  "com.typesafe.play" %% "play-json" % "2.6.5",
-  "org.scalanlp" %% "breeze" % "0.13",
-  "org.scalanlp" %% "breeze-natives" % "0.13",
-  "org.jgrapht" % "jgrapht-core" % "1.0.1",
-  "com.github.scopt" %% "scopt" % "3.6.0",
-  "org.jcodec" % "jcodec-javase" % "0.2.0",
-  "com.typesafe" % "config" % "1.3.1",
-  "ch.qos.logback" % "logback-classic" % "1.2.3",
-  "com.typesafe.scala-logging" %% "scala-logging" % "3.7.2",
-  "org.scalactic" %% "scalactic" % "3.0.1",
-  "transpor.tools" % "power-voronoi" % "1.0",
-  "transpor.molyneaux" %% "scala-custom" % "1.0-SNAPSHOT",
-  "transpor.tools" % "dxf-parser" % "1.0"
-)
-
-resolvers ++= Seq(
-  "Typesafe Repo" at "http://repo.typesafe.com/typesafe/releases/"
-)
-```
-
 ## Configuration file ##
 In order to configure the simulations, a config file is used. This means the code doesn't have to be re-compiled for
 different scenarios. The library used for parsing the config file can be found here (https://github.com/lightbend/config).
