@@ -185,6 +185,7 @@ class NOMADGraphSimulator[T <: PedestrianNOMAD](st: Time,
     *
     * @return
     */
+  @deprecated
   def getSetupArguments: SimulatorParameters = (
     startTime,
     finalTime,
@@ -198,5 +199,22 @@ class NOMADGraphSimulator[T <: PedestrianNOMAD](st: Time,
     stop2Vertices,
     controlDevices
   )
+
+  def getSetupArgumentsNew: SimulationParametersClass = {
+    new SimulationParametersClass(
+      startTime,
+      finalTime,
+      sf_dt,
+      route_dt,
+      evaluate_dt,
+      rebuildTreeInterval,
+      spaceMicro,
+      graph,
+      timeTable,
+      stop2Vertices,
+      controlDevices,
+      logFullPedestrianHistory
+    )
+  }
 
 }

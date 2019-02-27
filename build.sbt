@@ -8,6 +8,7 @@ javaOptions in run ++= Seq(
   "-Xms1G", "-Xmx12G", "-XX:+UseConcMarkSweepGC"
 )
 
+// Dependencies taken from maven
 libraryDependencies ++= Seq(
   "com.typesafe.play" %% "play-json" % "2.6.5",
   "org.scalanlp" %% "breeze" % "0.13",
@@ -25,38 +26,50 @@ libraryDependencies ++= Seq(
   "nl.tudelft.pedestrians" % "nomad" % "1.0",
   "org.scala-lang.modules" %% "scala-parser-combinators" % "1.1.1",
   "org.apache.commons" % "commons-lang3" % "3.8",
-  "org.apache.commons" % "commons-math3" % "3.6"
+  "org.apache.commons" % "commons-math3" % "3.6",
+  "org.j3d" % "aviatrix3d" % "3.0.0" pomOnly(), // https://mvnrepository.com/artifact/org.j3d/aviatrix3d
+  "javax.vecmath" % "vecmath" % "1.5.2"
 )
 
-//resolvers += Opts.resolver.sonatypeReleases // add if needed
+// Dependencies installed manually with sbt
+libraryDependencies ++= Seq(
+  "transpor.tools" % "power-voronoi" % "1.0",
+  "transpor.tools" % "dxf-parser" % "1.0",
+  "nl.tudelft.pedestrians" % "nomad" % "1.0"
+)
 
-// https://mvnrepository.com/artifact/org.j3d/aviatrix3d
-libraryDependencies += "org.j3d" % "aviatrix3d" % "3.0.0" pomOnly()
-libraryDependencies += "javax.vecmath" % "vecmath" % "1.5.2"
-
-
+// Extra places to look for libraries  (useful for the scala-custom, avoids waiting for new versions to be copied to maven central
 resolvers ++= Seq(
   "Typesafe Repo" at "http://repo.typesafe.com/typesafe/releases/",
   "Sonatype OSS Snapshots" at "https://oss.sonatype.org/content/repositories/releases/"
 )
 
+// euh.. I think is obsolete
 // https://stackoverflow.com/questions/28459333/how-to-build-an-uber-jar-fat-jar-using-sbt-within-intellij-idea
 // META-INF discarding
 
+/*
+ Custom sbt command to create a fat jar to distribute to run the hub model for TRANS-FORM.
+ The input files for Den Haag case study are also included in the folder.
+ */
 mainClass in(Compile, packageBin) := Some("RunSimulation")
 
+// data folders where to copy files form
 lazy val dataFolders = Array("den-haag")
 
+// extra set of files to copy
 lazy val files = Array()
+
+// config files to copy to the distributed folder
 lazy val confFiles = Array("den-haag-integration.conf")
 
-
+// Custom key
 lazy val distribution = taskKey[Unit]("Copies all the required files and builds a standalone jar to distribute.")
+
+// Actions to perform when invoking the "distribution" task.
 distribution := {
-  IO.copyFile(assembly.value.getAbsoluteFile, baseDirectory.value.getAbsoluteFile / "distribution/hub-model.jar")
-  dataFolders.foreach(df => IO.copyDirectory(baseDirectory.value / df, baseDirectory.value / "distribution" / df))
-  //files.foreach(f => IO.copyFile(baseDirectory.value / f, baseDirectory.value / "distribution" / f))
-  confFiles.foreach(f => IO.copyFile(baseDirectory.value / "resources/simulation" / f, baseDirectory.value / "distribution" / f))
-  //sourceDirectory.value / "main" / "resources" listFiles() filter (f => f.getAbsolutePath.takeRight(9) == "test.conf") foreach (f => IO.copyFile(f, baseDirectory.value / "distribution" / f.getName))
+  IO.copyFile(assembly.value.getAbsoluteFile, baseDirectory.value.getAbsoluteFile / "distribution/hub-model.jar") // gets the jar
+  dataFolders.foreach(df => IO.copyDirectory(baseDirectory.value / df, baseDirectory.value / "distribution" / df)) // copies everything from the data folde to the distributed folder
+  confFiles.foreach(f => IO.copyFile(baseDirectory.value / "resources/simulation" / f, baseDirectory.value / "distribution" / f)) // copies the configuration files
 }
 

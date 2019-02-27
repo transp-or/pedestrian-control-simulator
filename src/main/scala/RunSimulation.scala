@@ -91,7 +91,7 @@ object RunSimulation extends App {
 
   val simulationStartTime: Time = Time(config.getDouble("sim.start_time"))
   val simulationEndTime: Time = Time(config.getDouble("sim.end_time"))
-  val n: Int = if (config.getBoolean("sim.read_multiple_TF_demand_sets")) {
+  val n: Int = if (config.getBoolean("sim.read_multiple_TF_demand_sets") && config.getInt("sim.nb_runs") > 0) {
     println(" * using " + demandSets.get.size + " different pedestrian demand sets")
     println(" * ignoring number of simulation runs")
     demandSets.get.size
