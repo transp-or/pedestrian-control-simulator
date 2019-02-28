@@ -4,6 +4,7 @@ import breeze.linalg.{max, min}
 import hubmodel.DES.{Action, NOMADGraphSimulator}
 import hubmodel.Time
 import hubmodel.TimeNumeric.mkOrderingOps
+import hubmodel.mgmt.flowgate._
 import hubmodel.ped.PedestrianNOMAD
 import hubmodel.supply.graph.{FlowGate, FlowGateFunctional}
 
@@ -33,13 +34,26 @@ class DLQRGateController[T <: PedestrianNOMAD](sim: NOMADGraphSimulator[T]) exte
 
     sim.controlDevices.flowGates.foreach(fgGen => {
       fgGen match {
-        case fg: FlowGateFunctional => {
-          fg.setFlowRate(
-            math.min(fg.functionalForm(sim.criticalAreas(fg.monitoredArea).paxIndividualDensityHistory.last._2.count(_ > sim.criticalAreas(fg.monitoredArea).targetDensity)), 10.0),
-            sim.currentTime
-          ) // pax above target density
-          /*fg.flowRate = math.min(fg.functionalForm(sim.criticalAreas(fg.monitoredArea).targetDensity - sim.criticalAreas(fg.monitoredArea).densityHistory.last._2), 10.0)*/
-          // mean voronoi density
+        case fg: FlowGateFunctional[_, _] => {
+
+          fg.functionalForm match {
+            case density: FunctionalFormDensity => {
+
+              density.functionalForm(Density(1.0))
+
+              // pax above target density
+              fg.setFlowRate(
+                math.min(
+                  density.functionalForm(Density(sim.criticalAreas(fg.monitoredArea).paxIndividualDensityHistory.last._2.count(_ > sim.criticalAreas(fg.monitoredArea).targetDensity))).f,
+                    10.0),
+                sim.currentTime
+              )
+
+                // mean voronoi density
+                /*fg.flowRate = math.min(fg.functionalForm(sim.criticalAreas(fg.monitoredArea).targetDensity - sim.criticalAreas(fg.monitoredArea).densityHistory.last._2), 10.0)*/
+            }
+          }
+
 
         }
         case fg: FlowGate => {

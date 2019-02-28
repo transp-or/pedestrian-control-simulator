@@ -22,7 +22,9 @@ import org.apache.commons.lang3.RandomStringUtils
 import play.api.libs.json.Reads._
 import play.api.libs.json._
 
+import scala.collection.GenIterable
 import scala.collection.immutable.NumericRange
+import scala.collection.parallel.ForkJoinTaskSupport
 import scala.math.BigDecimal.RoundingMode
 import scala.reflect.ClassTag
 import scala.util.{Failure, Success, Try}
@@ -307,6 +309,32 @@ package object hubmodel {
     println(" * using only disaggregate pedestrian demand")
     (Iterable(), Iterable(), Iterable())
   }
+
+  def computeNumberOfSimulations(config: Config, multipleDemandSets: Option[Seq[(String, String)]]): Int = {
+    if (multipleDemandSets.isDefined && config.getInt("sim.nb_runs") == 1) {
+      println(" * using " + multipleDemandSets.get.size + " different pedestrian demand sets")
+      println(" * performing one replication per demand set")
+      multipleDemandSets.get.size
+    } else if (multipleDemandSets.isDefined && config.getInt("sim.nb_runs") > 2 ) {
+      throw new NotImplementedError("This option is not implemented yet !")
+    } else {
+      println(" * using demand from flow files")
+      println(" * running " + config.getInt("sim.nb_runs") + " simulations")
+      config.getInt("sim.nb_runs")
+    }
+  }
+
+  def getIteratorForSimulations(numberThreads: Option[Int], numberSimulation: Int): GenIterable[Int] = {
+    if (numberThreads.isDefined) {
+      val r = (1 to numberSimulation).par
+      r.tasksupport = new ForkJoinTaskSupport(new scala.concurrent.forkjoin.ForkJoinPool(numberThreads.get))
+      r
+    }
+    else {
+      1 to numberSimulation
+    }
+  }
+
 
 
   // Loads the train time table used to create demand from trains

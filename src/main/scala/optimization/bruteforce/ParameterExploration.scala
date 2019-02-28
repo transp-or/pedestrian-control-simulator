@@ -5,6 +5,7 @@ import java.io.File
 import com.typesafe.config.Config
 import hubmodel.DES.NOMADGraphSimulator
 import hubmodel.mgmt.ControlDevices
+import hubmodel.mgmt.flowgate.{Density, Flow, FunctionalFormDensity}
 import hubmodel.ped.PedestrianNOMAD
 import hubmodel.supply.graph.FlowGateFunctional
 import hubmodel.{createSimulation, runAndWriteResults}
@@ -54,7 +55,7 @@ class ParameterExploration(config: Config) extends GridSearch {
         defaultParameters._11.monitoredAreas.map(_.clone()),
         defaultParameters._11.amws.map(_.clone()),
         if (config.getBoolean("sim.use_flow_gates")) {
-          defaultParameters._11.flowGates.map(fg => new FlowGateFunctional(fg.startVertex, fg.endVertex, fg.start, fg.end, fg.monitoredArea, { x: Double => math.max(0.0000001, t._1 + t._2 * x) }))
+          defaultParameters._11.flowGates.map(fg => new FlowGateFunctional(fg.startVertex, fg.endVertex, fg.start, fg.end, fg.monitoredArea, { FunctionalFormDensity((x: Density) => Flow(math.max(0.0000001, t._1 + t._2 * x.d))) }))
         } else {
           Vector()
         },

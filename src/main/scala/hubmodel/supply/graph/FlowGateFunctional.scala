@@ -1,7 +1,7 @@
 package hubmodel.supply.graph
 
 import hubmodel.Position
-import hubmodel.mgmt.flowgate.FunctionalForm
+import hubmodel.mgmt.flowgate.{FunctionalForm, Measurement, Output}
 import hubmodel.tools.cells.Rectangle
 
 /** Extension of [[hubmodel.supply.MyEdgeWithGate]] for the usage of "flow gates". The gates control the
@@ -14,7 +14,7 @@ import hubmodel.tools.cells.Rectangle
   * @param start       one end of the gate
   * @param end         other end of the gate
   */
-class FlowGateFunctional(startVertex: Rectangle, endVertex: Rectangle, start: Position, end: Position, ma: String, val functionalForm: Double => Double) extends FlowGate(startVertex, endVertex, start, end, ma) {
+class FlowGateFunctional[T <: Measurement, U <: Output](startVertex: Rectangle, endVertex: Rectangle, start: Position, end: Position, ma: String, val functionalForm: FunctionalForm[T, U]) extends FlowGate(startVertex, endVertex, start, end, ma) {
 
   /** Checks whether another object equals this one
     *
@@ -23,7 +23,7 @@ class FlowGateFunctional(startVertex: Rectangle, endVertex: Rectangle, start: Po
     */
   override def equals(other: Any): Boolean =
     other match {
-      case that: FlowGateFunctional => super.equals() && that.canEqual(this) && this.start == that.start && this.end == that.end
+      case that: FlowGateFunctional[T, U] => super.equals() && that.canEqual(this) && this.start == that.start && this.end == that.end
       case _ => false
     }
 
@@ -32,17 +32,17 @@ class FlowGateFunctional(startVertex: Rectangle, endVertex: Rectangle, start: Po
     * @param other
     * @return
     */
-  override def canEqual(other: Any): Boolean = other.isInstanceOf[FlowGateFunctional]
+  override def canEqual(other: Any): Boolean = other.isInstanceOf[FlowGateFunctional[_, _]]
 
-  override def toString: String = "FlowGateFunctional. ID=" + this.ID + ", o=" + startVertex + ", d=" + endVertex + ", cst=" + functionalForm(0.0) + ", slope=" + (functionalForm(1.0) - functionalForm(0.0))
+  override def toString: String = "FlowGateFunctional. ID=" + this.ID + ", o=" + startVertex + ", d=" + endVertex
 
   /**
     * Copies this flow gate but changed the function linking the density to the controlled flow.
     * @param newFunctionForm new functional form
     * @return copy of the flow gate
     */
-  def cloneModifyFunctionForm(newFunctionForm: FunctionalForm): FlowGateFunctional = {
-    new FlowGateFunctional(this.startVertex, this.endVertex, this.start, this.end, this.monitoredArea, newFunctionForm.functionalForm)
+  def cloneModifyFunctionForm[V <: Measurement, W <: Output](newFunctionalForm: FunctionalForm[V, W]): FlowGateFunctional[V, W] = {
+    new FlowGateFunctional(this.startVertex, this.endVertex, this.start, this.end, this.monitoredArea, newFunctionalForm)
   }
 }
 
