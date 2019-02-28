@@ -7,6 +7,8 @@ import hubmodel.output.TRANSFORM.PopulationSummaryProcessingTRANSFORM
 import hubmodel.ped.PedestrianNOMAD
 import hubmodel.supply.graph.readPTStop2GraphVertexMap
 import hubmodel.tools.IllegalSimulationInput
+import hubmodel.demand.readDemandSets
+
 import myscala.math.stats.bootstrap.bootstrapMSE
 import myscala.math.stats.{ComputeQuantiles, ComputeStats}
 import myscala.output.SeqOfSeqExtensions.SeqOfSeqWriter
@@ -31,74 +33,20 @@ object RunSimulation extends App {
   // ******************************************************************************************
   //                    Read CLI arguments and process parameters file
   // ******************************************************************************************
-  val config: Config = parseConfigFile(args)
 
+  val config: Config = parseConfigFile(args)
 
   // ******************************************************************************************
   //                           Processes and writes results to CSV
   // ******************************************************************************************
 
-
-  // Checks that the number of simulations to run is coherent
-  /*if ( config.getInt("sim.nb_runs") == 0 && !config.getBoolean("output.make_video")) {
-    throw new IllegalArgumentException("No simulation to run ! Check parameters in config file.")
-  }*/
-
-
-  val demandSets: Option[Seq[(String, String)]] = if (config.getBoolean("sim.read_multiple_TF_demand_sets")) {
-
-    if (!((Paths.get(config.getString("files.TF_demand_sets")).toString == Paths.get(config.getString("files.flows_TF")).getParent.toString) &&
-      (Paths.get(config.getString("files.flows_TF")).getParent.toString == Paths.get(config.getString("files.timetable_TF")).getParent.toString))) {
-      throw new IllegalSimulationInput("Directories for multiple demand sets do not match !")
-    }
-
-    val multipleDemandStream: DirectoryStream[Path] = Files.newDirectoryStream(Paths.get(config.getString("files.TF_demand_sets")), "*.json")
-
-    val files: Vector[Path] = multipleDemandStream.toVector
-
-    multipleDemandStream.close()
-
-    val flowBaseName: String = Paths.get(config.getString("files.flows_TF")).getFileName.toString.replace(".json", "")
-    val timetableBaseName: String = Paths.get(config.getString("files.timetable_TF")).getFileName.toString.replace(".json", "")
-
-    try {
-      if (files.size % 2 != 0) {
-        throw new IllegalSimulationInput("Uneven number of files for multiple demand sets ! (" + files.size + " files found)")
-      } else if (files.isEmpty) {
-        throw new IllegalSimulationInput("No files for multiple demand sets !")
-      } else if (files.size == 2) {
-        println("Warning ! Only one set of demands used for the multiple demand inputs. ")
-        Some(
-          Seq((
-            files.find(_.getFileName.toString.contains(flowBaseName)).get.toString,
-            files.find(_.getFileName.toString.contains(timetableBaseName)).get.toString
-          )
-          )
-        )
-      } else {
-        Some(
-          files
-            .groupBy(f => f.getFileName.getFileName.toString.split("_").last.replace(".json", ""))
-            .map(grouped => (grouped._2.find(_.getFileName.toString.contains(flowBaseName)).get.toString, grouped._2.find(_.getFileName.toString.contains(timetableBaseName)).get.toString)).toVector
-        )
-      }
-    } catch {
-      case e: Exception => throw e
-    }
-  } else {
-    None
-  }
+  val demandSets: Option[Seq[(String, String)]] = readDemandSets(config)
 
   val simulationStartTime: Time = Time(config.getDouble("sim.start_time"))
   val simulationEndTime: Time = Time(config.getDouble("sim.end_time"))
-  val n: Int = if (config.getBoolean("sim.read_multiple_TF_demand_sets") && config.getInt("sim.nb_runs") > 0) {
-    println(" * using " + demandSets.get.size + " different pedestrian demand sets")
-    println(" * ignoring number of simulation runs")
-    demandSets.get.size
-  } else {
-    println(" * running " + config.getInt("sim.nb_runs") + " simulations")
-    config.getInt("sim.nb_runs")
-  }
+
+  val n: Int = computeNumberOfSimulations(config, demandSets)
+
   val runSimulationsInParallel: Boolean = config.getBoolean("execution.parallel")
   val evaluationInterval: Time = Time(config.getDouble("sim.evaluate_dt"))
 
@@ -110,14 +58,8 @@ object RunSimulation extends App {
     runSimulationWithVideo(config)
   }
 
-  val range: GenIterable[Int] = if (runSimulationsInParallel) {
-    val r = (1 to n).par
-    r.tasksupport = new ForkJoinTaskSupport(new scala.concurrent.forkjoin.ForkJoinPool(config.getInt("execution.threads")))
-    r
-  }
-  else {
-    1 to n
-  }
+
+  val range: GenIterable[Int] = getIteratorForSimulations(if (runSimulationsInParallel) {Some(config.getInt("execution.threads"))} else {None}, n)
 
   if (n > 0) {
     range.foreach(s => {

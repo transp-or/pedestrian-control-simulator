@@ -4,22 +4,27 @@ import play.api.libs.json._
 
 import scala.io.BufferedSource
 
-//import pedtrack.{Time, StringImprovements}
 import java.time.format.DateTimeFormatter
 import java.time.{LocalDateTime, LocalTime}
+import scala.collection.JavaConversions._
 
+import java.nio.file.{DirectoryStream, Files, Path, Paths}
+
+import com.typesafe.config.Config
+import hubmodel.TimeNumeric.mkOrderingOps
+import hubmodel.demand.transit.Vehicle
+import hubmodel.input.JSONReaders.PublicTransportScheduleReader
+import hubmodel.input.JSONReaders.TRANSFORM.{PedestrianCollectionReaderTF, PublicTransportScheduleReaderTF}
+import hubmodel.supply.{NodeID_New, StopID_New, TrainID_New}
+import hubmodel.tools.IllegalSimulationInput
+import hubmodel.tools.cells.Rectangle
 
 /**
   * Created by nicholas on 3/8/17.
   */
 package hubmodel {
 
-  import hubmodel.TimeNumeric.mkOrderingOps
-  import hubmodel.demand.transit.Vehicle
-  import hubmodel.input.JSONReaders.PublicTransportScheduleReader
-  import hubmodel.input.JSONReaders.TRANSFORM.{PedestrianCollectionReaderTF, PublicTransportScheduleReaderTF}
-  import hubmodel.supply.{NodeID_New, StopID_New, TrainID_New}
-  import hubmodel.tools.cells.Rectangle
+
 
   package object demand {
 
@@ -348,6 +353,54 @@ package hubmodel {
     }
 
     // closing Demand package
+
+
+    def readDemandSets(config: Config): Option[Seq[(String, String)]] = {
+
+      if (config.getBoolean("sim.read_multiple_TF_demand_sets")) {
+
+        if (!((Paths.get(config.getString("files.TF_demand_sets")).toString == Paths.get(config.getString("files.flows_TF")).getParent.toString) &&
+          (Paths.get(config.getString("files.flows_TF")).getParent.toString == Paths.get(config.getString("files.timetable_TF")).getParent.toString))) {
+          throw new IllegalSimulationInput("Directories for multiple demand sets do not match !")
+        }
+
+        val multipleDemandStream: DirectoryStream[Path] = Files.newDirectoryStream(Paths.get(config.getString("files.TF_demand_sets")), "*.json")
+
+        val files: Vector[Path] = multipleDemandStream.toVector
+
+        multipleDemandStream.close()
+
+        val flowBaseName: String = Paths.get(config.getString("files.flows_TF")).getFileName.toString.replace(".json", "")
+        val timetableBaseName: String = Paths.get(config.getString("files.timetable_TF")).getFileName.toString.replace(".json", "")
+
+        try {
+          if (files.size % 2 != 0) {
+            throw new IllegalSimulationInput("Uneven number of files for multiple demand sets ! (" + files.size + " files found)")
+          } else if (files.isEmpty) {
+            throw new IllegalSimulationInput("No files for multiple demand sets !")
+          } else if (files.size == 2) {
+            println("Warning ! Only one set of demands used for the multiple demand inputs. ")
+            Some(
+              Seq((
+                files.find(_.getFileName.toString.contains(flowBaseName)).get.toString,
+                files.find(_.getFileName.toString.contains(timetableBaseName)).get.toString
+              )
+              )
+            )
+          } else {
+            Some(
+              files
+                .groupBy(f => f.getFileName.getFileName.toString.split("_").last.replace(".json", ""))
+                .map(grouped => (grouped._2.find(_.getFileName.toString.contains(flowBaseName)).get.toString, grouped._2.find(_.getFileName.toString.contains(timetableBaseName)).get.toString)).toVector
+            )
+          }
+        } catch {
+          case e: Exception => throw e
+        }
+      } else {
+        None
+      }
+    }
 
   } // closing HubModel.HubInput package
 }
