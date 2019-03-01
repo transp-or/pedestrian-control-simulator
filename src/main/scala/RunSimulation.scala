@@ -72,7 +72,8 @@ object RunSimulation extends App {
         }
       runAndWriteResults(
         sim,
-        config.getString("output.output_prefix") + "_", if (!config.getIsNull("output.dir")) Some(config.getString("output.dir")) else { None },
+        config.getString("output.output_prefix") + "_",
+        config.getString("output.dir"),
         config.getBoolean("output.write_trajectories_as_VS"),
         config.getBoolean("output.write_trajectories_as_JSON"),
         config.getBoolean("output.write_tt_4_transform")
@@ -85,11 +86,7 @@ object RunSimulation extends App {
 
 
   // Reads intermediate results
-  val results: Vector[ResultsContainerRead] = readResults(if (!config.getIsNull("output.dir")) {
-    Some(config.getString("output.dir"))
-  } else {
-    None
-  }).toVector
+  val results: Vector[ResultsContainerRead] = readResults(config.getString("output.dir"), config.getString("output.output_prefix")).toVector
 
 
   // Processing results

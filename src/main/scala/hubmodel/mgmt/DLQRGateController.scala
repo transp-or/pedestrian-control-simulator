@@ -39,12 +39,12 @@ class DLQRGateController[T <: PedestrianNOMAD](sim: NOMADGraphSimulator[T]) exte
           fg.functionalForm match {
             case density: FunctionalFormDensity => {
 
-              density.functionalForm(Density(1.0))
+              density.f(Density(1.0))
 
               // pax above target density
               fg.setFlowRate(
                 math.min(
-                  density.functionalForm(Density(sim.criticalAreas(fg.monitoredArea).paxIndividualDensityHistory.last._2.count(_ > sim.criticalAreas(fg.monitoredArea).targetDensity))).f,
+                  density.f(Density(sim.criticalAreas(fg.monitoredArea).paxIndividualDensityHistory.last._2.count(_ > sim.criticalAreas(fg.monitoredArea).targetDensity))).f,
                     10.0),
                 sim.currentTime
               )

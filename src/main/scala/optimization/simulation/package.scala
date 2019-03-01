@@ -1,6 +1,8 @@
 package optimization
 
 
+import java.nio.file.{Files, Paths}
+
 import com.typesafe.config.Config
 import hubmodel.DES.NOMADGraphSimulator
 import hubmodel.mgmt.flowgate._
@@ -10,7 +12,8 @@ import hubmodel.ped.PedestrianNOMAD
 import myscala.math.stats.ComputeStats
 
 import scala.collection.GenIterable
-
+import scala.collection.JavaConversions._
+import myscala.output.SeqTuplesExtensions.SeqTuplesWriter
 
 package object simulation {
 
@@ -25,7 +28,7 @@ package object simulation {
     * @param p4 power 4
     * @return
     */
-  def runGatingSingleFunction(p0: Double, p1: Double, p2: Double, p3: Double, p4: Double)(config: Config): Double = {
+  def runGatingSingleFunction(config: Config)(p0: Double, p1: Double, p2: Double, p3: Double, p4: Double): Double = {
 
     val func = FunctionalFormDensity( (d: Density) => Flow(p0 + d.d * p1 + d.d * d.d * p2 + d.d * d.d * d.d * p3 + d.d * d.d * d.d * d.d * p4) )
 
@@ -41,6 +44,15 @@ package object simulation {
       None
     }, n)
 
+    val ID: String = generateUUID
+    val outputDir: String = config.getString("output.dir") + "/sim-results-" + ID + "/"
+    if (!Files.exists(Paths.get(outputDir))) {
+      Files.createDirectory(Paths.get(outputDir))
+    } else {
+      Files.newDirectoryStream(Paths.get(outputDir)).toVector.foreach(f => Files.delete(f))
+    }
+
+
     range.foreach(s => {
       val sim =
         if (demandSets.isDefined) {
@@ -50,7 +62,7 @@ package object simulation {
         else {
           val newControlDevices = defaultParameters.controlDevices.cloneModifyFlowGates(func)
 
-          new NOMADGraphSimulator[PedestrianNOMAD](
+          val sim = new NOMADGraphSimulator[PedestrianNOMAD](
             defaultParameters.start,
             defaultParameters.end,
             defaultParameters.mvmtUpdate,
@@ -64,12 +76,24 @@ package object simulation {
             newControlDevices,
             defaultParameters.writeTrajectoryData
           )
+
+
+          val flows = getFlows(config)
+
+          val (timeTable, stop2Vertex) = getPTSchedule(flows, config)
+
+
+          val disaggPopulation = getDisaggPopulation(config)
+
+
+          insertDemandIntoSimulator(sim, disaggPopulation, flows, timeTable)
+
+          sim
         }
       runAndWriteResults(
         sim,
-        config.getString("output.output_prefix") + "_", if (!config.getIsNull("output.dir")) Some(config.getString("output.dir")) else {
-          None
-        },
+        config.getString("output.output_prefix") + "_",
+        outputDir,
         config.getBoolean("output.write_trajectories_as_VS"),
         config.getBoolean("output.write_trajectories_as_JSON"),
         config.getBoolean("output.write_tt_4_transform")
@@ -79,11 +103,97 @@ package object simulation {
 
 
     // Reads intermediate results
-    val results: Vector[ResultsContainerRead] = readResults(if (!config.getIsNull("output.dir")) {
-      Some(config.getString("output.dir"))
+    val results: Vector[ResultsContainerRead] = readResults(outputDir, config.getString("output.output_prefix")).toVector
+
+    // writes statistcs about each run
+    val statsPerRun = results.map(r => {
+      r.tt.map(_._3).stats
+    })
+
+    statsPerRun.map(r => r._4).stats._2
+  }
+
+
+
+//a: Double = 1, b: Double = 1, c: Double = 0, d: Double = 0, e: Double = -1
+  def runFlowSepFunction(config: Config)(a: Double, b: Double, c: Double, d: Double, e: Double): Double = {
+
+    val func = FunctionalFormFlowSeparator( (bf: BidirectionalFlow) => SeparatorPositionFraction( (a*math.pow(bf.f1, b) + c*math.pow(bf.f2, d)) * math.pow(bf.f1+bf.f2, e) ) )
+
+    val defaultParameters: SimulationParametersClass = createSimulation[PedestrianNOMAD](config).getSetupArgumentsNew
+
+    val demandSets: Option[Seq[(String, String)]] = readDemandSets(config)
+
+    val n: Int = computeNumberOfSimulations(config, demandSets)
+
+    val range: GenIterable[Int] = getIteratorForSimulations(if (config.getBoolean("execution.parallel")) {
+      Some(config.getInt("execution.threads"))
     } else {
       None
-    }).toVector
+    }, n)
+
+    val ID: String = generateUUID
+    val outputDir: String = config.getString("output.dir") + "/sim-results-" + ID + "/"
+    if (!Files.exists(Paths.get(outputDir))) {
+      Files.createDirectory(Paths.get(outputDir))
+    } else {
+      Files.newDirectoryStream(Paths.get(outputDir)).toVector.foreach(f => Files.delete(f))
+    }
+
+    Vector((a, b, c, d, e)).writeToCSV(outputDir + ID + "_parameters.csv")
+
+    range.foreach(s => {
+      val sim =
+        if (demandSets.isDefined) {
+          throw new Exception("Possibility not yet implemented !")
+          createSimulation[PedestrianNOMAD](config, Some(demandSets.get(s - 1)._1), Some(demandSets.get(s - 1)._2))
+        }
+        else {
+          val newControlDevices = defaultParameters.controlDevices.cloneModifyFlowSeparators(func)
+
+          val sim = new NOMADGraphSimulator[PedestrianNOMAD](
+            defaultParameters.start,
+            defaultParameters.end,
+            defaultParameters.mvmtUpdate,
+            defaultParameters.routeUpdate,
+            defaultParameters.evaluateFrequency,
+            defaultParameters.rebuildTreeInterval,
+            defaultParameters.microSpace,
+            defaultParameters.graph.clone(newControlDevices),
+            defaultParameters.timeTable,
+            defaultParameters.stop2Vertex,
+            newControlDevices,
+            defaultParameters.writeTrajectoryData
+          )
+
+          val flows = getFlows(config)
+
+          val (timeTable, stop2Vertex) = getPTSchedule(flows, config)
+
+
+          val disaggPopulation = getDisaggPopulation(config)
+
+
+          insertDemandIntoSimulator(sim, disaggPopulation, flows, timeTable)
+
+          sim
+        }
+
+      runAndWriteResults(
+        sim,
+        config.getString("output.output_prefix") + "_",
+        outputDir,
+        config.getBoolean("output.write_trajectories_as_VS"),
+        config.getBoolean("output.write_trajectories_as_JSON"),
+        config.getBoolean("output.write_tt_4_transform")
+      )
+
+      System.gc()
+    })
+
+
+    // Reads intermediate results
+    val results: Vector[ResultsContainerRead] = readResults(outputDir, config.getString("output.output_prefix")).toVector
 
     // writes statistcs about each run
     val statsPerRun = results.map(r => {

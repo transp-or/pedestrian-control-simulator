@@ -277,7 +277,8 @@
   ],
   "binary_gates": [],
   "moving_walkways": [],
-  "flow_separators": []
+  "flow_separators": [],
+  "alternate_graphs":[]
 }
 
 

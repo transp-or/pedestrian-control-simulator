@@ -78,11 +78,8 @@ class ParameterExploration(config: Config) extends GridSearch {
         newDevices
       )
 
-      runAndWriteResults(sim, t._1.toString + "_" + t._2.toString + "_params_", if (!config.getIsNull("output.dir")) {
-        Some(config.getString("output.dir"))
-      } else {
-        None
-      })
+      runAndWriteResults(sim, t._1.toString + "_" + t._2.toString + "_params_", config.getString("output.dir"))
+
       System.gc()
     }
   }

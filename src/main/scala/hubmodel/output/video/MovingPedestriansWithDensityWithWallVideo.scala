@@ -41,7 +41,7 @@ class MovingPedestriansWithDensityWithWallVideo(outputFile: String,
                                                 var gateHistory: scala.collection.mutable.ArrayBuffer[(Int, List[(String, Boolean)])],
                                                 var densityMeasurements: collection.mutable.ArrayBuffer[(Int, Double)],
                                                 times2Show: IndexedSeq[Time],
-                                                flowSeparators: Iterable[FlowSeparator]) extends Tools4Videos {
+                                                flowSeparators: Iterable[FlowSeparator[_, _]]) extends Tools4Videos {
 
   // asserts that more than one time is listed
   assert(times2Show.size > 0.0)

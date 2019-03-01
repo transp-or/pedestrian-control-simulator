@@ -1,6 +1,7 @@
 package hubmodel.supply.graph
 
 import hubmodel.mgmt.ControlDevices
+import hubmodel.mgmt.flowgate.{Measurement, Output}
 import hubmodel.mgmt.flowsep.FlowSeparator
 import hubmodel.ped.PedestrianNOMAD
 import hubmodel.tools.cells.Rectangle
@@ -29,7 +30,7 @@ class RouteGraph(protected val baseVertices: Iterable[Rectangle],
                  protected val flowGates: Iterable[FlowGate],
                  protected val binaryGates: Iterable[BinaryGate],
                  protected val movingWalkways: Iterable[MovingWalkway],
-                 protected val flowSeparators: Iterable[FlowSeparator],
+                 protected val flowSeparators: Iterable[FlowSeparator[_, _]],
                  val edges2Add: Set[MyEdge] = Set(),
                  val edges2Remove: Set[MyEdge] = Set()) {
 

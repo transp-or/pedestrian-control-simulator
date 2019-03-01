@@ -3,7 +3,7 @@ package hubmodel.supply
 import hubmodel.Position
 import hubmodel.input.JSONReaders.{Connectivity_JSON, InfraGraphParser, Track2NodeMapping_JSON}
 import hubmodel.mgmt.ControlDevices
-import hubmodel.mgmt.flowgate.{Density, Flow, FunctionalFormDensity}
+import hubmodel.mgmt.flowgate._
 import hubmodel.mgmt.flowsep.{FlowLine, FlowSeparator}
 import hubmodel.ped.PedestrianNOMAD
 import hubmodel.tools.cells.{DensityMeasuredArea, Rectangle, RectangleModifiable}
@@ -24,13 +24,13 @@ package object graph {
     * @param graphSpecificationFile JSON file containing the graph specification
     */
   def readGraph[T <: PedestrianNOMAD](graphSpecificationFile: String,
-                                      useFlowGates: Boolean,
-                                      useBinarygates: Boolean,
-                                      useAMWs: Boolean,
-                                      useFlowSep: Boolean,
-                                      fixedFlowSep: Boolean,
-                                      measureDensity: Boolean,
-                                      useAlternatGraphs: Boolean)(implicit tagT: ClassTag[T]): (GraphContainer, ControlDevices) = {
+                                                                    useFlowGates: Boolean,
+                                                                    useBinarygates: Boolean,
+                                                                    useAMWs: Boolean,
+                                                                    useFlowSep: Boolean,
+                                                                    fixedFlowSep: Boolean,
+                                                                    measureDensity: Boolean,
+                                                                    useAlternatGraphs: Boolean)(implicit tagT: ClassTag[T]): (GraphContainer, ControlDevices) = {
 
 
     val source: BufferedSource = scala.io.Source.fromFile(graphSpecificationFile)
@@ -65,7 +65,7 @@ package object graph {
         } else {
           Vector()
         }
-        val flowSeparators: Iterable[FlowSeparator] = if (useFlowSep) {
+        val flowSeparators: Iterable[FlowSeparator[_, _]] = if (useFlowSep) {
 
           // updates the vertex map to remove overriden nodes and add the new ones linked to the flow separators
 
@@ -107,7 +107,8 @@ package object graph {
               oz_1,
               oz_2,
               fs.overConn.collect({ case c if vertexMapReader.contains(c.node) => c.conn.collect({ case neigh if vertexMapReader.contains(neigh) => new MyEdge(vertexMapReader(c.node), vertexMapReader(neigh)) }) }).flatten,
-              oldZones
+              oldZones,
+              FunctionalFormFlowSeparator((bf: BidirectionalFlow) => SeparatorPositionFraction(bf.f1/(bf.f1+bf.f2)))
             )
           }
           )

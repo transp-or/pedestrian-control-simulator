@@ -61,6 +61,6 @@ class FlowLine(val start: Position, val end: Position, controlled: Int = 0) {
   def reinitialize(): Unit = this.pedsCrossedInInterval.clear()
 
   override def clone(): FlowLine = new FlowLine(
-    this.start, this.end
+    this.start, this.end, controlled
   )
 }
