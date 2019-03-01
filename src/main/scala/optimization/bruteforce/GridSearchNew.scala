@@ -75,11 +75,7 @@ abstract class GridSearchNew[T <: ParameterModifications](val config: Config) ex
       runAndWriteResults(
         sim,
         getRunPrefix(p),
-        if (!config.getIsNull("output.dir")) {
-          Some(config.getString("output.dir"))
-        } else {
-          None
-        },
+        config.getString("output.dir"),
         config.getBoolean("output.write_trajectories_as_VS"),
         config.getBoolean("output.write_trajectories_as_JSON")
       )

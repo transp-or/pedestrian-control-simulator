@@ -53,8 +53,8 @@ object CompareSimulationResults extends App {
 
 
   // Reads results from both dirs
-  val refResults: Vector[ResultsContainerRead] = readResults(Some(config.getString("dirs.reference-dir"))).toVector
-  val otherResults: Vector[ResultsContainerRead] = readResults(Some(config.getString("dirs.other-dir"))).toVector
+  val refResults: Vector[ResultsContainerRead] = readResults(config.getString("dirs.reference-dir"), config.getString("output.output_prefix")).toVector
+  val otherResults: Vector[ResultsContainerRead] = readResults(config.getString("dirs.other-dir"), config.getString("output.output_prefix")).toVector
 
 
 

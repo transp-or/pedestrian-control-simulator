@@ -48,7 +48,7 @@ class PedestrianSim(val origin: Rectangle,
   var currentDestination: Position = new Position(0, 0) //route.head.uniformSamplePointInside
 
   // Checks that the velocity is realistic
-  //assert(freeFlowVel > 0.0, "Unacceptable free flow velocity")
+  if (freeFlowVel < 0.0 || freeFlowVel > 4.0) {throw new IllegalArgumentException("Unacceptable free flow velocity")}
 
   /** current velocity, initialized to 0.0 */
   var currentVelocity: Velocity = new ZeroVector2D
@@ -189,7 +189,7 @@ class PedestrianSim(val origin: Rectangle,
 
 
   def this(oZone: Rectangle, dZone: Rectangle, entryTime: Time, posO: Position, logFullHistory: Boolean) {
-    this(oZone, dZone, 1.34 + 0.2 * ThreadLocalRandom.current().nextGaussian(), entryTime, logFullHistory) // velocity taken from VS data
+    this(oZone, dZone, 1.34 + math.min(0.2 * ThreadLocalRandom.current().nextGaussian(), 3.0), entryTime, logFullHistory) // velocity taken from VS data
 
     this.currentPosition = posO
   }

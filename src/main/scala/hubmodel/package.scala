@@ -1,6 +1,6 @@
 import java.io.{BufferedWriter, File, FileWriter}
 import java.math.MathContext
-import java.nio.file.{Files, Paths}
+import java.nio.file.{DirectoryStream, Files, Path, Paths}
 
 import com.typesafe.config.{Config, ConfigFactory}
 import hubmodel.DES.NOMADGraphSimulator
@@ -28,6 +28,8 @@ import scala.collection.parallel.ForkJoinTaskSupport
 import scala.math.BigDecimal.RoundingMode
 import scala.reflect.ClassTag
 import scala.util.{Failure, Success, Try}
+
+
 
 
 /**
@@ -440,20 +442,26 @@ package object hubmodel {
     * @param prefix    prefix to the file name
     * @param path      path where to write the file, default is empty
     */
-  def writeResults[T <: PedestrianNOMAD](simulator: NOMADGraphSimulator[T], prefix: String = "", dir: Option[String], writeTrajectoriesVS: Boolean = false, writeTrajectoriesJSON: Boolean = false, writeTRANSFORMTT: Boolean = false): Unit = {
+  def writeResults[T <: PedestrianNOMAD](simulator: NOMADGraphSimulator[T], prefix: String = "", dir: String, writeTrajectoriesVS: Boolean = false, writeTrajectoriesJSON: Boolean = false, writeTRANSFORMTT: Boolean = false): Unit = {
 
     // TODO: check if files exists and remove them if they are inside tmp, and warn about them if they are in output_dir
-    val path: String = dir match {
+    if (!Files.exists(Paths.get(dir))) {
+      Files.createDirectory(Paths.get(dir))
+    }/* else {
+      Files.newDirectoryStream(Paths.get(dir)).toVector.foreach(f => Files.delete(f))
+    }*/
+    val path: String = dir/* match {
       case Some(str) => str
       case None => {
-        if (!Files.exists(Paths.get("tmp/"))) {
-          Files.createDirectory(Paths.get("tmp/"))
+        val dirName: String = "tmp-" + simulator.ID + "/"
+        if (!Files.exists(Paths.get(dirName))) {
+          Files.createDirectory(Paths.get(dirName))
         } else {
-          // delete contents
+          Files.newDirectoryStream(Paths.get(dirName)).toVector.foreach(f => Files.delete(f))
         }
-        "tmp/"
+        dirName
       }
-    }
+    }*/
 
     if (simulator.exitCode == 0) {
       if (writeTRANSFORMTT) {
@@ -487,18 +495,18 @@ package object hubmodel {
     * @param path dir where the files are located
     * @return Iterable containing the results
     */
-  def readResults(dir: Option[String]): Iterable[ResultsContainerRead] = {
-    val path: String = dir match {
+  def readResults(dir: String, prefix: String): Iterable[ResultsContainerRead] = {
+    val path: String = dir /*match {
       case Some(str) => str
       case None => "tmp/"
-    }
+    }*/
     val outputDir = new File(path)
     if (!outputDir.exists || !outputDir.isDirectory) {
       throw new IllegalArgumentException("Output dir for files does not exist ! dir=" + path)
     }
 
     // reads the files populates a map based on the keyword present in the name
-    val files: Map[String, Map[String, File]] = outputDir.listFiles.filter(_.isFile).toList.groupBy(f => f.getName.substring(f.getName.indexOf(".csv") - 10, f.getName.indexOf(".csv"))).map(kv => kv._1 -> kv._2.map(f => {
+    val files: Map[String, Map[String, File]] = outputDir.listFiles.filter(f => f.isFile && f.getName.contains(prefix)).toList.groupBy(f => f.getName.substring(f.getName.indexOf(".csv") - 10, f.getName.indexOf(".csv"))).map(kv => kv._1 -> kv._2.map(f => {
       f.getName match {
         case a if a.contains("_tt_") => "tt"
         case b if b.contains("_density_") => "density"
@@ -616,7 +624,7 @@ package object hubmodel {
   }
 
 
-  def runAndWriteResults[T <: PedestrianNOMAD](simulator: NOMADGraphSimulator[T], prefix: String = "", dir: Option[String], writeTrajectoriesVS: Boolean = false, writeTrajectoriesJSON: Boolean = false, writeTRANSFORMTT:Boolean = false): Unit = {
+  def runAndWriteResults[T <: PedestrianNOMAD](simulator: NOMADGraphSimulator[T], prefix: String = "", dir: String, writeTrajectoriesVS: Boolean = false, writeTrajectoriesJSON: Boolean = false, writeTRANSFORMTT:Boolean = false): Unit = {
     timeBlock(simulator.run())
     writeResults(simulator, prefix, dir, writeTrajectoriesVS, writeTrajectoriesJSON, writeTRANSFORMTT)
   }

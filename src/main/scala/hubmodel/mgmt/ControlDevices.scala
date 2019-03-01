@@ -1,6 +1,6 @@
 package hubmodel.mgmt
 
-import hubmodel.mgmt.flowgate.{FunctionalForm, Measurement, Output}
+import hubmodel.mgmt.flowgate._
 import hubmodel.mgmt.flowsep.FlowSeparator
 import hubmodel.supply.graph._
 import hubmodel.tools.ControlDevicesException
@@ -11,7 +11,7 @@ class ControlDevices(val monitoredAreas: Iterable[DensityMeasuredArea],
                      val amws: Iterable[MovingWalkway],
                      val flowGates: Iterable[FlowGate],
                      val binaryGates: Iterable[BinaryGate],
-                     val flowSeparators: Iterable[FlowSeparator],
+                     val flowSeparators: Iterable[FlowSeparator[_, _]],
                      val fixedFlowSeparators: Boolean) {
 
   if (flowGates.nonEmpty && monitoredAreas.isEmpty) {
@@ -37,7 +37,7 @@ class ControlDevices(val monitoredAreas: Iterable[DensityMeasuredArea],
     )
   }
 
-  def cloneModifyFlowGates[T <: Measurement, U <: Output](f: FunctionalForm[T,U]): ControlDevices = {
+  def cloneModifyFlowGates[T <: Measurement, U <: Flow](f: FunctionalForm[T,U]): ControlDevices = {
     new ControlDevices(
       monitoredAreas.map(_.clone()),
       amws,
@@ -47,6 +47,17 @@ class ControlDevices(val monitoredAreas: Iterable[DensityMeasuredArea],
       }),
       binaryGates.map(_.clone()),
       flowSeparators.map(_.clone()),
+      fixedFlowSeparators
+    )
+  }
+
+  def cloneModifyFlowSeparators[T <: Measurement, U <: SeparatorPositionFraction](f: FunctionalForm[T, U]): ControlDevices = {
+    new ControlDevices(
+      monitoredAreas.map(_.clone()),
+      amws,
+      flowGates.map(_.clone()),
+      binaryGates.map(_.clone()),
+      flowSeparators.map(_.cloneChangeFunction(f)),
       fixedFlowSeparators
     )
   }

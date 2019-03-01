@@ -1,17 +1,18 @@
 package hubmodel.supply.graph
 
 import hubmodel.mgmt.ControlDevices
+import hubmodel.mgmt.flowgate.{Measurement, Output}
 import hubmodel.mgmt.flowsep.FlowSeparator
 import hubmodel.ped.PedestrianNOMAD
 import hubmodel.tools.cells.Rectangle
 
 class SingleGraph(private val baseVertices: Iterable[Rectangle],
-                  private val standardEdges: Iterable[MyEdge],
-                  private val levelChanges: Iterable[MyEdgeLevelChange],
-                  fg: Iterable[FlowGate],
-                  bg: Iterable[BinaryGate],
-                  mw: Iterable[MovingWalkway],
-                  fs: Iterable[FlowSeparator]) extends GraphContainer(fg, bg, mw, fs) {
+                                       private val standardEdges: Iterable[MyEdge],
+                                       private val levelChanges: Iterable[MyEdgeLevelChange],
+                                       fg: Iterable[FlowGate],
+                                       bg: Iterable[BinaryGate],
+                                       mw: Iterable[MovingWalkway],
+                                       fs: Iterable[FlowSeparator[_, _]]) extends GraphContainer(fg, bg, mw, fs) {
 
   private val graph = new RouteGraph(baseVertices, standardEdges, levelChanges, this.flowGates, this.binaryGates, this.movingWalkways, this.flowSeparators)
 
