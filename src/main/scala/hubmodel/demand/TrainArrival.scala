@@ -1,10 +1,10 @@
 package hubmodel.demand
 
 import hubmodel.DES.{Action, NOMADGraphSimulator}
-import hubmodel._
 import hubmodel.demand.transit.Vehicle
 import hubmodel.ped.PedestrianNOMAD
-import hubmodel.supply.{StopID_New, TrainID_New}
+import hubmodel.supply.TrainID_New
+import hubmodel.tools.Time
 
 import scala.reflect.ClassTag
 

@@ -5,8 +5,8 @@ import java.util.concurrent.ThreadLocalRandom
 
 import com.vividsolutions.jts.geom.Coordinate
 import hubmodel.DES.{Action, NOMADGraphSimulator}
-import hubmodel.Time
 import hubmodel.ped.PedestrianNOMAD
+import hubmodel.tools.Time
 import hubmodel.tools.cells.isInVertex
 import javax.vecmath.Vector3d
 import myscala.math.vector.Vector2D

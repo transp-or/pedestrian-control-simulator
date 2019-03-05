@@ -1,15 +1,10 @@
 package hubmodel.supply.graph
 
-import java.util.concurrent.ThreadLocalRandom
-
 import hubmodel.mgmt.ControlDevices
-import hubmodel.mgmt.flowgate.{Measurement, Output}
 import hubmodel.mgmt.flowsep.FlowSeparator
 import hubmodel.ped.PedestrianNOMAD
 import hubmodel.tools.cells.Rectangle
-import org.jgrapht.GraphPath
-import org.jgrapht.alg.shortestpath.DijkstraShortestPath
-import org.jgrapht.alg.shortestpath.KShortestPaths
+import org.jgrapht.alg.shortestpath.{DijkstraShortestPath, KShortestPaths}
 import org.jgrapht.graph.DefaultDirectedWeightedGraph
 
 import scala.collection.JavaConverters._

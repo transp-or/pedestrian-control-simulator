@@ -1,13 +1,11 @@
 package hubmodel.input.ProcessDXF;
 
-import org.apache.commons.lang3.ArrayUtils;
 import org.kabeja.dxf.helpers.Point;
 
 import java.awt.geom.Path2D;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 

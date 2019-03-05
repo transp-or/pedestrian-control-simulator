@@ -4,7 +4,8 @@ import java.awt.Graphics2D
 import java.awt.geom.Ellipse2D
 
 import breeze.numerics.floor
-import hubmodel.{Position, Time}
+import hubmodel.Position
+import hubmodel.tools.Time
 
 /**
   * Collection of various tools for formatting data, drawing elements and mapping coordinates.

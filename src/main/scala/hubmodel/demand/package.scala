@@ -1,23 +1,21 @@
-import play.api.libs.functional.syntax._
-import play.api.libs.json.Reads._
-import play.api.libs.json._
-
-import scala.io.BufferedSource
-
+import java.nio.file.{DirectoryStream, Files, Path, Paths}
 import java.time.format.DateTimeFormatter
 import java.time.{LocalDateTime, LocalTime}
-import scala.collection.JavaConversions._
-
-import java.nio.file.{DirectoryStream, Files, Path, Paths}
 
 import com.typesafe.config.Config
-import hubmodel.TimeNumeric.mkOrderingOps
 import hubmodel.demand.transit.Vehicle
 import hubmodel.input.JSONReaders.PublicTransportScheduleReader
 import hubmodel.input.JSONReaders.TRANSFORM.{PedestrianCollectionReaderTF, PublicTransportScheduleReaderTF}
 import hubmodel.supply.{NodeID_New, StopID_New, TrainID_New}
-import hubmodel.tools.IllegalSimulationInput
+import hubmodel.tools.{IllegalSimulationInput, Time}
+import hubmodel.tools.TimeNumeric.mkOrderingOps
 import hubmodel.tools.cells.Rectangle
+import play.api.libs.functional.syntax._
+import play.api.libs.json.Reads._
+import play.api.libs.json._
+
+import scala.collection.JavaConversions._
+import scala.io.BufferedSource
 
 /**
   * Created by nicholas on 3/8/17.
@@ -249,7 +247,6 @@ package hubmodel {
 
     def readDisaggDemand(fileName: String): Vector[(String, String, Option[Time])] = {
 
-
       val source: BufferedSource = scala.io.Source.fromFile(fileName)
       val input: JsValue = Json.parse(try source.mkString finally source.close)
 
@@ -286,7 +283,7 @@ package hubmodel {
       abstract class PedestrianFlowFunction(val start: Time, val end: Time)
 
       object PedestrianFlowFunctionOrdering extends Ordering[PedestrianFlowFunction] {
-        def compare(a: PedestrianFlowFunction, b: PedestrianFlowFunction): Int = hubmodel.TimeNumeric.compare(a.start, b.start)
+        def compare(a: PedestrianFlowFunction, b: PedestrianFlowFunction): Int = hubmodel.tools.TimeNumeric.compare(a.start, b.start)
       }
 
       case class SinPedestrianFlow(s: Time, e: Time, periodStretch: Double, periodShift: Double, a: Double, b: Double, c: Double, maxFlow: Double) extends PedestrianFlowFunction(s, e)

@@ -1,7 +1,6 @@
 package hubmodel.supply.graph
 
 import hubmodel.mgmt.ControlDevices
-import hubmodel.mgmt.flowgate.{Measurement, Output}
 import hubmodel.mgmt.flowsep.FlowSeparator
 import hubmodel.ped.PedestrianNOMAD
 import hubmodel.tools.cells.Rectangle

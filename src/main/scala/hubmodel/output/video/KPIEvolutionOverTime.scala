@@ -6,8 +6,8 @@ import java.awt.{Color, Graphics2D}
 import java.io.File
 
 import breeze.numerics.floor
-import hubmodel.Time
 import hubmodel.output.{mapCoordAffine, verticalMirrorTransformation}
+import hubmodel.tools.Time
 import org.jcodec.api.awt.AWTSequenceEncoder
 
 import scala.collection.immutable.NumericRange

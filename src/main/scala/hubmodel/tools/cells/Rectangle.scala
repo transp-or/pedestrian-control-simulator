@@ -2,7 +2,7 @@ package hubmodel.tools.cells
 
 import java.util.concurrent.ThreadLocalRandom
 
-import hubmodel.{Position, Time, generateUUID}
+import hubmodel.{Position, generateUUID}
 import myscala.math.vector.Vector2D
 
 class Rectangle(val name: String, C1: Position, C2: Position, C3: Position, C4: Position, val isOD: Boolean, genRate: Option[Double]) extends Vertex {

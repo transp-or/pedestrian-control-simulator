@@ -1,9 +1,10 @@
 package hubmodel.supply.graph
 
 import hubmodel.DES.{Action, NOMADGraphSimulator}
+import hubmodel.Position
 import hubmodel.ped.{PedestrianNOMAD, PedestrianSim}
+import hubmodel.tools.Time
 import hubmodel.tools.cells.Rectangle
-import hubmodel.{Position, Time}
 
 abstract class MyEdgeWithGate(override val startVertex: Rectangle, override val endVertex: Rectangle, val start: Position, val end: Position, val monitoredArea: String) extends MyEdge(startVertex, endVertex) {
 

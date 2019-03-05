@@ -1,16 +1,9 @@
 package optimization.bruteforce
 
-import java.io.File
-import java.nio.file.{Files, Path, Paths}
-
-import com.typesafe.config.{Config, ConfigFactory}
-import hubmodel.DES.NOMADGraphSimulator
-import hubmodel.demand.flows.ProcessPedestrianFlows
-import hubmodel.demand.{PedestrianFlowFunction_New, PedestrianFlowPT_New, PedestrianFlow_New, readPedestrianFlows}
-import hubmodel.ped.PedestrianNOMAD
+import com.typesafe.config.Config
 import hubmodel._
-import myscala.math.stats.ComputeStats
-import trackingdataanalysis.visualization.{HeatMap, PlotOptions}
+import hubmodel.demand.{PedestrianFlowFunction_New, PedestrianFlowPT_New, PedestrianFlow_New}
+import hubmodel.tools.Time
 
 import scala.collection.GenIterable
 import scala.collection.parallel.ForkJoinTaskSupport

@@ -1,6 +1,6 @@
 package hubmodel.tools.cells
 
-import hubmodel.{Position, Time, VertexID, generateUUID}
+import hubmodel.{Position, VertexID, generateUUID}
 
 trait Vertex {
 

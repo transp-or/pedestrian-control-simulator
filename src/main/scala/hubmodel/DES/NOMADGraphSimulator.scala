@@ -10,6 +10,7 @@ import hubmodel.route.UpdateRoutes
 import hubmodel.supply.NodeParent
 import hubmodel.supply.continuous.{ContinuousSpace, Wall}
 import hubmodel.supply.graph._
+import hubmodel.tools.Time
 import hubmodel.tools.cells.{DensityMeasuredArea, Rectangle, isInVertex}
 
 class NOMADGraphSimulator[T <: PedestrianNOMAD](st: Time,

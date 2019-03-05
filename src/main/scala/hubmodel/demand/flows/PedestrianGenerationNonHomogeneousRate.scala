@@ -7,10 +7,10 @@ package hubmodel.demand.flows
 import java.util.concurrent.ThreadLocalRandom
 
 import hubmodel.DES.{Action, NOMADGraphSimulator}
-import hubmodel.TimeNumeric.mkOrderingOps
-import hubmodel._
 import hubmodel.demand.{CreatePedestrian, CreatePedestrianWithInsertion}
 import hubmodel.ped.PedestrianNOMAD
+import hubmodel.tools.Time
+import hubmodel.tools.TimeNumeric.mkOrderingOps
 import hubmodel.tools.cells.Rectangle
 
 import scala.reflect.ClassTag

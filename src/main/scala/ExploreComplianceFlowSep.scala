@@ -1,11 +1,9 @@
 import com.typesafe.config.Config
 import hubmodel.parseConfigFile
-import myscala.output.SeqTuplesExtensions.SeqTuplesWriter
-import myscala.math.stats.computeQuantile
-import myscala.math.stats.computeBoxPlotData
 import myscala.math.stats.bootstrap.bootstrapMSE
+import myscala.math.stats.{computeBoxPlotData, computeQuantile}
+import myscala.output.SeqTuplesExtensions.SeqTuplesWriter
 import optimization.bruteforce.ComplianceVariation
-import trackingdataanalysis.visualization.{Histogram, PlotOptions}
 
 object ExploreComplianceFlowSep extends App {
 
