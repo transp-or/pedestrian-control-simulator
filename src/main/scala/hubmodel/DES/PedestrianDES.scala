@@ -6,10 +6,9 @@ package hubmodel.DES
 
 import java.util.concurrent.ThreadLocalRandom
 
-import com.typesafe.scalalogging.{LazyLogging, Logger}
 import hubmodel.TimeNumeric.mkOrderingOps
 import hubmodel.ped.PedestrianNOMAD
-import hubmodel.{Position, Time, distance}
+import hubmodel.{Position, StrictLogging, Time, distance}
 import myscala.math.algo.MTree
 import myscala.math.vector.{Vector2D, norm}
 
@@ -30,7 +29,7 @@ import scala.util.Random
   *
   */
 abstract class PedestrianDES[T <: PedestrianNOMAD](val startTime: Time,
-                                                   val finalTime: Time) extends LazyLogging {
+                                                   val finalTime: Time) extends StrictLogging {
 
   ///////////////////////////////////////////////////////////////////////////////////////////////////
   ////////////////////////////// General parameters /////////////////////////////////////////////////
@@ -60,7 +59,7 @@ abstract class PedestrianDES[T <: PedestrianNOMAD](val startTime: Time,
   }*/
 
   /** Log for keeping track of events */
-  val eventLogger: Logger = logger
+  //val eventLogger: Logger = logger
 
   ///////////////////////////////////////////////////////////////////////////////////////////////////
   ////////////////////////////// Action definition and manipulaiton /////////////////////////////////
@@ -293,9 +292,9 @@ abstract class PedestrianDES[T <: PedestrianNOMAD](val startTime: Time,
     while (this.eventList.nonEmpty && this._exitCode == -1) {
       val event = eventList.dequeue()
       this._currentTime = event.t
-      if (this._currentTime.value % 5.0 == 0) {
+      /*if (this._currentTime.value % 5.0 == 0) {
         print(" * simulation at " + this._currentTime + " sec\r")
-      }
+      }*/
       event.action.execute()
     }
     if (this._exitCode == -1) {

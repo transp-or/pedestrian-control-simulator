@@ -108,7 +108,7 @@ package object graph {
               oz_2,
               fs.overConn.collect({ case c if vertexMapReader.contains(c.node) => c.conn.collect({ case neigh if vertexMapReader.contains(neigh) => new MyEdge(vertexMapReader(c.node), vertexMapReader(neigh)) }) }).flatten,
               oldZones,
-              FunctionalFormFlowSeparator((bf: BidirectionalFlow) => SeparatorPositionFraction(bf.f1/(bf.f1+bf.f2)))
+              FunctionalFormFlowSeparator((bf: BidirectionalFlow) => SeparatorPositionFraction(bf.f2/(bf.f1+bf.f2)))
             )
           }
           )
@@ -124,10 +124,12 @@ package object graph {
           * @return collection of type T tedges
           */
         def connections2Edges[U <: MyEdge](edges: Iterable[Connectivity_JSON])(implicit tag: ClassTag[U]): Set[U] = {
-          edges.flatMap(c => c.conn.map(neigh => {
-
-            tag.runtimeClass.getConstructors()(0).newInstance(vertexMapReader(c.node), vertexMapReader(neigh)).asInstanceOf[U]
-          })).toSet
+          edges
+            .flatMap(c => c.conn
+              .collect({case neigh if vertexMapReader.keySet.contains(c.node) && vertexMapReader.keySet.contains(neigh) =>
+                tag.runtimeClass.getConstructors()(0).newInstance(vertexMapReader(c.node), vertexMapReader(neigh)).asInstanceOf[U]
+              })
+            ).toSet
         }
 
         val levelChanges: Vector[MyEdgeLevelChange] = connections2Edges[MyEdgeLevelChange](s.get.levelChanges).toVector

@@ -1,14 +1,13 @@
 
 import java.nio.file.{DirectoryStream, Files, Path, Paths}
 
-import com.typesafe.config.Config
+import com.typesafe.config.{Config, ConfigValueFactory}
 import hubmodel._
 import hubmodel.output.TRANSFORM.PopulationSummaryProcessingTRANSFORM
 import hubmodel.ped.PedestrianNOMAD
 import hubmodel.supply.graph.readPTStop2GraphVertexMap
 import hubmodel.tools.IllegalSimulationInput
 import hubmodel.demand.readDemandSets
-
 import myscala.math.stats.bootstrap.bootstrapMSE
 import myscala.math.stats.{ComputeQuantiles, ComputeStats}
 import myscala.output.SeqOfSeqExtensions.SeqOfSeqWriter
@@ -27,29 +26,45 @@ import scala.collection.parallel.ForkJoinTaskSupport
   * processing of the results. The keys steps for beaing able to run a simulation are the following:
   *
   */
-object RunSimulation extends App {
+object RunSimulation extends App with StrictLogging {
 
 
   // ******************************************************************************************
-  //                    Read CLI arguments and process parameters file
+  //                    Read CLI arguments and validate parameters file
   // ******************************************************************************************
 
-  val config: Config = parseConfigFile(args)
+  logger.info("Reading config and preparing simulations")
+
+  // parses the config file and checks if the output dir exists.
+  val config: Config = {
+    // Get config from files
+    val tmpConfig: Config = parseConfigFile(args)
+
+    // checks that the output directory exists, if not, defaults to tmp/
+    if (!Files.exists(Paths.get(tmpConfig.getString("output.dir")))) {
+      val id: String = generateUUID
+      Files.createDirectory(Paths.get("tmp/" + id + "/"))
+      logger.warn("Output directory does not exist ! Defaulting to tmp/" + id + "/")
+      tmpConfig.withValue("output.dir", ConfigValueFactory.fromAnyRef("tmp/" + id + "/"))
+    } else {
+      tmpConfig
+    }
+  }
 
   // ******************************************************************************************
-  //                           Processes and writes results to CSV
+  //                        Prepare all simulations and runs them
   // ******************************************************************************************
 
-  val demandSets: Option[Seq[(String, String)]] = readDemandSets(config)
-
+  //
   val simulationStartTime: Time = Time(config.getDouble("sim.start_time"))
   val simulationEndTime: Time = Time(config.getDouble("sim.end_time"))
-
-  val n: Int = computeNumberOfSimulations(config, demandSets)
 
   val runSimulationsInParallel: Boolean = config.getBoolean("execution.parallel")
   val evaluationInterval: Time = Time(config.getDouble("sim.evaluate_dt"))
 
+  val demandSets: Option[Seq[(String, String)]] = readDemandSets(config)
+
+  val n: Int = computeNumberOfSimulations(config, demandSets)
 
   // Runs the simulations in parallel or sequential based on the config file.
 
@@ -94,7 +109,7 @@ object RunSimulation extends App {
   println("Processing results")
 
   // Collects then writes individual travel times to csv
-  if (config.getBoolean("output.write_travel_times")) results
+  if (config.getBoolean("output.write_travel_times") && results.nonEmpty) results
     .map(r => r.tt.map(_._3))
     .writeToCSV(
       config.getString("output.output_prefix") + "_travel_times.csv",
@@ -112,7 +127,7 @@ object RunSimulation extends App {
       rowNames = None
     )*/
 
-  if (config.getBoolean("output.write_densities")) {
+  if (config.getBoolean("output.write_densities")  && results.nonEmpty) {
     // Collects times at which densities where measured
     val densityTimes: Vector[Time] = results.head.monitoredAreaDensity.get._1.map(Time(_))
 
@@ -139,7 +154,7 @@ object RunSimulation extends App {
     }
   }
 
-  if (config.getBoolean("output.write_density_stats")) {
+  if (config.getBoolean("output.write_density_stats") && results.nonEmpty) {
 
     /* analyse traj data per density threshold */
     val targetDensityRange = BigDecimal(1.0) to BigDecimal(4.0) by BigDecimal(0.25)
@@ -188,10 +203,11 @@ object RunSimulation extends App {
   }
 
   // computes statistics on travel times and writes them
-  if (config.getBoolean("output.write_tt_stats")) {
+  if (config.getBoolean("output.write_tt_stats") && results.nonEmpty) {
 
     // writes stattistcs about each run
     val statsPerRun = results.map(r => {
+      println(r.tt.map(_._3).cutOfAfterQuantile(99).stats)
       r.tt.map(_._3).stats
     })
 
@@ -225,7 +241,7 @@ object RunSimulation extends App {
   //val ODPairsToAnalyse: Iterable[(String, String)] = config.getStringList("results-analysis.o_nodes").asScala.zip(config.getStringList("results-analysis.d_nodes").asScala).map(t => (t._1, t._2))
 
 
-  if (config.getBoolean("output.analyze_od_groups")) {
+  if (config.getBoolean("output.analyze_od_groups") && results.nonEmpty) {
     //val ODGroupsToAnalyse: Seq[(Seq[String], Seq[String])] = Vector((Vector("top", "bottom"), Vector("left-top", "right-bottom")), (Vector("left-bottom", "right-top"), Vector("right-bottom", "left-top")))
     val ODGroupsToAnalyse: Seq[(Seq[String], Seq[String])] = Vector((Vector("top"), Vector("bottom")), (Vector("bottom"), Vector("top")))
 
@@ -261,7 +277,7 @@ object RunSimulation extends App {
   //                                  Processing for TRANS-FORM
   // ******************************************************************************************
 
-  if (config.getBoolean("output.write_tt_4_transform")) {
+  if (config.getBoolean("output.write_tt_4_transform") && results.nonEmpty) {
 
     val stop2Vertex = readPTStop2GraphVertexMap(config.getString("files.zones_to_vertices_map"))
 

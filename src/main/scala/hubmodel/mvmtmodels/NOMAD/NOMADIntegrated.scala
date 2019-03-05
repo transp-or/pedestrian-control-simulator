@@ -161,7 +161,7 @@ class NOMADIntegrated[T <: PedestrianNOMAD](sim: NOMADGraphSimulator[T]) extends
 
   override def execute(): Unit = {
 
-    logger.trace("moving pedestrians @" + sim.currentTime)
+    eventLogger.trace("moving pedestrians @" + sim.currentTime)
 
     //sim.errorLogger.error("move peds @ " + sim.currentTime + ", nbr peds=" + sim.population.size)
 
