@@ -12,6 +12,7 @@ import hubmodel.output.{createWhiteBackground, getBounds, mapCoordAffine, vertic
 import hubmodel.ped.PedestrianSim
 import hubmodel.supply.continuous.Wall
 import hubmodel.supply.graph.BinaryGate
+import hubmodel.tools.Time
 import hubmodel.tools.cells.DensityMeasuredArea
 import org.jcodec.api.awt.AWTSequenceEncoder
 

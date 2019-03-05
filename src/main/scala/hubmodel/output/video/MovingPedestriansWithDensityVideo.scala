@@ -11,9 +11,9 @@ import hubmodel._
 import hubmodel.output.createBackgroundFromImage
 import hubmodel.ped.PedestrianSim
 import hubmodel.supply.graph.BinaryGate
+import hubmodel.tools.Time
 import hubmodel.tools.cells.Rectangle
 import org.jcodec.api.awt.AWTSequenceEncoder
-
 
 /** Creates a video showing the movement of individual pedestrians with the critical zones in which the density is
   * monitored accompanied with the gates. Consider replacing the long list of arguments by the [[PedestrianDES]] object which

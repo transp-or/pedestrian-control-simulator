@@ -1,11 +1,9 @@
-import ExploreComplianceFlowSep.{config, mean, results}
 import com.typesafe.config.Config
 import hubmodel.parseConfigFile
-import myscala.math.stats.stats
 import myscala.math.stats.bootstrap.bootstrapMSE
-import myscala.math.stats.{computeBoxPlotData, computeQuantile, ComputeStats}
-import optimization.bruteforce.FlowVariation
+import myscala.math.stats.{ComputeStats, computeBoxPlotData, computeQuantile}
 import myscala.output.SeqTuplesExtensions.SeqTuplesWriter
+import optimization.bruteforce.FlowVariation
 
 
 object ExploreSensitivityFlows extends App {

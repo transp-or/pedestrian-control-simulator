@@ -1,6 +1,6 @@
 import java.io.{BufferedWriter, File, FileWriter}
-import java.math.MathContext
-import java.nio.file.{DirectoryStream, Files, Path, Paths}
+import java.nio.file.{Files, Paths}
+import java.util.concurrent.ThreadLocalRandom
 
 import com.typesafe.config.{Config, ConfigFactory}
 import hubmodel.DES.NOMADGraphSimulator
@@ -13,19 +13,17 @@ import hubmodel.ped.{PedestrianNOMAD, PedestrianSim, PedestrianTrait}
 import hubmodel.supply.continuous.{ContinuousSpace, MovableWall, ReadContinuousSpace}
 import hubmodel.supply.graph._
 import hubmodel.supply.{NodeID_New, NodeParent, StopID_New, TrainID_New}
+import hubmodel.tools.Time
 import hubmodel.tools.cells.{DensityMeasuredArea, Rectangle}
 import myscala.math.vector.{Vector2D, Vector3D}
 import myscala.output.SeqOfSeqExtensions.SeqOfSeqWriter
 import myscala.output.SeqTuplesExtensions.SeqTuplesWriter
 import myscala.timeBlock
 import org.apache.commons.lang3.RandomStringUtils
-import play.api.libs.json.Reads._
-import play.api.libs.json._
 
 import scala.collection.GenIterable
 import scala.collection.immutable.NumericRange
 import scala.collection.parallel.ForkJoinTaskSupport
-import scala.math.BigDecimal.RoundingMode
 import scala.reflect.ClassTag
 import scala.util.{Failure, Success, Try}
 
@@ -77,7 +75,7 @@ package object hubmodel {
   def distance(a: Vector3D, b: Vector3D): Double = scala.math.pow((b.X - a.X) * (b.X - a.X) + (b.Y - a.Y) * (b.Y - a.Y) + (b.Z - a.Z) * (b.Z - a.Z), 0.5)
 
 
-  class Time(val value: BigDecimal) extends AnyVal {
+ /* class Time(val value: BigDecimal) extends AnyVal {
 
     def +(m: Time): Time = new Time(this.value + m.value)
 
@@ -125,7 +123,7 @@ package object hubmodel {
   object TimeNumeric extends Ordering[Time] {
     def compare(x: Time, y: Time): Int = x.value compare y.value
   }
-
+*/
 
   /** Generation of a pseudo-UUID. This can be used to generate unique identifiers for objects.
     *
@@ -374,6 +372,13 @@ package object hubmodel {
   // Loads the disaggregate pedestrian demand.
   def getDisaggPopulation(config: Config): Iterable[(String, String, Option[Time])] = if (config.getIsNull("files.flows_TF") && !config.getIsNull("files.disaggregate_demand")) {
     readDisaggDemand(config.getString("files.disaggregate_demand"))
+      .flatMap(p =>
+        if (!config.getIsNull("sim.increase_disaggregate_demand") && ThreadLocalRandom.current().nextDouble() >= (1.0-config.getDouble("sim.increase_disaggregate_demand")/100.0)) {
+          Iterable(p, (p._1, p._2, Option(p._3.get.addDouble(ThreadLocalRandom.current().nextDouble(-15,15)))))
+        } else {
+          Iterable(p)
+        }
+      )
   } else if (config.getIsNull("files.disaggregate_demand") && !config.getIsNull("files.flows_TF")) {
     readDisaggDemandTF(config.getString("files.flows_TF"))
   } else {
@@ -682,20 +687,6 @@ package object hubmodel {
       NodeParent => Iterable[Rectangle],
       ControlDevices
     )
-
-  class SimulationParametersClass(val start: Time,
-                                  val end: Time,
-                                  val mvmtUpdate: Time,
-                                  val routeUpdate: Time,
-                                  val evaluateFrequency: Time,
-                                  val rebuildTreeInterval: Option[Time],
-                                  val microSpace: ContinuousSpace,
-                                  val graph: GraphContainer,
-                                  val timeTable: PublicTransportSchedule,
-                                  val stop2Vertex: NodeParent => Iterable[Rectangle],
-                                  val controlDevices: ControlDevices,
-                                  val writeTrajectoryData: Boolean)
-
 }
 
 

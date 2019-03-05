@@ -1,8 +1,9 @@
 package hubmodel.input
 
 
+import hubmodel.Position
 import hubmodel.supply.{NodeIDOld, TrackIDOld}
-import hubmodel.{Position, Time}
+import hubmodel.tools.Time
 import play.api.libs.functional.syntax._
 import play.api.libs.json.Reads.minLength
 import play.api.libs.json._

@@ -5,16 +5,15 @@ import java.nio.file.{Files, Paths}
 
 import com.typesafe.config.Config
 import hubmodel.DES.NOMADGraphSimulator
-import hubmodel.mgmt.flowgate._
 import hubmodel._
 import hubmodel.demand.readDemandSets
 import hubmodel.mgmt.ControlDevices
+import hubmodel.mgmt.flowgate._
 import hubmodel.ped.PedestrianNOMAD
 import myscala.math.stats.ComputeStats
 
 import scala.collection.GenIterable
 import scala.collection.JavaConversions._
-import myscala.output.SeqTuplesExtensions.SeqTuplesWriter
 
 package object simulation {
 
@@ -37,7 +36,6 @@ package object simulation {
     val newControlDevices = defaultParameters.controlDevices.cloneModifyFlowGates(func)
 
     simulateWithCustomParameters(config, defaultParameters, newControlDevices)
-
   }
 
 
@@ -49,12 +47,9 @@ package object simulation {
     val newControlDevices = defaultParameters.controlDevices.cloneModifyFlowSeparators(func)
 
     simulateWithCustomParameters(config, defaultParameters, newControlDevices)
-
   }
 
-
-
-  def simulateWithCustomParameters[T <: Measurement, U <: Output](config: Config, defaultParameters: SimulationParametersClass, newControlDevices: ControlDevices): Double = {
+  def simulateWithCustomParameters(config: Config, defaultParameters: SimulationParametersClass, newControlDevices: ControlDevices): Double = {
 
     val demandSets: Option[Seq[(String, String)]] = readDemandSets(config)
 

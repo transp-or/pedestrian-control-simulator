@@ -3,7 +3,6 @@ package hubmodel.demand
 import java.util.concurrent.ThreadLocalRandom
 
 import hubmodel.ped.PedestrianNOMAD
-import hubmodel.tools.cells.Rectangle
 
 class PTInducedQueue[T <: PedestrianNOMAD]() {
 

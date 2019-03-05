@@ -2,11 +2,11 @@ package hubmodel.mgmt
 
 import breeze.linalg.{max, min}
 import hubmodel.DES.{Action, NOMADGraphSimulator}
-import hubmodel.Time
-import hubmodel.TimeNumeric.mkOrderingOps
 import hubmodel.mgmt.flowgate._
 import hubmodel.ped.PedestrianNOMAD
 import hubmodel.supply.graph.{FlowGate, FlowGateFunctional}
+import hubmodel.tools.Time
+import hubmodel.tools.TimeNumeric.mkOrderingOps
 
 import scala.annotation.tailrec
 

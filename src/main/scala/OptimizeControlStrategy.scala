@@ -1,6 +1,6 @@
 import com.typesafe.config.Config
 import hubmodel.parseConfigFile
-import optimization.simulation.{runFlowSepFunction, runGatingSingleFunction}
+import optimization.simulation.runGatingSingleFunction
 
 object OptimizeControlStrategy extends App {
 
@@ -22,7 +22,6 @@ object OptimizeControlStrategy extends App {
   val params = Vector(
     (3.0,-0.1,0.0,0.0,0.0),
     (4.0,-0.2,0.0,0.0,0.0)
-
   )
 
   /*def f = runFlowSepFunction(config)(_,_,_,_,_)

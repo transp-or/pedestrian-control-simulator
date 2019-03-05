@@ -3,6 +3,7 @@ package hubmodel.ped
 import java.util.concurrent.ThreadLocalRandom
 
 import breeze.numerics.round
+import hubmodel.tools.Time
 import hubmodel.tools.cells.Rectangle
 import hubmodel.{Position, _}
 import myscala.math.vector.ZeroVector2D

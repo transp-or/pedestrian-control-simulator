@@ -2,7 +2,8 @@ package hubmodel.tools.cells
 
 import java.util.concurrent.ThreadLocalRandom
 
-import hubmodel.{Position, Time}
+import hubmodel.Position
+import hubmodel.tools.Time
 import myscala.math.vector.Vector2D
 
 

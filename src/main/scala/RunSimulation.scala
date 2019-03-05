@@ -1,23 +1,20 @@
 
-import java.nio.file.{DirectoryStream, Files, Path, Paths}
+import java.nio.file.{Files, Paths}
 
 import com.typesafe.config.{Config, ConfigValueFactory}
 import hubmodel._
+import hubmodel.demand.readDemandSets
 import hubmodel.output.TRANSFORM.PopulationSummaryProcessingTRANSFORM
 import hubmodel.ped.PedestrianNOMAD
 import hubmodel.supply.graph.readPTStop2GraphVertexMap
-import hubmodel.tools.IllegalSimulationInput
-import hubmodel.demand.readDemandSets
+import hubmodel.tools.Time
 import myscala.math.stats.bootstrap.bootstrapMSE
-import myscala.math.stats.{ComputeQuantiles, ComputeStats}
+import myscala.math.stats.{ComputeQuantiles, ComputeStats, computeBoxPlotData}
 import myscala.output.SeqOfSeqExtensions.SeqOfSeqWriter
 import myscala.output.SeqTuplesExtensions.SeqTuplesWriter
-import myscala.math.stats.computeBoxPlotData
 import trackingdataanalysis.visualization.{Histogram, PlotOptions, ScatterPlot, computeHistogramDataWithXValues}
 
 import scala.collection.GenIterable
-import scala.collection.JavaConversions._
-import scala.collection.parallel.ForkJoinTaskSupport
 
 
 /**

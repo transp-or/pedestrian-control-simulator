@@ -1,6 +1,6 @@
 package hubmodel.input.JSONReaders
 
-import hubmodel.Time
+import hubmodel.tools.Time
 import play.api.libs.functional.syntax._
 import play.api.libs.json.Reads._
 import play.api.libs.json._

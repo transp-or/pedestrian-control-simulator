@@ -1,7 +1,7 @@
 package hubmodel.tools.cells
 
-import hubmodel.{Position, Time}
-
+import hubmodel.Position
+import hubmodel.tools.Time
 
 class DensityMeasuredArea(name: String, A: Position, B: Position, C: Position, D: Position, val targetDensity: Double) extends Rectangle(name, A, B, C, D, false, Some(0)) {
 

@@ -6,9 +6,10 @@ package hubmodel.DES
 
 import java.util.concurrent.ThreadLocalRandom
 
-import hubmodel.TimeNumeric.mkOrderingOps
 import hubmodel.ped.PedestrianNOMAD
-import hubmodel.{Position, StrictLogging, Time, distance}
+import hubmodel.tools.Time
+import hubmodel.tools.TimeNumeric.mkOrderingOps
+import hubmodel.{Position, StrictLogging, distance}
 import myscala.math.algo.MTree
 import myscala.math.vector.{Vector2D, norm}
 

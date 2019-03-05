@@ -3,11 +3,10 @@ package hubmodel.demand.flows
 import java.util.concurrent.ThreadLocalRandom
 
 import hubmodel.DES.{Action, NOMADGraphSimulator}
-import hubmodel.Time
-import hubmodel.TimeNumeric.mkOrderingOps
 import hubmodel.demand.CreatePedestrian
 import hubmodel.ped.PedestrianNOMAD
 import hubmodel.supply.{StopID_New, TrainID_New}
+import hubmodel.tools.Time
 
 import scala.reflect.ClassTag
 
@@ -20,9 +19,6 @@ class ProcessDisaggregatePedestrianFlows[T <: PedestrianNOMAD](eventCollection: 
       if (ec._1.contains("z_") && ec._2.contains("z_")) {
         if (ec._1.drop(2) != "-1" && ec._2.drop(2) != "-1") {
           sim.insertEventAtAbsolute(ec._3.get)(new CreatePedestrian(sim.graph.vertexMapNew(ec._1.drop(2)), sim.graph.vertexMapNew(ec._2.drop(2)), false, sim))
-          if (ThreadLocalRandom.current().nextDouble() > 0.75) {
-            sim.insertEventAtAbsolute(Time(ec._3.get.value.toDouble+10.0*(ThreadLocalRandom.current().nextDouble()-0.5)))(new CreatePedestrian(sim.graph.vertexMapNew(ec._1.drop(2)), sim.graph.vertexMapNew(ec._2.drop(2)), false, sim))
-          }
         } else {
           //errorLogger.warn("Pedestrian dropped since invalid OD: " + ec)
         }
