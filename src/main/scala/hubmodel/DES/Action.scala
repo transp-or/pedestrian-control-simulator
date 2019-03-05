@@ -1,13 +1,13 @@
 package hubmodel.DES
 
-import com.typesafe.scalalogging.LazyLogging
+import hubmodel.StrictLogging
 
 /**
   * Parent to all actions which will appear in the DES.
   * The only method which is mandatory is "execute". To give more control over what data is passed to the events,
   * the Actions which inherent from [[Action]] should take as arguments the simulation.
   */
-abstract class Action extends LazyLogging {
+abstract class Action extends StrictLogging {
 
 
   /** Relative priority between different classes. The higher the value, the higher the priority. This means

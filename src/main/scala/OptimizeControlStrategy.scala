@@ -20,7 +20,9 @@ object OptimizeControlStrategy extends App {
   def f = runGatingSingleFunction(config)(_,_,_,_,_)
 
   val params = Vector(
-    (0.0,-2.0,0.0,0.0,0.0)
+    (3.0,-0.1,0.0,0.0,0.0),
+    (4.0,-0.2,0.0,0.0,0.0)
+
   )
 
   /*def f = runFlowSepFunction(config)(_,_,_,_,_)

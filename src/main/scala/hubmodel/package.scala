@@ -393,7 +393,7 @@ package object hubmodel {
                                                       timeTable: PublicTransportSchedule)(implicit tag: ClassTag[T]): Unit = {
 
     if (disaggPopulation.nonEmpty) {
-      sim.insertEventWithZeroDelay(new ProcessDisaggregatePedestrianFlows[T](disaggPopulation, sim))
+      sim.insertEventWithZeroDelay(new ProcessDisaggregatePedestrianFlows[T](disaggPopulation/*.groupBy(p => (p._1, p._2)).map(gp => gp._2.head)*/, sim))
     }
 
     val PTInducedFlows = flows._2.toVector
@@ -668,7 +668,7 @@ package object hubmodel {
     ConfigFactory.load(ConfigFactory.parseFile(new File(confFileContents)))
   }
 
-
+  @deprecated
   type SimulatorParameters = (
     Time,
       Time,

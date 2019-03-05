@@ -1,11 +1,15 @@
 package hubmodel.supply.graph
 
+import java.util.concurrent.ThreadLocalRandom
+
 import hubmodel.mgmt.ControlDevices
 import hubmodel.mgmt.flowgate.{Measurement, Output}
 import hubmodel.mgmt.flowsep.FlowSeparator
 import hubmodel.ped.PedestrianNOMAD
 import hubmodel.tools.cells.Rectangle
+import org.jgrapht.GraphPath
 import org.jgrapht.alg.shortestpath.DijkstraShortestPath
+import org.jgrapht.alg.shortestpath.KShortestPaths
 import org.jgrapht.graph.DefaultDirectedWeightedGraph
 
 import scala.collection.JavaConverters._
@@ -50,9 +54,16 @@ class RouteGraph(protected val baseVertices: Iterable[Rectangle],
   this.vertexCollection.values.foreach(v => network.addVertex(v))
 
   // builds the edge set from the various strategies which modify the base graph.
-  val edgeCollection: Set[MyEdge] = (((standardEdges ++ flowGates ++ binaryGates ++ movingWalkways ++ levelChanges).toSet
-    .filterNot(e => flowSeparators.flatMap(_.associatedConnectivity.map(_.startVertex.name)).toVector.contains(e.startVertex.name)
+  /*val edgeCollection: Set[MyEdge] = (((standardEdges ++ flowGates ++ binaryGates ++ movingWalkways ++ levelChanges).toSet
+    .filterNot(e =>
+      flowSeparators.flatMap(_.associatedConnectivity.map(_.startVertex.name)).toVector.contains(e.startVertex.name)
       || flowSeparators.flatMap(_.associatedConnectivity.map(_.startVertex.name)).toVector.contains(e.endVertex.name)
+    ) ++ flowSeparators.flatMap(_.associatedConnectivity)) ++ edges2Add) -- edges2Remove*/
+
+  val edgeCollection: Set[MyEdge] = (((standardEdges ++ flowGates ++ binaryGates ++ movingWalkways ++ levelChanges).toSet
+    .filterNot(e =>
+      flowSeparators.flatMap(fs => fs.overridenZones).toVector.contains(e.startVertex.name)
+        || flowSeparators.flatMap(fs => fs.overridenZones).toVector.contains(e.endVertex.name)
     ) ++ flowSeparators.flatMap(_.associatedConnectivity)) ++ edges2Add) -- edges2Remove
 
   //def edges: Set[MyEdge] = edgeCollection
@@ -75,6 +86,10 @@ class RouteGraph(protected val baseVertices: Iterable[Rectangle],
   // object used to get the shortest path in the network
   private var shortestPathBuilder: DijkstraShortestPath[Rectangle, MyEdge] = new DijkstraShortestPath[Rectangle, MyEdge](network)
 
+  // Construction for getting k shortest paths between and origin and a destination in the graph
+  private var multipleShortestPathsBuilder: KShortestPaths[Rectangle, MyEdge] = new KShortestPaths[Rectangle, MyEdge](network, 5)
+
+
   /**
     * Updates the cost of each edge in the graph based on the cost of the edges stored in the "edges" variable.
     * This method updates the cost of the edges before actually updating the graph object itslef.
@@ -83,6 +98,7 @@ class RouteGraph(protected val baseVertices: Iterable[Rectangle],
     this.edgeCollection.foreach(_.updateCost(1.0))
     this.edgeCollection.foreach(e => network.setEdgeWeight(e, e.cost))
     this.shortestPathBuilder = new DijkstraShortestPath[Rectangle, MyEdge](network)
+    this.multipleShortestPathsBuilder = new KShortestPaths[Rectangle, MyEdge](network, 5)
   }
 
   /** Uses to shortestPathBuilder to compute the shortest path between two vertices.
@@ -92,6 +108,14 @@ class RouteGraph(protected val baseVertices: Iterable[Rectangle],
     * @return the list if vertices representing the path
     */
   private def getShortestPath(o: Rectangle, d: Rectangle): List[Rectangle] = {
+
+    // Chooses the route between the five shortest ones and selects it using the logit model with equal weights.
+    /*val paths: Seq[GraphPath[Rectangle, MyEdge]] = this.multipleShortestPathsBuilder.getPaths(o, d).asScala.toVector
+    val weightsSum = paths.map(v => math.exp(-math.log(v.getWeight))).sum
+    val probabilities: Seq[Double] = paths.map(p => math.exp(-math.log(p.getWeight))/weightsSum)
+    val path = paths(probabilities.scanLeft(0.0)(_ + _).tail.indexWhere(p => ThreadLocalRandom.current().nextDouble() < p)).getVertexList*/
+
+
     Try(shortestPathBuilder.getPath(o, d)) match {
       case Success(s) if (s.getVertexList.size() > 0) => {
         s.getVertexList.asScala.toList
