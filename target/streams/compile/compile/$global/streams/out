@@ -1,0 +1,19 @@
+[0m[[0m[33mwarn[0m] [0m[0m/Users/leobouraux/Desktop/EPFL/MA2/Hub-optimization/hub-simulator/src/main/scala/hubmodel/mgmt/flowgate/FunctionalFormDensity.scala:1:1: [0m
+[0m[[0m[33mwarn[0m] [0m[0mFound names but no class, trait or object is defined in the compilation unit.[0m
+[0m[[0m[33mwarn[0m] [0m[0mThe incremental compiler cannot record the dependency information in such case.[0m
+[0m[[0m[33mwarn[0m] [0m[0mSome errors like unused import referring to a non-existent class might not be reported.[0m
+[0m[[0m[33mwarn[0m] [0m[0m    [0m
+[0m[[0m[33mwarn[0m] [0m[0mpackage hubmodel.mgmt.flowgate[0m
+[0m[[0m[33mwarn[0m] [0m[0m^[0m
+[0m[[0m[33mwarn[0m] [0m[0mthere were 11 deprecation warnings[0m
+[0m[[0m[33mwarn[0m] [0m[0mthere were four deprecation warnings (since 2.11.0)[0m
+[0m[[0m[33mwarn[0m] [0m[0mthere were 5 deprecation warnings (since 2.12.0)[0m
+[0m[[0m[33mwarn[0m] [0m[0mthere were three deprecation warnings (since 2.12.6)[0m
+[0m[[0m[33mwarn[0m] [0m[0mthere were 23 deprecation warnings in total; re-run with -deprecation for details[0m
+[0m[[0m[33mwarn[0m] [0m[0m6 warnings found[0m
+[0m[[0m[33mwarn[0m] [0m[0mthere were 11 deprecation warnings[0m
+[0m[[0m[33mwarn[0m] [0m[0mthere were four deprecation warnings (since 2.11.0)[0m
+[0m[[0m[33mwarn[0m] [0m[0mthere were 8 deprecation warnings (since 2.12.0)[0m
+[0m[[0m[33mwarn[0m] [0m[0mthere were three deprecation warnings (since 2.12.6)[0m
+[0m[[0m[33mwarn[0m] [0m[0mthere were 26 deprecation warnings in total; re-run with -deprecation for details[0m
+[0m[[0m[33mwarn[0m] [0m[0m5 warnings found[0m

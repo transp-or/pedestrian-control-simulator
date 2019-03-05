@@ -1,0 +1,12 @@
+compile
+run --conf resources/simulation/straight-corridor.conf
+compile
+run --conf resources/simulation/straight-corridor.conf
+exit
+run --conf resources/simulation/straight-corridor.conf
+show discoveredMainClasses
+run --conf resources/simulation/straight-corridor.conf
+quit
+exit
+run --conf resources/simulation/straight-corridor.conf
+exit

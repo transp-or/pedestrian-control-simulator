@@ -1,0 +1,1048 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?xml-stylesheet type="text/xsl" href="ivy-report.xsl"?>
+<ivy-report version="1.0">
+	<info
+		organisation="ch.epfl.transpor.pedestrians"
+		module="hub-simulator_2.12"
+		revision="1.0-SNAPSHOT"
+		conf="test"
+		confs="compile, runtime, test, provided, optional, compile-internal, runtime-internal, test-internal, plugin, pom, scala-tool"
+		date="20190304235347"/>
+	<dependencies>
+		<module organisation="javax.vecmath" name="vecmath">
+			<revision name="1.5.2" status="release" pubdate="20150715221750" resolver="sbt-chain" artresolver="sbt-chain" homepage="https://java.net/projects/vecmath/" downloaded="false" searched="false" default="false" conf="default, compile, runtime, default(compile), master" position="66">
+				<license name="GPLv2 license, includes the CLASSPATH exception" url="https://java.net/projects/vecmath/sources/svn/content/trunk/COPYRIGHT.txt"/>
+				<metadata-artifact status="no" details="" size="3246" time="0" location="/Users/leobouraux/.ivy2/cache/javax.vecmath/vecmath/ivy-1.5.2.xml" searched="false" origin-is-local="false" origin-location="https://repo1.maven.org/maven2/javax/vecmath/vecmath/1.5.2/vecmath-1.5.2.pom"/>
+				<caller organisation="ch.epfl.transpor.pedestrians" name="hub-simulator_2.12" conf="test, compile, runtime" rev="1.5.2" rev-constraint-default="1.5.2" rev-constraint-dynamic="1.5.2" callerrev="1.0-SNAPSHOT"/>
+				<artifacts>
+					<artifact name="vecmath" type="jar" ext="jar" status="no" details="" size="169541" time="0" location="/Users/leobouraux/.ivy2/cache/javax.vecmath/vecmath/jars/vecmath-1.5.2.jar">
+						<origin-location is-local="false" location="https://repo1.maven.org/maven2/javax/vecmath/vecmath/1.5.2/vecmath-1.5.2.jar"/>
+					</artifact>
+				</artifacts>
+			</revision>
+		</module>
+		<module organisation="org.apache.commons" name="commons-lang3">
+			<revision name="3.8" status="release" pubdate="20180816033710" resolver="sbt-chain" artresolver="sbt-chain" homepage="http://commons.apache.org/proper/commons-lang/" downloaded="false" searched="false" default="false" conf="default, compile, runtime, default(compile), master" position="65">
+				<license name="Apache License, Version 2.0" url="https://www.apache.org/licenses/LICENSE-2.0.txt"/>
+				<metadata-artifact status="no" details="" size="14928" time="0" location="/Users/leobouraux/.ivy2/cache/org.apache.commons/commons-lang3/ivy-3.8.xml" searched="false" origin-is-local="false" origin-location="https://repo1.maven.org/maven2/org/apache/commons/commons-lang3/3.8/commons-lang3-3.8.pom"/>
+				<caller organisation="ch.epfl.transpor.pedestrians" name="hub-simulator_2.12" conf="test, compile, runtime" rev="3.8" rev-constraint-default="3.8" rev-constraint-dynamic="3.8" callerrev="1.0-SNAPSHOT"/>
+				<artifacts>
+					<artifact name="commons-lang3" type="jar" ext="jar" status="no" details="" size="501860" time="0" location="/Users/leobouraux/.ivy2/cache/org.apache.commons/commons-lang3/jars/commons-lang3-3.8.jar">
+						<origin-location is-local="false" location="https://repo1.maven.org/maven2/org/apache/commons/commons-lang3/3.8/commons-lang3-3.8.jar"/>
+					</artifact>
+				</artifacts>
+			</revision>
+		</module>
+		<module organisation="org.scala-lang.modules" name="scala-parser-combinators_2.12">
+			<revision name="1.1.1" status="release" pubdate="20180609030928" resolver="sbt-chain" artresolver="sbt-chain" homepage="http://www.scala-lang.org/" downloaded="false" searched="false" default="false" conf="default, compile, runtime, default(compile), master" position="64">
+				<license name="BSD 3-clause" url="http://opensource.org/licenses/BSD-3-Clause"/>
+				<metadata-artifact status="no" details="" size="2929" time="0" location="/Users/leobouraux/.ivy2/cache/org.scala-lang.modules/scala-parser-combinators_2.12/ivy-1.1.1.xml" searched="false" origin-is-local="false" origin-location="https://repo1.maven.org/maven2/org/scala-lang/modules/scala-parser-combinators_2.12/1.1.1/scala-parser-combinators_2.12-1.1.1.pom"/>
+				<caller organisation="ch.epfl.transpor.pedestrians" name="hub-simulator_2.12" conf="test, compile, runtime" rev="1.1.1" rev-constraint-default="1.1.1" rev-constraint-dynamic="1.1.1" callerrev="1.0-SNAPSHOT"/>
+				<artifacts>
+					<artifact name="scala-parser-combinators_2.12" type="bundle" ext="jar" status="no" details="" size="226573" time="0" location="/Users/leobouraux/.ivy2/cache/org.scala-lang.modules/scala-parser-combinators_2.12/bundles/scala-parser-combinators_2.12-1.1.1.jar">
+						<origin-location is-local="false" location="https://repo1.maven.org/maven2/org/scala-lang/modules/scala-parser-combinators_2.12/1.1.1/scala-parser-combinators_2.12-1.1.1.jar"/>
+					</artifact>
+				</artifacts>
+			</revision>
+		</module>
+		<module organisation="nl.tudelft.pedestrians" name="nomad">
+			<revision name="1.0" status="release" pubdate="20190226143555" resolver="sbt-chain" artresolver="sbt-chain" downloaded="false" searched="false" default="false" conf="compile, default(compile)" position="54">
+				<metadata-artifact status="no" details="" size="2239" time="0" location="/Users/leobouraux/.ivy2/cache/nl.tudelft.pedestrians/nomad/ivy-1.0.xml" searched="false" origin-is-local="true" origin-location="/Users/leobouraux/.ivy2/local/nl.tudelft.pedestrians/nomad/1.0/ivys/ivy.xml"/>
+				<caller organisation="ch.epfl.transpor.pedestrians" name="hub-simulator_2.12" conf="test, compile, runtime" rev="1.0" rev-constraint-default="1.0" rev-constraint-dynamic="1.0" callerrev="1.0-SNAPSHOT"/>
+				<artifacts>
+					<artifact name="nomad" type="jar" ext="jar" status="no" details="" size="835586" time="0" location="/Users/leobouraux/.ivy2/local/nl.tudelft.pedestrians/nomad/1.0/jars/nomad.jar">
+						<origin-location is-local="true" location="/Users/leobouraux/.ivy2/local/nl.tudelft.pedestrians/nomad/1.0/jars/nomad.jar"/>
+					</artifact>
+				</artifacts>
+			</revision>
+		</module>
+		<module organisation="org.j3d" name="aviatrix3d">
+			<revision name="3.0.0" status="release" pubdate="20160706134856" resolver="sbt-chain" artresolver="sbt-chain" homepage="http://aviatrix3d.j3d.org" downloaded="false" searched="false" default="false" conf="default, compile, runtime, default(compile), master" position="56">
+				<license name="GNU LGPL v2.1"/>
+				<metadata-artifact status="no" details="" size="4350" time="0" location="/Users/leobouraux/.ivy2/cache/org.j3d/aviatrix3d/ivy-3.0.0.xml" searched="false" origin-is-local="false" origin-location="https://repo1.maven.org/maven2/org/j3d/aviatrix3d/3.0.0/aviatrix3d-3.0.0.pom"/>
+				<caller organisation="ch.epfl.transpor.pedestrians" name="hub-simulator_2.12" conf="test, compile, runtime" rev="3.0.0" rev-constraint-default="3.0.0" rev-constraint-dynamic="3.0.0" callerrev="1.0-SNAPSHOT"/>
+				<caller organisation="nl.tudelft.pedestrians" name="nomad" conf="compile" rev="3.0.0" rev-constraint-default="3.0.0" rev-constraint-dynamic="3.0.0" callerrev="1.0"/>
+				<artifacts>
+					<artifact name="aviatrix3d" type="pom" ext="pom" status="no" details="" size="12607" time="0" location="/Users/leobouraux/.ivy2/cache/org.j3d/aviatrix3d/poms/aviatrix3d-3.0.0.pom">
+						<origin-location is-local="false" location="https://repo1.maven.org/maven2/org/j3d/aviatrix3d/3.0.0/aviatrix3d-3.0.0.pom"/>
+					</artifact>
+				</artifacts>
+			</revision>
+		</module>
+		<module organisation="org.jogamp.joal" name="joal-main">
+			<revision name="2.3.2" status="release" pubdate="20151010163113" resolver="sbt-chain" artresolver="sbt-chain" homepage="http://jogamp.org/joal/www/" downloaded="false" searched="false" default="false" conf="compile, runtime(*), master(compile), runtime, compile(*), master" position="62">
+				<license name="BSD-2 License" url="http://www.opensource.org/licenses/BSD-2-Clause"/>
+				<license name="BSD-3 License" url="http://www.opensource.org/licenses/BSD-3-Clause"/>
+				<license name="SGI Free Software License B" url="http://oss.sgi.com/projects/FreeB"/>
+				<license name="Apache License Version 2.0" url="http://www.apache.org/licenses/LICENSE-2.0"/>
+				<license name="Apache License Version 1.1" url="http://www.apache.org/licenses/LICENSE-1.1"/>
+				<license name="Ubuntu Font Licence 1.0" url="http://font.ubuntu.com/ufl/ubuntu-font-licence-1.0.txt"/>
+				<metadata-artifact status="no" details="" size="4494" time="0" location="/Users/leobouraux/.ivy2/cache/org.jogamp.joal/joal-main/ivy-2.3.2.xml" searched="false" origin-is-local="false" origin-location="https://repo1.maven.org/maven2/org/jogamp/joal/joal-main/2.3.2/joal-main-2.3.2.pom"/>
+				<caller organisation="org.j3d" name="aviatrix3d" conf="default, compile, runtime, master" rev="2.3.2" rev-constraint-default="2.3.2" rev-constraint-dynamic="2.3.2" callerrev="3.0.0"/>
+				<artifacts>
+					<artifact name="joal-main" type="jar" ext="jar" status="no" details="" size="345" time="0" location="/Users/leobouraux/.ivy2/cache/org.jogamp.joal/joal-main/jars/joal-main-2.3.2.jar">
+						<origin-location is-local="false" location="https://repo1.maven.org/maven2/org/jogamp/joal/joal-main/2.3.2/joal-main-2.3.2.jar"/>
+					</artifact>
+				</artifacts>
+			</revision>
+		</module>
+		<module organisation="org.jogamp.joal" name="joal">
+			<revision name="2.3.2" status="release" pubdate="20151010162941" resolver="sbt-chain" artresolver="sbt-chain" homepage="http://jogamp.org/joal/www/" downloaded="false" searched="false" default="false" conf="compile, runtime(*), master(compile), runtime, compile(*), master" position="63">
+				<license name="BSD-2 License" url="http://www.opensource.org/licenses/BSD-2-Clause"/>
+				<license name="BSD-3 License" url="http://www.opensource.org/licenses/BSD-3-Clause"/>
+				<license name="SGI Free Software License B" url="http://oss.sgi.com/projects/FreeB"/>
+				<license name="Apache License Version 2.0" url="http://www.apache.org/licenses/LICENSE-2.0"/>
+				<license name="Apache License Version 1.1" url="http://www.apache.org/licenses/LICENSE-1.1"/>
+				<license name="Ubuntu Font Licence 1.0" url="http://font.ubuntu.com/ufl/ubuntu-font-licence-1.0.txt"/>
+				<metadata-artifact status="no" details="" size="3043" time="0" location="/Users/leobouraux/.ivy2/cache/org.jogamp.joal/joal/ivy-2.3.2.xml" searched="false" origin-is-local="false" origin-location="https://repo1.maven.org/maven2/org/jogamp/joal/joal/2.3.2/joal-2.3.2.pom"/>
+				<caller organisation="org.jogamp.joal" name="joal-main" conf="compile, runtime" rev="2.3.2" rev-constraint-default="2.3.2" rev-constraint-dynamic="2.3.2" callerrev="2.3.2"/>
+				<artifacts>
+					<artifact name="joal" type="jar" ext="jar" extra-classifier="natives-android-armv6" status="no" details="" size="168669" time="0" location="/Users/leobouraux/.ivy2/cache/org.jogamp.joal/joal/jars/joal-2.3.2-natives-android-armv6.jar">
+						<origin-location is-local="false" location="https://repo1.maven.org/maven2/org/jogamp/joal/joal/2.3.2/joal-2.3.2-natives-android-armv6.jar"/>
+					</artifact>
+					<artifact name="joal" type="jar" ext="jar" extra-classifier="natives-macosx-universal" status="no" details="" size="359206" time="0" location="/Users/leobouraux/.ivy2/cache/org.jogamp.joal/joal/jars/joal-2.3.2-natives-macosx-universal.jar">
+						<origin-location is-local="false" location="https://repo1.maven.org/maven2/org/jogamp/joal/joal/2.3.2/joal-2.3.2-natives-macosx-universal.jar"/>
+					</artifact>
+					<artifact name="joal" type="jar" ext="jar" extra-classifier="natives-windows-i586" status="no" details="" size="180018" time="0" location="/Users/leobouraux/.ivy2/cache/org.jogamp.joal/joal/jars/joal-2.3.2-natives-windows-i586.jar">
+						<origin-location is-local="false" location="https://repo1.maven.org/maven2/org/jogamp/joal/joal/2.3.2/joal-2.3.2-natives-windows-i586.jar"/>
+					</artifact>
+					<artifact name="joal" type="jar" ext="jar" extra-classifier="natives-linux-amd64" status="no" details="" size="190546" time="0" location="/Users/leobouraux/.ivy2/cache/org.jogamp.joal/joal/jars/joal-2.3.2-natives-linux-amd64.jar">
+						<origin-location is-local="false" location="https://repo1.maven.org/maven2/org/jogamp/joal/joal/2.3.2/joal-2.3.2-natives-linux-amd64.jar"/>
+					</artifact>
+					<artifact name="joal" type="jar" ext="jar" extra-classifier="natives-solaris-amd64" status="no" details="" size="10718" time="0" location="/Users/leobouraux/.ivy2/cache/org.jogamp.joal/joal/jars/joal-2.3.2-natives-solaris-amd64.jar">
+						<origin-location is-local="false" location="https://repo1.maven.org/maven2/org/jogamp/joal/joal/2.3.2/joal-2.3.2-natives-solaris-amd64.jar"/>
+					</artifact>
+					<artifact name="joal" type="jar" ext="jar" extra-classifier="natives-linux-armv6" status="no" details="" size="149170" time="0" location="/Users/leobouraux/.ivy2/cache/org.jogamp.joal/joal/jars/joal-2.3.2-natives-linux-armv6.jar">
+						<origin-location is-local="false" location="https://repo1.maven.org/maven2/org/jogamp/joal/joal/2.3.2/joal-2.3.2-natives-linux-armv6.jar"/>
+					</artifact>
+					<artifact name="joal" type="jar" ext="jar" extra-classifier="natives-windows-amd64" status="no" details="" size="187673" time="0" location="/Users/leobouraux/.ivy2/cache/org.jogamp.joal/joal/jars/joal-2.3.2-natives-windows-amd64.jar">
+						<origin-location is-local="false" location="https://repo1.maven.org/maven2/org/jogamp/joal/joal/2.3.2/joal-2.3.2-natives-windows-amd64.jar"/>
+					</artifact>
+					<artifact name="joal" type="jar" ext="jar" extra-classifier="natives-linux-armv6hf" status="no" details="" size="149129" time="0" location="/Users/leobouraux/.ivy2/cache/org.jogamp.joal/joal/jars/joal-2.3.2-natives-linux-armv6hf.jar">
+						<origin-location is-local="false" location="https://repo1.maven.org/maven2/org/jogamp/joal/joal/2.3.2/joal-2.3.2-natives-linux-armv6hf.jar"/>
+					</artifact>
+					<artifact name="joal" type="jar" ext="jar" extra-classifier="natives-android-aarch64" status="no" details="" size="160485" time="0" location="/Users/leobouraux/.ivy2/cache/org.jogamp.joal/joal/jars/joal-2.3.2-natives-android-aarch64.jar">
+						<origin-location is-local="false" location="https://repo1.maven.org/maven2/org/jogamp/joal/joal/2.3.2/joal-2.3.2-natives-android-aarch64.jar"/>
+					</artifact>
+					<artifact name="joal" type="jar" ext="jar" status="no" details="" size="66496" time="0" location="/Users/leobouraux/.ivy2/cache/org.jogamp.joal/joal/jars/joal-2.3.2.jar">
+						<origin-location is-local="false" location="https://repo1.maven.org/maven2/org/jogamp/joal/joal/2.3.2/joal-2.3.2.jar"/>
+					</artifact>
+					<artifact name="joal" type="jar" ext="jar" extra-classifier="natives-linux-i586" status="no" details="" size="197569" time="0" location="/Users/leobouraux/.ivy2/cache/org.jogamp.joal/joal/jars/joal-2.3.2-natives-linux-i586.jar">
+						<origin-location is-local="false" location="https://repo1.maven.org/maven2/org/jogamp/joal/joal/2.3.2/joal-2.3.2-natives-linux-i586.jar"/>
+					</artifact>
+					<artifact name="joal" type="jar" ext="jar" extra-classifier="natives-solaris-i586" status="no" details="" size="7658" time="0" location="/Users/leobouraux/.ivy2/cache/org.jogamp.joal/joal/jars/joal-2.3.2-natives-solaris-i586.jar">
+						<origin-location is-local="false" location="https://repo1.maven.org/maven2/org/jogamp/joal/joal/2.3.2/joal-2.3.2-natives-solaris-i586.jar"/>
+					</artifact>
+				</artifacts>
+			</revision>
+		</module>
+		<module organisation="org.jogamp.jogl" name="jogl-all-main">
+			<revision name="2.3.2" status="release" pubdate="20151010163743" resolver="sbt-chain" artresolver="sbt-chain" homepage="http://jogamp.org/jogl/www/" downloaded="false" searched="false" default="false" conf="compile, runtime(*), master(compile), runtime, compile(*), master" position="60">
+				<license name="BSD-2 License" url="http://www.opensource.org/licenses/BSD-2-Clause"/>
+				<license name="BSD-3 License" url="http://www.opensource.org/licenses/BSD-3-Clause"/>
+				<license name="SGI Free Software License B" url="http://oss.sgi.com/projects/FreeB"/>
+				<license name="Apache License Version 2.0" url="http://www.apache.org/licenses/LICENSE-2.0"/>
+				<license name="Apache License Version 1.1" url="http://www.apache.org/licenses/LICENSE-1.1"/>
+				<license name="Ubuntu Font Licence 1.0" url="http://font.ubuntu.com/ufl/ubuntu-font-licence-1.0.txt"/>
+				<metadata-artifact status="no" details="" size="4554" time="0" location="/Users/leobouraux/.ivy2/cache/org.jogamp.jogl/jogl-all-main/ivy-2.3.2.xml" searched="false" origin-is-local="false" origin-location="https://repo1.maven.org/maven2/org/jogamp/jogl/jogl-all-main/2.3.2/jogl-all-main-2.3.2.pom"/>
+				<caller organisation="org.j3d" name="aviatrix3d" conf="default, compile, runtime, master" rev="2.3.2" rev-constraint-default="2.3.2" rev-constraint-dynamic="2.3.2" callerrev="3.0.0"/>
+				<artifacts>
+					<artifact name="jogl-all-main" type="jar" ext="jar" status="no" details="" size="345" time="0" location="/Users/leobouraux/.ivy2/cache/org.jogamp.jogl/jogl-all-main/jars/jogl-all-main-2.3.2.jar">
+						<origin-location is-local="false" location="https://repo1.maven.org/maven2/org/jogamp/jogl/jogl-all-main/2.3.2/jogl-all-main-2.3.2.jar"/>
+					</artifact>
+				</artifacts>
+			</revision>
+		</module>
+		<module organisation="org.jogamp.jogl" name="jogl-all">
+			<revision name="2.3.2" status="release" pubdate="20151010163557" resolver="sbt-chain" artresolver="sbt-chain" homepage="http://jogamp.org/jogl/www/" downloaded="false" searched="false" default="false" conf="compile, runtime(*), master(compile), runtime, compile(*), master" position="61">
+				<license name="BSD-2 License" url="http://www.opensource.org/licenses/BSD-2-Clause"/>
+				<license name="BSD-3 License" url="http://www.opensource.org/licenses/BSD-3-Clause"/>
+				<license name="SGI Free Software License B" url="http://oss.sgi.com/projects/FreeB"/>
+				<license name="Apache License Version 2.0" url="http://www.apache.org/licenses/LICENSE-2.0"/>
+				<license name="Apache License Version 1.1" url="http://www.apache.org/licenses/LICENSE-1.1"/>
+				<license name="Ubuntu Font Licence 1.0" url="http://font.ubuntu.com/ufl/ubuntu-font-licence-1.0.txt"/>
+				<metadata-artifact status="no" details="" size="3051" time="0" location="/Users/leobouraux/.ivy2/cache/org.jogamp.jogl/jogl-all/ivy-2.3.2.xml" searched="false" origin-is-local="false" origin-location="https://repo1.maven.org/maven2/org/jogamp/jogl/jogl-all/2.3.2/jogl-all-2.3.2.pom"/>
+				<caller organisation="org.jogamp.jogl" name="jogl-all-main" conf="compile, runtime" rev="2.3.2" rev-constraint-default="2.3.2" rev-constraint-dynamic="2.3.2" callerrev="2.3.2"/>
+				<artifacts>
+					<artifact name="jogl-all" type="jar" ext="jar" extra-classifier="natives-linux-i586" status="no" details="" size="217274" time="0" location="/Users/leobouraux/.ivy2/cache/org.jogamp.jogl/jogl-all/jars/jogl-all-2.3.2-natives-linux-i586.jar">
+						<origin-location is-local="false" location="https://repo1.maven.org/maven2/org/jogamp/jogl/jogl-all/2.3.2/jogl-all-2.3.2-natives-linux-i586.jar"/>
+					</artifact>
+					<artifact name="jogl-all" type="jar" ext="jar" extra-classifier="natives-windows-amd64" status="no" details="" size="240721" time="0" location="/Users/leobouraux/.ivy2/cache/org.jogamp.jogl/jogl-all/jars/jogl-all-2.3.2-natives-windows-amd64.jar">
+						<origin-location is-local="false" location="https://repo1.maven.org/maven2/org/jogamp/jogl/jogl-all/2.3.2/jogl-all-2.3.2-natives-windows-amd64.jar"/>
+					</artifact>
+					<artifact name="jogl-all" type="jar" ext="jar" extra-classifier="natives-linux-armv6" status="no" details="" size="161199" time="0" location="/Users/leobouraux/.ivy2/cache/org.jogamp.jogl/jogl-all/jars/jogl-all-2.3.2-natives-linux-armv6.jar">
+						<origin-location is-local="false" location="https://repo1.maven.org/maven2/org/jogamp/jogl/jogl-all/2.3.2/jogl-all-2.3.2-natives-linux-armv6.jar"/>
+					</artifact>
+					<artifact name="jogl-all" type="jar" ext="jar" extra-classifier="natives-windows-i586" status="no" details="" size="209445" time="0" location="/Users/leobouraux/.ivy2/cache/org.jogamp.jogl/jogl-all/jars/jogl-all-2.3.2-natives-windows-i586.jar">
+						<origin-location is-local="false" location="https://repo1.maven.org/maven2/org/jogamp/jogl/jogl-all/2.3.2/jogl-all-2.3.2-natives-windows-i586.jar"/>
+					</artifact>
+					<artifact name="jogl-all" type="jar" ext="jar" extra-classifier="natives-linux-amd64" status="no" details="" size="224010" time="0" location="/Users/leobouraux/.ivy2/cache/org.jogamp.jogl/jogl-all/jars/jogl-all-2.3.2-natives-linux-amd64.jar">
+						<origin-location is-local="false" location="https://repo1.maven.org/maven2/org/jogamp/jogl/jogl-all/2.3.2/jogl-all-2.3.2-natives-linux-amd64.jar"/>
+					</artifact>
+					<artifact name="jogl-all" type="jar" ext="jar" extra-classifier="natives-solaris-amd64" status="no" details="" size="220298" time="0" location="/Users/leobouraux/.ivy2/cache/org.jogamp.jogl/jogl-all/jars/jogl-all-2.3.2-natives-solaris-amd64.jar">
+						<origin-location is-local="false" location="https://repo1.maven.org/maven2/org/jogamp/jogl/jogl-all/2.3.2/jogl-all-2.3.2-natives-solaris-amd64.jar"/>
+					</artifact>
+					<artifact name="jogl-all" type="jar" ext="jar" extra-classifier="natives-android-aarch64" status="no" details="" size="64488" time="0" location="/Users/leobouraux/.ivy2/cache/org.jogamp.jogl/jogl-all/jars/jogl-all-2.3.2-natives-android-aarch64.jar">
+						<origin-location is-local="false" location="https://repo1.maven.org/maven2/org/jogamp/jogl/jogl-all/2.3.2/jogl-all-2.3.2-natives-android-aarch64.jar"/>
+					</artifact>
+					<artifact name="jogl-all" type="jar" ext="jar" extra-classifier="natives-macosx-universal" status="no" details="" size="443876" time="0" location="/Users/leobouraux/.ivy2/cache/org.jogamp.jogl/jogl-all/jars/jogl-all-2.3.2-natives-macosx-universal.jar">
+						<origin-location is-local="false" location="https://repo1.maven.org/maven2/org/jogamp/jogl/jogl-all/2.3.2/jogl-all-2.3.2-natives-macosx-universal.jar"/>
+					</artifact>
+					<artifact name="jogl-all" type="jar" ext="jar" extra-classifier="natives-android-armv6" status="no" details="" size="62645" time="0" location="/Users/leobouraux/.ivy2/cache/org.jogamp.jogl/jogl-all/jars/jogl-all-2.3.2-natives-android-armv6.jar">
+						<origin-location is-local="false" location="https://repo1.maven.org/maven2/org/jogamp/jogl/jogl-all/2.3.2/jogl-all-2.3.2-natives-android-armv6.jar"/>
+					</artifact>
+					<artifact name="jogl-all" type="jar" ext="jar" extra-classifier="natives-linux-armv6hf" status="no" details="" size="164852" time="0" location="/Users/leobouraux/.ivy2/cache/org.jogamp.jogl/jogl-all/jars/jogl-all-2.3.2-natives-linux-armv6hf.jar">
+						<origin-location is-local="false" location="https://repo1.maven.org/maven2/org/jogamp/jogl/jogl-all/2.3.2/jogl-all-2.3.2-natives-linux-armv6hf.jar"/>
+					</artifact>
+					<artifact name="jogl-all" type="jar" ext="jar" status="no" details="" size="3414448" time="0" location="/Users/leobouraux/.ivy2/cache/org.jogamp.jogl/jogl-all/jars/jogl-all-2.3.2.jar">
+						<origin-location is-local="false" location="https://repo1.maven.org/maven2/org/jogamp/jogl/jogl-all/2.3.2/jogl-all-2.3.2.jar"/>
+					</artifact>
+					<artifact name="jogl-all" type="jar" ext="jar" extra-classifier="natives-solaris-i586" status="no" details="" size="161229" time="0" location="/Users/leobouraux/.ivy2/cache/org.jogamp.jogl/jogl-all/jars/jogl-all-2.3.2-natives-solaris-i586.jar">
+						<origin-location is-local="false" location="https://repo1.maven.org/maven2/org/jogamp/jogl/jogl-all/2.3.2/jogl-all-2.3.2-natives-solaris-i586.jar"/>
+					</artifact>
+				</artifacts>
+			</revision>
+		</module>
+		<module organisation="org.jogamp.gluegen" name="gluegen-rt-main">
+			<revision name="2.3.2" status="release" pubdate="20151010162928" resolver="sbt-chain" artresolver="sbt-chain" homepage="http://jogamp.org/gluegen/www/" downloaded="false" searched="false" default="false" conf="compile, runtime(*), master(compile), runtime, compile(*), master" position="58">
+				<license name="BSD-2 License" url="http://www.opensource.org/licenses/BSD-2-Clause"/>
+				<license name="BSD-3 License" url="http://www.opensource.org/licenses/BSD-3-Clause"/>
+				<license name="BSD-4 License" url="http://www.spdx.org/licenses/BSD-4-Clause"/>
+				<metadata-artifact status="no" details="" size="4282" time="0" location="/Users/leobouraux/.ivy2/cache/org.jogamp.gluegen/gluegen-rt-main/ivy-2.3.2.xml" searched="false" origin-is-local="false" origin-location="https://repo1.maven.org/maven2/org/jogamp/gluegen/gluegen-rt-main/2.3.2/gluegen-rt-main-2.3.2.pom"/>
+				<caller organisation="org.j3d" name="aviatrix3d" conf="default, compile, runtime, master" rev="2.3.2" rev-constraint-default="2.3.2" rev-constraint-dynamic="2.3.2" callerrev="3.0.0"/>
+				<artifacts>
+					<artifact name="gluegen-rt-main" type="jar" ext="jar" status="no" details="" size="345" time="0" location="/Users/leobouraux/.ivy2/cache/org.jogamp.gluegen/gluegen-rt-main/jars/gluegen-rt-main-2.3.2.jar">
+						<origin-location is-local="false" location="https://repo1.maven.org/maven2/org/jogamp/gluegen/gluegen-rt-main/2.3.2/gluegen-rt-main-2.3.2.jar"/>
+					</artifact>
+				</artifacts>
+			</revision>
+		</module>
+		<module organisation="org.jogamp.gluegen" name="gluegen-rt">
+			<revision name="2.3.2" status="release" pubdate="20151010162802" resolver="sbt-chain" artresolver="sbt-chain" homepage="http://jogamp.org/gluegen/www/" downloaded="false" searched="false" default="false" conf="compile, runtime(*), master(compile), runtime, compile(*), master" position="59">
+				<license name="BSD-2 License" url="http://www.opensource.org/licenses/BSD-2-Clause"/>
+				<license name="BSD-3 License" url="http://www.opensource.org/licenses/BSD-3-Clause"/>
+				<license name="BSD-4 License" url="http://www.spdx.org/licenses/BSD-4-Clause"/>
+				<metadata-artifact status="no" details="" size="2750" time="0" location="/Users/leobouraux/.ivy2/cache/org.jogamp.gluegen/gluegen-rt/ivy-2.3.2.xml" searched="false" origin-is-local="false" origin-location="https://repo1.maven.org/maven2/org/jogamp/gluegen/gluegen-rt/2.3.2/gluegen-rt-2.3.2.pom"/>
+				<caller organisation="org.jogamp.gluegen" name="gluegen-rt-main" conf="compile, runtime" rev="2.3.2" rev-constraint-default="2.3.2" rev-constraint-dynamic="2.3.2" callerrev="2.3.2"/>
+				<artifacts>
+					<artifact name="gluegen-rt" type="jar" ext="jar" extra-classifier="natives-solaris-i586" status="no" details="" size="3949" time="0" location="/Users/leobouraux/.ivy2/cache/org.jogamp.gluegen/gluegen-rt/jars/gluegen-rt-2.3.2-natives-solaris-i586.jar">
+						<origin-location is-local="false" location="https://repo1.maven.org/maven2/org/jogamp/gluegen/gluegen-rt/2.3.2/gluegen-rt-2.3.2-natives-solaris-i586.jar"/>
+					</artifact>
+					<artifact name="gluegen-rt" type="jar" ext="jar" extra-classifier="natives-linux-armv6hf" status="no" details="" size="3050" time="0" location="/Users/leobouraux/.ivy2/cache/org.jogamp.gluegen/gluegen-rt/jars/gluegen-rt-2.3.2-natives-linux-armv6hf.jar">
+						<origin-location is-local="false" location="https://repo1.maven.org/maven2/org/jogamp/gluegen/gluegen-rt/2.3.2/gluegen-rt-2.3.2-natives-linux-armv6hf.jar"/>
+					</artifact>
+					<artifact name="gluegen-rt" type="jar" ext="jar" extra-classifier="natives-android-armv6" status="no" details="" size="7218" time="0" location="/Users/leobouraux/.ivy2/cache/org.jogamp.gluegen/gluegen-rt/jars/gluegen-rt-2.3.2-natives-android-armv6.jar">
+						<origin-location is-local="false" location="https://repo1.maven.org/maven2/org/jogamp/gluegen/gluegen-rt/2.3.2/gluegen-rt-2.3.2-natives-android-armv6.jar"/>
+					</artifact>
+					<artifact name="gluegen-rt" type="jar" ext="jar" extra-classifier="natives-windows-amd64" status="no" details="" size="8159" time="0" location="/Users/leobouraux/.ivy2/cache/org.jogamp.gluegen/gluegen-rt/jars/gluegen-rt-2.3.2-natives-windows-amd64.jar">
+						<origin-location is-local="false" location="https://repo1.maven.org/maven2/org/jogamp/gluegen/gluegen-rt/2.3.2/gluegen-rt-2.3.2-natives-windows-amd64.jar"/>
+					</artifact>
+					<artifact name="gluegen-rt" type="jar" ext="jar" extra-classifier="natives-linux-amd64" status="no" details="" size="4149" time="0" location="/Users/leobouraux/.ivy2/cache/org.jogamp.gluegen/gluegen-rt/jars/gluegen-rt-2.3.2-natives-linux-amd64.jar">
+						<origin-location is-local="false" location="https://repo1.maven.org/maven2/org/jogamp/gluegen/gluegen-rt/2.3.2/gluegen-rt-2.3.2-natives-linux-amd64.jar"/>
+					</artifact>
+					<artifact name="gluegen-rt" type="jar" ext="jar" extra-classifier="natives-android-aarch64" status="no" details="" size="3347" time="0" location="/Users/leobouraux/.ivy2/cache/org.jogamp.gluegen/gluegen-rt/jars/gluegen-rt-2.3.2-natives-android-aarch64.jar">
+						<origin-location is-local="false" location="https://repo1.maven.org/maven2/org/jogamp/gluegen/gluegen-rt/2.3.2/gluegen-rt-2.3.2-natives-android-aarch64.jar"/>
+					</artifact>
+					<artifact name="gluegen-rt" type="jar" ext="jar" extra-classifier="natives-macosx-universal" status="no" details="" size="5076" time="0" location="/Users/leobouraux/.ivy2/cache/org.jogamp.gluegen/gluegen-rt/jars/gluegen-rt-2.3.2-natives-macosx-universal.jar">
+						<origin-location is-local="false" location="https://repo1.maven.org/maven2/org/jogamp/gluegen/gluegen-rt/2.3.2/gluegen-rt-2.3.2-natives-macosx-universal.jar"/>
+					</artifact>
+					<artifact name="gluegen-rt" type="jar" ext="jar" extra-classifier="natives-solaris-amd64" status="no" details="" size="4640" time="0" location="/Users/leobouraux/.ivy2/cache/org.jogamp.gluegen/gluegen-rt/jars/gluegen-rt-2.3.2-natives-solaris-amd64.jar">
+						<origin-location is-local="false" location="https://repo1.maven.org/maven2/org/jogamp/gluegen/gluegen-rt/2.3.2/gluegen-rt-2.3.2-natives-solaris-amd64.jar"/>
+					</artifact>
+					<artifact name="gluegen-rt" type="jar" ext="jar" status="no" details="" size="345605" time="0" location="/Users/leobouraux/.ivy2/cache/org.jogamp.gluegen/gluegen-rt/jars/gluegen-rt-2.3.2.jar">
+						<origin-location is-local="false" location="https://repo1.maven.org/maven2/org/jogamp/gluegen/gluegen-rt/2.3.2/gluegen-rt-2.3.2.jar"/>
+					</artifact>
+					<artifact name="gluegen-rt" type="jar" ext="jar" extra-classifier="natives-windows-i586" status="no" details="" size="7577" time="0" location="/Users/leobouraux/.ivy2/cache/org.jogamp.gluegen/gluegen-rt/jars/gluegen-rt-2.3.2-natives-windows-i586.jar">
+						<origin-location is-local="false" location="https://repo1.maven.org/maven2/org/jogamp/gluegen/gluegen-rt/2.3.2/gluegen-rt-2.3.2-natives-windows-i586.jar"/>
+					</artifact>
+					<artifact name="gluegen-rt" type="jar" ext="jar" extra-classifier="natives-linux-armv6" status="no" details="" size="3042" time="0" location="/Users/leobouraux/.ivy2/cache/org.jogamp.gluegen/gluegen-rt/jars/gluegen-rt-2.3.2-natives-linux-armv6.jar">
+						<origin-location is-local="false" location="https://repo1.maven.org/maven2/org/jogamp/gluegen/gluegen-rt/2.3.2/gluegen-rt-2.3.2-natives-linux-armv6.jar"/>
+					</artifact>
+					<artifact name="gluegen-rt" type="jar" ext="jar" extra-classifier="natives-linux-i586" status="no" details="" size="4130" time="0" location="/Users/leobouraux/.ivy2/cache/org.jogamp.gluegen/gluegen-rt/jars/gluegen-rt-2.3.2-natives-linux-i586.jar">
+						<origin-location is-local="false" location="https://repo1.maven.org/maven2/org/jogamp/gluegen/gluegen-rt/2.3.2/gluegen-rt-2.3.2-natives-linux-i586.jar"/>
+					</artifact>
+				</artifacts>
+			</revision>
+		</module>
+		<module organisation="org.j3d" name="j3d-core">
+			<revision name="3.0.0" status="release" pubdate="20151221121017" resolver="sbt-chain" artresolver="sbt-chain" homepage="" downloaded="false" searched="false" default="false" conf="compile, runtime(*), master(compile), runtime, compile(*), master" position="57">
+				<license name="GNU LGPL 2.1"/>
+				<metadata-artifact status="no" details="" size="3859" time="0" location="/Users/leobouraux/.ivy2/cache/org.j3d/j3d-core/ivy-3.0.0.xml" searched="false" origin-is-local="false" origin-location="https://repo1.maven.org/maven2/org/j3d/j3d-core/3.0.0/j3d-core-3.0.0.pom"/>
+				<caller organisation="org.j3d" name="aviatrix3d" conf="default, compile, runtime, master" rev="3.0.0" rev-constraint-default="3.0.0" rev-constraint-dynamic="3.0.0" callerrev="3.0.0"/>
+				<artifacts>
+					<artifact name="j3d-core" type="jar" ext="jar" status="no" details="" size="124202" time="0" location="/Users/leobouraux/.ivy2/cache/org.j3d/j3d-core/jars/j3d-core-3.0.0.jar">
+						<origin-location is-local="false" location="https://repo1.maven.org/maven2/org/j3d/j3d-core/3.0.0/j3d-core-3.0.0.jar"/>
+					</artifact>
+				</artifacts>
+			</revision>
+		</module>
+		<module organisation="com.vividsolutions" name="jts">
+			<revision name="1.13" status="release" pubdate="20121214062909" resolver="sbt-chain" artresolver="sbt-chain" homepage="http://sourceforge.net/projects/jts-topo-suite" downloaded="false" searched="false" default="false" conf="default, compile, runtime, default(compile), master" position="55">
+				<license name="Lesser General Public License (LGPL)" url="http://www.gnu.org/copyleft/lesser.txt"/>
+				<metadata-artifact status="no" details="" size="2853" time="0" location="/Users/leobouraux/.ivy2/cache/com.vividsolutions/jts/ivy-1.13.xml" searched="false" origin-is-local="false" origin-location="https://repo1.maven.org/maven2/com/vividsolutions/jts/1.13/jts-1.13.pom"/>
+				<caller organisation="nl.tudelft.pedestrians" name="nomad" conf="compile" rev="1.13" rev-constraint-default="1.13" rev-constraint-dynamic="1.13" callerrev="1.0"/>
+				<artifacts>
+					<artifact name="jts" type="jar" ext="jar" status="no" details="" size="794991" time="0" location="/Users/leobouraux/.ivy2/cache/com.vividsolutions/jts/jars/jts-1.13.jar">
+						<origin-location is-local="false" location="https://repo1.maven.org/maven2/com/vividsolutions/jts/1.13/jts-1.13.jar"/>
+					</artifact>
+				</artifacts>
+			</revision>
+		</module>
+		<module organisation="transpor.tools" name="dxf-parser">
+			<revision name="1.0" status="release" pubdate="20190226142254" resolver="sbt-chain" artresolver="sbt-chain" downloaded="false" searched="false" default="false" conf="compile, default(compile)" position="53">
+				<metadata-artifact status="no" details="" size="1764" time="0" location="/Users/leobouraux/.ivy2/cache/transpor.tools/dxf-parser/ivy-1.0.xml" searched="false" origin-is-local="true" origin-location="/Users/leobouraux/.ivy2/local/transpor.tools/dxf-parser/1.0/ivys/ivy.xml"/>
+				<caller organisation="ch.epfl.transpor.pedestrians" name="hub-simulator_2.12" conf="test, compile, runtime" rev="1.0" rev-constraint-default="1.0" rev-constraint-dynamic="1.0" callerrev="1.0-SNAPSHOT"/>
+				<artifacts>
+					<artifact name="dxf-parser" type="jar" ext="jar" status="no" details="" size="300780" time="0" location="/Users/leobouraux/.ivy2/local/transpor.tools/dxf-parser/1.0/jars/dxf-parser.jar">
+						<origin-location is-local="true" location="/Users/leobouraux/.ivy2/local/transpor.tools/dxf-parser/1.0/jars/dxf-parser.jar"/>
+					</artifact>
+				</artifacts>
+			</revision>
+		</module>
+		<module organisation="com.github.NicholasMolyneaux" name="scala-custom_2.12">
+			<revision name="1.2.0.1" status="release" pubdate="20190222120946" resolver="sbt-chain" artresolver="sbt-chain" homepage="https://github.com/NicholasMolyneaux/scala-custom" downloaded="false" searched="false" default="false" conf="default, compile, runtime, default(compile), master" position="50">
+				<license name="Apache-2.0" url="http://www.apache.org/licenses/LICENSE-2.0"/>
+				<metadata-artifact status="no" details="" size="3359" time="0" location="/Users/leobouraux/.ivy2/cache/com.github.NicholasMolyneaux/scala-custom_2.12/ivy-1.2.0.1.xml" searched="false" origin-is-local="false" origin-location="https://repo1.maven.org/maven2/com/github/NicholasMolyneaux/scala-custom_2.12/1.2.0.1/scala-custom_2.12-1.2.0.1.pom"/>
+				<caller organisation="ch.epfl.transpor.pedestrians" name="hub-simulator_2.12" conf="test, compile, runtime" rev="1.2.0.1" rev-constraint-default="1.2.0.1" rev-constraint-dynamic="1.2.0.1" callerrev="1.0-SNAPSHOT"/>
+				<artifacts>
+					<artifact name="scala-custom_2.12" type="jar" ext="jar" status="no" details="" size="116234" time="0" location="/Users/leobouraux/.ivy2/cache/com.github.NicholasMolyneaux/scala-custom_2.12/jars/scala-custom_2.12-1.2.0.1.jar">
+						<origin-location is-local="false" location="https://repo1.maven.org/maven2/com/github/NicholasMolyneaux/scala-custom_2.12/1.2.0.1/scala-custom_2.12-1.2.0.1.jar"/>
+					</artifact>
+				</artifacts>
+			</revision>
+		</module>
+		<module organisation="com.typesafe.play" name="play-json_2.12">
+			<revision name="2.6.7" status="release" pubdate="20171027001229" resolver="sbt-chain" artresolver="sbt-chain" homepage="https://github.com/playframework/play-json" downloaded="false" searched="false" default="false" conf="compile, runtime(*), master(compile), runtime, compile(*), master, default, default(compile)" position="51">
+				<license name="Apache-2.0" url="http://www.apache.org/licenses/LICENSE-2.0.html"/>
+				<metadata-artifact status="no" details="" size="4849" time="0" location="/Users/leobouraux/.ivy2/cache/com.typesafe.play/play-json_2.12/ivy-2.6.7.xml" searched="false" origin-is-local="false" origin-location="https://repo1.maven.org/maven2/com/typesafe/play/play-json_2.12/2.6.7/play-json_2.12-2.6.7.pom"/>
+				<caller organisation="ch.epfl.transpor.pedestrians" name="hub-simulator_2.12" conf="test, compile, runtime" rev="2.6.5" rev-constraint-default="2.6.5" rev-constraint-dynamic="2.6.5" callerrev="1.0-SNAPSHOT"/>
+				<caller organisation="com.github.NicholasMolyneaux" name="scala-custom_2.12" conf="default, compile, runtime, master" rev="2.6.7" rev-constraint-default="2.6.7" rev-constraint-dynamic="2.6.7" callerrev="1.2.0.1"/>
+				<artifacts>
+					<artifact name="play-json_2.12" type="jar" ext="jar" status="no" details="" size="659454" time="0" location="/Users/leobouraux/.ivy2/cache/com.typesafe.play/play-json_2.12/jars/play-json_2.12-2.6.7.jar">
+						<origin-location is-local="false" location="https://repo1.maven.org/maven2/com/typesafe/play/play-json_2.12/2.6.7/play-json_2.12-2.6.7.jar"/>
+					</artifact>
+				</artifacts>
+			</revision>
+			<revision name="2.6.5" status="release" pubdate="20170914220132" resolver="sbt-chain" artresolver="sbt-chain" evicted="latest-revision" evicted-reason="" homepage="https://github.com/playframework/play-json" downloaded="false" searched="false" default="false" conf="default, compile, runtime, default(compile), master" position="-1">
+				<license name="Apache-2.0" url="http://www.apache.org/licenses/LICENSE-2.0.html"/>
+				<metadata-artifact status="no" details="" size="4849" time="0" location="/Users/leobouraux/.ivy2/cache/com.typesafe.play/play-json_2.12/ivy-2.6.5.xml" searched="false" origin-is-local="false" origin-location="https://repo1.maven.org/maven2/com/typesafe/play/play-json_2.12/2.6.5/play-json_2.12-2.6.5.pom"/>
+				<evicted-by rev="2.6.7"/>
+				<caller organisation="ch.epfl.transpor.pedestrians" name="hub-simulator_2.12" conf="test, compile, runtime" rev="2.6.5" rev-constraint-default="2.6.5" rev-constraint-dynamic="2.6.5" callerrev="1.0-SNAPSHOT"/>
+				<artifacts>
+				</artifacts>
+			</revision>
+		</module>
+		<module organisation="com.typesafe.play" name="play-functional_2.12">
+			<revision name="2.6.7" status="release" pubdate="20171027001224" resolver="sbt-chain" artresolver="sbt-chain" homepage="https://github.com/playframework/play-json" downloaded="false" searched="false" default="false" conf="compile, runtime(*), master(compile), runtime, compile(*), master" position="52">
+				<license name="Apache-2.0" url="http://www.apache.org/licenses/LICENSE-2.0.html"/>
+				<metadata-artifact status="no" details="" size="2685" time="0" location="/Users/leobouraux/.ivy2/cache/com.typesafe.play/play-functional_2.12/ivy-2.6.7.xml" searched="false" origin-is-local="false" origin-location="https://repo1.maven.org/maven2/com/typesafe/play/play-functional_2.12/2.6.7/play-functional_2.12-2.6.7.pom"/>
+				<caller organisation="com.typesafe.play" name="play-json_2.12" conf="compile, runtime" rev="2.6.7" rev-constraint-default="2.6.7" rev-constraint-dynamic="2.6.7" callerrev="2.6.7"/>
+				<caller organisation="com.typesafe.play" name="play-json_2.12" conf="default, compile, runtime, master" rev="2.6.5" rev-constraint-default="2.6.5" rev-constraint-dynamic="2.6.5" callerrev="2.6.5"/>
+				<artifacts>
+					<artifact name="play-functional_2.12" type="jar" ext="jar" status="no" details="" size="177939" time="0" location="/Users/leobouraux/.ivy2/cache/com.typesafe.play/play-functional_2.12/jars/play-functional_2.12-2.6.7.jar">
+						<origin-location is-local="false" location="https://repo1.maven.org/maven2/com/typesafe/play/play-functional_2.12/2.6.7/play-functional_2.12-2.6.7.jar"/>
+					</artifact>
+				</artifacts>
+			</revision>
+			<revision name="2.6.5" status="release" pubdate="20170914220039" resolver="sbt-chain" artresolver="sbt-chain" evicted="latest-revision" evicted-reason="" homepage="https://github.com/playframework/play-json" downloaded="false" searched="false" default="false" conf="compile, runtime(*), master(compile), runtime, compile(*), master" position="-1">
+				<license name="Apache-2.0" url="http://www.apache.org/licenses/LICENSE-2.0.html"/>
+				<metadata-artifact status="no" details="" size="2685" time="0" location="/Users/leobouraux/.ivy2/cache/com.typesafe.play/play-functional_2.12/ivy-2.6.5.xml" searched="false" origin-is-local="false" origin-location="https://repo1.maven.org/maven2/com/typesafe/play/play-functional_2.12/2.6.5/play-functional_2.12-2.6.5.pom"/>
+				<evicted-by rev="2.6.7"/>
+				<caller organisation="com.typesafe.play" name="play-json_2.12" conf="default, compile, runtime, master" rev="2.6.5" rev-constraint-default="2.6.5" rev-constraint-dynamic="2.6.5" callerrev="2.6.5"/>
+				<artifacts>
+				</artifacts>
+			</revision>
+		</module>
+		<module organisation="transpor.tools" name="power-voronoi">
+			<revision name="1.0" status="release" pubdate="20190226143323" resolver="sbt-chain" artresolver="sbt-chain" downloaded="false" searched="false" default="false" conf="compile, default(compile)" position="49">
+				<metadata-artifact status="no" details="" size="1782" time="0" location="/Users/leobouraux/.ivy2/cache/transpor.tools/power-voronoi/ivy-1.0.xml" searched="false" origin-is-local="true" origin-location="/Users/leobouraux/.ivy2/local/transpor.tools/power-voronoi/1.0/ivys/ivy.xml"/>
+				<caller organisation="ch.epfl.transpor.pedestrians" name="hub-simulator_2.12" conf="test, compile, runtime" rev="1.0" rev-constraint-default="1.0" rev-constraint-dynamic="1.0" callerrev="1.0-SNAPSHOT"/>
+				<artifacts>
+					<artifact name="power-voronoi" type="jar" ext="jar" status="no" details="" size="58777" time="0" location="/Users/leobouraux/.ivy2/local/transpor.tools/power-voronoi/1.0/jars/power-voronoi.jar">
+						<origin-location is-local="true" location="/Users/leobouraux/.ivy2/local/transpor.tools/power-voronoi/1.0/jars/power-voronoi.jar"/>
+					</artifact>
+				</artifacts>
+			</revision>
+		</module>
+		<module organisation="org.scalactic" name="scalactic_2.12">
+			<revision name="3.0.1" status="release" pubdate="20161110065016" resolver="sbt-chain" artresolver="sbt-chain" homepage="http://www.scalatest.org" downloaded="false" searched="false" default="false" conf="default, compile, runtime, default(compile), master" position="48">
+				<license name="the Apache License, ASL Version 2.0" url="http://www.apache.org/licenses/LICENSE-2.0"/>
+				<metadata-artifact status="no" details="" size="2967" time="0" location="/Users/leobouraux/.ivy2/cache/org.scalactic/scalactic_2.12/ivy-3.0.1.xml" searched="false" origin-is-local="false" origin-location="https://repo1.maven.org/maven2/org/scalactic/scalactic_2.12/3.0.1/scalactic_2.12-3.0.1.pom"/>
+				<caller organisation="ch.epfl.transpor.pedestrians" name="hub-simulator_2.12" conf="test, compile, runtime" rev="3.0.1" rev-constraint-default="3.0.1" rev-constraint-dynamic="3.0.1" callerrev="1.0-SNAPSHOT"/>
+				<artifacts>
+					<artifact name="scalactic_2.12" type="bundle" ext="jar" status="no" details="" size="705564" time="0" location="/Users/leobouraux/.ivy2/cache/org.scalactic/scalactic_2.12/bundles/scalactic_2.12-3.0.1.jar">
+						<origin-location is-local="false" location="https://repo1.maven.org/maven2/org/scalactic/scalactic_2.12/3.0.1/scalactic_2.12-3.0.1.jar"/>
+					</artifact>
+				</artifacts>
+			</revision>
+		</module>
+		<module organisation="com.typesafe.scala-logging" name="scala-logging_2.12">
+			<revision name="3.9.0" status="release" pubdate="20180411115603" resolver="sbt-chain" artresolver="sbt-chain" homepage="https://github.com/lightbend/scala-logging" downloaded="false" searched="false" default="false" conf="default, compile, runtime, default(compile), master" position="47">
+				<license name="Apache 2.0 License" url="http://www.apache.org/licenses/LICENSE-2.0.html"/>
+				<metadata-artifact status="no" details="" size="3355" time="0" location="/Users/leobouraux/.ivy2/cache/com.typesafe.scala-logging/scala-logging_2.12/ivy-3.9.0.xml" searched="false" origin-is-local="false" origin-location="https://repo1.maven.org/maven2/com/typesafe/scala-logging/scala-logging_2.12/3.9.0/scala-logging_2.12-3.9.0.pom"/>
+				<caller organisation="ch.epfl.transpor.pedestrians" name="hub-simulator_2.12" conf="test, compile, runtime" rev="3.9.0" rev-constraint-default="3.9.0" rev-constraint-dynamic="3.9.0" callerrev="1.0-SNAPSHOT"/>
+				<artifacts>
+					<artifact name="scala-logging_2.12" type="bundle" ext="jar" status="no" details="" size="54709" time="0" location="/Users/leobouraux/.ivy2/cache/com.typesafe.scala-logging/scala-logging_2.12/bundles/scala-logging_2.12-3.9.0.jar">
+						<origin-location is-local="false" location="https://repo1.maven.org/maven2/com/typesafe/scala-logging/scala-logging_2.12/3.9.0/scala-logging_2.12-3.9.0.jar"/>
+					</artifact>
+				</artifacts>
+			</revision>
+		</module>
+		<module organisation="com.typesafe" name="config">
+			<revision name="1.3.1" status="release" pubdate="20160924145320" resolver="sbt-chain" artresolver="sbt-chain" homepage="https://github.com/typesafehub/config" downloaded="false" searched="false" default="false" conf="default, compile, runtime, default(compile), master" position="43">
+				<license name="Apache License, Version 2.0" url="http://www.apache.org/licenses/LICENSE-2.0"/>
+				<metadata-artifact status="no" details="" size="2875" time="0" location="/Users/leobouraux/.ivy2/cache/com.typesafe/config/ivy-1.3.1.xml" searched="false" origin-is-local="false" origin-location="https://repo1.maven.org/maven2/com/typesafe/config/1.3.1/config-1.3.1.pom"/>
+				<caller organisation="ch.epfl.transpor.pedestrians" name="hub-simulator_2.12" conf="test, compile, runtime" rev="1.3.1" rev-constraint-default="1.3.1" rev-constraint-dynamic="1.3.1" callerrev="1.0-SNAPSHOT"/>
+				<artifacts>
+					<artifact name="config" type="bundle" ext="jar" status="no" details="" size="282549" time="0" location="/Users/leobouraux/.ivy2/cache/com.typesafe/config/bundles/config-1.3.1.jar">
+						<origin-location is-local="false" location="https://repo1.maven.org/maven2/com/typesafe/config/1.3.1/config-1.3.1.jar"/>
+					</artifact>
+				</artifacts>
+			</revision>
+		</module>
+		<module organisation="org.jcodec" name="jcodec-javase">
+			<revision name="0.2.0" status="release" pubdate="20170729214957" resolver="sbt-chain" artresolver="sbt-chain" homepage="http://jcodec.org" downloaded="false" searched="false" default="false" conf="default, compile, runtime, default(compile), master" position="40">
+				<license name="FreeBSD" url="http://jcodec.org/lic.html"/>
+				<metadata-artifact status="no" details="" size="3178" time="0" location="/Users/leobouraux/.ivy2/cache/org.jcodec/jcodec-javase/ivy-0.2.0.xml" searched="false" origin-is-local="false" origin-location="https://repo1.maven.org/maven2/org/jcodec/jcodec-javase/0.2.0/jcodec-javase-0.2.0.pom"/>
+				<caller organisation="ch.epfl.transpor.pedestrians" name="hub-simulator_2.12" conf="test, compile, runtime" rev="0.2.0" rev-constraint-default="0.2.0" rev-constraint-dynamic="0.2.0" callerrev="1.0-SNAPSHOT"/>
+				<artifacts>
+					<artifact name="jcodec-javase" type="jar" ext="jar" status="no" details="" size="12490" time="0" location="/Users/leobouraux/.ivy2/cache/org.jcodec/jcodec-javase/jars/jcodec-javase-0.2.0.jar">
+						<origin-location is-local="false" location="https://repo1.maven.org/maven2/org/jcodec/jcodec-javase/0.2.0/jcodec-javase-0.2.0.jar"/>
+					</artifact>
+				</artifacts>
+			</revision>
+		</module>
+		<module organisation="org.jcodec" name="jcodec">
+			<revision name="0.2.0" status="release" pubdate="20170729213006" resolver="sbt-chain" artresolver="sbt-chain" homepage="http://jcodec.org" downloaded="false" searched="false" default="false" conf="compile, runtime(*), master(compile), runtime, compile(*), master" position="41">
+				<license name="FreeBSD" url="http://jcodec.org/lic.html"/>
+				<metadata-artifact status="no" details="" size="3181" time="0" location="/Users/leobouraux/.ivy2/cache/org.jcodec/jcodec/ivy-0.2.0.xml" searched="false" origin-is-local="false" origin-location="https://repo1.maven.org/maven2/org/jcodec/jcodec/0.2.0/jcodec-0.2.0.pom"/>
+				<caller organisation="org.jcodec" name="jcodec-javase" conf="default, compile, runtime, master" rev="0.2.0" rev-constraint-default="0.2.0" rev-constraint-dynamic="0.2.0" callerrev="0.2.0"/>
+				<artifacts>
+					<artifact name="jcodec" type="jar" ext="jar" status="no" details="" size="2013153" time="0" location="/Users/leobouraux/.ivy2/cache/org.jcodec/jcodec/jars/jcodec-0.2.0.jar">
+						<origin-location is-local="false" location="https://repo1.maven.org/maven2/org/jcodec/jcodec/0.2.0/jcodec-0.2.0.jar"/>
+					</artifact>
+				</artifacts>
+			</revision>
+		</module>
+		<module organisation="com.google.code.findbugs" name="jsr305">
+			<revision name="3.0.2" status="release" pubdate="20170331065548" resolver="sbt-chain" artresolver="sbt-chain" homepage="http://findbugs.sourceforge.net/" downloaded="false" searched="false" default="false" conf="compile, runtime(*), master(compile), runtime, compile(*), master" position="42">
+				<license name="The Apache Software License, Version 2.0" url="http://www.apache.org/licenses/LICENSE-2.0.txt"/>
+				<metadata-artifact status="no" details="" size="3268" time="0" location="/Users/leobouraux/.ivy2/cache/com.google.code.findbugs/jsr305/ivy-3.0.2.xml" searched="false" origin-is-local="false" origin-location="https://repo1.maven.org/maven2/com/google/code/findbugs/jsr305/3.0.2/jsr305-3.0.2.pom"/>
+				<caller organisation="org.jcodec" name="jcodec" conf="compile, runtime" rev="3.0.2" rev-constraint-default="3.0.2" rev-constraint-dynamic="3.0.2" callerrev="0.2.0"/>
+				<artifacts>
+					<artifact name="jsr305" type="jar" ext="jar" status="no" details="" size="19936" time="0" location="/Users/leobouraux/.ivy2/cache/com.google.code.findbugs/jsr305/jars/jsr305-3.0.2.jar">
+						<origin-location is-local="false" location="https://repo1.maven.org/maven2/com/google/code/findbugs/jsr305/3.0.2/jsr305-3.0.2.jar"/>
+					</artifact>
+				</artifacts>
+			</revision>
+		</module>
+		<module organisation="com.github.scopt" name="scopt_2.12">
+			<revision name="3.6.0" status="release" pubdate="20170601194032" resolver="sbt-chain" artresolver="sbt-chain" homepage="https://github.com/scopt/scopt" downloaded="false" searched="false" default="false" conf="default, compile, runtime, default(compile), master" position="39">
+				<license name="MIT License" url="http://www.opensource.org/licenses/mit-license.php"/>
+				<metadata-artifact status="no" details="" size="2801" time="0" location="/Users/leobouraux/.ivy2/cache/com.github.scopt/scopt_2.12/ivy-3.6.0.xml" searched="false" origin-is-local="false" origin-location="https://repo1.maven.org/maven2/com/github/scopt/scopt_2.12/3.6.0/scopt_2.12-3.6.0.pom"/>
+				<caller organisation="ch.epfl.transpor.pedestrians" name="hub-simulator_2.12" conf="test, compile, runtime" rev="3.6.0" rev-constraint-default="3.6.0" rev-constraint-dynamic="3.6.0" callerrev="1.0-SNAPSHOT"/>
+				<artifacts>
+					<artifact name="scopt_2.12" type="jar" ext="jar" status="no" details="" size="77551" time="0" location="/Users/leobouraux/.ivy2/cache/com.github.scopt/scopt_2.12/jars/scopt_2.12-3.6.0.jar">
+						<origin-location is-local="false" location="https://repo1.maven.org/maven2/com/github/scopt/scopt_2.12/3.6.0/scopt_2.12-3.6.0.jar"/>
+					</artifact>
+				</artifacts>
+			</revision>
+		</module>
+		<module organisation="org.jgrapht" name="jgrapht-core">
+			<revision name="1.0.1" status="release" pubdate="20170116214119" resolver="sbt-chain" artresolver="sbt-chain" homepage="" downloaded="false" searched="false" default="false" conf="default, compile, runtime, default(compile), master" position="38">
+				<license name="GNU Lesser General Public License Version 2.1, February 1999" url="http://jgrapht.sourceforge.net/LGPL.html"/>
+				<license name="Eclipse Public License (EPL) 1.0" url="http://www.eclipse.org/legal/epl-v10.html"/>
+				<metadata-artifact status="no" details="" size="4408" time="0" location="/Users/leobouraux/.ivy2/cache/org.jgrapht/jgrapht-core/ivy-1.0.1.xml" searched="false" origin-is-local="false" origin-location="https://repo1.maven.org/maven2/org/jgrapht/jgrapht-core/1.0.1/jgrapht-core-1.0.1.pom"/>
+				<caller organisation="ch.epfl.transpor.pedestrians" name="hub-simulator_2.12" conf="test, compile, runtime" rev="1.0.1" rev-constraint-default="1.0.1" rev-constraint-dynamic="1.0.1" callerrev="1.0-SNAPSHOT"/>
+				<artifacts>
+					<artifact name="jgrapht-core" type="jar" ext="jar" status="no" details="" size="564742" time="0" location="/Users/leobouraux/.ivy2/cache/org.jgrapht/jgrapht-core/jars/jgrapht-core-1.0.1.jar">
+						<origin-location is-local="false" location="https://repo1.maven.org/maven2/org/jgrapht/jgrapht-core/1.0.1/jgrapht-core-1.0.1.jar"/>
+					</artifact>
+				</artifacts>
+			</revision>
+		</module>
+		<module organisation="org.scalanlp" name="breeze-natives_2.12">
+			<revision name="0.13" status="release" pubdate="20170109050325" resolver="sbt-chain" artresolver="sbt-chain" homepage="http://scalanlp.org/" downloaded="false" searched="false" default="false" conf="default, compile, runtime(*), master(compile), runtime, default(compile), compile(*), master" position="21">
+				<license name="Apache 2" url="http://www.apache.org/licenses/LICENSE-2.0.html"/>
+				<metadata-artifact status="no" details="" size="3363" time="0" location="/Users/leobouraux/.ivy2/cache/org.scalanlp/breeze-natives_2.12/ivy-0.13.xml" searched="false" origin-is-local="false" origin-location="https://repo1.maven.org/maven2/org/scalanlp/breeze-natives_2.12/0.13/breeze-natives_2.12-0.13.pom"/>
+				<caller organisation="ch.epfl.transpor.pedestrians" name="hub-simulator_2.12" conf="test, compile, runtime" rev="0.13" rev-constraint-default="0.13" rev-constraint-dynamic="0.13" callerrev="1.0-SNAPSHOT"/>
+				<caller organisation="com.github.NicholasMolyneaux" name="scala-custom_2.12" conf="default, compile, runtime, master" rev="0.13" rev-constraint-default="0.13" rev-constraint-dynamic="0.13" callerrev="1.2.0.1"/>
+				<artifacts>
+					<artifact name="breeze-natives_2.12" type="jar" ext="jar" status="no" details="" size="280" time="0" location="/Users/leobouraux/.ivy2/cache/org.scalanlp/breeze-natives_2.12/jars/breeze-natives_2.12-0.13.jar">
+						<origin-location is-local="false" location="https://repo1.maven.org/maven2/org/scalanlp/breeze-natives_2.12/0.13/breeze-natives_2.12-0.13.jar"/>
+					</artifact>
+				</artifacts>
+			</revision>
+		</module>
+		<module organisation="com.github.fommil.netlib" name="all">
+			<revision name="1.1.2" status="release" pubdate="20131126125721" resolver="sbt-chain" artresolver="sbt-chain" homepage="" downloaded="false" searched="false" default="false" conf="compile, runtime(*), master(compile), runtime, compile(*), master" position="22">
+				<license name="BSD 3 Clause" url="http://opensource.org/licenses/BSD-3-Clause"/>
+				<metadata-artifact status="no" details="" size="8022" time="0" location="/Users/leobouraux/.ivy2/cache/com.github.fommil.netlib/all/ivy-1.1.2.xml" searched="false" origin-is-local="false" origin-location="https://repo1.maven.org/maven2/com/github/fommil/netlib/all/1.1.2/all-1.1.2.pom"/>
+				<caller organisation="org.scalanlp" name="breeze-natives_2.12" conf="default, compile, runtime, master" rev="1.1.2" rev-constraint-default="1.1.2" rev-constraint-dynamic="1.1.2" callerrev="0.13"/>
+				<artifacts>
+					<artifact name="all" type="pom" ext="pom" status="no" details="" size="4269" time="0" location="/Users/leobouraux/.ivy2/cache/com.github.fommil.netlib/all/poms/all-1.1.2.pom">
+						<origin-location is-local="false" location="https://repo1.maven.org/maven2/com/github/fommil/netlib/all/1.1.2/all-1.1.2.pom"/>
+					</artifact>
+				</artifacts>
+			</revision>
+		</module>
+		<module organisation="com.github.fommil.netlib" name="netlib-native_system-win-i686">
+			<revision name="1.1" status="release" pubdate="20131012004118" resolver="sbt-chain" artresolver="sbt-chain" homepage="" downloaded="false" searched="false" default="false" conf="compile, runtime(*), master(compile), runtime, compile(*), master" position="37">
+				<license name="BSD 3 Clause" url="http://opensource.org/licenses/BSD-3-Clause"/>
+				<metadata-artifact status="no" details="" size="7548" time="0" location="/Users/leobouraux/.ivy2/cache/com.github.fommil.netlib/netlib-native_system-win-i686/ivy-1.1.xml" searched="false" origin-is-local="false" origin-location="https://repo1.maven.org/maven2/com/github/fommil/netlib/netlib-native_system-win-i686/1.1/netlib-native_system-win-i686-1.1.pom"/>
+				<caller organisation="com.github.fommil.netlib" name="all" conf="compile, runtime" rev="1.1" rev-constraint-default="1.1" rev-constraint-dynamic="1.1" callerrev="1.1.2"/>
+				<artifacts>
+					<artifact name="netlib-native_system-win-i686" type="jar" ext="jar" extra-classifier="natives" status="no" details="" size="561459" time="0" location="/Users/leobouraux/.ivy2/cache/com.github.fommil.netlib/netlib-native_system-win-i686/jars/netlib-native_system-win-i686-1.1-natives.jar">
+						<origin-location is-local="false" location="https://repo1.maven.org/maven2/com/github/fommil/netlib/netlib-native_system-win-i686/1.1/netlib-native_system-win-i686-1.1-natives.jar"/>
+					</artifact>
+				</artifacts>
+			</revision>
+		</module>
+		<module organisation="com.github.fommil.netlib" name="netlib-native_system-win-x86_64">
+			<revision name="1.1" status="release" pubdate="20131012004207" resolver="sbt-chain" artresolver="sbt-chain" homepage="" downloaded="false" searched="false" default="false" conf="compile, runtime(*), master(compile), runtime, compile(*), master" position="36">
+				<license name="BSD 3 Clause" url="http://opensource.org/licenses/BSD-3-Clause"/>
+				<metadata-artifact status="no" details="" size="7552" time="0" location="/Users/leobouraux/.ivy2/cache/com.github.fommil.netlib/netlib-native_system-win-x86_64/ivy-1.1.xml" searched="false" origin-is-local="false" origin-location="https://repo1.maven.org/maven2/com/github/fommil/netlib/netlib-native_system-win-x86_64/1.1/netlib-native_system-win-x86_64-1.1.pom"/>
+				<caller organisation="com.github.fommil.netlib" name="all" conf="compile, runtime" rev="1.1" rev-constraint-default="1.1" rev-constraint-dynamic="1.1" callerrev="1.1.2"/>
+				<artifacts>
+					<artifact name="netlib-native_system-win-x86_64" type="jar" ext="jar" extra-classifier="natives" status="no" details="" size="637428" time="0" location="/Users/leobouraux/.ivy2/cache/com.github.fommil.netlib/netlib-native_system-win-x86_64/jars/netlib-native_system-win-x86_64-1.1-natives.jar">
+						<origin-location is-local="false" location="https://repo1.maven.org/maven2/com/github/fommil/netlib/netlib-native_system-win-x86_64/1.1/netlib-native_system-win-x86_64-1.1-natives.jar"/>
+					</artifact>
+				</artifacts>
+			</revision>
+		</module>
+		<module organisation="com.github.fommil.netlib" name="netlib-native_system-linux-armhf">
+			<revision name="1.1" status="release" pubdate="20131012013120" resolver="sbt-chain" artresolver="sbt-chain" homepage="" downloaded="false" searched="false" default="false" conf="compile, runtime(*), master(compile), runtime, compile(*), master" position="35">
+				<license name="BSD 3 Clause" url="http://opensource.org/licenses/BSD-3-Clause"/>
+				<metadata-artifact status="no" details="" size="7979" time="0" location="/Users/leobouraux/.ivy2/cache/com.github.fommil.netlib/netlib-native_system-linux-armhf/ivy-1.1.xml" searched="false" origin-is-local="false" origin-location="https://repo1.maven.org/maven2/com/github/fommil/netlib/netlib-native_system-linux-armhf/1.1/netlib-native_system-linux-armhf-1.1.pom"/>
+				<caller organisation="com.github.fommil.netlib" name="all" conf="compile, runtime" rev="1.1" rev-constraint-default="1.1" rev-constraint-dynamic="1.1" callerrev="1.1.2"/>
+				<artifacts>
+					<artifact name="netlib-native_system-linux-armhf" type="jar" ext="jar" extra-classifier="natives" status="no" details="" size="310891" time="0" location="/Users/leobouraux/.ivy2/cache/com.github.fommil.netlib/netlib-native_system-linux-armhf/jars/netlib-native_system-linux-armhf-1.1-natives.jar">
+						<origin-location is-local="false" location="https://repo1.maven.org/maven2/com/github/fommil/netlib/netlib-native_system-linux-armhf/1.1/netlib-native_system-linux-armhf-1.1-natives.jar"/>
+					</artifact>
+				</artifacts>
+			</revision>
+		</module>
+		<module organisation="com.github.fommil.netlib" name="netlib-native_system-linux-i686">
+			<revision name="1.1" status="release" pubdate="20131012013027" resolver="sbt-chain" artresolver="sbt-chain" homepage="" downloaded="false" searched="false" default="false" conf="compile, runtime(*), master(compile), runtime, compile(*), master" position="34">
+				<license name="BSD 3 Clause" url="http://opensource.org/licenses/BSD-3-Clause"/>
+				<metadata-artifact status="no" details="" size="7977" time="0" location="/Users/leobouraux/.ivy2/cache/com.github.fommil.netlib/netlib-native_system-linux-i686/ivy-1.1.xml" searched="false" origin-is-local="false" origin-location="https://repo1.maven.org/maven2/com/github/fommil/netlib/netlib-native_system-linux-i686/1.1/netlib-native_system-linux-i686-1.1.pom"/>
+				<caller organisation="com.github.fommil.netlib" name="all" conf="compile, runtime" rev="1.1" rev-constraint-default="1.1" rev-constraint-dynamic="1.1" callerrev="1.1.2"/>
+				<artifacts>
+					<artifact name="netlib-native_system-linux-i686" type="jar" ext="jar" extra-classifier="natives" status="no" details="" size="435365" time="0" location="/Users/leobouraux/.ivy2/cache/com.github.fommil.netlib/netlib-native_system-linux-i686/jars/netlib-native_system-linux-i686-1.1-natives.jar">
+						<origin-location is-local="false" location="https://repo1.maven.org/maven2/com/github/fommil/netlib/netlib-native_system-linux-i686/1.1/netlib-native_system-linux-i686-1.1-natives.jar"/>
+					</artifact>
+				</artifacts>
+			</revision>
+		</module>
+		<module organisation="com.github.fommil.netlib" name="netlib-native_system-linux-x86_64">
+			<revision name="1.1" status="release" pubdate="20131012012927" resolver="sbt-chain" artresolver="sbt-chain" homepage="" downloaded="false" searched="false" default="false" conf="compile, runtime(*), master(compile), runtime, compile(*), master" position="33">
+				<license name="BSD 3 Clause" url="http://opensource.org/licenses/BSD-3-Clause"/>
+				<metadata-artifact status="no" details="" size="7981" time="0" location="/Users/leobouraux/.ivy2/cache/com.github.fommil.netlib/netlib-native_system-linux-x86_64/ivy-1.1.xml" searched="false" origin-is-local="false" origin-location="https://repo1.maven.org/maven2/com/github/fommil/netlib/netlib-native_system-linux-x86_64/1.1/netlib-native_system-linux-x86_64-1.1.pom"/>
+				<caller organisation="com.github.fommil.netlib" name="all" conf="compile, runtime" rev="1.1" rev-constraint-default="1.1" rev-constraint-dynamic="1.1" callerrev="1.1.2"/>
+				<artifacts>
+					<artifact name="netlib-native_system-linux-x86_64" type="jar" ext="jar" extra-classifier="natives" status="no" details="" size="458605" time="0" location="/Users/leobouraux/.ivy2/cache/com.github.fommil.netlib/netlib-native_system-linux-x86_64/jars/netlib-native_system-linux-x86_64-1.1-natives.jar">
+						<origin-location is-local="false" location="https://repo1.maven.org/maven2/com/github/fommil/netlib/netlib-native_system-linux-x86_64/1.1/netlib-native_system-linux-x86_64-1.1-natives.jar"/>
+					</artifact>
+				</artifacts>
+			</revision>
+		</module>
+		<module organisation="com.github.fommil.netlib" name="netlib-native_system-osx-x86_64">
+			<revision name="1.1" status="release" pubdate="20131012004035" resolver="sbt-chain" artresolver="sbt-chain" homepage="" downloaded="false" searched="false" default="false" conf="compile, runtime(*), master(compile), runtime, compile(*), master" position="31">
+				<license name="BSD 3 Clause" url="http://opensource.org/licenses/BSD-3-Clause"/>
+				<metadata-artifact status="no" details="" size="7558" time="0" location="/Users/leobouraux/.ivy2/cache/com.github.fommil.netlib/netlib-native_system-osx-x86_64/ivy-1.1.xml" searched="false" origin-is-local="false" origin-location="https://repo1.maven.org/maven2/com/github/fommil/netlib/netlib-native_system-osx-x86_64/1.1/netlib-native_system-osx-x86_64-1.1.pom"/>
+				<caller organisation="com.github.fommil.netlib" name="all" conf="compile, runtime" rev="1.1" rev-constraint-default="1.1" rev-constraint-dynamic="1.1" callerrev="1.1.2"/>
+				<artifacts>
+					<artifact name="netlib-native_system-osx-x86_64" type="jar" ext="jar" extra-classifier="natives" status="no" details="" size="553993" time="0" location="/Users/leobouraux/.ivy2/cache/com.github.fommil.netlib/netlib-native_system-osx-x86_64/jars/netlib-native_system-osx-x86_64-1.1-natives.jar">
+						<origin-location is-local="false" location="https://repo1.maven.org/maven2/com/github/fommil/netlib/netlib-native_system-osx-x86_64/1.1/netlib-native_system-osx-x86_64-1.1-natives.jar"/>
+					</artifact>
+				</artifacts>
+			</revision>
+		</module>
+		<module organisation="com.github.fommil.netlib" name="native_system-java">
+			<revision name="1.1" status="release" pubdate="20131012003956" resolver="sbt-chain" artresolver="sbt-chain" homepage="" downloaded="false" searched="false" default="false" conf="compile, runtime(*), master(compile), runtime, compile(*), master" position="32">
+				<license name="BSD 3 Clause" url="http://opensource.org/licenses/BSD-3-Clause"/>
+				<metadata-artifact status="no" details="" size="7694" time="0" location="/Users/leobouraux/.ivy2/cache/com.github.fommil.netlib/native_system-java/ivy-1.1.xml" searched="false" origin-is-local="false" origin-location="https://repo1.maven.org/maven2/com/github/fommil/netlib/native_system-java/1.1/native_system-java-1.1.pom"/>
+				<caller organisation="com.github.fommil.netlib" name="netlib-native_system-linux-x86_64" conf="compile, runtime" rev="1.1" rev-constraint-default="1.1" rev-constraint-dynamic="1.1" callerrev="1.1"/>
+				<caller organisation="com.github.fommil.netlib" name="netlib-native_system-win-i686" conf="compile, runtime" rev="1.1" rev-constraint-default="1.1" rev-constraint-dynamic="1.1" callerrev="1.1"/>
+				<caller organisation="com.github.fommil.netlib" name="netlib-native_system-linux-i686" conf="compile, runtime" rev="1.1" rev-constraint-default="1.1" rev-constraint-dynamic="1.1" callerrev="1.1"/>
+				<caller organisation="com.github.fommil.netlib" name="netlib-native_system-osx-x86_64" conf="compile, runtime" rev="1.1" rev-constraint-default="1.1" rev-constraint-dynamic="1.1" callerrev="1.1"/>
+				<caller organisation="com.github.fommil.netlib" name="netlib-native_system-win-x86_64" conf="compile, runtime" rev="1.1" rev-constraint-default="1.1" rev-constraint-dynamic="1.1" callerrev="1.1"/>
+				<caller organisation="com.github.fommil.netlib" name="netlib-native_system-linux-armhf" conf="compile, runtime" rev="1.1" rev-constraint-default="1.1" rev-constraint-dynamic="1.1" callerrev="1.1"/>
+				<artifacts>
+					<artifact name="native_system-java" type="jar" ext="jar" status="no" details="" size="54509" time="0" location="/Users/leobouraux/.ivy2/cache/com.github.fommil.netlib/native_system-java/jars/native_system-java-1.1.jar">
+						<origin-location is-local="false" location="https://repo1.maven.org/maven2/com/github/fommil/netlib/native_system-java/1.1/native_system-java-1.1.jar"/>
+					</artifact>
+				</artifacts>
+			</revision>
+		</module>
+		<module organisation="com.github.fommil.netlib" name="netlib-native_ref-linux-armhf">
+			<revision name="1.1" status="release" pubdate="20131012011624" resolver="sbt-chain" artresolver="sbt-chain" homepage="" downloaded="false" searched="false" default="false" conf="compile, runtime(*), master(compile), runtime, compile(*), master" position="30">
+				<license name="BSD 3 Clause" url="http://opensource.org/licenses/BSD-3-Clause"/>
+				<metadata-artifact status="no" details="" size="7539" time="0" location="/Users/leobouraux/.ivy2/cache/com.github.fommil.netlib/netlib-native_ref-linux-armhf/ivy-1.1.xml" searched="false" origin-is-local="false" origin-location="https://repo1.maven.org/maven2/com/github/fommil/netlib/netlib-native_ref-linux-armhf/1.1/netlib-native_ref-linux-armhf-1.1.pom"/>
+				<caller organisation="com.github.fommil.netlib" name="all" conf="compile, runtime" rev="1.1" rev-constraint-default="1.1" rev-constraint-dynamic="1.1" callerrev="1.1.2"/>
+				<artifacts>
+					<artifact name="netlib-native_ref-linux-armhf" type="jar" ext="jar" extra-classifier="natives" status="no" details="" size="1208080" time="0" location="/Users/leobouraux/.ivy2/cache/com.github.fommil.netlib/netlib-native_ref-linux-armhf/jars/netlib-native_ref-linux-armhf-1.1-natives.jar">
+						<origin-location is-local="false" location="https://repo1.maven.org/maven2/com/github/fommil/netlib/netlib-native_ref-linux-armhf/1.1/netlib-native_ref-linux-armhf-1.1-natives.jar"/>
+					</artifact>
+				</artifacts>
+			</revision>
+		</module>
+		<module organisation="com.github.fommil.netlib" name="netlib-native_ref-win-i686">
+			<revision name="1.1" status="release" pubdate="20131012003716" resolver="sbt-chain" artresolver="sbt-chain" homepage="" downloaded="false" searched="false" default="false" conf="compile, runtime(*), master(compile), runtime, compile(*), master" position="29">
+				<license name="BSD 3 Clause" url="http://opensource.org/licenses/BSD-3-Clause"/>
+				<metadata-artifact status="no" details="" size="7108" time="0" location="/Users/leobouraux/.ivy2/cache/com.github.fommil.netlib/netlib-native_ref-win-i686/ivy-1.1.xml" searched="false" origin-is-local="false" origin-location="https://repo1.maven.org/maven2/com/github/fommil/netlib/netlib-native_ref-win-i686/1.1/netlib-native_ref-win-i686-1.1.pom"/>
+				<caller organisation="com.github.fommil.netlib" name="all" conf="compile, runtime" rev="1.1" rev-constraint-default="1.1" rev-constraint-dynamic="1.1" callerrev="1.1.2"/>
+				<artifacts>
+					<artifact name="netlib-native_ref-win-i686" type="jar" ext="jar" extra-classifier="natives" status="no" details="" size="1826785" time="0" location="/Users/leobouraux/.ivy2/cache/com.github.fommil.netlib/netlib-native_ref-win-i686/jars/netlib-native_ref-win-i686-1.1-natives.jar">
+						<origin-location is-local="false" location="https://repo1.maven.org/maven2/com/github/fommil/netlib/netlib-native_ref-win-i686/1.1/netlib-native_ref-win-i686-1.1-natives.jar"/>
+					</artifact>
+				</artifacts>
+			</revision>
+		</module>
+		<module organisation="com.github.fommil.netlib" name="netlib-native_ref-win-x86_64">
+			<revision name="1.1" status="release" pubdate="20131012003904" resolver="sbt-chain" artresolver="sbt-chain" homepage="" downloaded="false" searched="false" default="false" conf="compile, runtime(*), master(compile), runtime, compile(*), master" position="28">
+				<license name="BSD 3 Clause" url="http://opensource.org/licenses/BSD-3-Clause"/>
+				<metadata-artifact status="no" details="" size="7112" time="0" location="/Users/leobouraux/.ivy2/cache/com.github.fommil.netlib/netlib-native_ref-win-x86_64/ivy-1.1.xml" searched="false" origin-is-local="false" origin-location="https://repo1.maven.org/maven2/com/github/fommil/netlib/netlib-native_ref-win-x86_64/1.1/netlib-native_ref-win-x86_64-1.1.pom"/>
+				<caller organisation="com.github.fommil.netlib" name="all" conf="compile, runtime" rev="1.1" rev-constraint-default="1.1" rev-constraint-dynamic="1.1" callerrev="1.1.2"/>
+				<artifacts>
+					<artifact name="netlib-native_ref-win-x86_64" type="jar" ext="jar" extra-classifier="natives" status="no" details="" size="2305169" time="0" location="/Users/leobouraux/.ivy2/cache/com.github.fommil.netlib/netlib-native_ref-win-x86_64/jars/netlib-native_ref-win-x86_64-1.1-natives.jar">
+						<origin-location is-local="false" location="https://repo1.maven.org/maven2/com/github/fommil/netlib/netlib-native_ref-win-x86_64/1.1/netlib-native_ref-win-x86_64-1.1-natives.jar"/>
+					</artifact>
+				</artifacts>
+			</revision>
+		</module>
+		<module organisation="com.github.fommil.netlib" name="netlib-native_ref-linux-i686">
+			<revision name="1.1" status="release" pubdate="20131012011458" resolver="sbt-chain" artresolver="sbt-chain" homepage="" downloaded="false" searched="false" default="false" conf="compile, runtime(*), master(compile), runtime, compile(*), master" position="27">
+				<license name="BSD 3 Clause" url="http://opensource.org/licenses/BSD-3-Clause"/>
+				<metadata-artifact status="no" details="" size="7537" time="0" location="/Users/leobouraux/.ivy2/cache/com.github.fommil.netlib/netlib-native_ref-linux-i686/ivy-1.1.xml" searched="false" origin-is-local="false" origin-location="https://repo1.maven.org/maven2/com/github/fommil/netlib/netlib-native_ref-linux-i686/1.1/netlib-native_ref-linux-i686-1.1.pom"/>
+				<caller organisation="com.github.fommil.netlib" name="all" conf="compile, runtime" rev="1.1" rev-constraint-default="1.1" rev-constraint-dynamic="1.1" callerrev="1.1.2"/>
+				<artifacts>
+					<artifact name="netlib-native_ref-linux-i686" type="jar" ext="jar" extra-classifier="natives" status="no" details="" size="1489507" time="0" location="/Users/leobouraux/.ivy2/cache/com.github.fommil.netlib/netlib-native_ref-linux-i686/jars/netlib-native_ref-linux-i686-1.1-natives.jar">
+						<origin-location is-local="false" location="https://repo1.maven.org/maven2/com/github/fommil/netlib/netlib-native_ref-linux-i686/1.1/netlib-native_ref-linux-i686-1.1-natives.jar"/>
+					</artifact>
+				</artifacts>
+			</revision>
+		</module>
+		<module organisation="com.github.fommil.netlib" name="netlib-native_ref-linux-x86_64">
+			<revision name="1.1" status="release" pubdate="20131012011310" resolver="sbt-chain" artresolver="sbt-chain" homepage="" downloaded="false" searched="false" default="false" conf="compile, runtime(*), master(compile), runtime, compile(*), master" position="26">
+				<license name="BSD 3 Clause" url="http://opensource.org/licenses/BSD-3-Clause"/>
+				<metadata-artifact status="no" details="" size="7541" time="0" location="/Users/leobouraux/.ivy2/cache/com.github.fommil.netlib/netlib-native_ref-linux-x86_64/ivy-1.1.xml" searched="false" origin-is-local="false" origin-location="https://repo1.maven.org/maven2/com/github/fommil/netlib/netlib-native_ref-linux-x86_64/1.1/netlib-native_ref-linux-x86_64-1.1.pom"/>
+				<caller organisation="com.github.fommil.netlib" name="all" conf="compile, runtime" rev="1.1" rev-constraint-default="1.1" rev-constraint-dynamic="1.1" callerrev="1.1.2"/>
+				<artifacts>
+					<artifact name="netlib-native_ref-linux-x86_64" type="jar" ext="jar" extra-classifier="natives" status="no" details="" size="1749371" time="0" location="/Users/leobouraux/.ivy2/cache/com.github.fommil.netlib/netlib-native_ref-linux-x86_64/jars/netlib-native_ref-linux-x86_64-1.1-natives.jar">
+						<origin-location is-local="false" location="https://repo1.maven.org/maven2/com/github/fommil/netlib/netlib-native_ref-linux-x86_64/1.1/netlib-native_ref-linux-x86_64-1.1-natives.jar"/>
+					</artifact>
+				</artifacts>
+			</revision>
+		</module>
+		<module organisation="com.github.fommil.netlib" name="netlib-native_ref-osx-x86_64">
+			<revision name="1.1" status="release" pubdate="20131012003537" resolver="sbt-chain" artresolver="sbt-chain" homepage="" downloaded="false" searched="false" default="false" conf="compile, runtime(*), master(compile), runtime, compile(*), master" position="23">
+				<license name="BSD 3 Clause" url="http://opensource.org/licenses/BSD-3-Clause"/>
+				<metadata-artifact status="no" details="" size="7118" time="0" location="/Users/leobouraux/.ivy2/cache/com.github.fommil.netlib/netlib-native_ref-osx-x86_64/ivy-1.1.xml" searched="false" origin-is-local="false" origin-location="https://repo1.maven.org/maven2/com/github/fommil/netlib/netlib-native_ref-osx-x86_64/1.1/netlib-native_ref-osx-x86_64-1.1.pom"/>
+				<caller organisation="com.github.fommil.netlib" name="all" conf="compile, runtime" rev="1.1" rev-constraint-default="1.1" rev-constraint-dynamic="1.1" callerrev="1.1.2"/>
+				<artifacts>
+					<artifact name="netlib-native_ref-osx-x86_64" type="jar" ext="jar" extra-classifier="natives" status="no" details="" size="1839499" time="0" location="/Users/leobouraux/.ivy2/cache/com.github.fommil.netlib/netlib-native_ref-osx-x86_64/jars/netlib-native_ref-osx-x86_64-1.1-natives.jar">
+						<origin-location is-local="false" location="https://repo1.maven.org/maven2/com/github/fommil/netlib/netlib-native_ref-osx-x86_64/1.1/netlib-native_ref-osx-x86_64-1.1-natives.jar"/>
+					</artifact>
+				</artifacts>
+			</revision>
+		</module>
+		<module organisation="com.github.fommil.netlib" name="native_ref-java">
+			<revision name="1.1" status="release" pubdate="20131012003421" resolver="sbt-chain" artresolver="sbt-chain" homepage="" downloaded="false" searched="false" default="false" conf="compile, runtime(*), master(compile), runtime, compile(*), master" position="24">
+				<license name="BSD 3 Clause" url="http://opensource.org/licenses/BSD-3-Clause"/>
+				<metadata-artifact status="no" details="" size="7257" time="0" location="/Users/leobouraux/.ivy2/cache/com.github.fommil.netlib/native_ref-java/ivy-1.1.xml" searched="false" origin-is-local="false" origin-location="https://repo1.maven.org/maven2/com/github/fommil/netlib/native_ref-java/1.1/native_ref-java-1.1.pom"/>
+				<caller organisation="com.github.fommil.netlib" name="netlib-native_ref-linux-armhf" conf="compile, runtime" rev="1.1" rev-constraint-default="1.1" rev-constraint-dynamic="1.1" callerrev="1.1"/>
+				<caller organisation="com.github.fommil.netlib" name="netlib-native_ref-osx-x86_64" conf="compile, runtime" rev="1.1" rev-constraint-default="1.1" rev-constraint-dynamic="1.1" callerrev="1.1"/>
+				<caller organisation="com.github.fommil.netlib" name="netlib-native_ref-win-i686" conf="compile, runtime" rev="1.1" rev-constraint-default="1.1" rev-constraint-dynamic="1.1" callerrev="1.1"/>
+				<caller organisation="com.github.fommil.netlib" name="netlib-native_ref-win-x86_64" conf="compile, runtime" rev="1.1" rev-constraint-default="1.1" rev-constraint-dynamic="1.1" callerrev="1.1"/>
+				<caller organisation="com.github.fommil.netlib" name="netlib-native_ref-linux-i686" conf="compile, runtime" rev="1.1" rev-constraint-default="1.1" rev-constraint-dynamic="1.1" callerrev="1.1"/>
+				<caller organisation="com.github.fommil.netlib" name="netlib-native_ref-linux-x86_64" conf="compile, runtime" rev="1.1" rev-constraint-default="1.1" rev-constraint-dynamic="1.1" callerrev="1.1"/>
+				<artifacts>
+					<artifact name="native_ref-java" type="jar" ext="jar" status="no" details="" size="54461" time="0" location="/Users/leobouraux/.ivy2/cache/com.github.fommil.netlib/native_ref-java/jars/native_ref-java-1.1.jar">
+						<origin-location is-local="false" location="https://repo1.maven.org/maven2/com/github/fommil/netlib/native_ref-java/1.1/native_ref-java-1.1.jar"/>
+					</artifact>
+				</artifacts>
+			</revision>
+		</module>
+		<module organisation="com.github.fommil" name="jniloader">
+			<revision name="1.1" status="release" pubdate="20131011223947" resolver="sbt-chain" artresolver="sbt-chain" homepage="https://github.com/fommil/jniloader" downloaded="false" searched="false" default="false" conf="compile, runtime(*), master(compile), runtime, compile(*), master" position="25">
+				<license name="LGPL" url="http://www.gnu.org/licenses/lgpl.txt"/>
+				<metadata-artifact status="no" details="" size="3319" time="0" location="/Users/leobouraux/.ivy2/cache/com.github.fommil/jniloader/ivy-1.1.xml" searched="false" origin-is-local="false" origin-location="https://repo1.maven.org/maven2/com/github/fommil/jniloader/1.1/jniloader-1.1.pom"/>
+				<caller organisation="com.github.fommil.netlib" name="native_ref-java" conf="compile, runtime" rev="1.1" rev-constraint-default="1.1" rev-constraint-dynamic="1.1" callerrev="1.1"/>
+				<caller organisation="com.github.fommil.netlib" name="native_system-java" conf="compile, runtime" rev="1.1" rev-constraint-default="1.1" rev-constraint-dynamic="1.1" callerrev="1.1"/>
+				<artifacts>
+					<artifact name="jniloader" type="jar" ext="jar" status="no" details="" size="8685" time="0" location="/Users/leobouraux/.ivy2/cache/com.github.fommil/jniloader/jars/jniloader-1.1.jar">
+						<origin-location is-local="false" location="https://repo1.maven.org/maven2/com/github/fommil/jniloader/1.1/jniloader-1.1.jar"/>
+					</artifact>
+				</artifacts>
+			</revision>
+		</module>
+		<module organisation="org.apache.commons" name="commons-math3">
+			<revision name="3.6" status="release" pubdate="20160102203711" resolver="sbt-chain" artresolver="sbt-chain" homepage="http://commons.apache.org/proper/commons-math/" downloaded="false" searched="false" default="false" conf="default, compile, runtime, default(compile), master, runtime(*), master(compile), compile(*)" position="16">
+				<license name="Apache License, Version 2.0" url="http://www.apache.org/licenses/LICENSE-2.0.txt"/>
+				<metadata-artifact status="no" details="" size="11906" time="0" location="/Users/leobouraux/.ivy2/cache/org.apache.commons/commons-math3/ivy-3.6.xml" searched="false" origin-is-local="false" origin-location="https://repo1.maven.org/maven2/org/apache/commons/commons-math3/3.6/commons-math3-3.6.pom"/>
+				<caller organisation="org.scalanlp" name="breeze_2.12" conf="default, compile, runtime, master" rev="3.2" rev-constraint-default="3.2" rev-constraint-dynamic="3.2" callerrev="0.13"/>
+				<caller organisation="ch.epfl.transpor.pedestrians" name="hub-simulator_2.12" conf="test, compile, runtime" rev="3.6" rev-constraint-default="3.6" rev-constraint-dynamic="3.6" callerrev="1.0-SNAPSHOT"/>
+				<artifacts>
+					<artifact name="commons-math3" type="jar" ext="jar" status="no" details="" size="2213627" time="0" location="/Users/leobouraux/.ivy2/cache/org.apache.commons/commons-math3/jars/commons-math3-3.6.jar">
+						<origin-location is-local="false" location="https://repo1.maven.org/maven2/org/apache/commons/commons-math3/3.6/commons-math3-3.6.jar"/>
+					</artifact>
+				</artifacts>
+			</revision>
+			<revision name="3.2" evicted="latest-revision" evicted-reason="" downloaded="false" searched="false" conf="compile, runtime(*), master(compile), runtime, compile(*), master, default(compile)" position="-1">
+				<evicted-by rev="3.6"/>
+				<caller organisation="org.scalanlp" name="breeze_2.12" conf="default, compile, runtime, master" rev="3.2" rev-constraint-default="3.2" rev-constraint-dynamic="3.2" callerrev="0.13"/>
+				<caller organisation="ch.epfl.transpor.pedestrians" name="hub-simulator_2.12" conf="test, compile, runtime" rev="3.6" rev-constraint-default="3.6" rev-constraint-dynamic="3.6" callerrev="1.0-SNAPSHOT"/>
+				<artifacts>
+				</artifacts>
+			</revision>
+		</module>
+		<module organisation="org.scalanlp" name="breeze_2.12">
+			<revision name="0.13" status="release" pubdate="20170109050610" resolver="sbt-chain" artresolver="sbt-chain" homepage="http://scalanlp.org/" downloaded="false" searched="false" default="false" conf="default, compile, runtime(*), master(compile), runtime, default(compile), compile(*), master" position="9">
+				<license name="Apache 2" url="http://www.apache.org/licenses/LICENSE-2.0.html"/>
+				<metadata-artifact status="no" details="" size="4826" time="0" location="/Users/leobouraux/.ivy2/cache/org.scalanlp/breeze_2.12/ivy-0.13.xml" searched="false" origin-is-local="false" origin-location="https://repo1.maven.org/maven2/org/scalanlp/breeze_2.12/0.13/breeze_2.12-0.13.pom"/>
+				<caller organisation="ch.epfl.transpor.pedestrians" name="hub-simulator_2.12" conf="test, compile, runtime" rev="0.13" rev-constraint-default="0.13" rev-constraint-dynamic="0.13" callerrev="1.0-SNAPSHOT"/>
+				<caller organisation="org.scalanlp" name="breeze-natives_2.12" conf="default, compile, runtime, master" rev="0.13" rev-constraint-default="0.13" rev-constraint-dynamic="0.13" callerrev="0.13"/>
+				<caller organisation="com.github.NicholasMolyneaux" name="scala-custom_2.12" conf="default, compile, runtime, master" rev="0.13" rev-constraint-default="0.13" rev-constraint-dynamic="0.13" callerrev="1.2.0.1"/>
+				<artifacts>
+					<artifact name="breeze_2.12" type="jar" ext="jar" status="no" details="" size="13303573" time="0" location="/Users/leobouraux/.ivy2/cache/org.scalanlp/breeze_2.12/jars/breeze_2.12-0.13.jar">
+						<origin-location is-local="false" location="https://repo1.maven.org/maven2/org/scalanlp/breeze_2.12/0.13/breeze_2.12-0.13.jar"/>
+					</artifact>
+				</artifacts>
+			</revision>
+		</module>
+		<module organisation="org.slf4j" name="slf4j-api">
+			<revision name="1.7.5" status="release" pubdate="20130325215215" resolver="sbt-chain" artresolver="sbt-chain" evicted="latest-revision" evicted-reason="" homepage="http://www.slf4j.org" downloaded="false" searched="false" default="false" conf="compile, runtime(*), master(compile), runtime, compile(*), master" position="-1">
+				<license name="MIT License" url="http://www.opensource.org/licenses/mit-license.php"/>
+				<metadata-artifact status="no" details="" size="4383" time="0" location="/Users/leobouraux/.ivy2/cache/org.slf4j/slf4j-api/ivy-1.7.5.xml" searched="false" origin-is-local="false" origin-location="https://repo1.maven.org/maven2/org/slf4j/slf4j-api/1.7.5/slf4j-api-1.7.5.pom"/>
+				<evicted-by rev="1.7.25"/>
+				<caller organisation="org.scalanlp" name="breeze_2.12" conf="default, compile, runtime, master" rev="1.7.5" rev-constraint-default="1.7.5" rev-constraint-dynamic="1.7.5" callerrev="0.13"/>
+				<artifacts>
+				</artifacts>
+			</revision>
+			<revision name="1.7.25" status="release" pubdate="20170316173632" resolver="sbt-chain" artresolver="sbt-chain" homepage="http://www.slf4j.org" downloaded="false" searched="false" default="false" conf="compile, runtime(*), master(compile), runtime, compile(*), master" position="46">
+				<metadata-artifact status="no" details="" size="5287" time="0" location="/Users/leobouraux/.ivy2/cache/org.slf4j/slf4j-api/ivy-1.7.25.xml" searched="false" origin-is-local="false" origin-location="https://repo1.maven.org/maven2/org/slf4j/slf4j-api/1.7.25/slf4j-api-1.7.25.pom"/>
+				<caller organisation="org.scalanlp" name="breeze_2.12" conf="default, compile, runtime, master" rev="1.7.5" rev-constraint-default="1.7.5" rev-constraint-dynamic="1.7.5" callerrev="0.13"/>
+				<caller organisation="com.typesafe.scala-logging" name="scala-logging_2.12" conf="default, compile, runtime, master" rev="1.7.25" rev-constraint-default="1.7.25" rev-constraint-dynamic="1.7.25" callerrev="3.9.0"/>
+				<caller organisation="ch.qos.logback" name="logback-classic" conf="default, compile, runtime, master" rev="1.7.25" rev-constraint-default="1.7.25" rev-constraint-dynamic="1.7.25" callerrev="1.2.3"/>
+				<artifacts>
+					<artifact name="slf4j-api" type="jar" ext="jar" status="no" details="" size="41203" time="0" location="/Users/leobouraux/.ivy2/cache/org.slf4j/slf4j-api/jars/slf4j-api-1.7.25.jar">
+						<origin-location is-local="false" location="https://repo1.maven.org/maven2/org/slf4j/slf4j-api/1.7.25/slf4j-api-1.7.25.jar"/>
+					</artifact>
+				</artifacts>
+			</revision>
+		</module>
+		<module organisation="org.spire-math" name="spire_2.12">
+			<revision name="0.13.0" status="release" pubdate="20161129053252" resolver="sbt-chain" artresolver="sbt-chain" homepage="http://spire-math.org" downloaded="false" searched="false" default="false" conf="compile, runtime(*), master(compile), runtime, compile(*), master" position="17">
+				<license name="MIT" url="http://opensource.org/licenses/MIT"/>
+				<metadata-artifact status="no" details="" size="3059" time="0" location="/Users/leobouraux/.ivy2/cache/org.spire-math/spire_2.12/ivy-0.13.0.xml" searched="false" origin-is-local="false" origin-location="https://repo1.maven.org/maven2/org/spire-math/spire_2.12/0.13.0/spire_2.12-0.13.0.pom"/>
+				<caller organisation="org.scalanlp" name="breeze_2.12" conf="default, compile, runtime, master" rev="0.13.0" rev-constraint-default="0.13.0" rev-constraint-dynamic="0.13.0" callerrev="0.13"/>
+				<artifacts>
+					<artifact name="spire_2.12" type="jar" ext="jar" status="no" details="" size="9660469" time="0" location="/Users/leobouraux/.ivy2/cache/org.spire-math/spire_2.12/jars/spire_2.12-0.13.0.jar">
+						<origin-location is-local="false" location="https://repo1.maven.org/maven2/org/spire-math/spire_2.12/0.13.0/spire_2.12-0.13.0.jar"/>
+					</artifact>
+				</artifacts>
+			</revision>
+		</module>
+		<module organisation="org.spire-math" name="spire-macros_2.12">
+			<revision name="0.13.0" status="release" pubdate="20161129053152" resolver="sbt-chain" artresolver="sbt-chain" homepage="http://spire-math.org" downloaded="false" searched="false" default="false" conf="compile, runtime(*), master(compile), runtime, compile(*), master" position="18">
+				<license name="MIT" url="http://opensource.org/licenses/MIT"/>
+				<metadata-artifact status="no" details="" size="3294" time="0" location="/Users/leobouraux/.ivy2/cache/org.spire-math/spire-macros_2.12/ivy-0.13.0.xml" searched="false" origin-is-local="false" origin-location="https://repo1.maven.org/maven2/org/spire-math/spire-macros_2.12/0.13.0/spire-macros_2.12-0.13.0.pom"/>
+				<caller organisation="org.spire-math" name="spire_2.12" conf="compile, runtime" rev="0.13.0" rev-constraint-default="0.13.0" rev-constraint-dynamic="0.13.0" callerrev="0.13.0"/>
+				<artifacts>
+					<artifact name="spire-macros_2.12" type="jar" ext="jar" status="no" details="" size="69702" time="0" location="/Users/leobouraux/.ivy2/cache/org.spire-math/spire-macros_2.12/jars/spire-macros_2.12-0.13.0.jar">
+						<origin-location is-local="false" location="https://repo1.maven.org/maven2/org/spire-math/spire-macros_2.12/0.13.0/spire-macros_2.12-0.13.0.jar"/>
+					</artifact>
+				</artifacts>
+			</revision>
+		</module>
+		<module organisation="org.typelevel" name="machinist_2.12">
+			<revision name="0.6.1" status="release" pubdate="20161029171418" resolver="sbt-chain" artresolver="sbt-chain" homepage="http://github.com/typelevel/machinist" downloaded="false" searched="false" default="false" conf="compile, runtime(*), master(compile), runtime, compile(*), master" position="19">
+				<license name="MIT" url="http://opensource.org/licenses/MIT"/>
+				<metadata-artifact status="no" details="" size="2785" time="0" location="/Users/leobouraux/.ivy2/cache/org.typelevel/machinist_2.12/ivy-0.6.1.xml" searched="false" origin-is-local="false" origin-location="https://repo1.maven.org/maven2/org/typelevel/machinist_2.12/0.6.1/machinist_2.12-0.6.1.pom"/>
+				<caller organisation="org.spire-math" name="spire_2.12" conf="compile, runtime" rev="0.6.1" rev-constraint-default="0.6.1" rev-constraint-dynamic="0.6.1" callerrev="0.13.0"/>
+				<caller organisation="org.spire-math" name="spire-macros_2.12" conf="compile, runtime" rev="0.6.1" rev-constraint-default="0.6.1" rev-constraint-dynamic="0.6.1" callerrev="0.13.0"/>
+				<artifacts>
+					<artifact name="machinist_2.12" type="jar" ext="jar" status="no" details="" size="33650" time="0" location="/Users/leobouraux/.ivy2/cache/org.typelevel/machinist_2.12/jars/machinist_2.12-0.6.1.jar">
+						<origin-location is-local="false" location="https://repo1.maven.org/maven2/org/typelevel/machinist_2.12/0.6.1/machinist_2.12-0.6.1.jar"/>
+					</artifact>
+				</artifacts>
+			</revision>
+		</module>
+		<module organisation="com.github.rwl" name="jtransforms">
+			<revision name="2.4.0" status="release" pubdate="20120519160656" resolver="sbt-chain" artresolver="sbt-chain" homepage="http://sourceforge.net/projects/jtransforms/" downloaded="false" searched="false" default="false" conf="compile, runtime(*), master(compile), runtime, compile(*), master" position="14">
+				<license name="MPL" url="http://www.mozilla.org/MPL/2.0/index.txt"/>
+				<license name="LGPL" url="http://www.gnu.org/licenses/lgpl-2.1.txt"/>
+				<license name="GPL" url="http://www.gnu.org/licenses/gpl-2.0.txt"/>
+				<metadata-artifact status="no" details="" size="2991" time="0" location="/Users/leobouraux/.ivy2/cache/com.github.rwl/jtransforms/ivy-2.4.0.xml" searched="false" origin-is-local="false" origin-location="https://repo1.maven.org/maven2/com/github/rwl/jtransforms/2.4.0/jtransforms-2.4.0.pom"/>
+				<caller organisation="org.scalanlp" name="breeze_2.12" conf="default, compile, runtime, master" rev="2.4.0" rev-constraint-default="2.4.0" rev-constraint-dynamic="2.4.0" callerrev="0.13"/>
+				<artifacts>
+					<artifact name="jtransforms" type="jar" ext="jar" status="no" details="" size="764569" time="0" location="/Users/leobouraux/.ivy2/cache/com.github.rwl/jtransforms/jars/jtransforms-2.4.0.jar">
+						<origin-location is-local="false" location="https://repo1.maven.org/maven2/com/github/rwl/jtransforms/2.4.0/jtransforms-2.4.0.jar"/>
+					</artifact>
+				</artifacts>
+			</revision>
+		</module>
+		<module organisation="junit" name="junit">
+			<revision name="4.8.2" status="release" pubdate="20101005105127" resolver="sbt-chain" artresolver="sbt-chain" homepage="http://junit.org" downloaded="false" searched="false" default="false" conf="compile, runtime(*), master(compile), runtime, compile(*), master" position="15">
+				<license name="Common Public License Version 1.0" url="http://www.opensource.org/licenses/cpl1.0.txt"/>
+				<metadata-artifact status="no" details="" size="2546" time="0" location="/Users/leobouraux/.ivy2/cache/junit/junit/ivy-4.8.2.xml" searched="false" origin-is-local="false" origin-location="https://repo1.maven.org/maven2/junit/junit/4.8.2/junit-4.8.2.pom"/>
+				<caller organisation="com.github.rwl" name="jtransforms" conf="compile, runtime" rev="4.8.2" rev-constraint-default="4.8.2" rev-constraint-dynamic="4.8.2" callerrev="2.4.0"/>
+				<artifacts>
+					<artifact name="junit" type="jar" ext="jar" status="no" details="" size="237344" time="0" location="/Users/leobouraux/.ivy2/cache/junit/junit/jars/junit-4.8.2.jar">
+						<origin-location is-local="false" location="https://repo1.maven.org/maven2/junit/junit/4.8.2/junit-4.8.2.jar"/>
+					</artifact>
+				</artifacts>
+			</revision>
+		</module>
+		<module organisation="net.sf.opencsv" name="opencsv">
+			<revision name="2.3" status="release" pubdate="20110728070018" resolver="sbt-chain" artresolver="sbt-chain" homepage="http://opencsv.sf.net" downloaded="false" searched="false" default="false" conf="compile, runtime(*), master(compile), runtime, compile(*), master" position="13">
+				<license name="Apache 2" url="http://www.apache.org/licenses/LICENSE-2.0.txt"/>
+				<metadata-artifact status="no" details="" size="3354" time="0" location="/Users/leobouraux/.ivy2/cache/net.sf.opencsv/opencsv/ivy-2.3.xml" searched="false" origin-is-local="false" origin-location="https://repo1.maven.org/maven2/net/sf/opencsv/opencsv/2.3/opencsv-2.3.pom"/>
+				<caller organisation="org.scalanlp" name="breeze_2.12" conf="default, compile, runtime, master" rev="2.3" rev-constraint-default="2.3" rev-constraint-dynamic="2.3" callerrev="0.13"/>
+				<artifacts>
+					<artifact name="opencsv" type="jar" ext="jar" status="no" details="" size="19827" time="0" location="/Users/leobouraux/.ivy2/cache/net.sf.opencsv/opencsv/jars/opencsv-2.3.jar">
+						<origin-location is-local="false" location="https://repo1.maven.org/maven2/net/sf/opencsv/opencsv/2.3/opencsv-2.3.jar"/>
+					</artifact>
+				</artifacts>
+			</revision>
+		</module>
+		<module organisation="com.github.fommil.netlib" name="core">
+			<revision name="1.1.2" status="release" pubdate="20131126125411" resolver="sbt-chain" artresolver="sbt-chain" homepage="" downloaded="false" searched="false" default="false" conf="compile, runtime(*), master(compile), runtime, compile(*), master" position="11">
+				<license name="BSD 3 Clause" url="http://opensource.org/licenses/BSD-3-Clause"/>
+				<metadata-artifact status="no" details="" size="4893" time="0" location="/Users/leobouraux/.ivy2/cache/com.github.fommil.netlib/core/ivy-1.1.2.xml" searched="false" origin-is-local="false" origin-location="https://repo1.maven.org/maven2/com/github/fommil/netlib/core/1.1.2/core-1.1.2.pom"/>
+				<caller organisation="com.github.fommil.netlib" name="native_ref-java" conf="compile, runtime" rev="1.1" rev-constraint-default="1.1" rev-constraint-dynamic="1.1" callerrev="1.1"/>
+				<caller organisation="org.scalanlp" name="breeze_2.12" conf="default, compile, runtime, master" rev="1.1.2" rev-constraint-default="1.1.2" rev-constraint-dynamic="1.1.2" callerrev="0.13"/>
+				<caller organisation="com.github.fommil.netlib" name="all" conf="compile, runtime" rev="1.1.2" rev-constraint-default="1.1.2" rev-constraint-dynamic="1.1.2" callerrev="1.1.2"/>
+				<caller organisation="com.github.fommil.netlib" name="native_system-java" conf="compile, runtime" rev="1.1" rev-constraint-default="1.1" rev-constraint-dynamic="1.1" callerrev="1.1"/>
+				<artifacts>
+					<artifact name="core" type="jar" ext="jar" status="no" details="" size="164422" time="0" location="/Users/leobouraux/.ivy2/cache/com.github.fommil.netlib/core/jars/core-1.1.2.jar">
+						<origin-location is-local="false" location="https://repo1.maven.org/maven2/com/github/fommil/netlib/core/1.1.2/core-1.1.2.jar"/>
+					</artifact>
+				</artifacts>
+			</revision>
+			<revision name="1.1" evicted="latest-revision" evicted-reason="" downloaded="false" searched="false" conf="compile, runtime(*), master(compile), runtime, compile(*), master" position="-1">
+				<evicted-by rev="1.1.2"/>
+				<caller organisation="com.github.fommil.netlib" name="native_ref-java" conf="compile, runtime" rev="1.1" rev-constraint-default="1.1" rev-constraint-dynamic="1.1" callerrev="1.1"/>
+				<caller organisation="com.github.fommil.netlib" name="native_system-java" conf="compile, runtime" rev="1.1" rev-constraint-default="1.1" rev-constraint-dynamic="1.1" callerrev="1.1"/>
+				<artifacts>
+				</artifacts>
+			</revision>
+		</module>
+		<module organisation="net.sourceforge.f2j" name="arpack_combined_all">
+			<revision name="0.1" status="release" pubdate="20130709062740" resolver="sbt-chain" artresolver="sbt-chain" homepage="http://f2j.sourceforge.net" downloaded="false" searched="false" default="false" conf="compile, runtime(*), master(compile), runtime, compile(*), master" position="12">
+				<license name="The BSD License" url="http://www.opensource.org/licenses/bsd-license.php"/>
+				<metadata-artifact status="no" details="" size="2567" time="0" location="/Users/leobouraux/.ivy2/cache/net.sourceforge.f2j/arpack_combined_all/ivy-0.1.xml" searched="false" origin-is-local="false" origin-location="https://repo1.maven.org/maven2/net/sourceforge/f2j/arpack_combined_all/0.1/arpack_combined_all-0.1.pom"/>
+				<caller organisation="org.scalanlp" name="breeze_2.12" conf="default, compile, runtime, master" rev="0.1" rev-constraint-default="0.1" rev-constraint-dynamic="0.1" callerrev="0.13"/>
+				<artifacts>
+					<artifact name="arpack_combined_all" type="jar" ext="jar" status="no" details="" size="1194003" time="0" location="/Users/leobouraux/.ivy2/cache/net.sourceforge.f2j/arpack_combined_all/jars/arpack_combined_all-0.1.jar">
+						<origin-location is-local="false" location="https://repo1.maven.org/maven2/net/sourceforge/f2j/arpack_combined_all/0.1/arpack_combined_all-0.1.jar"/>
+					</artifact>
+				</artifacts>
+			</revision>
+		</module>
+		<module organisation="org.scalanlp" name="breeze-macros_2.12">
+			<revision name="0.13" status="release" pubdate="20170109050328" resolver="sbt-chain" artresolver="sbt-chain" homepage="http://scalanlp.org/" downloaded="false" searched="false" default="false" conf="compile, runtime(*), master(compile), runtime, compile(*), master" position="10">
+				<license name="Apache 2" url="http://www.apache.org/licenses/LICENSE-2.0.html"/>
+				<metadata-artifact status="no" details="" size="3150" time="0" location="/Users/leobouraux/.ivy2/cache/org.scalanlp/breeze-macros_2.12/ivy-0.13.xml" searched="false" origin-is-local="false" origin-location="https://repo1.maven.org/maven2/org/scalanlp/breeze-macros_2.12/0.13/breeze-macros_2.12-0.13.pom"/>
+				<caller organisation="org.scalanlp" name="breeze_2.12" conf="default, compile, runtime, master" rev="0.13" rev-constraint-default="0.13" rev-constraint-dynamic="0.13" callerrev="0.13"/>
+				<artifacts>
+					<artifact name="breeze-macros_2.12" type="jar" ext="jar" status="no" details="" size="125328" time="0" location="/Users/leobouraux/.ivy2/cache/org.scalanlp/breeze-macros_2.12/jars/breeze-macros_2.12-0.13.jar">
+						<origin-location is-local="false" location="https://repo1.maven.org/maven2/org/scalanlp/breeze-macros_2.12/0.13/breeze-macros_2.12-0.13.jar"/>
+					</artifact>
+				</artifacts>
+			</revision>
+		</module>
+		<module organisation="org.scala-lang" name="scala-reflect">
+			<revision name="2.12.6" status="release" pubdate="20180427103633" resolver="sbt-chain" artresolver="sbt-chain" homepage="http://www.scala-lang.org/" extra-info.apiURL="http://www.scala-lang.org/api/2.12.6/" downloaded="false" searched="false" default="false" conf="compile, runtime(*), master(compile), runtime, compile(*), master" position="1">
+				<license name="BSD 3-Clause" url="http://www.scala-lang.org/license.html"/>
+				<metadata-artifact status="no" details="" size="2825" time="0" location="/Users/leobouraux/.ivy2/cache/org.scala-lang/scala-reflect/ivy-2.12.6.xml" searched="false" origin-is-local="false" origin-location="https://repo1.maven.org/maven2/org/scala-lang/scala-reflect/2.12.6/scala-reflect-2.12.6.pom"/>
+				<caller organisation="org.typelevel" name="machinist_2.12" conf="compile, runtime" rev="2.12.6" rev-constraint-default="2.12.6" rev-constraint-dynamic="2.12.6" callerrev="0.6.1"/>
+				<caller organisation="com.typesafe.play" name="play-json_2.12" conf="compile, runtime" rev="2.12.6" rev-constraint-default="2.12.6" rev-constraint-dynamic="2.12.6" callerrev="2.6.7"/>
+				<caller organisation="com.typesafe.play" name="play-json_2.12" conf="default, compile, runtime, master" rev="2.12.6" rev-constraint-default="2.12.6" rev-constraint-dynamic="2.12.6" callerrev="2.6.5"/>
+				<caller organisation="org.scalanlp" name="breeze-macros_2.12" conf="compile, runtime" rev="2.12.6" rev-constraint-default="2.12.6" rev-constraint-dynamic="2.12.6" callerrev="0.13"/>
+				<caller organisation="com.typesafe.scala-logging" name="scala-logging_2.12" conf="default, compile, runtime, master" rev="2.12.6" rev-constraint-default="2.12.6" rev-constraint-dynamic="2.12.6" callerrev="3.9.0"/>
+				<caller organisation="org.scalactic" name="scalactic_2.12" conf="default, compile, runtime, master" rev="2.12.6" rev-constraint-default="2.12.6" rev-constraint-dynamic="2.12.6" callerrev="3.0.1"/>
+				<artifacts>
+					<artifact name="scala-reflect" type="jar" ext="jar" status="no" details="" size="3607442" time="0" location="/Users/leobouraux/.ivy2/cache/org.scala-lang/scala-reflect/jars/scala-reflect-2.12.6.jar">
+						<origin-location is-local="false" location="https://repo1.maven.org/maven2/org/scala-lang/scala-reflect/2.12.6/scala-reflect-2.12.6.jar"/>
+					</artifact>
+				</artifacts>
+			</revision>
+		</module>
+		<module organisation="ch.qos.logback" name="logback-classic">
+			<revision name="1.2.3" status="release" pubdate="20170331212753" resolver="sbt-chain" artresolver="sbt-chain" homepage="" downloaded="false" searched="false" default="false" conf="default, compile, runtime, default(compile), master" position="44">
+				<license name="Eclipse Public License - v 1.0" url="http://www.eclipse.org/legal/epl-v10.html"/>
+				<license name="GNU Lesser General Public License" url="http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html"/>
+				<metadata-artifact status="no" details="" size="10412" time="0" location="/Users/leobouraux/.ivy2/cache/ch.qos.logback/logback-classic/ivy-1.2.3.xml" searched="false" origin-is-local="false" origin-location="https://repo1.maven.org/maven2/ch/qos/logback/logback-classic/1.2.3/logback-classic-1.2.3.pom"/>
+				<caller organisation="ch.epfl.transpor.pedestrians" name="hub-simulator_2.12" conf="test, compile, runtime" rev="1.2.3" rev-constraint-default="1.2.3" rev-constraint-dynamic="1.2.3" callerrev="1.0-SNAPSHOT"/>
+				<artifacts>
+					<artifact name="logback-classic" type="jar" ext="jar" status="no" details="" size="290339" time="0" location="/Users/leobouraux/.ivy2/cache/ch.qos.logback/logback-classic/jars/logback-classic-1.2.3.jar">
+						<origin-location is-local="false" location="https://repo1.maven.org/maven2/ch/qos/logback/logback-classic/1.2.3/logback-classic-1.2.3.jar"/>
+					</artifact>
+				</artifacts>
+			</revision>
+		</module>
+		<module organisation="ch.qos.logback" name="logback-core">
+			<revision name="1.2.3" status="release" pubdate="20170331212715" resolver="sbt-chain" artresolver="sbt-chain" homepage="" downloaded="false" searched="false" default="false" conf="compile, runtime(*), master(compile), runtime, compile(*), master" position="45">
+				<license name="Eclipse Public License - v 1.0" url="http://www.eclipse.org/legal/epl-v10.html"/>
+				<license name="GNU Lesser General Public License" url="http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html"/>
+				<metadata-artifact status="no" details="" size="7917" time="0" location="/Users/leobouraux/.ivy2/cache/ch.qos.logback/logback-core/ivy-1.2.3.xml" searched="false" origin-is-local="false" origin-location="https://repo1.maven.org/maven2/ch/qos/logback/logback-core/1.2.3/logback-core-1.2.3.pom"/>
+				<caller organisation="ch.qos.logback" name="logback-classic" conf="default, compile, runtime, master" rev="1.2.3" rev-constraint-default="1.2.3" rev-constraint-dynamic="1.2.3" callerrev="1.2.3"/>
+				<artifacts>
+					<artifact name="logback-core" type="jar" ext="jar" status="no" details="" size="471901" time="0" location="/Users/leobouraux/.ivy2/cache/ch.qos.logback/logback-core/jars/logback-core-1.2.3.jar">
+						<origin-location is-local="false" location="https://repo1.maven.org/maven2/ch/qos/logback/logback-core/1.2.3/logback-core-1.2.3.jar"/>
+					</artifact>
+				</artifacts>
+			</revision>
+		</module>
+		<module organisation="com.fasterxml.jackson.datatype" name="jackson-datatype-jsr310">
+			<revision name="2.8.9" status="release" pubdate="20170612070823" resolver="sbt-chain" artresolver="sbt-chain" homepage="" downloaded="false" searched="false" default="false" conf="compile, runtime(*), master(compile), runtime, compile(*), master" position="8">
+				<license name="The Apache Software License, Version 2.0" url="http://www.apache.org/licenses/LICENSE-2.0.txt"/>
+				<metadata-artifact status="no" details="" size="21226" time="0" location="/Users/leobouraux/.ivy2/cache/com.fasterxml.jackson.datatype/jackson-datatype-jsr310/ivy-2.8.9.xml" searched="false" origin-is-local="false" origin-location="https://repo1.maven.org/maven2/com/fasterxml/jackson/datatype/jackson-datatype-jsr310/2.8.9/jackson-datatype-jsr310-2.8.9.pom"/>
+				<caller organisation="com.typesafe.play" name="play-json_2.12" conf="compile, runtime" rev="2.8.9" rev-constraint-default="2.8.9" rev-constraint-dynamic="2.8.9" callerrev="2.6.7"/>
+				<caller organisation="com.typesafe.play" name="play-json_2.12" conf="default, compile, runtime, master" rev="2.8.9" rev-constraint-default="2.8.9" rev-constraint-dynamic="2.8.9" callerrev="2.6.5"/>
+				<artifacts>
+					<artifact name="jackson-datatype-jsr310" type="bundle" ext="jar" status="no" details="" size="90059" time="0" location="/Users/leobouraux/.ivy2/cache/com.fasterxml.jackson.datatype/jackson-datatype-jsr310/bundles/jackson-datatype-jsr310-2.8.9.jar">
+						<origin-location is-local="false" location="https://repo1.maven.org/maven2/com/fasterxml/jackson/datatype/jackson-datatype-jsr310/2.8.9/jackson-datatype-jsr310-2.8.9.jar"/>
+					</artifact>
+				</artifacts>
+			</revision>
+		</module>
+		<module organisation="com.fasterxml.jackson.datatype" name="jackson-datatype-jdk8">
+			<revision name="2.8.9" status="release" pubdate="20170612070811" resolver="sbt-chain" artresolver="sbt-chain" homepage="" downloaded="false" searched="false" default="false" conf="compile, runtime(*), master(compile), runtime, compile(*), master" position="7">
+				<license name="The Apache Software License, Version 2.0" url="http://www.apache.org/licenses/LICENSE-2.0.txt"/>
+				<metadata-artifact status="no" details="" size="20932" time="0" location="/Users/leobouraux/.ivy2/cache/com.fasterxml.jackson.datatype/jackson-datatype-jdk8/ivy-2.8.9.xml" searched="false" origin-is-local="false" origin-location="https://repo1.maven.org/maven2/com/fasterxml/jackson/datatype/jackson-datatype-jdk8/2.8.9/jackson-datatype-jdk8-2.8.9.pom"/>
+				<caller organisation="com.typesafe.play" name="play-json_2.12" conf="compile, runtime" rev="2.8.9" rev-constraint-default="2.8.9" rev-constraint-dynamic="2.8.9" callerrev="2.6.7"/>
+				<caller organisation="com.typesafe.play" name="play-json_2.12" conf="default, compile, runtime, master" rev="2.8.9" rev-constraint-default="2.8.9" rev-constraint-dynamic="2.8.9" callerrev="2.6.5"/>
+				<artifacts>
+					<artifact name="jackson-datatype-jdk8" type="bundle" ext="jar" status="no" details="" size="33877" time="0" location="/Users/leobouraux/.ivy2/cache/com.fasterxml.jackson.datatype/jackson-datatype-jdk8/bundles/jackson-datatype-jdk8-2.8.9.jar">
+						<origin-location is-local="false" location="https://repo1.maven.org/maven2/com/fasterxml/jackson/datatype/jackson-datatype-jdk8/2.8.9/jackson-datatype-jdk8-2.8.9.jar"/>
+					</artifact>
+				</artifacts>
+			</revision>
+		</module>
+		<module organisation="com.fasterxml.jackson.core" name="jackson-databind">
+			<revision name="2.8.9" status="release" pubdate="20170612025351" resolver="sbt-chain" artresolver="sbt-chain" homepage="http://github.com/FasterXML/jackson" downloaded="false" searched="false" default="false" conf="compile, runtime(*), master(compile), runtime, compile(*), master" position="6">
+				<license name="The Apache Software License, Version 2.0" url="http://www.apache.org/licenses/LICENSE-2.0.txt"/>
+				<metadata-artifact status="no" details="" size="8156" time="0" location="/Users/leobouraux/.ivy2/cache/com.fasterxml.jackson.core/jackson-databind/ivy-2.8.9.xml" searched="false" origin-is-local="false" origin-location="https://repo1.maven.org/maven2/com/fasterxml/jackson/core/jackson-databind/2.8.9/jackson-databind-2.8.9.pom"/>
+				<caller organisation="com.typesafe.play" name="play-json_2.12" conf="compile, runtime" rev="2.8.9" rev-constraint-default="2.8.9" rev-constraint-dynamic="2.8.9" callerrev="2.6.7"/>
+				<caller organisation="com.typesafe.play" name="play-json_2.12" conf="default, compile, runtime, master" rev="2.8.9" rev-constraint-default="2.8.9" rev-constraint-dynamic="2.8.9" callerrev="2.6.5"/>
+				<caller organisation="com.fasterxml.jackson.datatype" name="jackson-datatype-jdk8" conf="compile, runtime" rev="2.8.9" rev-constraint-default="2.8.9" rev-constraint-dynamic="2.8.9" callerrev="2.8.9"/>
+				<caller organisation="com.fasterxml.jackson.datatype" name="jackson-datatype-jsr310" conf="compile, runtime" rev="2.8.9" rev-constraint-default="2.8.9" rev-constraint-dynamic="2.8.9" callerrev="2.8.9"/>
+				<artifacts>
+					<artifact name="jackson-databind" type="bundle" ext="jar" status="no" details="" size="1242477" time="0" location="/Users/leobouraux/.ivy2/cache/com.fasterxml.jackson.core/jackson-databind/bundles/jackson-databind-2.8.9.jar">
+						<origin-location is-local="false" location="https://repo1.maven.org/maven2/com/fasterxml/jackson/core/jackson-databind/2.8.9/jackson-databind-2.8.9.jar"/>
+					</artifact>
+				</artifacts>
+			</revision>
+		</module>
+		<module organisation="com.fasterxml.jackson.core" name="jackson-annotations">
+			<revision name="2.8.9" status="release" pubdate="20170612023719" resolver="sbt-chain" artresolver="sbt-chain" homepage="http://github.com/FasterXML/jackson" downloaded="false" searched="false" default="false" conf="compile, runtime(*), master(compile), runtime, compile(*), master" position="5">
+				<license name="The Apache Software License, Version 2.0" url="http://www.apache.org/licenses/LICENSE-2.0.txt"/>
+				<metadata-artifact status="no" details="" size="6969" time="0" location="/Users/leobouraux/.ivy2/cache/com.fasterxml.jackson.core/jackson-annotations/ivy-2.8.9.xml" searched="false" origin-is-local="false" origin-location="https://repo1.maven.org/maven2/com/fasterxml/jackson/core/jackson-annotations/2.8.9/jackson-annotations-2.8.9.pom"/>
+				<caller organisation="com.typesafe.play" name="play-json_2.12" conf="compile, runtime" rev="2.8.9" rev-constraint-default="2.8.9" rev-constraint-dynamic="2.8.9" callerrev="2.6.7"/>
+				<caller organisation="com.typesafe.play" name="play-json_2.12" conf="default, compile, runtime, master" rev="2.8.9" rev-constraint-default="2.8.9" rev-constraint-dynamic="2.8.9" callerrev="2.6.5"/>
+				<caller organisation="com.fasterxml.jackson.datatype" name="jackson-datatype-jsr310" conf="compile, runtime" rev="2.8.0" rev-constraint-default="2.8.0" rev-constraint-dynamic="2.8.0" callerrev="2.8.9"/>
+				<caller organisation="com.fasterxml.jackson.core" name="jackson-databind" conf="compile, runtime" rev="2.8.0" rev-constraint-default="2.8.0" rev-constraint-dynamic="2.8.0" callerrev="2.8.9"/>
+				<artifacts>
+					<artifact name="jackson-annotations" type="bundle" ext="jar" status="no" details="" size="55784" time="0" location="/Users/leobouraux/.ivy2/cache/com.fasterxml.jackson.core/jackson-annotations/bundles/jackson-annotations-2.8.9.jar">
+						<origin-location is-local="false" location="https://repo1.maven.org/maven2/com/fasterxml/jackson/core/jackson-annotations/2.8.9/jackson-annotations-2.8.9.jar"/>
+					</artifact>
+				</artifacts>
+			</revision>
+			<revision name="2.8.0" evicted="latest-revision" evicted-reason="" downloaded="false" searched="false" conf="compile, runtime(*), master(compile), runtime, compile(*), master" position="-1">
+				<evicted-by rev="2.8.9"/>
+				<caller organisation="com.fasterxml.jackson.datatype" name="jackson-datatype-jsr310" conf="compile, runtime" rev="2.8.0" rev-constraint-default="2.8.0" rev-constraint-dynamic="2.8.0" callerrev="2.8.9"/>
+				<caller organisation="com.fasterxml.jackson.core" name="jackson-databind" conf="compile, runtime" rev="2.8.0" rev-constraint-default="2.8.0" rev-constraint-dynamic="2.8.0" callerrev="2.8.9"/>
+				<artifacts>
+				</artifacts>
+			</revision>
+		</module>
+		<module organisation="com.fasterxml.jackson.core" name="jackson-core">
+			<revision name="2.8.9" status="release" pubdate="20170612024341" resolver="sbt-chain" artresolver="sbt-chain" homepage="https://github.com/FasterXML/jackson-core" downloaded="false" searched="false" default="false" conf="compile, runtime(*), master(compile), runtime, compile(*), master" position="4">
+				<license name="The Apache Software License, Version 2.0" url="http://www.apache.org/licenses/LICENSE-2.0.txt"/>
+				<metadata-artifact status="no" details="" size="7423" time="0" location="/Users/leobouraux/.ivy2/cache/com.fasterxml.jackson.core/jackson-core/ivy-2.8.9.xml" searched="false" origin-is-local="false" origin-location="https://repo1.maven.org/maven2/com/fasterxml/jackson/core/jackson-core/2.8.9/jackson-core-2.8.9.pom"/>
+				<caller organisation="com.typesafe.play" name="play-json_2.12" conf="compile, runtime" rev="2.8.9" rev-constraint-default="2.8.9" rev-constraint-dynamic="2.8.9" callerrev="2.6.7"/>
+				<caller organisation="com.typesafe.play" name="play-json_2.12" conf="default, compile, runtime, master" rev="2.8.9" rev-constraint-default="2.8.9" rev-constraint-dynamic="2.8.9" callerrev="2.6.5"/>
+				<caller organisation="com.fasterxml.jackson.datatype" name="jackson-datatype-jdk8" conf="compile, runtime" rev="2.8.9" rev-constraint-default="2.8.9" rev-constraint-dynamic="2.8.9" callerrev="2.8.9"/>
+				<caller organisation="com.fasterxml.jackson.datatype" name="jackson-datatype-jsr310" conf="compile, runtime" rev="2.8.9" rev-constraint-default="2.8.9" rev-constraint-dynamic="2.8.9" callerrev="2.8.9"/>
+				<caller organisation="com.fasterxml.jackson.core" name="jackson-databind" conf="compile, runtime" rev="2.8.9" rev-constraint-default="2.8.9" rev-constraint-dynamic="2.8.9" callerrev="2.8.9"/>
+				<artifacts>
+					<artifact name="jackson-core" type="bundle" ext="jar" status="no" details="" size="282633" time="0" location="/Users/leobouraux/.ivy2/cache/com.fasterxml.jackson.core/jackson-core/bundles/jackson-core-2.8.9.jar">
+						<origin-location is-local="false" location="https://repo1.maven.org/maven2/com/fasterxml/jackson/core/jackson-core/2.8.9/jackson-core-2.8.9.jar"/>
+					</artifact>
+				</artifacts>
+			</revision>
+		</module>
+		<module organisation="joda-time" name="joda-time">
+			<revision name="2.9.9" status="release" pubdate="20170323143313" resolver="sbt-chain" artresolver="sbt-chain" homepage="http://www.joda.org/joda-time/" downloaded="false" searched="false" default="false" conf="compile, runtime(*), master(compile), runtime, compile(*), master" position="3">
+				<license name="Apache 2" url="http://www.apache.org/licenses/LICENSE-2.0.txt"/>
+				<metadata-artifact status="no" details="" size="6647" time="0" location="/Users/leobouraux/.ivy2/cache/joda-time/joda-time/ivy-2.9.9.xml" searched="false" origin-is-local="false" origin-location="https://repo1.maven.org/maven2/joda-time/joda-time/2.9.9/joda-time-2.9.9.pom"/>
+				<caller organisation="com.typesafe.play" name="play-json_2.12" conf="compile, runtime" rev="2.9.9" rev-constraint-default="2.9.9" rev-constraint-dynamic="2.9.9" callerrev="2.6.7"/>
+				<caller organisation="com.typesafe.play" name="play-json_2.12" conf="default, compile, runtime, master" rev="2.9.9" rev-constraint-default="2.9.9" rev-constraint-dynamic="2.9.9" callerrev="2.6.5"/>
+				<artifacts>
+					<artifact name="joda-time" type="jar" ext="jar" status="no" details="" size="634048" time="0" location="/Users/leobouraux/.ivy2/cache/joda-time/joda-time/jars/joda-time-2.9.9.jar">
+						<origin-location is-local="false" location="https://repo1.maven.org/maven2/joda-time/joda-time/2.9.9/joda-time-2.9.9.jar"/>
+					</artifact>
+				</artifacts>
+			</revision>
+		</module>
+		<module organisation="com.chuusai" name="shapeless_2.12">
+			<revision name="2.3.2" status="release" pubdate="20161102105049" resolver="sbt-chain" artresolver="sbt-chain" homepage="https://github.com/milessabin/shapeless" downloaded="false" searched="false" default="false" conf="compile, runtime(*), master(compile), runtime, compile(*), master" position="20">
+				<license name="Apache 2" url="http://www.apache.org/licenses/LICENSE-2.0.txt"/>
+				<metadata-artifact status="no" details="" size="3226" time="0" location="/Users/leobouraux/.ivy2/cache/com.chuusai/shapeless_2.12/ivy-2.3.2.xml" searched="false" origin-is-local="false" origin-location="https://repo1.maven.org/maven2/com/chuusai/shapeless_2.12/2.3.2/shapeless_2.12-2.3.2.pom"/>
+				<caller organisation="org.scalanlp" name="breeze_2.12" conf="default, compile, runtime, master" rev="2.3.2" rev-constraint-default="2.3.2" rev-constraint-dynamic="2.3.2" callerrev="0.13"/>
+				<artifacts>
+					<artifact name="shapeless_2.12" type="bundle" ext="jar" status="no" details="" size="2829843" time="0" location="/Users/leobouraux/.ivy2/cache/com.chuusai/shapeless_2.12/bundles/shapeless_2.12-2.3.2.jar">
+						<origin-location is-local="false" location="https://repo1.maven.org/maven2/com/chuusai/shapeless_2.12/2.3.2/shapeless_2.12-2.3.2.jar"/>
+					</artifact>
+				</artifacts>
+			</revision>
+		</module>
+		<module organisation="org.typelevel" name="macro-compat_2.12">
+			<revision name="1.1.1" status="release" pubdate="20161102094258" resolver="sbt-chain" artresolver="sbt-chain" homepage="https://github.com/milessabin/macro-compat" downloaded="false" searched="false" default="false" conf="compile, runtime(*), master(compile), runtime, compile(*), master" position="2">
+				<license name="Apache 2" url="http://www.apache.org/licenses/LICENSE-2.0.txt"/>
+				<metadata-artifact status="no" details="" size="2964" time="0" location="/Users/leobouraux/.ivy2/cache/org.typelevel/macro-compat_2.12/ivy-1.1.1.xml" searched="false" origin-is-local="false" origin-location="https://repo1.maven.org/maven2/org/typelevel/macro-compat_2.12/1.1.1/macro-compat_2.12-1.1.1.pom"/>
+				<caller organisation="com.chuusai" name="shapeless_2.12" conf="compile, runtime" rev="1.1.1" rev-constraint-default="1.1.1" rev-constraint-dynamic="1.1.1" callerrev="2.3.2"/>
+				<caller organisation="com.typesafe.play" name="play-json_2.12" conf="compile, runtime" rev="1.1.1" rev-constraint-default="1.1.1" rev-constraint-dynamic="1.1.1" callerrev="2.6.7"/>
+				<caller organisation="com.typesafe.play" name="play-json_2.12" conf="default, compile, runtime, master" rev="1.1.1" rev-constraint-default="1.1.1" rev-constraint-dynamic="1.1.1" callerrev="2.6.5"/>
+				<artifacts>
+					<artifact name="macro-compat_2.12" type="jar" ext="jar" status="no" details="" size="3180" time="0" location="/Users/leobouraux/.ivy2/cache/org.typelevel/macro-compat_2.12/jars/macro-compat_2.12-1.1.1.jar">
+						<origin-location is-local="false" location="https://repo1.maven.org/maven2/org/typelevel/macro-compat_2.12/1.1.1/macro-compat_2.12-1.1.1.jar"/>
+					</artifact>
+				</artifacts>
+			</revision>
+		</module>
+		<module organisation="org.scala-lang" name="scala-library">
+			<revision name="2.12.6" status="release" pubdate="20180427104006" resolver="sbt-chain" artresolver="sbt-chain" homepage="http://www.scala-lang.org/" extra-info.apiURL="http://www.scala-lang.org/api/2.12.6/" downloaded="false" searched="false" default="false" conf="default, compile, runtime(*), master(compile), runtime, default(compile), compile(*), master" position="0">
+				<license name="BSD 3-Clause" url="http://www.scala-lang.org/license.html"/>
+				<metadata-artifact status="no" details="" size="2653" time="0" location="/Users/leobouraux/.ivy2/cache/org.scala-lang/scala-library/ivy-2.12.6.xml" searched="false" origin-is-local="false" origin-location="https://repo1.maven.org/maven2/org/scala-lang/scala-library/2.12.6/scala-library-2.12.6.pom"/>
+				<caller organisation="com.chuusai" name="shapeless_2.12" conf="compile, runtime" rev="2.12.6" rev-constraint-default="2.12.6" rev-constraint-dynamic="2.12.6" callerrev="2.3.2"/>
+				<caller organisation="org.typelevel" name="machinist_2.12" conf="compile, runtime" rev="2.12.6" rev-constraint-default="2.12.6" rev-constraint-dynamic="2.12.6" callerrev="0.6.1"/>
+				<caller organisation="org.scala-lang.modules" name="scala-parser-combinators_2.12" conf="default, compile, runtime, master" rev="2.12.6" rev-constraint-default="2.12.6" rev-constraint-dynamic="2.12.6" callerrev="1.1.1"/>
+				<caller organisation="com.typesafe.play" name="play-json_2.12" conf="default, compile, runtime, master" rev="2.12.6" rev-constraint-default="2.12.6" rev-constraint-dynamic="2.12.6" callerrev="2.6.5"/>
+				<caller organisation="org.scalanlp" name="breeze-macros_2.12" conf="compile, runtime" rev="2.12.6" rev-constraint-default="2.12.6" rev-constraint-dynamic="2.12.6" callerrev="0.13"/>
+				<caller organisation="com.typesafe.scala-logging" name="scala-logging_2.12" conf="default, compile, runtime, master" rev="2.12.6" rev-constraint-default="2.12.6" rev-constraint-dynamic="2.12.6" callerrev="3.9.0"/>
+				<caller organisation="com.typesafe.play" name="play-functional_2.12" conf="compile, runtime" rev="2.12.6" rev-constraint-default="2.12.6" rev-constraint-dynamic="2.12.6" callerrev="2.6.7"/>
+				<caller organisation="com.github.NicholasMolyneaux" name="scala-custom_2.12" conf="default, compile, runtime, master" rev="2.12.6" rev-constraint-default="2.12.6" rev-constraint-dynamic="2.12.6" callerrev="1.2.0.1"/>
+				<caller organisation="com.github.scopt" name="scopt_2.12" conf="default, compile, runtime, master" rev="2.12.6" rev-constraint-default="2.12.6" rev-constraint-dynamic="2.12.6" callerrev="3.6.0"/>
+				<caller organisation="org.scalanlp" name="breeze_2.12" conf="default, compile, runtime, master" rev="2.12.6" rev-constraint-default="2.12.6" rev-constraint-dynamic="2.12.6" callerrev="0.13"/>
+				<caller organisation="org.scala-lang" name="scala-reflect" conf="compile, runtime" rev="2.12.6" rev-constraint-default="2.12.6" rev-constraint-dynamic="2.12.6" callerrev="2.12.6"/>
+				<caller organisation="com.typesafe.play" name="play-json_2.12" conf="compile, runtime" rev="2.12.6" rev-constraint-default="2.12.6" rev-constraint-dynamic="2.12.6" callerrev="2.6.7"/>
+				<caller organisation="org.spire-math" name="spire_2.12" conf="compile, runtime" rev="2.12.6" rev-constraint-default="2.12.6" rev-constraint-dynamic="2.12.6" callerrev="0.13.0"/>
+				<caller organisation="org.spire-math" name="spire-macros_2.12" conf="compile, runtime" rev="2.12.6" rev-constraint-default="2.12.6" rev-constraint-dynamic="2.12.6" callerrev="0.13.0"/>
+				<caller organisation="ch.epfl.transpor.pedestrians" name="hub-simulator_2.12" conf="test, compile, runtime" rev="2.12.6" rev-constraint-default="2.12.6" rev-constraint-dynamic="2.12.6" callerrev="1.0-SNAPSHOT"/>
+				<caller organisation="com.typesafe.play" name="play-functional_2.12" conf="compile, runtime" rev="2.12.6" rev-constraint-default="2.12.6" rev-constraint-dynamic="2.12.6" callerrev="2.6.5"/>
+				<caller organisation="org.typelevel" name="macro-compat_2.12" conf="compile, runtime" rev="2.12.6" rev-constraint-default="2.12.6" rev-constraint-dynamic="2.12.6" callerrev="1.1.1"/>
+				<caller organisation="org.scalanlp" name="breeze-natives_2.12" conf="default, compile, runtime, master" rev="2.12.6" rev-constraint-default="2.12.6" rev-constraint-dynamic="2.12.6" callerrev="0.13"/>
+				<caller organisation="org.scalactic" name="scalactic_2.12" conf="default, compile, runtime, master" rev="2.12.6" rev-constraint-default="2.12.6" rev-constraint-dynamic="2.12.6" callerrev="3.0.1"/>
+				<artifacts>
+					<artifact name="scala-library" type="jar" ext="jar" status="no" details="" size="5267302" time="0" location="/Users/leobouraux/.ivy2/cache/org.scala-lang/scala-library/jars/scala-library-2.12.6.jar">
+						<origin-location is-local="false" location="https://repo1.maven.org/maven2/org/scala-lang/scala-library/2.12.6/scala-library-2.12.6.jar"/>
+					</artifact>
+				</artifacts>
+			</revision>
+		</module>
+	</dependencies>
+</ivy-report>
