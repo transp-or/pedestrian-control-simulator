@@ -37,7 +37,7 @@ package trackingdataanalysis {
       x.groupBy(binningFunc).map(kv => kv._1 - 1 -> kv._2.size.toDouble / x.size).toVector.sortBy(_._1)
     }
 
-    def computeHistogramDataWithXValues(x: Iterable[Double], binSize: Double, low: Option[Double], high: Option[Double]): Vector[(Double, Double)] = {
+    def computeHistogramDataWithXValues(x: Iterable[Double], binSize: Double, low: Option[Double], high: Option[Double], normalized: Boolean = true): Seq[(Double, Double)] = {
       if (x.isEmpty) {
         throw new IllegalArgumentException("Data for histogram is empty !")
       }
@@ -50,7 +50,15 @@ package trackingdataanalysis {
 
       def binningFunc(v: Double): Int = intervals.indexWhere(_ > v)
 
-      x.groupBy(binningFunc).filterNot(_._1 == -1).map(kv => intervals(kv._1) -> kv._2.size.toDouble / x.size).toVector.sortBy(_._1)
+      val groupedData = if (normalized) {
+        x.groupBy(binningFunc).filterNot(_._1 == -1).map(kv => intervals(kv._1) -> kv._2.size.toDouble / x.size).toVector
+
+      } else {
+        x.groupBy(binningFunc).filterNot(_._1 == -1).map(kv => intervals(kv._1) -> kv._2.size.toDouble).toVector
+      }
+      (intervals.filterNot(i => groupedData.map(_._1).contains(i)).map(v => (v, 0.0)) ++ groupedData).sortBy(_._1)
+
+
     }
   }
 

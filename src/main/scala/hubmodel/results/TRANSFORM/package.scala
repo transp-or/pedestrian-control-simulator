@@ -35,7 +35,7 @@ package object TRANSFORM {
 
     case class ZoneName(hub: VertexID, stop: String, group: Int)
 
-    def computeTT4TRANSFORM(quantiles: Seq[Double], startTime: Time, endTime: Time, fileName: String, stop2Vertex: Stop2Vertex, startDay: String = "1970-01-01", endDay: String = "2100-12-31"): Unit = {
+    def computeTT4TRANSFORM(quantiles: Seq[Double], startTime: Time, endTime: Time, fileName: String, stop2Vertex: Stop2Vertex, startDay: String = "1970-01-01", endDay: String = "2100-12-31"): Iterable[(String, String, Iterable[Double])] = {
 
       def stopGrouping(vertexID: VertexID): GroupID = {
         stop2Vertex.grouping4TRANSFORM.indexWhere(groups => groups.contains(vertexID))
@@ -51,7 +51,7 @@ package object TRANSFORM {
         .map(p => (ZoneName(p._1, vertices2Stops(p._1), stopGrouping(p._1)), ZoneName(p._2, vertices2Stops(p._2), stopGrouping(p._2)), p._3, p._4, p._5))
         .filter(p => stop2Vertex.stop2Vertices.keySet.map(_.toString).contains(p._1.stop) && stop2Vertex.stop2Vertices.keySet.map(_.toString).contains(p._2.stop))
 
-      val res = popRenamed
+      val res: Iterable[(String, String, Iterable[Double])] = popRenamed
         .filter(p => p._4 >= startTime.value || p._5 <= endTime.value)
         .groupBy(p => (if (p._1.group == -1) {
           p._1.hub
@@ -74,6 +74,8 @@ package object TRANSFORM {
         })
       )))
       bw.close()
+
+      res
     }
   }
 

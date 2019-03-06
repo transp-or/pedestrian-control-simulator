@@ -57,39 +57,39 @@ class NOMADGraphSimulator[T <: PedestrianNOMAD](st: Time,
   /* checks if the pedestrian has reached is final destination */
   def finalDestinationReached: PedestrianSim => Boolean = p => isInVertex(p.finalDestination)(p.currentPosition)
 
-  println("Simulator configuration:")
+  logger.info("Simulator configuration:")
 
   /** Indicator wether the density should be measured */
   val measureDensity: Boolean = controlDevices.monitoredAreas.nonEmpty && controlDevices.amws.isEmpty && controlDevices.binaryGates.isEmpty && controlDevices.flowGates.isEmpty
   if (measureDensity) {
-    println(" * measuring density")
+    logger.info(" * measuring density")
   }
 
   /** Indicator whether flow gates are present */
   val useFlowGates: Boolean = controlDevices.flowGates.nonEmpty
   if (useFlowGates) {
-    println(" * using flow gates")
+    logger.info(" * using flow gates")
   }
 
   /** Indicator whether binary gaets are present */
   val useBinaryGates: Boolean = controlDevices.binaryGates.nonEmpty
   if (useBinaryGates) {
-    println(" * using binary gates")
+    logger.info(" * using binary gates")
   }
 
   /** Indicator whether an m-tree is used to perform neighbour search */
   val useTreeForNeighbourSearch: Boolean = rebuildTreeInterval.isDefined
   if (useTreeForNeighbourSearch) {
-    println(" * using m-tree for neighbour search")
+    logger.info(" * using m-tree for neighbour search")
   }
 
 
   /** Indicator whether flow separators are used */
   val useFlowSep: Boolean = controlDevices.flowSeparators.nonEmpty
   if (useFlowSep && !controlDevices.fixedFlowSeparators) {
-    println(" * using dynamic flow separators")
+    logger.info(" * using dynamic flow separators")
   } else {
-    println(" * using static flow separators")
+    logger.info(" * using static flow separators")
   }
 
   // Zones where some KPI should be computed. They must be inititialized before they can be used.
@@ -115,17 +115,18 @@ class NOMADGraphSimulator[T <: PedestrianNOMAD](st: Time,
     */
   class StartSim(sim: NOMADGraphSimulator[T]) extends super.GenericStartSim(sim) {
     override def execute(): Unit = {
-      sim.eventLogger.trace("Simulation components:")
 
       if (useFlowGates) {
-        sim.eventLogger.trace(" * flow gates: " + sim.controlDevices.flowGates.map(_.toString).mkString("\n  * "))
+        sim.logger.info(" * flow gates: " + sim.controlDevices.flowGates.map(_.toString).mkString("\n  * "))
       }
 
       if (useFlowSep) {
-        sim.eventLogger.trace {
+        sim.logger.info {
           " * flow separators: " + sim.controlDevices.flowSeparators.map(_.toString).mkString("\n  * ")
         }
       }
+
+      sim.logger.info("Starting simulation " + sim.ID + " @" + this.sim.currentTime)
 
       sim.eventLogger.trace("sim-time=" + sim.currentTime + ": simulation started. dt=" + sf_dt)
 
