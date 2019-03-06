@@ -2,7 +2,7 @@ import java.io.{BufferedWriter, File, FileWriter}
 import java.nio.file.{Files, Paths}
 import java.util.concurrent.ThreadLocalRandom
 
-import com.typesafe.config.{Config, ConfigFactory}
+import com.typesafe.config.{Config, ConfigFactory, ConfigValueFactory}
 import hubmodel.DES.NOMADGraphSimulator
 import hubmodel.demand.flows.{ProcessDisaggregatePedestrianFlows, ProcessPedestrianFlows}
 import hubmodel.demand.{PedestrianFlowFunction_New, PedestrianFlowPT_New, PedestrianFlow_New, ProcessTimeTable, PublicTransportSchedule, readDisaggDemand, readDisaggDemandTF, readPedestrianFlows, readSchedule, readScheduleTF}
@@ -398,7 +398,8 @@ package object hubmodel {
                                                       timeTable: PublicTransportSchedule)(implicit tag: ClassTag[T]): Unit = {
 
     if (disaggPopulation.nonEmpty) {
-      sim.insertEventWithZeroDelay(new ProcessDisaggregatePedestrianFlows[T](disaggPopulation/*.groupBy(p => (p._1, p._2)).map(gp => gp._2.head)*/, sim))
+      val newDisaggPopulation = disaggPopulation.groupBy(p => (p._1, p._2)).flatMap(gp => gp._2.take(2))
+      sim.insertEventWithZeroDelay(new ProcessDisaggregatePedestrianFlows[T](newDisaggPopulation, sim))
     }
 
     val PTInducedFlows = flows._2.toVector
@@ -414,7 +415,9 @@ package object hubmodel {
   case class ResultsContainerNew(exitCode: Int, completedPeds: Vector[PedestrianSim], uncompletedPeds: Vector[PedestrianSim], densityZones: Map[String, DensityMeasuredArea])
 
   // Container for the results from a simulation. This type chould be modified if the collectResults function is modified
-  case class ResultsContainerRead(tt: Vector[(String, String, Double, Double, Double)], monitoredAreaDensity: Option[(Vector[Double], Vector[Vector[Double]])], monitoredAreaIndividualDensity: Option[Vector[(BigDecimal, BigDecimal)]])
+  case class ResultsContainerRead(tt: Vector[(String, String, Double, Double, Double)],
+                                  monitoredAreaDensity: Option[(Vector[Double], Vector[Vector[Double]])],
+                                  monitoredAreaIndividualDensity: Option[Vector[(BigDecimal, BigDecimal)]])
 
   /** Used to extract the desired results from the simulator. Avoids keeping all information in memory.
     *
@@ -670,7 +673,17 @@ package object hubmodel {
     }
 
     // Reads the file passed as argument. Path is from execution path, i.e. where the program is run from (build.sbt usually)
-    ConfigFactory.load(ConfigFactory.parseFile(new File(confFileContents)))
+    val tmpConfig: Config = ConfigFactory.load(ConfigFactory.parseFile(new File(confFileContents)))
+
+    // checks that the output directory exists, if not, defaults to tmp/
+    if (!Files.exists(Paths.get(tmpConfig.getString("output.dir")))) {
+      val id: String = generateUUID
+      Files.createDirectory(Paths.get("tmp/" + id + "/"))
+      println("WARNNING ! Output directory does not exist ! Defaulting to tmp/" + id + "/")
+      tmpConfig.withValue("output.dir", ConfigValueFactory.fromAnyRef("tmp/" + id + "/"))
+    } else {
+      tmpConfig
+    }
   }
 
   @deprecated

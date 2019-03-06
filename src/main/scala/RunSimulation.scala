@@ -33,20 +33,8 @@ object RunSimulation extends App with StrictLogging {
   logger.info("Reading config and preparing simulations")
 
   // parses the config file and checks if the output dir exists.
-  val config: Config = {
-    // Get config from files
-    val tmpConfig: Config = parseConfigFile(args)
+  val config: Config = parseConfigFile(args)
 
-    // checks that the output directory exists, if not, defaults to tmp/
-    if (!Files.exists(Paths.get(tmpConfig.getString("output.dir")))) {
-      val id: String = generateUUID
-      Files.createDirectory(Paths.get("tmp/" + id + "/"))
-      logger.warn("Output directory does not exist ! Defaulting to tmp/" + id + "/")
-      tmpConfig.withValue("output.dir", ConfigValueFactory.fromAnyRef("tmp/" + id + "/"))
-    } else {
-      tmpConfig
-    }
-  }
 
   // ******************************************************************************************
   //                        Prepare all simulations and runs them
@@ -66,7 +54,7 @@ object RunSimulation extends App with StrictLogging {
   // Runs the simulations in parallel or sequential based on the config file.
 
   if (config.getBoolean("output.make_video")) {
-    println("Running simulation for video...")
+    logger.info("Running simulation for video...")
     runSimulationWithVideo(config)
   }
 
@@ -93,7 +81,7 @@ object RunSimulation extends App with StrictLogging {
       System.gc()
     })
   } else {
-    println("No more simulations to run !")
+    logger.warn("No more simulations to run !")
   }
 
 
@@ -102,8 +90,14 @@ object RunSimulation extends App with StrictLogging {
 
 
   // Processing results
+  logger.info("Processing results")
 
-  println("Processing results")
+  private val entranceTimes: Iterable[Time] = results.flatMap(_.tt.map(t => Time(t._4)))
+  val ttMin: Time = entranceTimes.min
+  val ttMax: Time = entranceTimes.max
+  val binnedData: Iterable[Seq[(Double, Double)]] = results.map(r => computeHistogramDataWithXValues(r.tt.map(_._4), 60, Some(math.floor(ttMin.value.toDouble/60.0)*60.0), Some(ttMax.value.toDouble), normalized = false))
+  (binnedData.head.map(_._1) +: binnedData.map(_.map(_._2)).toVector).writeToCSV(config.getString("output.output_prefix") + "_entrance_times_distribution.csv")
+
 
   // Collects then writes individual travel times to csv
   if (config.getBoolean("output.write_travel_times") && results.nonEmpty) results
@@ -278,9 +272,10 @@ object RunSimulation extends App with StrictLogging {
 
     val stop2Vertex = readPTStop2GraphVertexMap(config.getString("files.zones_to_vertices_map"))
 
-
-    results
+    val resultsByOD = results
       .flatten(_.tt)
       .computeTT4TRANSFORM(0.0.to(100.0).by(config.getDouble("output.write_tt_4_transform_quantile_interval")), simulationStartTime, simulationEndTime, config.getString("output.write_tt_4_transform_file_name"), stop2Vertex)
+
+    resultsByOD.map(r => (r._1 + "->" + r._2, r._3.stats)).toVector.sortBy(_._1).map(v => (v._1, v._2._1, v._2._2, v._2._3, v._2._4, v._2._5, v._2._6)).writeToCSV(config.getString("output.output_prefix") + "_walking_time_distributions_by_OD.csv")
   }
 }

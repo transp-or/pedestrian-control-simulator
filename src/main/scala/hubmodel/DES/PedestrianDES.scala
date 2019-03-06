@@ -286,7 +286,8 @@ abstract class PedestrianDES[T <: PedestrianNOMAD](val startTime: Time,
     * until the list is empty.
     */
   def genericRun(startEvent: GenericStartSim): Unit = {
-    println("Running simulation " + this.ID + "...")
+    this.logger.info("Starting simulation " + this.ID + " @" + this.currentTime)
+
     insertEventWithDelay(new Time(0.0)) {
       startEvent
     }
@@ -300,9 +301,9 @@ abstract class PedestrianDES[T <: PedestrianNOMAD](val startTime: Time,
     }
     if (this._exitCode == -1) {
       this._exitCode = 0
-      println("simulation " + this.ID + " successfully completed !")
+      this.logger.info("simulation " + this.ID + " successfully completed !")
     } else {
-      println("simulation " + this.ID + "was terminated with exit code " + this._exitCode)
+      this.logger.info("simulation " + this.ID + "was terminated with exit code " + this._exitCode)
     }
   }
 
