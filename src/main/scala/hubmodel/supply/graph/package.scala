@@ -1,7 +1,7 @@
 package hubmodel.supply
 
 import hubmodel.Position
-import hubmodel.input.JSONReaders.{Connectivity_JSON, InfraGraphParser, Track2NodeMapping_JSON}
+import hubmodel.io.input.JSONReaders.{Connectivity_JSON, InfraGraphParser, Track2NodeMapping_JSON}
 import hubmodel.mgmt.ControlDevices
 import hubmodel.mgmt.flowgate._
 import hubmodel.mgmt.flowsep.{FlowLine, FlowSeparator}

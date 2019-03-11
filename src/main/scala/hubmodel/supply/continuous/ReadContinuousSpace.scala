@@ -1,6 +1,6 @@
 package hubmodel.supply.continuous
 
-import hubmodel.input.JSONReaders.ContinuousSpaceParser
+import hubmodel.io.input.JSONReaders.ContinuousSpaceParser
 import myscala.math.vector.Vector2D
 import play.api.libs.json.{JsError, JsSuccess, JsValue, Json}
 

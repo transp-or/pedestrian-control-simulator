@@ -1,4 +1,4 @@
-import hubmodel.input.ProcessDXF.DXFReaderHubModel;
+import hubmodel.io.input.ProcessDXF.DXFReaderHubModel;
 
 public class ProcessDXFForHubModel {
 

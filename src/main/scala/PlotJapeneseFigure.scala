@@ -1,6 +1,6 @@
 
 import hubmodel.Position
-import hubmodel.output.image.{DrawCells, DrawCellsOverImage}
+import hubmodel.io.output.image.{DrawCells, DrawCellsOverImage}
 import hubmodel.tools.cells.{Square, VertexPlotting}
 import myscala.math.vector.Vector2D
 

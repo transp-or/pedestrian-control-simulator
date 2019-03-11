@@ -14,6 +14,8 @@ import myscala.math.stats.ComputeStats
 
 import scala.collection.GenIterable
 import scala.collection.JavaConversions._
+import hubmodel.DES._
+import hubmodel.results.{ResultsContainerRead, readResults}
 
 package object simulation {
 

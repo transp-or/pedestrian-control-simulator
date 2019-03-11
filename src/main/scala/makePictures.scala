@@ -1,6 +1,6 @@
 import java.io.File
 
-import hubmodel.output.image.{DrawGraph, DrawWalls, DrawWallsAndGraph}
+import hubmodel.io.output.image.{DrawGraph, DrawWalls, DrawWallsAndGraph}
 import hubmodel.ped.PedestrianNOMAD
 import hubmodel.supply.continuous.ReadContinuousSpace
 import hubmodel.supply.graph.readGraph

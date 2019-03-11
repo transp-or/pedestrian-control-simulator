@@ -2,6 +2,7 @@ package optimization.bruteforce
 
 import com.typesafe.config.Config
 import hubmodel._
+import hubmodel.DES.getFlows
 import hubmodel.demand.{PedestrianFlowFunction_New, PedestrianFlowPT_New, PedestrianFlow_New}
 import hubmodel.tools.Time
 

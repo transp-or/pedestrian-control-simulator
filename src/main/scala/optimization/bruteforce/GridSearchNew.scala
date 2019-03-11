@@ -6,6 +6,7 @@ import java.nio.file.{Files, Path, Paths}
 import com.typesafe.config.Config
 import hubmodel.DES.NOMADGraphSimulator
 import hubmodel._
+import hubmodel.DES._
 import hubmodel.demand.{PedestrianFlowFunction_New, PedestrianFlowPT_New, PedestrianFlow_New}
 import hubmodel.ped.PedestrianNOMAD
 import myscala.math.stats.ComputeStats
