@@ -75,6 +75,6 @@ class Pedestrian(val ID: Int, currentPosition: (Double, Double), val entryTime: 
   }
 
   def toJSON4HubModel: String = {
-    "{ \"ID\":\"" + this.ID.toString + "\", \"O\":\"" + this.oZone.toString + "\", \"D\":\"" + this.dZone.toString + "\", \"entryTime\": " + this.entryTime + ", \"exitTime\":" + this.exitTime + "}"
+    "{ \"ID\":\"" + this.ID.toString + "\", \"O\":\"z_" + this.oZone.toString + "\", \"D\":\"z_" + this.dZone.toString + "\", \"entryTime\": " + this.entryTime + ", \"exitTime\":" + this.exitTime + "}"
   }
 }

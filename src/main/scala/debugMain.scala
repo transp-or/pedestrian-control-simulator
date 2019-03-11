@@ -1,7 +1,7 @@
 import breeze.linalg.DenseVector
 import breeze.numerics.cos
 import hubmodel.Position
-import hubmodel.output.image.DrawCellsAndWalls
+import hubmodel.io.output.image.DrawCellsAndWalls
 import hubmodel.route.Guo2011.HexagonPotentialField
 import hubmodel.supply.continuous.ReadContinuousSpace
 import myscala.math.vector.Vector2D

@@ -2,7 +2,6 @@ package hubmodel.ped
 
 import java.util.concurrent.ThreadLocalRandom
 
-import breeze.numerics.round
 import hubmodel.tools.Time
 import hubmodel.tools.cells.Rectangle
 import hubmodel.{Position, _}
@@ -166,8 +165,8 @@ class PedestrianSim(val origin: Rectangle,
   def toVisioSafeFormat(refDate: String = "2013,1,1"): String = {
     def innerPrint(hist: Vector[(Time, Position)], str: String): String = {
       if (hist.isEmpty) str
-      else if (str.isEmpty) innerPrint(hist.tail, refDate + "," + hist.head._1.asVisioSafe + ",0," + round(hist.head._2.X * 1000) + "," + round(hist.head._2.Y * 1000) + "," + this.ID)
-      else innerPrint(hist.tail, str + "\n" + refDate + "," + hist.head._1.asVisioSafe + ",0," + round(hist.head._2.X * 1000) + "," + round(hist.head._2.Y * 1000) + "," + this.ID)
+      else if (str.isEmpty) innerPrint(hist.tail, refDate + "," + hist.head._1.asVisioSafe + ",0," + math.round(hist.head._2.X * 1000) + "," + math.round(hist.head._2.Y * 1000) + "," + this.ID)
+      else innerPrint(hist.tail, str + "\n" + refDate + "," + hist.head._1.asVisioSafe + ",0," + math.round(hist.head._2.X * 1000) + "," + math.round(hist.head._2.Y * 1000) + "," + this.ID)
     }
 
     innerPrint(this._historyPosition, "")

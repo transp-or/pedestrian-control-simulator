@@ -3,9 +3,11 @@ import java.nio.file.{Files, Paths}
 
 import com.typesafe.config.{Config, ConfigValueFactory}
 import hubmodel._
+import hubmodel.DES._
 import hubmodel.demand.readDemandSets
-import hubmodel.output.TRANSFORM.PopulationSummaryProcessingTRANSFORM
+import hubmodel.io.output.TRANSFORM.PopulationSummaryProcessingTRANSFORM
 import hubmodel.ped.PedestrianNOMAD
+import hubmodel.results.ResultsContainerRead
 import hubmodel.supply.graph.readPTStop2GraphVertexMap
 import hubmodel.tools.Time
 import myscala.math.stats.bootstrap.bootstrapMSE
@@ -13,7 +15,7 @@ import myscala.math.stats.{ComputeQuantiles, ComputeStats, computeBoxPlotData}
 import myscala.output.SeqOfSeqExtensions.SeqOfSeqWriter
 import myscala.output.SeqTuplesExtensions.SeqTuplesWriter
 import trackingdataanalysis.visualization.{Histogram, PlotOptions, ScatterPlot, computeHistogramDataWithXValues}
-
+import hubmodel.results.readResults
 import scala.collection.GenIterable
 
 
@@ -59,21 +61,33 @@ object RunSimulation extends App with StrictLogging {
   }
 
 
-  val range: GenIterable[Int] = getIteratorForSimulations(if (runSimulationsInParallel) {Some(config.getInt("execution.threads"))} else {None}, n)
+  val range: GenIterable[Int] = getIteratorForSimulations(if (runSimulationsInParallel) {
+    Some(config.getInt("execution.threads"))
+  } else {
+    None
+  }, n)
 
   if (n > 0) {
     range.foreach(s => {
       val sim =
-        if (demandSets.isDefined) {
-          createSimulation[PedestrianNOMAD](config, Some(demandSets.get(s-1)._1), Some(demandSets.get(s-1)._2))
-        }
-        else {
+        if (demandSets.isDefined && config.getBoolean("sim.read_multiple_TF_demand_sets")) {
+          createSimulation[PedestrianNOMAD](config, Some(demandSets.get(s - 1)._1), Some(demandSets.get(s - 1)._2))
+        } else if (demandSets.isDefined && config.getBoolean("sim.read_multiple_demand_sets")) {
+          createSimulation[PedestrianNOMAD](config, Some(demandSets.get(s - 1)._1))
+        } else {
           createSimulation[PedestrianNOMAD](config)
         }
+
+      val outputDir: String = if (config.getBoolean("sim.read_multiple_demand_sets") || config.getBoolean("sim.read_multiple_TF_demand_sets")) {
+        config.getString("output.dir") + demandSets.get(s - 1)._1.split("\\.").head + "/"
+      } else {
+        config.getString("output.dir")
+      }
+
       runAndWriteResults(
         sim,
         config.getString("output.output_prefix") + "_",
-        config.getString("output.dir"),
+        outputDir,
         config.getBoolean("output.write_trajectories_as_VS"),
         config.getBoolean("output.write_trajectories_as_JSON"),
         config.getBoolean("output.write_tt_4_transform")
@@ -86,7 +100,11 @@ object RunSimulation extends App with StrictLogging {
 
 
   // Reads intermediate results
-  val results: Vector[ResultsContainerRead] = readResults(config.getString("output.dir"), config.getString("output.output_prefix")).toVector
+  val results: Vector[ResultsContainerRead] = if (demandSets.isDefined) {
+    readResults(config.getString("output.dir"), config.getString("output.output_prefix"), demandSets.get.map(_._1.split("\\.").head)).toVector
+  } else {
+    readResults(config.getString("output.dir"), config.getString("output.output_prefix")).toVector
+  }
 
 
   // Processing results
@@ -95,7 +113,7 @@ object RunSimulation extends App with StrictLogging {
   private val entranceTimes: Iterable[Time] = results.flatMap(_.tt.map(t => Time(t._4)))
   val ttMin: Time = entranceTimes.min
   val ttMax: Time = entranceTimes.max
-  val binnedData: Iterable[Seq[(Double, Double)]] = results.map(r => computeHistogramDataWithXValues(r.tt.map(_._4), 60, Some(math.floor(ttMin.value.toDouble/60.0)*60.0), Some(ttMax.value.toDouble), normalized = false))
+  val binnedData: Iterable[Seq[(Double, Double)]] = results.map(r => computeHistogramDataWithXValues(r.tt.map(_._4), 60, Some(math.floor(ttMin.value.toDouble / 60.0) * 60.0), Some(ttMax.value.toDouble), normalized = false))
   (binnedData.head.map(_._1) +: binnedData.map(_.map(_._2)).toVector).writeToCSV(config.getString("output.output_prefix") + "_entrance_times_distribution.csv")
 
 
@@ -118,7 +136,7 @@ object RunSimulation extends App with StrictLogging {
       rowNames = None
     )*/
 
-  if (config.getBoolean("output.write_densities")  && results.nonEmpty) {
+  if (config.getBoolean("output.write_densities") && results.nonEmpty) {
     // Collects times at which densities where measured
     val densityTimes: Vector[Time] = results.head.monitoredAreaDensity.get._1.map(Time(_))
 
@@ -206,7 +224,10 @@ object RunSimulation extends App with StrictLogging {
 
     statsPerRun.writeToCSV(config.getString("output.output_prefix") + "_travel_times_stats.csv", rowNames = None, columnNames = Some(Vector("size", "mean", "variance", "median", "min", "max")))
 
-    def mean(data: Seq[Double]): Double = {data.sum/data.size}
+    def mean(data: Seq[Double]): Double = {
+      data.sum / data.size
+    }
+
     println(bootstrapMSE(statsPerRun.map(_._4), mean))
 
     (for (i <- 1 to results.size) yield {
@@ -215,7 +236,8 @@ object RunSimulation extends App with StrictLogging {
 
 
     // creates hist data for all TT aggregated together
-    val data: Seq[Double] = results.flatMap(_.tt.map(_._3))//.cutOfAfterQuantile(99)
+    val data: Seq[Double] = results.flatMap(_.tt.map(_._3))
+    //.cutOfAfterQuantile(99)
     val binSize = 1.0
     val opts = PlotOptions(xmin = Some(10), xmax = Some(50), ymax = Some(0.25), width = 700, height = 400)
     new Histogram(config.getString("output.output_prefix") + "_travel_times_hist.png", data, binSize, "travel times [s]", "Fixed separator", opts)

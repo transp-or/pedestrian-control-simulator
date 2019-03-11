@@ -1,6 +1,5 @@
 package hubmodel.mgmt
 
-import breeze.linalg.{max, min}
 import hubmodel.DES.{Action, NOMADGraphSimulator}
 import hubmodel.mgmt.flowgate._
 import hubmodel.ped.PedestrianNOMAD
@@ -57,9 +56,9 @@ class DLQRGateController[T <: PedestrianNOMAD](sim: NOMADGraphSimulator[T]) exte
 
         }
         case fg: FlowGate => {
-          val totalInflow: Double = max(0.1, min(5.0, 0.65 * (sim.criticalAreas(fg.monitoredArea).targetDensity - sim.criticalAreas(fg.monitoredArea).densityHistory.last._2)))
+          val totalInflow: Double = math.max(0.1, math.min(5.0, 0.65 * (sim.criticalAreas(fg.monitoredArea).targetDensity - sim.criticalAreas(fg.monitoredArea).densityHistory.last._2)))
           fg.setFlowRate(
-            min(fg.width * 1.5, fg.width * (totalInflow / sim.controlDevices.flowGates.count(_.monitoredArea == fg.monitoredArea))),
+            math.min(fg.width * 1.5, fg.width * (totalInflow / sim.controlDevices.flowGates.count(_.monitoredArea == fg.monitoredArea))),
             sim.currentTime
           )
         }

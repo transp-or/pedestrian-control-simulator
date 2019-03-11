@@ -4,10 +4,10 @@ import java.time.{LocalDateTime, LocalTime}
 
 import com.typesafe.config.Config
 import hubmodel.demand.transit.Vehicle
-import hubmodel.input.JSONReaders.PublicTransportScheduleReader
-import hubmodel.input.JSONReaders.TRANSFORM.{PedestrianCollectionReaderTF, PublicTransportScheduleReaderTF}
+import hubmodel.io.input.JSONReaders.PublicTransportScheduleReader
+import hubmodel.io.input.JSONReaders.TRANSFORM.{PedestrianCollectionReaderTF, PublicTransportScheduleReaderTF}
 import hubmodel.supply.{NodeID_New, StopID_New, TrainID_New}
-import hubmodel.tools.{IllegalSimulationInput, Time}
+import hubmodel.tools.Time
 import hubmodel.tools.TimeNumeric.mkOrderingOps
 import hubmodel.tools.cells.Rectangle
 import play.api.libs.functional.syntax._
@@ -22,6 +22,7 @@ import scala.io.BufferedSource
   */
 package hubmodel {
 
+  import hubmodel.tools.exceptions.IllegalSimulationInput
 
 
   package object demand {
@@ -354,6 +355,10 @@ package hubmodel {
 
     def readDemandSets(config: Config): Option[Seq[(String, String)]] = {
 
+      if (config.getBoolean("sim.read_multiple_demand_sets") && config.getBoolean("sim.read_multiple_TF_demand_sets")) {
+        throw new IllegalSimulationInput("Multiple demand sets for standard and TRANS-FORM cannot be set together !")
+      }
+
       if (config.getBoolean("sim.read_multiple_TF_demand_sets")) {
 
         if (!((Paths.get(config.getString("files.TF_demand_sets")).toString == Paths.get(config.getString("files.flows_TF")).getParent.toString) &&
@@ -394,6 +399,11 @@ package hubmodel {
         } catch {
           case e: Exception => throw e
         }
+      } else if (config.getBoolean("sim.read_multiple_demand_sets")) {
+        val multipleDemandStream: DirectoryStream[Path] = Files.newDirectoryStream(Paths.get(config.getString("files.TF_demand_sets")), "*.json")
+        val files: Vector[Path] = multipleDemandStream.toVector
+        multipleDemandStream.close()
+        Some(files.flatMap(f => (1 to config.getInt("sim.nb_runs")).map(n => (f.getFileName.toString, ""))))
       } else {
         None
       }

@@ -1,62 +1,10 @@
 {
   "location": "lausanne",
-  "stop2nodes": [
-    {
-      "stop": 1,
-      "nodes": [
-        "11",
-        "12"
-      ]
-    },
-    {
-      "stop": 3,
-      "nodes": [
-        "9",
-        "10"
-      ]
-    },
-    {
-      "stop": 4,
-      "nodes": [
-        "9",
-        "10"
-      ]
-    },
-    {
-      "stop": 5,
-      "nodes": [
-        "7",
-        "8"
-      ]
-    },
-    {
-      "stop": 6,
-      "nodes": [
-        "7",
-        "8"
-      ]
-    },
-    {
-      "stop": 7,
-      "nodes": [
-        "5",
-        "6"
-      ]
-    },
-    {
-      "stop": 8,
-      "nodes": [
-        "5",
-        "6"
-      ]
-    },
-    {
-      "stop": 9,
-      "nodes": [
-        "2",
-        "4"
-      ]
-    }
-  ],
-  "zone2nodes": []
+  "stop2nodes": [ ],
+  "zone2nodes": [],
+  "groupingForWalkingTimeDistribution": [],
+  "walkingStops2Nodes": {
+    "defaultDistribution": [ ],
+    "stopSpecificDistribution": [ ]
+  }
 }

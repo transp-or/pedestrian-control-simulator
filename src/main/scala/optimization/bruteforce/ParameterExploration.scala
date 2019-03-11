@@ -8,7 +8,7 @@ import hubmodel.mgmt.ControlDevices
 import hubmodel.mgmt.flowgate.{Density, Flow, FunctionalFormDensity}
 import hubmodel.ped.PedestrianNOMAD
 import hubmodel.supply.graph.FlowGateFunctional
-import hubmodel.{createSimulation, runAndWriteResults}
+import hubmodel._
 import myscala.math.stats.ComputeStats
 import myscala.output.SeqTuplesExtensions.SeqTuplesWriter
 import trackingdataanalysis.visualization.{HeatMap, PlotOptions}
@@ -16,6 +16,7 @@ import trackingdataanalysis.visualization.{HeatMap, PlotOptions}
 import scala.collection.GenIterable
 import scala.collection.immutable.NumericRange
 import scala.collection.parallel.ForkJoinTaskSupport
+import hubmodel.DES._
 
 class ParameterExploration(config: Config) extends GridSearch {
 

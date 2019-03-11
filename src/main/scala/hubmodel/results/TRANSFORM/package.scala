@@ -1,4 +1,4 @@
-package hubmodel.output
+package hubmodel.io.output
 
 import java.io.{BufferedWriter, File, FileWriter}
 
@@ -49,9 +49,14 @@ package object TRANSFORM {
 
       val popRenamed: Iterable[(ZoneName, ZoneName, Double, Double, Double)] = pop
         .map(p => (ZoneName(p._1, vertices2Stops(p._1), stopGrouping(p._1)), ZoneName(p._2, vertices2Stops(p._2), stopGrouping(p._2)), p._3, p._4, p._5))
-        .filter(p => stop2Vertex.stop2Vertices.keySet.map(_.toString).contains(p._1.stop) && stop2Vertex.stop2Vertices.keySet.map(_.toString).contains(p._2.stop))
 
-      val res: Iterable[(String, String, Iterable[Double])] = popRenamed
+      val popRenamedFiltered: Iterable[(ZoneName, ZoneName, Double, Double, Double)] = if (stop2Vertex.stop2Vertices.nonEmpty) {
+        popRenamed.filter(p => stop2Vertex.stop2Vertices.keySet.map(_.toString).contains(p._1.stop) && stop2Vertex.stop2Vertices.keySet.map(_.toString).contains(p._2.stop))
+      } else {
+        popRenamed
+      }
+
+      val res: Iterable[(String, String, Iterable[Double])] = popRenamedFiltered
         .filter(p => p._4 >= startTime.value || p._5 <= endTime.value)
         .groupBy(p => (if (p._1.group == -1) {
           p._1.hub
