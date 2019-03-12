@@ -13,7 +13,7 @@ object CompareTravelTimeResults extends App {
 
   // Groups per direction for PIW corridor
   val groups: Map[String, Vector[(String, String)]] = Map(
-    "nonCrossShort" -> Vector(
+    "cnonCrossShort" -> Vector(
       ("11", "9"),
       ("9", "7"),
       ("7", "5"),
@@ -21,7 +21,7 @@ object CompareTravelTimeResults extends App {
       ("8", "10"),
       ("10", "12"),
     ),
-    "crossShort" -> Vector(
+    "bcrossShort" -> Vector(
       ("9", "11"),
       ("7", "9"),
       ("5", "7"),
@@ -29,7 +29,7 @@ object CompareTravelTimeResults extends App {
       ("10", "8"),
       ("12", "10"),
     ),
-    "nonCrossLong" -> Vector(
+    "dnonCrossLong" -> Vector(
       ("11", "7"),
       ("9", "5"),
       ("6", "10"),
@@ -37,13 +37,43 @@ object CompareTravelTimeResults extends App {
       ("11", "5"),
       ("6", "12")
     ),
-    "crossLong" -> Vector(
+    "acrossLong" -> Vector(
       ("7", "11"),
       ("5", "9"),
       ("10", "6"),
       ("12", "8"),
       ("12", "6"),
       ("5", "11")
+    ),
+    "ecrossSideShort" -> Vector(
+      ("5", "8"),
+      ("7", "10"),
+      ("9", "12"),
+      ("8", "5"),
+      ("10", "7"),
+      ("12", "9"),
+      ("9", "8"),
+      ("8", "9"),
+      ("7", "6"),
+      ("6", "7"),
+      ("10", "11"),
+      ("11", "10")
+    ),
+    "fcrossSideLong" -> Vector(
+      ("5", "10"),
+      ("10", "5"),
+      ("7", "12"),
+      ("12", "7"),
+      ("11", "8"),
+      ("8", "11"),
+      ("9", "6"),
+      ("6", "9")
+    ),
+    "gcrossSideVeryLong" -> Vector(
+      ("12", "5"),
+      ("5", "12"),
+      ("11", "6"),
+      ("5", "12"),
     ))
 
   val config: Config = parseConfigFile(args)

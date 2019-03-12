@@ -6,7 +6,7 @@ package hubmodel.results
   * @param monitoredAreaDensity density measured inside a single monitored area (optional)
   * @param monitoredAreaIndividualDensity individual density computed inside a single monitored area (optional)
   */
-case class ResultsContainerRead(tt: Vector[(String, String, Double, Double, Double)],
+case class ResultsContainerRead(tt: Vector[(String, String, Double, Double, Double, Double)],
                                 monitoredAreaDensity: Option[(Vector[Double], Vector[Vector[Double]])],
                                 monitoredAreaIndividualDensity: Option[Vector[(BigDecimal, BigDecimal)]]) {
 

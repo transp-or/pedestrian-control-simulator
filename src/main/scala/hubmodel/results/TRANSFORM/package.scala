@@ -31,7 +31,7 @@ package object TRANSFORM {
     }
   }
 
-  implicit class PopulationSummaryProcessingTRANSFORM(pop: Iterable[(VertexID, VertexID, Double, Double, Double)]) {
+  implicit class PopulationSummaryProcessingTRANSFORM(pop: Iterable[(VertexID, VertexID, Double, Double, Double, Double)]) {
 
     case class ZoneName(hub: VertexID, stop: String, group: Int)
 
