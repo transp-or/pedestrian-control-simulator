@@ -178,6 +178,7 @@ class NOMADIntegrated[T <: PedestrianNOMAD](sim: NOMADGraphSimulator[T]) extends
 
     sim.population.foreach(ped => {
       ped.updatePositionHistory(sim.currentTime)
+
     })
     sim.population.filterNot(_.isWaiting).foreach(ped => {
 
@@ -205,7 +206,7 @@ class NOMADIntegrated[T <: PedestrianNOMAD](sim: NOMADGraphSimulator[T]) extends
         // be consistent with the time interval of the simulation and neglecting the in-between movements.
         // IN THIS CASE, ALWAYS UPDATE THE TRAVELLED DISTANCE
         //if (this.isUpdateWalkingData)
-        ped.travelDistance += (ped.currentPosition - ped.previousPosition).norm
+        //ped.travelDistance += (ped.currentPosition - ped.previousPosition).norm
         ped.previousMajorPosition = ped.currentPosition
 
         //ped.updatePreviousPositionAndSpeed(sim.currentTime)
@@ -335,10 +336,10 @@ class NOMADIntegrated[T <: PedestrianNOMAD](sim: NOMADGraphSimulator[T]) extends
     //walkPedestrians(this.pedestrianToMoveInIsolation, this.isolatedTimeStepSeconds, currentTime)
     // for each in collision step
     var colStep = this.collisionTimeStepSeconds
-    //var colCounter: Int = 1
+    var colCounter: Int = 0
     //var rangeCounter: Int = 1
     while ( {
-      colStep < this.isolatedTimeStepSeconds //colStep <= this.isolatedTimeStepSeconds
+      colCounter < 10 //colStep <= this.isolatedTimeStepSeconds
     }) { // move the pedestrians in queues
       //movePedestriansInQueues(this.collisionTimeStepSeconds, currentTime)
       // ask the in collision pedestrians to perform the activity(walking included)
@@ -348,8 +349,7 @@ class NOMADIntegrated[T <: PedestrianNOMAD](sim: NOMADGraphSimulator[T]) extends
       //walkPedestrians(this.pedestrianToMoveInCollision, this.collisionTimeStepSeconds, currentTime)
       // check if the range step is reached
       if (colStep % this.rangeTimeStepSeconds == 0) {
-        this.pedestrianToMoveInRange.foreach(ped => {
-        })
+        this.pedestrianToMoveInRange.foreach(ped => {  })
         //walkPedestrians(this.pedestrianToMoveInRange, this.rangeTimeStepSeconds, currentTime)
         rangeStep += this.rangeTimeStepSeconds
         //println("range step process in collison", rangeStep)
@@ -368,7 +368,7 @@ class NOMADIntegrated[T <: PedestrianNOMAD](sim: NOMADGraphSimulator[T]) extends
         //ped.updatePositionHistory(sim.currentTime + Time(colStep))
       })
       colStep += this.collisionTimeStepSeconds
-      //colCounter += 1
+      colCounter += 1
     }
     // after the in collision steps finished try to walk the residue
     // of the simulation step

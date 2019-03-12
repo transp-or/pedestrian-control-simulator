@@ -68,10 +68,15 @@ package object results {
 
     if (simulator.exitCode == 0) {
       if (writeTRANSFORMTT) {
-        simulator.populationCompleted.filter(p => simulator.transferringPassengers.contains(p.ID)).map(p => (p.origin.name, p.finalDestination.name, p.travelTime.value, p.entryTime.value, p.exitTime.value)).writeToCSV(prefix + "tt_" + simulator.ID + ".csv", path)
+        simulator.populationCompleted
+          .filter(p => simulator.transferringPassengers.contains(p.ID))
+          .map(p => (p.origin.name, p.finalDestination.name, p.travelTime.value, p.entryTime.value, p.exitTime.value, p.travelDistance))
+          .writeToCSV(prefix + "tt_" + simulator.ID + ".csv", columnNames=Some(Vector("origin", "destination", "travelTime", "entryTime", "exitTime", "travelDistance")), rowNames=None, path=path)
 
       } else {
-        simulator.populationCompleted.map(p => (p.origin.name, p.finalDestination.name, p.travelTime.value, p.entryTime.value, p.exitTime.value)).writeToCSV(prefix + "tt_" + simulator.ID + ".csv", path)
+        simulator.populationCompleted
+          .map(p => (p.origin.name, p.finalDestination.name, p.travelTime.value, p.entryTime.value, p.exitTime.value, p.travelDistance))
+          .writeToCSV(prefix + "tt_" + simulator.ID + ".csv", columnNames=Some(Vector("origin", "destination", "travelTime", "entryTime", "exitTime", "travelDistance")), rowNames=None, path=path)
 
       }
       if (simulator.criticalAreas.nonEmpty) {
@@ -127,11 +132,11 @@ package object results {
     files.map(sr => {
 
       // process travel times file
-      val tt: Vector[(String, String, Double, Double, Double)] = {
+      val tt: Vector[(String, String, Double, Double, Double, Double)] = {
         val in = scala.io.Source.fromFile(sr._2("tt"))
-        val data = (for (line <- in.getLines) yield {
+        val data = (for (line <- in.getLines.drop(1)) yield {
           val cols = line.split(",").map(_.trim)
-          (cols(0), cols(1), cols(2).toDouble, cols(3).toDouble, cols(4).toDouble)
+          (cols(0), cols(1), cols(2).toDouble, cols(3).toDouble, cols(4).toDouble, cols(5).toDouble)
         }).toVector
         in.close
         data

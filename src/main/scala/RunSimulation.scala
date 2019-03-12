@@ -270,7 +270,7 @@ object RunSimulation extends App with StrictLogging {
 
     def pedData: Tuple5[String, String, Double, Double, Double] => Double = ped => ped._3
 
-    val populationGrouped: Iterable[Vector[(String, String, Double, Double, Double)]] = ODGroupsToAnalyse.map(g => results.flatMap(_.tt).filter(tt => g._1.contains(tt._1) && g._2.contains(tt._2)))
+    val populationGrouped: Iterable[Vector[(String, String, Double, Double, Double, Double)]] = ODGroupsToAnalyse.map(g => results.flatMap(_.tt).filter(tt => g._1.contains(tt._1) && g._2.contains(tt._2)))
 
     populationGrouped.zip(ODGroupsToAnalyse).map(subPop => {
       //val ttByIntervals: Map[Double, (Int, Double, Double,Double, Double, Double)] = subPop.aggregateMetricByTimeWindow(pedFilter, pedData, pedWindows)
