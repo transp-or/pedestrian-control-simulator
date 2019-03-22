@@ -300,6 +300,8 @@ package object hubmodel {
       NodeParent => Iterable[Rectangle],
       ControlDevices
     )
+
+
 }
 
 
