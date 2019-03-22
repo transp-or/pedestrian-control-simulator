@@ -209,7 +209,7 @@ object AnalyseTrackingData extends App {
     }
     case data: MultiDayAggregateProcessor => {
 
-      data.writePedestriansToJSON("disggregate-demand.json")
+      data.writePedestriansToJSON("disaggregate-demand.json")
 
       /*def pedData: Pedestrian => Double = ped => ped.travelTime
       def pedWindows: Pedestrian => Int = ped => data.findInterval(ped.entryTime, (startTime to endTime by 60.0).toVector)
@@ -226,7 +226,7 @@ object AnalyseTrackingData extends App {
             new RegressionPlot(config.getString("output.prefix") + "-edieFlow-VS-outflow-reg" + dt.toInt + "sec.png", edieFlow , outflow.toVector, "generalized flow [pax/m/s]", "outflow [pax/m/s]", fitResults._1, opts = opts)
       */
       //TTByEntyTimeMean.toVector.sortBy(_._1).writeToCSV(config.getString("output.prefix") + "-TTByEntyTimeMean.csv")
-      println("Stats of the mean TT per time interval:")
+      //println("Stats of the mean TT per time interval:")
       //TTByEntyTimeMean.foreach(dayPop => println(dayPop._1 + dayPop._2.map(_._2._2).stats.toString))
     }
   }

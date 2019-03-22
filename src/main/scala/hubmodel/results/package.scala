@@ -1,15 +1,16 @@
 package hubmodel
 
 import java.io.File
-import java.nio.file.{Files, Paths}
+import java.nio.file.{Files, Path, Paths}
 
 import hubmodel.DES.NOMADGraphSimulator
 import hubmodel.ped.{PedestrianNOMAD, PedestrianSim}
 import hubmodel.tools.cells.Rectangle
 import myscala.math.stats.{ComputeStats, Statistics}
-
 import myscala.output.SeqOfSeqExtensions.SeqOfSeqWriter
 import myscala.output.SeqTuplesExtensions.SeqTuplesWriter
+import scala.collection.JavaConversions._
+
 import scala.util.{Failure, Success, Try}
 
 package object results {
@@ -98,7 +99,14 @@ package object results {
   }
 
   def readResults(dir: String, prefix: String, demandSets: Seq[String]): Iterable[ResultsContainerReadWithDemandSet] = {
-    demandSets.flatMap(ff => readResults(dir + ff, prefix).map(_.addDemandFile(ff)))
+    if (demandSets.isEmpty){
+      val dirContents = Files.newDirectoryStream(Paths.get(dir))
+      val subDirs: Iterable[String] = dirContents.toVector.collect({case f if Files.isDirectory(f) => f.getFileName.toString})
+      dirContents.close()
+      subDirs.flatMap(ff => readResults(dir + ff, prefix).map(_.addDemandFile(ff)))
+    } else {
+      demandSets.flatMap(ff => readResults(dir + ff, prefix).map(_.addDemandFile(ff)))
+    }
   }
 
 

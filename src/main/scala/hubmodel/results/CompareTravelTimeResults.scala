@@ -84,39 +84,53 @@ object CompareTravelTimeResults extends App {
   val resultsRef: Vector[ResultsContainerReadWithDemandSet] = readResults(config.getString("files_1.dir"), config.getString("files_1.output_prefix"), subFolders).toVector
   val resultsOther: Vector[ResultsContainerReadWithDemandSet] = readResults(config.getString("files_2.dir"), config.getString("files_2.output_prefix"), subFolders).toVector
 
-  val resultsByODRef: Map[String, Map[String, (Statistics[Double], String)]] = resultsRef.zipWithIndex.groupBy(_._1.demandFile).map(r => {
-    r._1 -> r._2.flatMap(rm => rm._1.tt)
-    .groupBy(p => (p._1, p._2))
-    .map(rm => rm._1._1 + "->" + rm._1._2 -> (rm._2.map(_._3).statistics, {val g = groups.find(g => g._2.contains((rm._1._1, rm._1._2))); if(g.isDefined){g.get._1} else{"non"}}))
+  val resultsByODRef: Map[String, Map[String, (Double, Double, Double, String)]] = resultsRef
+    .zipWithIndex
+    .groupBy(_._1.demandFile)
+    .map(r => {
+      r._1 -> r._2.map(
+        sim => sim._1.tt
+          .groupBy(p => (p._1, p._2))
+          .map(rr => (rr._1, (rr._2.map(_._3).statistics.median, rr._2.map(_._6).statistics.median, rr._2.map(p => p._6/p._3).statistics.median))).toVector
+        )
+        .flatMap(sim => sim
+          .groupBy(_._1)
+            .map(od => od._1._1 + "->" + od._1._2 -> (od._2.map(_._2._1).statistics.median, od._2.map(_._2._2).statistics.median, od._2.map(_._2._3).statistics.median, {val g = groups.find(g => g._2.contains((od._1._1, od._1._2))); if(g.isDefined){g.get._1} else{"non"}}))
+        ).toMap
   })
 
-  val resultsByODOther: Map[String, Map[String, (Statistics[Double], String)]] = resultsOther.zipWithIndex.groupBy(_._1.demandFile).map(r => {
-    r._1 -> r._2.flatMap(rm => rm._1.tt)
-      .groupBy(p => (p._1, p._2))
-      .map(rm => rm._1._1 + "->" + rm._1._2 -> (rm._2.map(_._3).statistics, {val g = groups.find(g => g._2.contains((rm._1._1, rm._1._2))); if(g.isDefined){g.get._1} else{"non"}}))
-  })
-
-  val r: Map[String, Seq[(String, Double, Double, Int, Int, String)]] =
-    resultsByODRef.map(rr => rr._1 -> {
-      (
-        rr._2
-          .map(ref => (ref._1, ref._2, resultsByODOther(rr._1).getOrElse(ref._1, (Statistics(0, Double.NaN, Double.NaN, Double.NaN, Double.NaN, Double.NaN), "non")))) ++
-          resultsByODOther(rr._1)
-            .filterNot(kv => rr._2.keySet.contains(kv._1)).map(other => (other._1, (Statistics(0, Double.NaN, Double.NaN, Double.NaN, Double.NaN, Double.NaN), "non"), other._2))
-        ).map(r => (r._1, r._2._1.median, r._3._1.median, r._2._1.size, r._3._1.size, r._2._2)).toVector
+  val resultsByODOther: Map[String, Map[String, (Double, Double, Double, String)]] = resultsOther
+    .zipWithIndex
+    .groupBy(_._1.demandFile)
+    .map(r => {
+      r._1 -> r._2.map(
+        sim => sim._1.tt
+          .groupBy(p => (p._1, p._2))
+          .map(rr => (rr._1, (rr._2.map(_._3).statistics.median, rr._2.map(_._6).statistics.median, rr._2.map(p => p._6/p._3).statistics.median))).toVector
+      )
+        .flatMap(sim => sim
+          .groupBy(_._1)
+          .map(od => od._1._1 + "->" + od._1._2 -> (od._2.map(_._2._1).statistics.median, od._2.map(_._2._2).statistics.median, od._2.map(_._2._3).statistics.median, {val g = groups.find(g => g._2.contains((od._1._1, od._1._2))); if(g.isDefined){g.get._1} else{"non"}}))
+        ).toMap
     })
 
 
-  r.flatMap(rr => rr._2.map(rrr => (rr._1, rrr._1, rrr._2, rrr._3, rrr._4, rrr._5, rrr._6))).toVector
+  val r: Map[String, Seq[(String, Double, Double, Double, Double, Double, Double, String)]] =
+    resultsByODRef.map(rr => rr._1 -> {
+      (
+        rr._2
+          .map(ref => (ref._1, ref._2, resultsByODOther(rr._1).getOrElse(ref._1, (Double.NaN, Double.NaN, Double.NaN, "non")))) ++
+          resultsByODOther(rr._1)
+            .filterNot(kv => rr._2.keySet.contains(kv._1)).map(other => (other._1, (Double.NaN, Double.NaN, Double.NaN, "non"), other._2))
+        ).map(r => (r._1, r._2._1, r._3._1, r._2._2, r._3._2, r._2._3, r._3._3, r._3._4)).toVector
+    })
+
+
+  r.flatMap(rr => rr._2.map(rrr => (rr._1, rrr._1, rrr._2, rrr._3, rrr._4, rrr._5, rrr._6, rrr._7, rrr._8))).toVector
     .filterNot(v => v._3.isNaN || v._4.isNaN)
-    .sortBy(v => v._7).reverse//(v._3-v._2)/v._2)//v._1)
-    .filterNot(v => v._7 == "non")
+    .sortBy(v => v._9).reverse//(v._3-v._2)/v._2)//v._1)
+    .filterNot(v => v._9 == "non")
     .zipWithIndex
-    .map(v => (v._2, v._1._1, v._1._2, v._1._3, v._1._4, v._1._5, v._1._6, if (v._1._4 - v._1._3 < 0.0) {
-      "neg"
-    } else {
-      "pos"
-    },
-    v._1._7))
-    .writeToCSV(config.getString("files_1.output_prefix") + "_VS_" + config.getString("files_2.output_prefix") + "_walking_time_distributions_by_OD.csv", columnNames = Some(Vector("idx", "demandFile","od", "refTT", "otherTT", "refSize", "otherSize", "signOtherMinusRef", "odGroup")), rowNames = None)
+    .map(v => (v._2, v._1._1, v._1._2, v._1._3, v._1._4, v._1._5, v._1._6, v._1._7, v._1._8, v._1._9))
+    .writeToCSV(config.getString("files_1.output_prefix") + "_VS_" + config.getString("files_2.output_prefix") + "_walking_time_distributions_by_OD.csv", columnNames = Some(Vector("idx", "demandFile","od", "refTT", "otherTT", "refTravelDistance", "otherTravelDistance", "refMeanSpeed", "otherMeanSpeed", "odGroup")), rowNames = None)
 }

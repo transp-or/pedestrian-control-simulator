@@ -19,6 +19,7 @@ import hubmodel.results.readResults
 import scala.collection.GenIterable
 
 
+
 /**
   * Runs the simulations based on the configuration file. This configuration file contains all the details regarding
   * the eventual management strategies to use, the number of runs to perform, the simulation time steps and the
@@ -217,7 +218,7 @@ object RunSimulation extends App with StrictLogging {
     // writes stattistcs about each run
     val statsPerRun = results.map(r => {
       println(r.tt.map(_._3).cutOfAfterQuantile(99).stats)
-      r.tt.map(_._3).stats
+      r.tt.map(_._3).cutOfAfterQuantile(99).stats
     })
 
     Vector((0.0, computeBoxPlotData(statsPerRun.map(_._4)).toCSV, 0.8)).writeToCSV(config.getString("output.output_prefix") + "-travel-time-median-boxplot.csv", rowNames = None, columnNames = Some(Vector("pos", "mean", "median", "lq", "uq", "lw", "uw", "outliersize", "boxplotwidth")))
@@ -247,6 +248,14 @@ object RunSimulation extends App with StrictLogging {
     //println(computeHistogramDataWithXValues(data, binSize, opts.xmin, opts.xmax))
     //println("tt " + results.flatMap(_.tt.map(_._3)).cutOfAfterQuantile(99).stats)
     //println(computeQuantiles(Vector(65,70,75,80,85,90,95,97,99))(results.flatMap(_.tt.map(_._3)).cutOfAfterQuantile(99)))
+  }
+
+  if (config.getBoolean("output.travel-time.individual-tt-distributions") && results.nonEmpty) {
+    val r: Seq[Seq[Double]] = (0.0 to 200.0 by 2.0) +: results.map(r => {
+      val data = r.tt.map(_._3).cutOfAfterQuantile(99)
+      computeHistogramDataWithXValues(data, 2.0, Some(0), Some(200), normalized=false).map(_._2)
+    })
+      r.writeToCSV(config.getString("output.output_prefix") + "travel_times_distributions.csv")
   }
 
   // Analyse pedestrian data like travel time and walking speed by departure time interval.

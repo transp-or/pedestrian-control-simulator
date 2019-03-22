@@ -189,7 +189,7 @@ class PedestrianSim(val origin: Rectangle,
 
 
   def this(oZone: Rectangle, dZone: Rectangle, entryTime: Time, posO: Position, logFullHistory: Boolean) {
-    this(oZone, dZone, 1.34 /*+ math.min(0.2 * ThreadLocalRandom.current().nextGaussian(), 3.0)*/, entryTime, logFullHistory) // velocity taken from VS data
+    this(oZone, dZone, 1.10 + math.min(0.2 * ThreadLocalRandom.current().nextGaussian(), 3.0), entryTime, logFullHistory) // velocity taken from VS data
 
     this.currentPosition = posO
   }
