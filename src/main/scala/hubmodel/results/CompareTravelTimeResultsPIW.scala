@@ -9,10 +9,10 @@ import myscala.output.SeqTuplesExtensions.SeqTuplesWriter
 import scala.collection.JavaConversions._
 
 
-object CompareTravelTimeResults extends App {
+object CompareTravelTimeResultsPIW extends App {
 
   // Groups per direction for PIW corridor
-  val groups: Map[String, Vector[(String, String)]] = Map(
+  val groups: Map[String, Vector[(String, String)]] = Map()/*
     "cnonCrossShort" -> Vector(
       ("11", "9"),
       ("9", "7"),
@@ -74,7 +74,7 @@ object CompareTravelTimeResults extends App {
       ("5", "12"),
       ("11", "6"),
       ("5", "12"),
-    ))
+    ))*/
 
   val config: Config = parseConfigFile(args)
   val multipleDemandStream = Files.newDirectoryStream(Paths.get(config.getString("sim.TF_demand_sets")), "*.json")
@@ -128,9 +128,10 @@ object CompareTravelTimeResults extends App {
 
   r.flatMap(rr => rr._2.map(rrr => (rr._1, rrr._1, rrr._2, rrr._3, rrr._4, rrr._5, rrr._6, rrr._7, rrr._8))).toVector
     .filterNot(v => v._3.isNaN || v._4.isNaN)
-    .sortBy(v => v._9).reverse//(v._3-v._2)/v._2)//v._1)
-    .filterNot(v => v._9 == "non")
+    .sortBy(v => v._3).reverse//(v._3-v._2)/v._2)//v._1)
+   // .filterNot(v => v._9 == "non")
     .zipWithIndex
     .map(v => (v._2, v._1._1, v._1._2, v._1._3, v._1._4, v._1._5, v._1._6, v._1._7, v._1._8, v._1._9))
     .writeToCSV(config.getString("files_1.output_prefix") + "_VS_" + config.getString("files_2.output_prefix") + "_walking_time_distributions_by_OD.csv", columnNames = Some(Vector("idx", "demandFile","od", "refTT", "otherTT", "refTravelDistance", "otherTravelDistance", "refMeanSpeed", "otherMeanSpeed", "odGroup")), rowNames = None)
+
 }

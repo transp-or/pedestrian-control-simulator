@@ -144,7 +144,13 @@ package object results {
         val in = scala.io.Source.fromFile(sr._2("tt"))
         val data = (for (line <- in.getLines.drop(1)) yield {
           val cols = line.split(",").map(_.trim)
-          (cols(0), cols(1), cols(2).toDouble, cols(3).toDouble, cols(4).toDouble, cols(5).toDouble)
+          if (cols.length == 6) {
+            (cols(0), cols(1), cols(2).toDouble, cols(3).toDouble, cols(4).toDouble, cols(5).toDouble)
+          } else if (cols.length==5){
+            (cols(0), cols(1), cols(2).toDouble, cols(3).toDouble, cols(4).toDouble, Double.NaN)
+          } else {
+            throw new IllegalAccessError("Data does not have the right shape")
+          }
         }).toVector
         in.close
         data
