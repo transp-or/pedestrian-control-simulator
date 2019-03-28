@@ -35,6 +35,9 @@ libraryDependencies += "org.j3d" % "aviatrix3d" % "3.0.0" pomOnly()
 libraryDependencies += "javax.vecmath" % "vecmath" % "1.5.2"
 
 
+resolvers += "Local Maven Repository" at "file://"+Path.userHome.absolutePath+"/.m2/repository"
+libraryDependencies += "hub-model-optimization" % "hub-model-optimization" % "1.0-SNAPSHOT"
+
 resolvers ++= Seq(
   "Typesafe Repo" at "http://repo.typesafe.com/typesafe/releases/",
   "Sonatype OSS Snapshots" at "https://oss.sonatype.org/content/repositories/releases/"
