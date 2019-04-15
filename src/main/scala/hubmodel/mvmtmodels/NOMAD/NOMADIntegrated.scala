@@ -263,7 +263,7 @@ class NOMADIntegrated[T <: PedestrianNOMAD](sim: NOMADGraphSimulator[T]) extends
     val acc: Vector3d = new Vector3d()
 
 
-    strayingAccelerationFixedTau(acc, new Vector3d(ped.currentVelocity.X, ped.currentVelocity.Y, 0.0), ped.freeFlowVel, new Vector3d(ped.desiredDirection.X, ped.desiredDirection.Y, 0.0), ped.tau)
+    strayingAccelerationFixedTau(acc, new Vector3d(ped.currentVelocity.X, ped.currentVelocity.Y, 0.0), ped.desiredWalkingSpeed, new Vector3d(ped.desiredDirection.X, ped.desiredDirection.Y, 0.0), ped.tau)
 
     if (pedestrians != null && !pedestrians.isEmpty) {
       pedsRepellingPhysicalAcceleration(

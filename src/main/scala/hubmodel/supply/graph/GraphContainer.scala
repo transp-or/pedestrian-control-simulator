@@ -1,6 +1,7 @@
 package hubmodel.supply.graph
 
 import hubmodel.mgmt.ControlDevices
+import hubmodel.mgmt.flowgate.{BinaryGate, FlowGate}
 import hubmodel.mgmt.flowsep.FlowSeparator
 import hubmodel.ped.PedestrianNOMAD
 import hubmodel.tools.cells.Rectangle
@@ -18,8 +19,21 @@ abstract class GraphContainer(protected val flowGates: Iterable[FlowGate],
 
   type T <: GraphContainer
 
-  def clone(devices: ControlDevices): T
+  /** Creates a deep copy of the graph to use elsewhere.
+    *
+    * TODO: This needs to be improved when the edge weights are updated.
+    *
+    * @param devices new set of devices to use.
+    * @return deep copy of graph
+    */
+  def deepCopy(devices: ControlDevices): T
 
-  def clone2AlternateGraphs(devices: ControlDevices, populationFraction: Double): T
+  /** Creates a copy of the graph with the fraction of people using this alternative.
+    *
+    * @param devices new set of devices to use
+    * @param populationFraction fraction to use the alternate graph
+    * @return
+    */
+  def deepCopy2AlternateGraphs(devices: ControlDevices, populationFraction: Double): T
 
 }

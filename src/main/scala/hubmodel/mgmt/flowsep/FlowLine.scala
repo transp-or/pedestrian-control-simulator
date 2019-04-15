@@ -3,8 +3,22 @@ package hubmodel.mgmt.flowsep
 import hubmodel.ped.{PedestrianTrait, Population}
 import hubmodel.tools.cells.Rectangle
 import hubmodel.{FLOW_LINE_REGION_EXTENSION, Position}
+import hubmodel.generateUUID
+import hubmodel.mgmt.ControlDeviceComponent
 
-class FlowLine(val start: Position, val end: Position, controlled: Int = 0) {
+class FlowLine(val start: Position, val end: Position, private val controlled: Int = 0) extends ControlDeviceComponent {
+
+  /**
+    * second constructor which uses the parameter class to create the object.
+    * @param params case class containing all the parameters.
+    * @return
+    */
+  def this(params: FlowLineParameters) = {
+    this(params.start, params.end, params.isControlled)
+  }
+
+  // Unique identifier of the object.
+  val ID: String = generateUUID
 
   // area in which to consider pedestrians for crossing line
   val nearRegion: Rectangle = {
@@ -60,7 +74,9 @@ class FlowLine(val start: Position, val end: Position, controlled: Int = 0) {
     */
   def reinitialize(): Unit = this.pedsCrossedInInterval.clear()
 
-  override def clone(): FlowLine = new FlowLine(
-    this.start, this.end, controlled
-  )
+  /**
+    * New instance of this [[FlowLine]]
+    * @return deep copy of the current component
+    */
+  def deepCopy: FlowLine = new FlowLine(this.start, this.end, this.controlled)
 }

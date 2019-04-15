@@ -1,6 +1,7 @@
-package hubmodel.tools
+package hubmodel.tools.exceptions
 
-class ControlDevicesException(message: String) extends Exception(message) {
+class IllegalPhysicalQuantity(message: String) extends Exception(message)  {
+
 
   def this(message: String, cause: Throwable) {
     this(message)
@@ -14,4 +15,5 @@ class ControlDevicesException(message: String) extends Exception(message) {
   def this() {
     this(null: String)
   }
+
 }

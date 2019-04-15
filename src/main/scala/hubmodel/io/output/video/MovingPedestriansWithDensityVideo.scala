@@ -9,8 +9,8 @@ import breeze.numerics.floor
 import hubmodel.DES.PedestrianDES
 import hubmodel._
 import hubmodel.io.output.createBackgroundFromImage
+import hubmodel.mgmt.flowgate.BinaryGate
 import hubmodel.ped.PedestrianSim
-import hubmodel.supply.graph.BinaryGate
 import hubmodel.tools.Time
 import hubmodel.tools.cells.Rectangle
 import org.jcodec.api.awt.AWTSequenceEncoder

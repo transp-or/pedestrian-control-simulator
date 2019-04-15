@@ -1,6 +1,7 @@
 package hubmodel.supply.graph
 
 import hubmodel.mgmt.ControlDevices
+import hubmodel.mgmt.flowgate.{BinaryGate, FlowGate}
 import hubmodel.mgmt.flowsep.FlowSeparator
 import hubmodel.ped.PedestrianNOMAD
 import hubmodel.tools.cells.Rectangle
@@ -36,11 +37,11 @@ class SingleGraph(private val baseVertices: Iterable[Rectangle],
     * @param devices The new set of devices to use to make the graph. This way multiple graphs do not share control devices
     * @return Copy of the graph.
     */
-  def clone(devices: ControlDevices): T = new SingleGraph(
+  def deepCopy(devices: ControlDevices): T = new SingleGraph(
     this.baseVertices, this.standardEdges, this.levelChanges, devices.flowGates, devices.binaryGates, devices.amws, devices.flowSeparators
   )
 
-  def clone2AlternateGraphs(devices: ControlDevices, popFraction: Double): T = new SingleGraph(
+  def deepCopy2AlternateGraphs(devices: ControlDevices, popFraction: Double): T = new SingleGraph(
     this.baseVertices, this.standardEdges, this.levelChanges, devices.flowGates, devices.binaryGates, devices.amws, devices.flowSeparators
   )
 

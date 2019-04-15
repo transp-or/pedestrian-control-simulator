@@ -39,8 +39,8 @@ libraryDependencies ++= Seq(
 )
 
 // Extra places to look for libraries  (useful for the scala-custom, avoids waiting for new versions to be copied to maven central
-resolvers += "Local Maven Repository" at "file://"+Path.userHome.absolutePath+"/.m2/repository"
-libraryDependencies += "hub-model-optimization" % "hub-model-optimization" % "1.0-SNAPSHOT"
+//resolvers += "Local Maven Repository" at "file://"+Path.userHome.absolutePath+"/.m2/repository"
+libraryDependencies += "transpor.student-projects" % "hub-model-optimization" % "1.0-SNAPSHOT"
 
 
 // Extra places to look for libraries  (useful for the scala-custom, avoids waiting for new versions to be copied to maven central

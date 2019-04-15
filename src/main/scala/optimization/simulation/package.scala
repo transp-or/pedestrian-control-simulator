@@ -7,15 +7,19 @@ import com.typesafe.config.Config
 import hubmodel.DES.NOMADGraphSimulator
 import hubmodel._
 import hubmodel.demand.readDemandSets
-import hubmodel.mgmt.ControlDevices
-import hubmodel.mgmt.flowgate._
+import hubmodel.mgmt._
 import hubmodel.ped.PedestrianNOMAD
-import myscala.math.stats.ComputeStats
+import myscala.math.stats.computeQuantiles
+import myscala.math.stats.{ComputeQuantiles, ComputeStats, computeBoxPlotData}
 
 import scala.collection.GenIterable
 import scala.collection.JavaConversions._
 import hubmodel.DES._
+import hubmodel.mgmt.flowgate.{FlowGate, FlowGateFunctional}
 import hubmodel.results.{ResultsContainerRead, readResults}
+import hubmodel.tools.exceptions.{ControlDevicesException, IllegalPhysicalQuantity}
+import optimization.bruteforce.ParameterModifications
+import org.apache.commons.math3.filter.MeasurementModel
 
 package object simulation {
 
@@ -26,32 +30,44 @@ package object simulation {
     * @param p0 constant
     * @param p1 linear
     * @param p2 quadratic
-    * @param p3 cubic
-    * @param p4 power 4
+    * @param rho target density
     * @return
     */
-  def runGatingSingleFunction(config: Config)(p0: Double, p1: Double, p2: Double, p3: Double, p4: Double) {
+  def runGatingSingleFunction(config: Config)(p0: Double, p1: Double, p2: Double, rho: Double): Double = {
+
+    println("--------------------- params for optim are: " + p0 + " and " + p1 + " and " + p2 + " and " + rho)
 
     val defaultParameters: SimulationParametersClass = createSimulation[PedestrianNOMAD](config).getSetupArgumentsNew
 
-    val func = FunctionalFormDensity( (d: Density) => Flow(p0 + d.d * p1 + d.d * d.d * p2 + d.d * d.d * d.d * p3 + d.d * d.d * d.d * d.d * p4) )
-    val newControlDevices = defaultParameters.controlDevices.cloneModifyFlowGates(func)
+    val func = FunctionalFormGating((d: Density) => Flow( math.max(0.0, p0 + d.d * p1 + d.d * d.d * p2)) )
 
-    simulateWithCustomParameters(config, defaultParameters, newControlDevices)
+
+    try simulateWithCustomParameters(config, defaultParameters, ParametersForGating(func, rho)) catch {
+      case e: IllegalPhysicalQuantity => {
+        println(e.getMessage)
+        println("Unfeasable measurement: skipping simulations")
+        Double.MaxValue
+      }
+      case de: ControlDevicesException => {
+        println(de.getMessage)
+        println("Error with control device. Skipping simulations")
+        Double.MaxValue
+      }
+      case f: Exception => { throw f }
+    }
   }
 
 
-  def runFlowSepFunction(config: Config)(a: Double, b: Double, c: Double, d: Double, e: Double) {
+  def runFlowSepFunction(config: Config)(a: Double, b: Double, c: Double, d: Double, e: Double): Double = {
 
     val defaultParameters: SimulationParametersClass = createSimulation[PedestrianNOMAD](config).getSetupArgumentsNew
 
     val func = FunctionalFormFlowSeparator( (bf: BidirectionalFlow) => SeparatorPositionFraction( (a*math.pow(bf.f1, b) + c*math.pow(bf.f2, d)) * math.pow(bf.f1+bf.f2, e) ) )
-    val newControlDevices = defaultParameters.controlDevices.cloneModifyFlowSeparators(func)
 
-    simulateWithCustomParameters(config, defaultParameters, newControlDevices)
+    simulateWithCustomParameters(config, defaultParameters, ParametersForFlowSeparators(func))
   }
 
-  def simulateWithCustomParameters(config: Config, defaultParameters: SimulationParametersClass, newControlDevices: ControlDevices): Double = {
+  def simulateWithCustomParameters[T <: Measurement, U <: Output](config: Config, defaultParameters: SimulationParametersClass, func: ParameterModifications): Double = {
 
     val demandSets: Option[Seq[(String, String)]] = readDemandSets(config)
 
@@ -80,6 +96,29 @@ package object simulation {
           createSimulation[PedestrianNOMAD](config, Some(demandSets.get(s - 1)._1), Some(demandSets.get(s - 1)._2))
         }
         else {
+          val newControlDevices = func match {
+            case fgParams: ParametersForGating[_, _] => {
+
+              val newControlAreas = defaultParameters.controlDevices.monitoredAreas.map(_.deepCopyChangeTargetDensity(fgParams.targetDensity))
+
+              val newFlowGates = defaultParameters.controlDevices.flowGates.map(fg => fg match {
+                case fgFunc: FlowGateFunctional[_, _] => { fgFunc.deepCopy(fgParams.function) }
+                case fg: FlowGate => { fg.deepCopy }
+              })
+
+              new ControlDevices(
+                newControlAreas,
+                defaultParameters.controlDevices.amws,
+                newFlowGates,
+                defaultParameters.controlDevices.binaryGates.map(_.deepCopy),
+                defaultParameters.controlDevices.flowSeparators.map(_.deepCopy),
+                defaultParameters.controlDevices.fixedFlowSeparators,
+                None
+              )
+
+            }
+            case fs: ParametersForFlowSeparators[_, _] => { defaultParameters.controlDevices.deepCopyModifyFlowSeparators(fs.function) }
+          }
 
           val sim = new NOMADGraphSimulator[PedestrianNOMAD](
             defaultParameters.start,
@@ -89,7 +128,7 @@ package object simulation {
             defaultParameters.evaluateFrequency,
             defaultParameters.rebuildTreeInterval,
             defaultParameters.microSpace,
-            defaultParameters.graph.clone(newControlDevices),
+            defaultParameters.graph.deepCopy(newControlDevices),
             defaultParameters.timeTable,
             defaultParameters.stop2Vertex,
             newControlDevices,
@@ -127,10 +166,14 @@ package object simulation {
 
     // writes statistcs about each run
     val statsPerRun = results.map(r => {
-      r.tt.map(_._3).stats
+      r.tt.map(_._3).cutOfAfterQuantile(99.5).statistics
     })
 
-    statsPerRun.map(r => r._4).stats._2
+    statsPerRun.map(r => r.mean).statistics.mean
   }
+
+
+  case class ParametersForGating[T <: Measurement, U <: Flow](function: FunctionalForm[T, U], targetDensity: Double) extends ParameterModifications
+  case class ParametersForFlowSeparators[T<: Measurement, U <: SeparatorPositionFraction](function: FunctionalForm[T, U]) extends ParameterModifications
 
 }

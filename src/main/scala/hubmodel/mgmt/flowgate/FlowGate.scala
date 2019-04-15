@@ -1,9 +1,11 @@
-package hubmodel.supply.graph
+package hubmodel.mgmt.flowgate
 
 import hubmodel.Position
+import hubmodel.mgmt.ControlDeviceComponent
+import hubmodel.supply.graph.MyEdgeWithGate
 import hubmodel.tools.cells.Rectangle
 
-/** Extension of [[hubmodel.supply.MyEdgeWithGate]] for the usage of "flow gates". The gates control the
+/** Extension of [[hubmodel.supply.graph.MyEdgeWithGate]] for the usage of "flow gates". The gates control the
   * flow of pedestrians passing through them.
   *
   * TODO: A more realistic approach for the modeling of gates could be used to determine the maximum capacity.
@@ -13,7 +15,7 @@ import hubmodel.tools.cells.Rectangle
   * @param start       one end of the gate
   * @param end         other end of the gate
   */
-class FlowGate(startVertex: Rectangle, endVertex: Rectangle, start: Position, end: Position, ma: String) extends MyEdgeWithGate(startVertex, endVertex, start, end, ma) {
+class FlowGate(startVertex: Rectangle, endVertex: Rectangle, start: Position, end: Position, ma: String) extends MyEdgeWithGate(startVertex, endVertex, start, end, ma) with ControlDeviceComponent {
 
   /** Checks whether another object equals this one
     *
@@ -44,7 +46,7 @@ class FlowGate(startVertex: Rectangle, endVertex: Rectangle, start: Position, en
 
   override def toString: String = "FlowGate: o: " + startVertex + ", d:" + endVertex
 
-  override def clone(): FlowGate = new FlowGate(
+  override def deepCopy: FlowGate = new FlowGate(
     this.startVertex, this.endVertex, this.start, this.end, this.ma
   )
 }

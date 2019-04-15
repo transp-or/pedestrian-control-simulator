@@ -75,14 +75,28 @@ package object results {
           .writeToCSV(prefix + "tt_" + simulator.ID + ".csv", columnNames=Some(Vector("origin", "destination", "travelTime", "entryTime", "exitTime", "travelDistance")), rowNames=None, path=path)
 
       } else {
+        (
+          simulator.population
+          .map(p => (p.origin.name, "", p.travelTime.value, p.entryTime.value, Double.NaN, p.travelDistance)).toSeq
+          ++
         simulator.populationCompleted
           .map(p => (p.origin.name, p.finalDestination.name, p.travelTime.value, p.entryTime.value, p.exitTime.value, p.travelDistance))
+          )
           .writeToCSV(prefix + "tt_" + simulator.ID + ".csv", columnNames=Some(Vector("origin", "destination", "travelTime", "entryTime", "exitTime", "travelDistance")), rowNames=None, path=path)
-
       }
-      if (simulator.criticalAreas.nonEmpty) {
-        (simulator.criticalAreas.head._2.densityHistory.map(_._1.value).toVector +: simulator.criticalAreas.map(_._2.densityHistory.map(_._2).toVector).toVector).writeToCSV(prefix + "density_" + simulator.ID + ".csv", path)
-        simulator.criticalAreas.head._2.paxIndividualDensityHistory.flatMap(v => Vector.fill(v._2.size)(v._1.value).zip(v._2)).toVector.writeToCSV(prefix + "individual_densities_" + simulator.ID + ".csv", path)
+      Try(
+        if (simulator.criticalAreas.nonEmpty) {
+          (simulator.criticalAreas.head._2.densityHistory.map(_._1.value).toVector +: simulator.criticalAreas.map(_._2.densityHistory.map(_._2).toVector).toVector).writeToCSV(prefix + "density_" + simulator.ID + ".csv", path)
+          simulator.criticalAreas.head._2.paxIndividualDensityHistory.flatMap(v => Vector.fill(v._2.size)(v._1.value).zip(v._2)).toVector.writeToCSV(prefix + "individual_densities_" + simulator.ID + ".csv", path)
+        }
+        ) match {
+        case Success(s) => {
+          println("written critical zone successfully")
+        }
+        case Failure(f) => {
+          println("failed writing criticsl zones")
+          throw f
+        }
       }
     }
 

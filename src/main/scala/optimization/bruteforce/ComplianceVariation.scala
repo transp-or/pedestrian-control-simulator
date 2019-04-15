@@ -24,7 +24,7 @@ class ComplianceVariation(complianceInterval: Double, c: Config, upperBoundCompl
 
   def getParameters(paramMods: ParameterModificationsCompliance): SimulatorParameters = {
 
-    val devices = defaultParameters._11.clone()
+    val devices = defaultParameters._11.deepCopy
 
     (
       defaultParameters._1,
@@ -34,7 +34,7 @@ class ComplianceVariation(complianceInterval: Double, c: Config, upperBoundCompl
       defaultParameters._5,
       defaultParameters._6,
       defaultParameters._7,
-      defaultParameters._8.clone2AlternateGraphs(devices, paramMods.complianceRate),
+      defaultParameters._8.deepCopy2AlternateGraphs(devices, paramMods.complianceRate),
       defaultParameters._9,
       defaultParameters._10,
       devices

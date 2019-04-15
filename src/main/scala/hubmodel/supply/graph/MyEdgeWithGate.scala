@@ -1,12 +1,16 @@
 package hubmodel.supply.graph
 
 import hubmodel.DES.{Action, NOMADGraphSimulator}
-import hubmodel.Position
+import hubmodel.{Position, GATE_MAXIMUM_QUEUE_SIZE}
 import hubmodel.ped.{PedestrianNOMAD, PedestrianSim}
 import hubmodel.tools.Time
 import hubmodel.tools.cells.Rectangle
+import hubmodel.tools.exceptions.ControlDevicesException
 
 abstract class MyEdgeWithGate(override val startVertex: Rectangle, override val endVertex: Rectangle, val start: Position, val end: Position, val monitoredArea: String) extends MyEdge(startVertex, endVertex) {
+
+  // self-type allowing access to contents of this class from inner classes.
+  gate =>
 
   // Physical width of the gate. Required to compute the maximum flow.
   val width: Double = (end - start).norm
@@ -28,16 +32,6 @@ abstract class MyEdgeWithGate(override val startVertex: Rectangle, override val 
     * @return flow rate
     */
   def flowRate: Double = this._flowRate
-
-  /**
-    * Updates the flow rate.
-    *
-    * @param newFlowRate new flow rate
-    */
-  @Deprecated
-  def setFlowRate(newFlowRate: Double): Unit = {
-    this._flowRate = newFlowRate
-  }
 
   /**
     * Updates the flow rate and appends the value to the history of positions of the gates.
@@ -66,9 +60,9 @@ abstract class MyEdgeWithGate(override val startVertex: Rectangle, override val 
         pedestrianQueue.head.isWaiting = false
         pedestrianQueue.head.freedFrom.append(ID)
         pedestrianQueue.dequeue()
-        sim.eventLogger.trace("sim-time=" + sim.currentTime + ": gate: " + this + ": released pedestrian. Peds in queue=" + pedestrianQueue.size)
+        sim.eventLogger.trace("sim-time=" + sim.currentTime + ": gate: " + gate.ID + " released pedestrian. Peds in queue=" + pedestrianQueue.size)
       } else {
-        sim.eventLogger.trace("sim-time=" + sim.currentTime + ": gate: " + this + ": no one in queue to release")
+        sim.eventLogger.trace("sim-time=" + sim.currentTime + ": gate: " + gate.ID + ": no one in queue to release")
       }
       // inserts new event based on the current flow rate allowed through the gate.
       //sim.insertEventWithDelay(1.0 / flowRate)(new ReleasePedestrian(sim))
@@ -85,7 +79,8 @@ abstract class MyEdgeWithGate(override val startVertex: Rectangle, override val 
     override def execute(): Unit = {
       ped.isWaiting = true
       pedestrianQueue.enqueue(ped)
-      sim.eventLogger.trace("sim-time=" + sim.currentTime + ": enqueued pedestrian. Peds in queue=" + pedestrianQueue.size)
+      sim.eventLogger.trace("sim-time=" + sim.currentTime + ": enqueued pedestrian in " + gate.ID + ". # peds in queue: " + pedestrianQueue.size)
+      if (gate.pedestrianQueue.size > GATE_MAXIMUM_QUEUE_SIZE) {throw new ControlDevicesException("Too many pedestrians in queue for gate " + gate.ID)}
     }
   }
 

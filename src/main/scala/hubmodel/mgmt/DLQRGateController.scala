@@ -1,9 +1,8 @@
 package hubmodel.mgmt
 
 import hubmodel.DES.{Action, NOMADGraphSimulator}
-import hubmodel.mgmt.flowgate._
+import hubmodel.mgmt.flowgate.{FlowGate, FlowGateFunctional}
 import hubmodel.ped.PedestrianNOMAD
-import hubmodel.supply.graph.{FlowGate, FlowGateFunctional}
 import hubmodel.tools.Time
 import hubmodel.tools.TimeNumeric.mkOrderingOps
 
@@ -36,15 +35,13 @@ class DLQRGateController[T <: PedestrianNOMAD](sim: NOMADGraphSimulator[T]) exte
         case fg: FlowGateFunctional[_, _] => {
 
           fg.functionalForm match {
-            case density: FunctionalFormDensity => {
+            case density: FunctionalFormGating => {
 
-              density.f(Density(1.0))
+              //density.f(Density(1.0))
 
               // pax above target density
               fg.setFlowRate(
-                math.min(
-                  density.f(Density(sim.criticalAreas(fg.monitoredArea).paxIndividualDensityHistory.last._2.count(_ > sim.criticalAreas(fg.monitoredArea).targetDensity))).f,
-                    10.0),
+                density.f(Density(sim.criticalAreas(fg.monitoredArea).paxIndividualDensityHistory.last._2.count(_ > sim.criticalAreas(fg.monitoredArea).targetDensity))).f,
                 sim.currentTime
               )
 
@@ -52,8 +49,6 @@ class DLQRGateController[T <: PedestrianNOMAD](sim: NOMADGraphSimulator[T]) exte
                 /*fg.flowRate = math.min(fg.functionalForm(sim.criticalAreas(fg.monitoredArea).targetDensity - sim.criticalAreas(fg.monitoredArea).densityHistory.last._2), 10.0)*/
             }
           }
-
-
         }
         case fg: FlowGate => {
           val totalInflow: Double = math.max(0.1, math.min(5.0, 0.65 * (sim.criticalAreas(fg.monitoredArea).targetDensity - sim.criticalAreas(fg.monitoredArea).densityHistory.last._2)))

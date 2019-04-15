@@ -4,7 +4,7 @@ import java.util.concurrent.ThreadLocalRandom
 
 import hubmodel.tools.Time
 import hubmodel.tools.cells.Rectangle
-import hubmodel.{Position, _}
+import hubmodel.{Position, pedestrianWalkingSpeed, _}
 import myscala.math.vector.ZeroVector2D
 
 
@@ -17,7 +17,7 @@ import myscala.math.vector.ZeroVector2D
   *
   * @param origin             origin zone of the pedestrian
   * @param finalDestination   destination zone of the pedestrian
-  * @param freeFlowVel        free flow speed of the individual
+  * @param speed        free flow speed of the individual
   * @param entryTime          entry time into the system
   * @param currentPosition    current position (general point)
   * @param currentDestination intermediate destination point (next target)
@@ -25,13 +25,32 @@ import myscala.math.vector.ZeroVector2D
   */
 class PedestrianSim(val origin: Rectangle,
                     val finalDestination: Rectangle,
-                    val freeFlowVel: Double,
                     val entryTime: Time,
                     val logFullHistory: Boolean = false) extends PedestrianTrait {
 
-  /** current position of the pedestrian */
+  /** Free flow walking speed of the pedestrian
+    *
+    */
+  val desiredWalkingSpeed: Double = {
+
+    // samples once the speed
+    var speed = pedestrianWalkingSpeed
+
+    // resamples if the speed is negative
+    while (speed < 0.0) {
+      speed = pedestrianWalkingSpeed
+    }
+    speed
+  }
+
+  /** current position of the pedestrian
+    *
+    */
   var currentPosition: Position = origin.uniformSamplePointInside
 
+  /** Previous position of the pedestrian. This avoids using an list or array if the full trajectory of the pedestrian
+    * is not of interest.
+    */
   var previousPosition: Position = currentPosition
 
 
@@ -48,7 +67,7 @@ class PedestrianSim(val origin: Rectangle,
   var currentDestination: Position = new Position(0, 0) //route.head.uniformSamplePointInside
 
   // Checks that the velocity is realistic
-  if (freeFlowVel < 0.0 || freeFlowVel > 4.0) {throw new IllegalArgumentException("Unacceptable free flow velocity")}
+  if (desiredWalkingSpeed < 0.0 || desiredWalkingSpeed > 4.0) {throw new IllegalArgumentException("Unacceptable free flow velocity")}
 
   /** current velocity, initialized to 0.0 */
   var currentVelocity: Velocity = new ZeroVector2D
@@ -189,8 +208,7 @@ class PedestrianSim(val origin: Rectangle,
 
 
   def this(oZone: Rectangle, dZone: Rectangle, entryTime: Time, posO: Position, logFullHistory: Boolean) {
-    this(oZone, dZone, 1.10 + math.min(0.2 * ThreadLocalRandom.current().nextGaussian(), 3.0), entryTime, logFullHistory) // velocity taken from VS data
-
+    this(oZone, dZone, entryTime, logFullHistory) // velocity taken from VS data
     this.currentPosition = posO
   }
 }

@@ -3,6 +3,7 @@ package hubmodel.tools.cells
 import java.util.concurrent.ThreadLocalRandom
 
 import hubmodel.Position
+import hubmodel.mgmt.ControlDeviceComponent
 import hubmodel.tools.Time
 import myscala.math.vector.Vector2D
 
@@ -24,7 +25,7 @@ class RectangleModifiable(name: String,
                           private val __C: (Position, Position),
                           private val __D: (Position, Position),
                           od: Boolean,
-                          genRate: Option[Double]) extends Rectangle(name, (__A._1 + __A._2) * 0.5, (__B._1 + __B._2) * 0.5, (__C._1 + __C._2) * 0.5, (__D._1 + __D._2) * 0.5, od, genRate) {
+                          genRate: Option[Double]) extends Rectangle(name, (__A._1 + __A._2) * 0.5, (__B._1 + __B._2) * 0.5, (__C._1 + __C._2) * 0.5, (__D._1 + __D._2) * 0.5, od, genRate) with ControlDeviceComponent {
 
   A = (__A._1 + __A._2) * 0.5
   B = (__B._1 + __B._2) * 0.5
@@ -85,8 +86,7 @@ class RectangleModifiable(name: String,
   override def toString: String = this.name //+ ", " + this.A + ", " + this.B + ", " + this.C + ", " + this.D
 
 
-  override def clone(): RectangleModifiable = new RectangleModifiable(
+  override def deepCopy: RectangleModifiable = new RectangleModifiable(
     this.name, this.__A, this.__B, this.__C, this.__D, this.isOD, Some(this.generationRate)
   )
-
 }

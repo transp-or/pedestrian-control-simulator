@@ -55,7 +55,7 @@ class FlowVariation(flowInterval: Double, config: Config, lowerBoundFlow: Double
 
   def getParameters(paramMods: ParameterModificationsFlow): SimulatorParameters = {
 
-    val devices = defaultParameters._11.clone()
+    val devices = defaultParameters._11.deepCopy
     (
       defaultParameters._1,
       defaultParameters._2,
@@ -64,7 +64,7 @@ class FlowVariation(flowInterval: Double, config: Config, lowerBoundFlow: Double
       defaultParameters._5,
       defaultParameters._6,
       defaultParameters._7,
-      defaultParameters._8.clone2AlternateGraphs(devices, 0.05),
+      defaultParameters._8.deepCopy2AlternateGraphs(devices, 0.05),
       defaultParameters._9,
       defaultParameters._10,
       devices

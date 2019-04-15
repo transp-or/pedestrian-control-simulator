@@ -1,7 +1,7 @@
-package hubmodel.supply.graph
+package hubmodel.mgmt.flowgate
 
 import hubmodel.Position
-import hubmodel.mgmt.flowgate.{FunctionalForm, Measurement, Output}
+import hubmodel.mgmt.{ControlDeviceComponent, FunctionalForm, Measurement, Output}
 import hubmodel.tools.cells.Rectangle
 
 /** Extension of [[hubmodel.supply.MyEdgeWithGate]] for the usage of "flow gates". The gates control the
@@ -14,7 +14,7 @@ import hubmodel.tools.cells.Rectangle
   * @param start       one end of the gate
   * @param end         other end of the gate
   */
-class FlowGateFunctional[T <: Measurement, U <: Output](startVertex: Rectangle, endVertex: Rectangle, start: Position, end: Position, ma: String, val functionalForm: FunctionalForm[T, U]) extends FlowGate(startVertex, endVertex, start, end, ma) {
+class FlowGateFunctional[T <: Measurement, U <: Output](startVertex: Rectangle, endVertex: Rectangle, start: Position, end: Position, ma: String, val functionalForm: FunctionalForm[T, U]) extends FlowGate(startVertex, endVertex, start, end, ma) with ControlDeviceComponent {
 
   /** Checks whether another object equals this one
     *
@@ -41,7 +41,7 @@ class FlowGateFunctional[T <: Measurement, U <: Output](startVertex: Rectangle, 
     * @param newFunctionForm new functional form
     * @return copy of the flow gate
     */
-  def cloneModifyFunctionForm[V <: Measurement, W <: Output](newFunctionalForm: FunctionalForm[V, W]): FlowGateFunctional[V, W] = {
+  def deepCopy[V <: Measurement, W <: Output](newFunctionalForm: FunctionalForm[V, W]): FlowGateFunctional[V, W] = {
     new FlowGateFunctional(this.startVertex, this.endVertex, this.start, this.end, this.monitoredArea, newFunctionalForm)
   }
 }

@@ -38,7 +38,7 @@ trait PedestrianTrait {
   def travelDistance: Double
 
   /** free flow velocity */
-  def freeFlowVel: Double
+  def desiredWalkingSpeed: Double
 
   /** entry time into the system */
   def entryTime: Time

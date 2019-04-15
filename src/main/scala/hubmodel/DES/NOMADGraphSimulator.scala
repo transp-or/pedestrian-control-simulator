@@ -2,6 +2,7 @@ package hubmodel.DES
 
 import hubmodel._
 import hubmodel.demand.{PTInducedQueue, PublicTransportSchedule}
+import hubmodel.mgmt.flowsep.FlowSeparator
 import hubmodel.mgmt.{ControlDevices, EvaluateState}
 import hubmodel.mvmtmodels.NOMAD.NOMADIntegrated
 import hubmodel.mvmtmodels.{RebuildPopulationTree, UpdateClosestWall}
@@ -25,6 +26,9 @@ class NOMADGraphSimulator[T <: PedestrianNOMAD](st: Time,
                                                 val stop2Vertices: NodeParent => Iterable[Rectangle],
                                                 val controlDevices: ControlDevices,
                                                 val logFullPedestrianHistory: Boolean = false) extends PedestrianDES[PedestrianNOMAD](st, et) {
+
+  // TODO: continue implementing this
+  //val flowSeparators: Option[Vector[FlowSeparator[_, _]]] = controlDevices.flowSepParams.flatMap(fsp => )
 
   /**
     * Access for the wall collection which is mostly contained in the SF infrastructrue file but some movable walls
@@ -116,11 +120,11 @@ class NOMADGraphSimulator[T <: PedestrianNOMAD](st: Time,
   class StartSim(sim: NOMADGraphSimulator[T]) extends super.GenericStartSim(sim) {
     override def execute(): Unit = {
 
-      if (useFlowGates) {
+      if (sim.useFlowGates) {
         sim.logger.info(" * flow gates: " + sim.controlDevices.flowGates.map(_.toString).mkString("\n  * "))
       }
 
-      if (useFlowSep) {
+      if (sim.useFlowSep) {
         sim.logger.info {
           " * flow separators: " + sim.controlDevices.flowSeparators.map(_.toString).mkString("\n  * ")
         }
@@ -128,7 +132,7 @@ class NOMADGraphSimulator[T <: PedestrianNOMAD](st: Time,
 
       sim.logger.info("Starting simulation " + sim.ID + " @" + this.sim.currentTime)
 
-      sim.eventLogger.trace("sim-time=" + sim.currentTime + ": simulation started. dt=" + sf_dt)
+      sim.eventLogger.trace("sim-time=" + sim.currentTime + ": simulation started. dt=" + sim.sf_dt)
 
       // Inserts the update routes events in the simulation
       sim.insertEventWithZeroDelay(new UpdateRoutes(sim))
@@ -137,7 +141,7 @@ class NOMADGraphSimulator[T <: PedestrianNOMAD](st: Time,
       sim.insertEventWithZeroDelay(new NOMADIntegrated(sim))
 
       // Makes the simulation keep track of the state of the system
-      if (sim.measureDensity || sim.useFlowSep || sim.useBinaryGates) sim.insertEventWithZeroDelay(new EvaluateState(sim))
+      if (sim.measureDensity || sim.useFlowSep || sim.useBinaryGates || sim.useFlowGates) sim.insertEventWithZeroDelay(new EvaluateState(sim))
 
       // Starts the flow gates
       if (sim.useFlowGates) sim.insertEventWithZeroDelay(new StartFlowGates(sim))

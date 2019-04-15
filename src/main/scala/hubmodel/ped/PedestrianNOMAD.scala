@@ -55,7 +55,7 @@ class PedestrianNOMAD(oZone: Rectangle, dZone: Rectangle, entryTime: Time, posO:
 
   protected def computePathFollowingComponent(p: PedestrianSim): Acceleration = {
     val tau: Double = 0.62
-    (computeDesiredDirection(p.currentPosition, p.currentDestination) * p.freeFlowVel - p.currentVelocity) / tau
+    (computeDesiredDirection(p.currentPosition, p.currentDestination) * p.desiredWalkingSpeed - p.currentVelocity) / tau
   }
 
   def updateDesiredSpeed(): Unit = {

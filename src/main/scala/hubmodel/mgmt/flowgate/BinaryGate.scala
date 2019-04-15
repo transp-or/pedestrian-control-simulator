@@ -1,6 +1,8 @@
-package hubmodel.supply.graph
+package hubmodel.mgmt.flowgate
 
 import hubmodel.Position
+import hubmodel.mgmt.ControlDeviceComponent
+import hubmodel.supply.graph.MyEdgeWithGate
 import hubmodel.tools.cells.Rectangle
 
 /** Object to model gates controlling the flow of pedestrians
@@ -15,7 +17,7 @@ class BinaryGate(o: Rectangle,
                  d: Rectangle,
                  start: Position,
                  end: Position,
-                 ma: String) extends MyEdgeWithGate(o, d, start, end, ma) {
+                 ma: String) extends MyEdgeWithGate(o, d, start, end, ma) with ControlDeviceComponent {
 
 
   //var flowRate: Double = Double.MaxValue
@@ -50,7 +52,7 @@ class BinaryGate(o: Rectangle,
     (super.hashCode, this.start, this.end).##
   }
 
-  override def clone(): BinaryGate = new BinaryGate(
+  override def deepCopy: BinaryGate = new BinaryGate(
     this.o, this.d, this.start, this.end, this.ma
   )
 }

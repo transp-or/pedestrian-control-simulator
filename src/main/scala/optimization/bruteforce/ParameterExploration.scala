@@ -4,10 +4,8 @@ import java.io.File
 
 import com.typesafe.config.Config
 import hubmodel.DES.NOMADGraphSimulator
-import hubmodel.mgmt.ControlDevices
-import hubmodel.mgmt.flowgate.{Density, Flow, FunctionalFormDensity}
+import hubmodel.mgmt.{ControlDevices, Density, Flow, FunctionalFormGating}
 import hubmodel.ped.PedestrianNOMAD
-import hubmodel.supply.graph.FlowGateFunctional
 import hubmodel._
 import myscala.math.stats.ComputeStats
 import myscala.output.SeqTuplesExtensions.SeqTuplesWriter
@@ -17,6 +15,7 @@ import scala.collection.GenIterable
 import scala.collection.immutable.NumericRange
 import scala.collection.parallel.ForkJoinTaskSupport
 import hubmodel.DES._
+import hubmodel.mgmt.flowgate.FlowGateFunctional
 
 class ParameterExploration(config: Config) extends GridSearch {
 
@@ -53,15 +52,15 @@ class ParameterExploration(config: Config) extends GridSearch {
     for (t <- range) {
 
       val newDevices: ControlDevices = new ControlDevices(
-        defaultParameters._11.monitoredAreas.map(_.clone()),
+        defaultParameters._11.monitoredAreas.map(_.deepCopy),
         defaultParameters._11.amws.map(_.clone()),
         if (config.getBoolean("sim.use_flow_gates")) {
-          defaultParameters._11.flowGates.map(fg => new FlowGateFunctional(fg.startVertex, fg.endVertex, fg.start, fg.end, fg.monitoredArea, { FunctionalFormDensity((x: Density) => Flow(math.max(0.0000001, t._1 + t._2 * x.d))) }))
+          defaultParameters._11.flowGates.map(fg => new FlowGateFunctional(fg.startVertex, fg.endVertex, fg.start, fg.end, fg.monitoredArea, { FunctionalFormGating((x: Density) => Flow(math.max(0.0000001, t._1 + t._2 * x.d))) }))
         } else {
           Vector()
         },
-        defaultParameters._11.binaryGates.map(_.clone()),
-        defaultParameters._11.flowSeparators.map(_.clone()),
+        defaultParameters._11.binaryGates.map(_.deepCopy),
+        defaultParameters._11.flowSeparators.map(_.deepCopy),
         defaultParameters._11.fixedFlowSeparators
       )
 
@@ -73,7 +72,7 @@ class ParameterExploration(config: Config) extends GridSearch {
         defaultParameters._5,
         defaultParameters._6,
         defaultParameters._7,
-        defaultParameters._8.clone(newDevices),
+        defaultParameters._8.deepCopy(newDevices),
         defaultParameters._9,
         defaultParameters._10,
         newDevices

@@ -1,21 +1,20 @@
 
-import java.nio.file.{Files, Paths}
-
 import com.typesafe.config.{Config, ConfigValueFactory}
 import hubmodel._
 import hubmodel.DES._
 import hubmodel.demand.readDemandSets
 import hubmodel.io.output.TRANSFORM.PopulationSummaryProcessingTRANSFORM
 import hubmodel.ped.PedestrianNOMAD
-import hubmodel.results.ResultsContainerRead
+import hubmodel.results.{ResultsContainerRead, ResultsContainerReadWithDemandSet, readResults}
 import hubmodel.supply.graph.readPTStop2GraphVertexMap
 import hubmodel.tools.Time
 import myscala.math.stats.bootstrap.bootstrapMSE
 import myscala.math.stats.{ComputeQuantiles, ComputeStats, computeBoxPlotData}
 import myscala.output.SeqOfSeqExtensions.SeqOfSeqWriter
 import myscala.output.SeqTuplesExtensions.SeqTuplesWriter
+import myscala.output.SeqExtension.SeqWriter
 import trackingdataanalysis.visualization.{Histogram, PlotOptions, ScatterPlot, computeHistogramDataWithXValues}
-import hubmodel.results.readResults
+
 import scala.collection.GenIterable
 
 
@@ -106,6 +105,8 @@ object RunSimulation extends App with StrictLogging {
   } else {
     readResults(config.getString("output.dir"), config.getString("output.output_prefix")).toVector
   }
+
+  if (results.isEmpty) {throw new Exception("No result collections have been read !")}
 
 
   // Processing results
@@ -217,7 +218,6 @@ object RunSimulation extends App with StrictLogging {
 
     // writes stattistcs about each run
     val statsPerRun = results.map(r => {
-      println(r.tt.map(_._3).cutOfAfterQuantile(99).stats)
       r.tt.map(_._3).cutOfAfterQuantile(99).stats
     })
 
@@ -243,20 +243,25 @@ object RunSimulation extends App with StrictLogging {
     val opts = PlotOptions(xmin = Some(10), xmax = Some(50), ymax = Some(0.25), width = 700, height = 400)
     new Histogram(config.getString("output.output_prefix") + "_travel_times_hist.png", data, binSize, "travel times [s]", "Fixed separator", opts)
     computeHistogramDataWithXValues(data, binSize, opts.xmin, opts.xmax).writeToCSV(config.getString("output.output_prefix") + "_travel_times_hist_data.csv", rowNames = None, columnNames = Some(Vector("x", "y")))
-    //println("stats: ", data.stats)
-    //println("boxplot: ", computeBoxPlotData(data))
-    //println(computeHistogramDataWithXValues(data, binSize, opts.xmin, opts.xmax))
-    //println("tt " + results.flatMap(_.tt.map(_._3)).cutOfAfterQuantile(99).stats)
-    //println(computeQuantiles(Vector(65,70,75,80,85,90,95,97,99))(results.flatMap(_.tt.map(_._3)).cutOfAfterQuantile(99)))
   }
 
-  if (config.getBoolean("output.travel-time.individual-tt-distributions") && results.nonEmpty) {
+  // Writes the travel tim distribution of each simulation two a csv file.
+  if (config.getBoolean("output.travel-time.per-simulation-distributions") && results.nonEmpty) {
     val r: Seq[Seq[Double]] = (0.0 to 200.0 by 2.0) +: results.map(r => {
       val data = r.tt.map(_._3).cutOfAfterQuantile(99)
       computeHistogramDataWithXValues(data, 2.0, Some(0), Some(200), normalized=false).map(_._2)
     })
-      r.writeToCSV(config.getString("output.output_prefix") + "travel_times_distributions.csv")
+      r.writeToCSV(config.getString("output.output_prefix") + "_travel_times_distributions.csv")
   }
+
+  // Writes the median travel times to a csv file
+  if (config.getBoolean("output.travel-time.per-simulation-median") && results.nonEmpty) {
+    results.map(r => r.tt.map(_._3).statistics.median).writeToCSV(config.getString("output.output_prefix") + "_median-travel-time-per-simulation.csv")
+  }
+
+  results.collect({
+    case f: ResultsContainerReadWithDemandSet => {f}
+  }).groupBy(_.demandFile).foreach(g => println((g._2.map(_.tt.map(_._3).cutOfAfterQuantile(99.5).statistics.median).statistics.median, g._2.map(_.tt.map(_._3).cutOfAfterQuantile(99.5).statistics.variance).statistics.median)))
 
   // Analyse pedestrian data like travel time and walking speed by departure time interval.
   //if (!config.getStringList("results-analysis.o_nodes").isEmpty && !config.getStringList("results-analysis.d_nodes").isEmpty) {

@@ -25,6 +25,8 @@ package object DES {
   def createSimulation[T <: PedestrianNOMAD](config: Config, flows_TF: Option[String] = None, timetable_TF: Option[String] = None)(implicit tag: ClassTag[T]): NOMADGraphSimulator[T] = {
 
 
+
+
     /*if ((timetable_TF.isEmpty && flows_TF.isDefined) || (timetable_TF.isDefined && flows_TF.isEmpty)) {
       throw new IllegalArgumentException("Input to create function is wrong ! Either both optional arguments must be set or none of them")
     }*/

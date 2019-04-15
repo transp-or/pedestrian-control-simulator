@@ -1,9 +1,10 @@
 package hubmodel.tools.cells
 
 import hubmodel.Position
+import hubmodel.mgmt.ControlDeviceComponent
 import hubmodel.tools.Time
 
-class DensityMeasuredArea(name: String, A: Position, B: Position, C: Position, D: Position, val targetDensity: Double) extends Rectangle(name, A, B, C, D, false, Some(0)) {
+class DensityMeasuredArea(name: String, A: Position, B: Position, C: Position, D: Position, val targetDensity: Double) extends Rectangle(name, A, B, C, D, false, Some(0)) with ControlDeviceComponent {
 
   // pedestrian density.
   val densityHistory: collection.mutable.ArrayBuffer[(Time, Double)] = collection.mutable.ArrayBuffer()
@@ -28,7 +29,16 @@ class DensityMeasuredArea(name: String, A: Position, B: Position, C: Position, D
 
   //var regulatorIntegralAction: Double = 0.0
 
-  override def clone(): DensityMeasuredArea = new DensityMeasuredArea(
-    name, A, B, C, D, targetDensity
-  )
+  /** Deep copy of this monitored area.
+    *
+    * @return deep copy of the current component
+    */
+  def deepCopy: DensityMeasuredArea = new DensityMeasuredArea(name, A, B, C, D, targetDensity)
+
+  /** Makes a deep copy of this monitored area but changes the target density to the value passed as a parameter.
+    *
+    * @param rho target density value to use
+    * @return deep copy of the current monitored area with changed target density
+    */
+  def deepCopyChangeTargetDensity(rho: Double) = new DensityMeasuredArea(name, A, B, C, D, rho)
 }

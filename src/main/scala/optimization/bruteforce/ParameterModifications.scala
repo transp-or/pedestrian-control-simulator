@@ -1,4 +1,4 @@
 package optimization.bruteforce
 
-class ParameterModifications
+trait ParameterModifications
 

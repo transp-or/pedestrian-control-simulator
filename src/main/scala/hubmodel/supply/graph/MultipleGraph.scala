@@ -3,6 +3,7 @@ package hubmodel.supply.graph
 import java.util.concurrent.ThreadLocalRandom
 
 import hubmodel.mgmt.ControlDevices
+import hubmodel.mgmt.flowgate.{BinaryGate, FlowGate}
 import hubmodel.mgmt.flowsep.FlowSeparator
 import hubmodel.ped.PedestrianNOMAD
 import hubmodel.tools.cells.Rectangle
@@ -79,7 +80,7 @@ class MultipleGraph(fg: Iterable[FlowGate],
     * @param devices The new set of devices to use to make the graph. This way multiple graphs do not share control devices
     * @return Copy of the graph.
     */
-  def clone(devices: ControlDevices): T = {
+  def deepCopy(devices: ControlDevices): T = {
 
     val graphs = new MultipleGraph(devices.flowGates, devices.binaryGates, devices.amws, devices.flowSeparators)
     this._graphCollection.foreach(g => {
@@ -95,7 +96,7 @@ class MultipleGraph(fg: Iterable[FlowGate],
     * @param devices The new set of devices to use to make the graph. This way multiple graphs do not share control devices
     * @return Copy of the graph.
     */
-  def clone2AlternateGraphs(devices: ControlDevices, populationFraction: PopulationFraction): MultipleGraph = {
+  def deepCopy2AlternateGraphs(devices: ControlDevices, populationFraction: PopulationFraction): MultipleGraph = {
 
     if (this._graphCollection.size != 2) {
       throw new Exception("Number of graphs is wrong for using this function !")

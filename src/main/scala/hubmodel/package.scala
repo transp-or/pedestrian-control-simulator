@@ -27,6 +27,7 @@ import scala.collection.parallel.ForkJoinTaskSupport
 import scala.reflect.ClassTag
 import scala.util.{Failure, Success, Try}
 import hubmodel.DES._
+import hubmodel.mgmt.flowgate.BinaryGate
 import hubmodel.results.{ResultsContainerFromSimulation, ResultsContainerRead}
 import hubmodel.results.{collectResults, writeResults}
 
@@ -38,16 +39,8 @@ import hubmodel.results.{collectResults, writeResults}
 
 package object hubmodel {
 
-  type GroupID = Int
 
-
-
-  /* pedestrian isolations */
-  val ISOLATED: Int = 0
-  val IN_RANGE: Int = 1
-  val IN_COLLISION: Int = 2
-
-  /* PARAMETERS */
+  ////////////////////////// SIMULATION PARAMETERS /////////////////////////////////
 
   // each pedestrians contains the list of walls which he is close to. This means there is no need to compute at every
   // time step the interaction with all the walls.
@@ -61,6 +54,30 @@ package object hubmodel {
   // Change in opposing flow fractions which is considered significant. The flow separators will only move if the change
   // is larger than this value
   val FLOW_SEPARATOR_UPDATE: Double = 0.1 // 10%
+
+  // Speed of the moving separator.
+  val FLOW_SEPARATOR_SPEED: Double = 0.25 // m/s fixed in a arbitrary manner
+
+  // Maximum number of pedestrians who can wait behind a gate. This prevents simulations  becoming infeasible when
+  // hundreds of pedestrians are stuck behind a  gate and then the simulation time explodes.
+  val GATE_MAXIMUM_QUEUE_SIZE: Int = 15
+
+  /** Samples a pedestrian free flow walking speed.
+    *
+    * Either use the standard mean of 1.34 m/s. Otherwise to match the tracking data use 1.10 as a mean.
+    *
+    * @return walking speed
+    */
+  def pedestrianWalkingSpeed: Double = 1.34 + math.min(0.2 * ThreadLocalRandom.current().nextGaussian(), 3.0)
+
+
+
+  type GroupID = Int
+
+  /* pedestrian isolations */
+  val ISOLATED: Int = 0
+  val IN_RANGE: Int = 1
+  val IN_COLLISION: Int = 2
 
   type VehicleID = String
   type VertexID = String

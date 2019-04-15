@@ -1,4 +1,6 @@
-package hubmodel.mgmt.flowgate
+package hubmodel.mgmt
+
+import hubmodel.tools.exceptions.IllegalPhysicalQuantity
 
 abstract class Measurement
 case class Density(d: Double) extends Measurement
@@ -8,15 +10,15 @@ case class BidirectionalFlow(f1: Double, f2: Double) extends Measurement {
 
 abstract class Output
 case class Flow(f: Double) extends Output {
-  if (f < 0.0) {throw new IllegalArgumentException("Flow cannot be negative ! f=" + this.f)}
+  if (f < 0.0) {throw new IllegalPhysicalQuantity("Flow cannot be negative ! f=" + this.f)}
 }
 case class SeparatorPositionFraction(r: Double) extends Output {
-  if (r < 0.0 || r > 1.0) {throw new IllegalArgumentException("Position of flow separator cannot be outside of [0,1] ! r=" + this.r)}
+  if (r < 0.0 || r > 1.0) {throw new IllegalPhysicalQuantity("Position of flow separator cannot be outside of [0,1] ! r=" + this.r)}
 }
 
-abstract class FunctionalForm[T <: Measurement, U <: Output](val functionalForm: T => U)
+abstract class FunctionalForm[T <: Measurement, U <: Output](functionalForm: T => U)
 
 case class FunctionalFormFlowSeparator(f: BidirectionalFlow => SeparatorPositionFraction) extends FunctionalForm(f)
 
-case class FunctionalFormDensity(f: Density => Flow) extends FunctionalForm(f)
+case class FunctionalFormGating(f: Density => Flow) extends FunctionalForm(f)
 
