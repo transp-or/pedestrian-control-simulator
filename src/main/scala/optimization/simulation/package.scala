@@ -9,14 +9,13 @@ import hubmodel._
 import hubmodel.demand.readDemandSets
 import hubmodel.mgmt._
 import hubmodel.ped.PedestrianNOMAD
-import myscala.math.stats.computeQuantiles
-import myscala.math.stats.{ComputeQuantiles, ComputeStats, computeBoxPlotData}
+import myscala.math.stats.{ComputeQuantiles, ComputeStats, Statistics, computeBoxPlotData, computeQuantiles}
 
 import scala.collection.GenIterable
 import scala.collection.JavaConversions._
 import hubmodel.DES._
 import hubmodel.mgmt.flowgate.{FlowGate, FlowGateFunctional}
-import hubmodel.results.{ResultsContainerRead, readResults}
+import hubmodel.results.{ResultsContainerRead, ResultsContainerReadNew, readResults, readResultsJson}
 import hubmodel.tools.exceptions.{ControlDevicesException, IllegalPhysicalQuantity}
 import optimization.bruteforce.ParameterModifications
 import org.apache.commons.math3.filter.MeasurementModel
@@ -33,7 +32,7 @@ package object simulation {
     * @param rho target density
     * @return
     */
-  def runGatingSingleFunction(config: Config)(p0: Double, p1: Double, p2: Double, rho: Double): Double = {
+  def runGatingSingleFunction(config: Config)(p0: Double, p1: Double, p2: Double, rho: Double): Map[String, Double] = {
 
     println("--------------------- params for optim are: " + p0 + " and " + p1 + " and " + p2 + " and " + rho)
 
@@ -46,28 +45,28 @@ package object simulation {
       case e: IllegalPhysicalQuantity => {
         println(e.getMessage)
         println("Unfeasable measurement: skipping simulations")
-        Double.MaxValue
+        Map()
       }
       case de: ControlDevicesException => {
         println(de.getMessage)
         println("Error with control device. Skipping simulations")
-        Double.MaxValue
+        Map()
       }
       case f: Exception => { throw f }
     }
   }
 
 
-  def runFlowSepFunction(config: Config)(a: Double, b: Double, c: Double, d: Double, e: Double): Double = {
+  def runFlowSepFunction(config: Config)(a: Double, b: Double, c: Double): Map[String, Double] = {
 
     val defaultParameters: SimulationParametersClass = createSimulation[PedestrianNOMAD](config).getSetupArgumentsNew
 
-    val func = FunctionalFormFlowSeparator( (bf: BidirectionalFlow) => SeparatorPositionFraction( (a*math.pow(bf.f1, b) + c*math.pow(bf.f2, d)) * math.pow(bf.f1+bf.f2, e) ) )
+    val func = FunctionalFormFlowSeparator( (bf: BidirectionalFlow) => SeparatorPositionFraction( (a*math.pow(bf.f2, b) ) *math.pow(bf.f1+bf.f2, c) ) )
 
     simulateWithCustomParameters(config, defaultParameters, ParametersForFlowSeparators(func))
   }
 
-  def simulateWithCustomParameters[T <: Measurement, U <: Output](config: Config, defaultParameters: SimulationParametersClass, func: ParameterModifications): Double = {
+  def simulateWithCustomParameters[T <: Measurement, U <: Output](config: Config, defaultParameters: SimulationParametersClass, func: ParameterModifications): Map[String, Double] = {
 
     val demandSets: Option[Seq[(String, String)]] = readDemandSets(config)
 
@@ -163,13 +162,31 @@ package object simulation {
 
     // Reads intermediate results
     val results: Vector[ResultsContainerRead] = readResults(outputDir, config.getString("output.output_prefix")).toVector
+    val resultsJson: Vector[ResultsContainerReadNew] = readResultsJson(outputDir, config.getString("output.output_prefix")).toVector
+
+
 
     // writes statistcs about each run
-    val statsPerRun = results.map(r => {
-      r.tt.map(_._3).cutOfAfterQuantile(99.5).statistics
-    })
+    func match {
+      case _: ParametersForGating[_, _] => {
+        val statsPerRun: Iterable[Map[Boolean, Statistics[_]]] = resultsJson.map(r => {
+          r.tt
+            .groupBy(_.gates.isEmpty)
+            .map(g => g._1 -> g._2.map(_.tt).cutOfAfterQuantile(99.5).statistics)
+        })
 
-    statsPerRun.map(r => r.mean).statistics.mean
+        Map("pedsThroughGate" ->  statsPerRun.map(r => r(false).median).statistics.mean,
+          "pedsWithoutgates" -> statsPerRun.map(r => r(true).median).statistics.mean,
+        "allPeds" -> resultsJson.map(r => {r.tt.map(_.tt).cutOfAfterQuantile(99.5).statistics}).map(r => r.median).statistics.mean)
+      }
+      case _: ParametersForFlowSeparators[_, _] => {
+        val statsPerRun = resultsJson.map(r => {
+          r.tt.map(_.tt).cutOfAfterQuantile(99.5).statistics
+        })
+        Map("allPeds" -> statsPerRun.map(r => r.median).statistics.mean)
+      }
+    }
+
   }
 
 

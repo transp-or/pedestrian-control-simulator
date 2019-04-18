@@ -447,4 +447,23 @@ package object JSONReaders {
     (JsPath \ "location").read[String](minLength[String](1)) and
       (JsPath \ "trains").read[Vector[Vehicle_JSON]]
     ) (PublicTransportScheduleReader.apply _)
+
+
+  // ******************************************************************************************
+  //                         READERS FOR THE SIMULATION RESULTS
+  // ******************************************************************************************
+
+
+  // *********************** Pedestrian data with travel time, etc ****************************
+  case class PedestrianResults_JSON(o: String, d:String, tt: Double, entry: Double, exit: Option[Double], td: Double, gates: Vector[String])
+
+  implicit val PedestrianResults_JSON_Reads: Reads[PedestrianResults_JSON] = (
+    (JsPath \ "o").read[String] and
+      (JsPath \ "d").read[String] and
+      (JsPath \ "tt").read[Double] and
+      (JsPath \ "entry").read[Double] and
+      (JsPath \ "exit").readNullable[Double] and
+      (JsPath \ "td").read[Double] and
+      (JsPath \ "gates").read[Vector[String]]
+    ) (PedestrianResults_JSON.apply _)
 }

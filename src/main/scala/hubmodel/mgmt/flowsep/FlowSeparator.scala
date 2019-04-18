@@ -7,7 +7,8 @@ import hubmodel.supply.continuous.{MovableWall, SINGLELINE, Wall}
 import hubmodel.supply.graph.MyEdge
 import hubmodel.tools.Time
 import hubmodel.tools.cells.RectangleModifiable
-import hubmodel.{FLOW_SEPARATOR_UPDATE, Position, generateUUID, FLOW_SEPARATOR_SPEED}
+import hubmodel.tools.exceptions.{IllegalFlowSeparatorPosition, IllegalPhysicalQuantity}
+import hubmodel.{FLOW_SEPARATOR_SPEED, FLOW_SEPARATOR_UPDATE, Position, generateUUID}
 
 import scala.util.{Failure, Success, Try}
 
@@ -119,6 +120,11 @@ class FlowSeparator[T <: Measurement, U <: SeparatorPositionFraction] (val start
         val frac: SeparatorPositionFraction = Try(default.f(flowHistoryNew.last._2)) match {
           case Success(s) => s
           case Failure(f) => f match {
+            case outsideBounds: IllegalFlowSeparatorPosition => {
+              if (outsideBounds.position > 1.0) {SeparatorPositionFraction(1.0)}
+              else if (outsideBounds.position < 0.0) { SeparatorPositionFraction(0.0)}
+              else { throw new Exception("This case should never happen") }
+            }
             case illegalArg: IllegalArgumentException => {
               println("Warning ! Error when computing flow separator fraction, defaulting to 0.5")
               SeparatorPositionFraction(0.5)

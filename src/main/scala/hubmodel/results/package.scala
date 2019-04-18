@@ -1,6 +1,6 @@
 package hubmodel
 
-import java.io.File
+import java.io.{BufferedWriter, File, FileWriter}
 import java.nio.file.{Files, Path, Paths}
 
 import hubmodel.DES.NOMADGraphSimulator
@@ -9,8 +9,11 @@ import hubmodel.tools.cells.Rectangle
 import myscala.math.stats.{ComputeStats, Statistics}
 import myscala.output.SeqOfSeqExtensions.SeqOfSeqWriter
 import myscala.output.SeqTuplesExtensions.SeqTuplesWriter
-import scala.collection.JavaConversions._
+import play.api.libs.json.{JsError, JsSuccess, JsValue, Json}
+import hubmodel.io.input.JSONReaders.PedestrianResults_JSON
 
+import scala.collection.JavaConversions._
+import scala.io.BufferedSource
 import scala.util.{Failure, Success, Try}
 
 package object results {
@@ -73,8 +76,17 @@ package object results {
           .filter(p => simulator.transferringPassengers.contains(p.ID))
           .map(p => (p.origin.name, p.finalDestination.name, p.travelTime.value, p.entryTime.value, p.exitTime.value, p.travelDistance))
           .writeToCSV(prefix + "tt_" + simulator.ID + ".csv", columnNames=Some(Vector("origin", "destination", "travelTime", "entryTime", "exitTime", "travelDistance")), rowNames=None, path=path)
-
       } else {
+
+        val file = new File(path + prefix + "tt_" + simulator.ID + ".json")
+        val bw = new BufferedWriter(new FileWriter(file))
+        bw.write("[")
+        simulator.population.foreach(p => bw.write(p.toJSON(true)+ ",\n"))
+        simulator.populationCompleted.tail.foreach(p => bw.write(p.toJSON(false) + ",\n"))
+        bw.write(simulator.populationCompleted.head.toJSON(false))
+        bw.write("]")
+        bw.close()
+
         (
           simulator.population
           .map(p => (p.origin.name, "", p.travelTime.value, p.entryTime.value, Double.NaN, p.travelDistance)).toSeq
@@ -141,7 +153,7 @@ package object results {
     }
 
     // reads the files populates a map based on the keyword present in the name
-    val files: Map[String, Map[String, File]] = outputDir.listFiles.filter(f => f.isFile && f.getName.contains(prefix)).toList.groupBy(f => f.getName.substring(f.getName.indexOf(".csv") - 10, f.getName.indexOf(".csv"))).map(kv => kv._1 -> kv._2.map(f => {
+    val files: Map[String, Map[String, File]] = outputDir.listFiles.filter(f => f.isFile && f.getName.contains(prefix) && f.getName.endsWith(".csv")).toList.groupBy(f => f.getName.substring(f.getName.indexOf(".csv") - 10, f.getName.indexOf(".csv"))).map(kv => kv._1 -> kv._2.map(f => {
       f.getName match {
         case a if a.contains("_tt_") => "tt"
         case b if b.contains("_density_") => "density"
@@ -202,6 +214,45 @@ package object results {
         }
 
       ResultsContainerRead(tt, density, densityPerIndividual)
+    })
+  }
+
+  def readResultsJson(dir: String, prefix: String): Iterable[ResultsContainerReadNew] = {
+    val path: String = dir /*match {
+      case Some(str) => str
+      case None => "tmp/"
+    }*/
+    val outputDir = new File(path)
+    if (!outputDir.exists || !outputDir.isDirectory) {
+      throw new IllegalArgumentException("Output dir for files does not exist ! dir=" + path)
+    }
+
+    val filesJson: Map[String, Map[String, File]] = outputDir
+      .listFiles
+      .filter(f => f.isFile && f.getName.contains(prefix) && f.getName.endsWith(".json"))
+      .toList.groupBy(f => f.getName.substring(f.getName.indexOf(".json") - 10, f.getName.indexOf(".json")))
+      .map(kv => kv._1 -> kv._2.map(f => {f.getName match {
+        case a if a.contains("_tt_") => "tt"
+        case b if b.contains("_density_") => "density"
+        case c if c.contains("_individual_densities_") => "individual_densities"
+        case other => throw new IllegalArgumentException("File should not be present: " + other)
+      }
+      } -> f
+      ).toMap
+      )
+
+    filesJson.map(str => {
+      val tt: Vector[PedestrianResults_JSON] = {
+        val source: BufferedSource = scala.io.Source.fromFile(str._2("tt"))
+        val input: JsValue = Json.parse(try source.mkString finally source.close)
+        input.validate[Vector[PedestrianResults_JSON]] match {
+          case s: JsSuccess[Vector[PedestrianResults_JSON]] => {
+            s.get
+          }
+          case e: JsError => throw new Error("Error while parsing graph specification file: " + JsError.toJson(e).toString())
+        }
+      }
+      ResultsContainerReadNew(tt, None, None)
     })
   }
 

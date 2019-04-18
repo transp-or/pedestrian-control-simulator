@@ -1,6 +1,6 @@
 package hubmodel.mgmt
 
-import hubmodel.tools.exceptions.IllegalPhysicalQuantity
+import hubmodel.tools.exceptions.{IllegalFlowSeparatorPosition, IllegalPhysicalQuantity}
 
 abstract class Measurement
 case class Density(d: Double) extends Measurement
@@ -13,7 +13,7 @@ case class Flow(f: Double) extends Output {
   if (f < 0.0) {throw new IllegalPhysicalQuantity("Flow cannot be negative ! f=" + this.f)}
 }
 case class SeparatorPositionFraction(r: Double) extends Output {
-  if (r < 0.0 || r > 1.0) {throw new IllegalPhysicalQuantity("Position of flow separator cannot be outside of [0,1] ! r=" + this.r)}
+  if (r < 0.0 || r > 1.0) {throw new IllegalFlowSeparatorPosition("Position of flow separator cannot be outside of [0,1] ! r=" + this.r, this.r)}
 }
 
 abstract class FunctionalForm[T <: Measurement, U <: Output](functionalForm: T => U)

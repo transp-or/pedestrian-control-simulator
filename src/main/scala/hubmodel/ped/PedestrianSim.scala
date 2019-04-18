@@ -84,7 +84,7 @@ class PedestrianSim(val origin: Rectangle,
   /** is the pedestrian waiting in a zone */
   var isWaiting: Boolean = false
 
-  /** collection of zones whichi must not block the pedestrian (make him wait) */
+  /** collection of zones which must not block the pedestrian (make him wait) */
   val freedFrom: scala.collection.mutable.ArrayBuffer[String] = scala.collection.mutable.ArrayBuffer()
 
   /** target zone */
@@ -206,10 +206,29 @@ class PedestrianSim(val origin: Rectangle,
     * @param route     initial route
     */
 
-
+  /**
+    *
+    * @param oZone
+    * @param dZone
+    * @param entryTime
+    * @param posO
+    * @param logFullHistory
+    */
   def this(oZone: Rectangle, dZone: Rectangle, entryTime: Time, posO: Position, logFullHistory: Boolean) {
     this(oZone, dZone, entryTime, logFullHistory) // velocity taken from VS data
     this.currentPosition = posO
+  }
+
+  def toJSON(completed: Boolean): String = {
+    "{" +
+      "\"o\":\"" + this.origin + "\"," +
+    "\"d\":\"" + this.finalDestination + "\"," +
+    "\"tt\":" + this.travelTime + "," +
+    "\"entry\":" + this.entryTime + "," +
+    "\"exit\":" + {if (completed) this.exitTime else {"null"}} + "," +
+    "\"td\":" + this.travelDistance + "," +
+      "\"gates\": [" + {if (this.freedFrom.nonEmpty) {"\"" + this.freedFrom.mkString("\",\"") + "\""} else {""}} + "]" +
+    "}"
   }
 }
 
