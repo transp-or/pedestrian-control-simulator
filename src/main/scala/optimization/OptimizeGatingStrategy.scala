@@ -24,6 +24,7 @@ object OptimizeGatingStrategy extends App {
   //                    Optimization of the control strategy
   // ******************************************************************************************
 
+  /*
   val dimension = 3
   val ID: String = RandomStringUtils.randomAlphabetic(1) + RandomStringUtils.randomAlphanumeric(8)
 
@@ -35,19 +36,19 @@ object OptimizeGatingStrategy extends App {
   val factory1 = new SingleGateOptimizationFactory(config, ID)
   val title1 = config.getString("output.dir") + "DSA_results_" + ID + ".txt"
   ContinuousProblem.optimizationDSA(10e3, 0.002, 0.05, new java.util.ArrayList[java.lang.Object](x_only1), factory1, title1, false)
+*/
 
 
-  /*
   val dimension = 4
   val ID: String = RandomStringUtils.randomAlphabetic(1) + RandomStringUtils.randomAlphanumeric(8)
 
   val fw = new FileWriter(config.getString("output.dir") + "/SO_gating_KPIs_" + ID + ".csv", true)
-  fw.write("allPeds,pedsThroughGate,pedsWithoutgates\n")
+  fw.write("allPeds,withGates,withoutGates\n")
   fw.close()
 
   val x_only1 =   ContinuousProblem.problemInit(dimension, util.Arrays.asList(2.0, -2.0, -3.0, 1.0), util.Arrays.asList(6.0 ,2.0 , 0.0, 5.0))
   val factory1 = new SingleGateOptimizationWithDensityFactory(config, ID)
   val title1 = config.getString("output.dir") + "DSA_results_" + ID + ".txt"
   ContinuousProblem.optimizationDSA(10e3, 0.002, 0.05, new java.util.ArrayList[java.lang.Object](x_only1), factory1, title1, false)
-  */
+
 }
