@@ -1,0 +1,76 @@
+[
+  {
+    "name": "withGates",
+    "ods": [
+      {
+        "o": "top",
+        "d": "left-bottom"
+      },
+      {
+        "o": "top",
+        "d": "left-top"
+      },
+      {
+        "o": "top",
+        "d": "right-bottom"
+      },
+      {
+        "o": "top",
+        "d": "right-bottom"
+      },
+      {
+        "o": "bottom",
+        "d": "left-bottom"
+      },
+      {
+        "o": "bottom",
+        "d": "left-top"
+      },
+      {
+        "o": "bottom",
+        "d": "right-bottom"
+      },
+      {
+        "o": "bottom",
+        "d": "right-bottom"
+      }
+    ]
+  },
+  {
+    "name": "withoutGates",
+    "ods": [
+      {
+        "o": "right-bottom",
+        "d": "left-bottom"
+      },
+      {
+        "o": "right-top",
+        "d": "left-bottom"
+      },
+      {
+        "o": "right-bottom",
+        "d": "left-top"
+      },
+      {
+        "o": "right-top",
+        "d": "left-top"
+      },
+      {
+        "o": "left-bottom",
+        "d": "right-bottom"
+      },
+      {
+        "o": "left-top",
+        "d": "right-bottom"
+      },
+      {
+        "o": "left-bottom",
+        "d": "right-top"
+      },
+      {
+        "o": "left-top",
+        "d": "right-top"
+      }
+    ]
+  }
+]

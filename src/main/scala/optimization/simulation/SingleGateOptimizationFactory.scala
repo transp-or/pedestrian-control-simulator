@@ -2,10 +2,7 @@ package optimization.simulation
 
 
 import SimulatedAnnealing.SAProblem
-import SimulatedAnnealing._MinFunction.MinFunction
 import java.util
-import java.util.List
-import java.util.stream.Collectors
 
 import SimulatedAnnealing.Factories.SAProblemsAbstractFactory
 import com.typesafe.config.Config

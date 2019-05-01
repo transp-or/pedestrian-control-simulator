@@ -466,4 +466,25 @@ package object JSONReaders {
       (JsPath \ "td").read[Double] and
       (JsPath \ "gates").read[Vector[String]]
     ) (PedestrianResults_JSON.apply _)
+
+
+
+  // ******************************************************************************************
+  //                         READERS FOR THE OD GROUPS USED IN THE RESULTS
+  // ******************************************************************************************
+
+  case class ODPair_JSON(o: String, d: String)
+
+  implicit val ODPair_JSON_Reads: Reads[ODPair_JSON] = (
+    (JsPath \ "o").read[String] and
+      (JsPath \ "d").read[String]
+    ) (ODPair_JSON.apply _)
+
+
+  case class ODGroup_JSON(name: String, ods: Vector[ODPair_JSON])
+
+  implicit val ODGroups_JSON_Reads: Reads[ODGroup_JSON] = (
+    (JsPath \ "name").read[String] and
+      (JsPath \ "ods").read[Vector[ODPair_JSON]]
+    ) (ODGroup_JSON.apply _)
 }

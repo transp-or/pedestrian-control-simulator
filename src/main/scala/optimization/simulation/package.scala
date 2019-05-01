@@ -18,7 +18,6 @@ import hubmodel.mgmt.flowgate.{FlowGate, FlowGateFunctional}
 import hubmodel.results.{ResultsContainerRead, ResultsContainerReadNew, readResults, readResultsJson}
 import hubmodel.tools.exceptions.{ControlDevicesException, IllegalPhysicalQuantity}
 import optimization.bruteforce.ParameterModifications
-import org.apache.commons.math3.filter.MeasurementModel
 
 package object simulation {
 
@@ -41,7 +40,31 @@ package object simulation {
     val func = FunctionalFormGating((d: Density) => Flow( math.max(0.0, p0 + d.d * p1 + d.d * d.d * p2)) )
 
 
-    try simulateWithCustomParameters(config, defaultParameters, ParametersForGating(func, rho)) catch {
+    try simulateWithCustomParameters(config, defaultParameters, ParametersForGatingWithDensity(func, rho)) catch {
+      case e: IllegalPhysicalQuantity => {
+        println(e.getMessage)
+        println("Unfeasable measurement: skipping simulations")
+        Map()
+      }
+      case de: ControlDevicesException => {
+        println(de.getMessage)
+        println("Error with control device. Skipping simulations")
+        Map()
+      }
+      case f: Exception => { throw f }
+    }
+  }
+
+  def runGatingSingleFunctionFixedDensityThreshold(config: Config)(p0: Double, p1: Double, p2: Double): Map[String, Double] = {
+
+    println("--------------------- params for optim are: " + p0 + " and " + p1 + " and " + p2)
+
+    val defaultParameters: SimulationParametersClass = createSimulation[PedestrianNOMAD](config).getSetupArgumentsNew
+
+    val func = FunctionalFormGating((d: Density) => Flow( math.max(0.0, p0 + d.d * p1 + d.d * d.d * p2)) )
+
+
+    try simulateWithCustomParameters(config, defaultParameters, ParametersForGating(func)) catch {
       case e: IllegalPhysicalQuantity => {
         println(e.getMessage)
         println("Unfeasable measurement: skipping simulations")
@@ -98,6 +121,25 @@ package object simulation {
           val newControlDevices = func match {
             case fgParams: ParametersForGating[_, _] => {
 
+              val newControlAreas = defaultParameters.controlDevices.monitoredAreas.map(_.deepCopy)
+
+              val newFlowGates = defaultParameters.controlDevices.flowGates.map(fg => fg match {
+                case fgFunc: FlowGateFunctional[_, _] => { fgFunc.deepCopy(fgParams.function) }
+                case fg: FlowGate => { fg.deepCopy }
+              })
+
+              new ControlDevices(
+                newControlAreas,
+                defaultParameters.controlDevices.amws,
+                newFlowGates,
+                defaultParameters.controlDevices.binaryGates.map(_.deepCopy),
+                defaultParameters.controlDevices.flowSeparators.map(_.deepCopy),
+                defaultParameters.controlDevices.fixedFlowSeparators,
+                None
+              )
+            }
+            case fgParams: ParametersForGatingWithDensity[_, _] => {
+
               val newControlAreas = defaultParameters.controlDevices.monitoredAreas.map(_.deepCopyChangeTargetDensity(fgParams.targetDensity))
 
               val newFlowGates = defaultParameters.controlDevices.flowGates.map(fg => fg match {
@@ -114,7 +156,6 @@ package object simulation {
                 defaultParameters.controlDevices.fixedFlowSeparators,
                 None
               )
-
             }
             case fs: ParametersForFlowSeparators[_, _] => { defaultParameters.controlDevices.deepCopyModifyFlowSeparators(fs.function) }
           }
@@ -175,9 +216,20 @@ package object simulation {
             .map(g => g._1 -> g._2.map(_.tt).cutOfAfterQuantile(99.5).statistics)
         })
 
-        Map("pedsThroughGate" ->  statsPerRun.map(r => r(false).median).statistics.mean,
-          "pedsWithoutgates" -> statsPerRun.map(r => r(true).median).statistics.mean,
+        Map("withGates" ->  statsPerRun.map(r => r(false).median).statistics.mean,
+          "withoutGates" -> statsPerRun.map(r => r(true).median).statistics.mean,
         "allPeds" -> resultsJson.map(r => {r.tt.map(_.tt).cutOfAfterQuantile(99.5).statistics}).map(r => r.median).statistics.mean)
+      }
+      case _: ParametersForGatingWithDensity[_, _] => {
+        val statsPerRun: Iterable[Map[Boolean, Statistics[_]]] = resultsJson.map(r => {
+          r.tt
+            .groupBy(_.gates.isEmpty)
+            .map(g => g._1 -> g._2.map(_.tt).cutOfAfterQuantile(99.5).statistics)
+        })
+
+        Map("withGates" ->  statsPerRun.map(r => r(false).median).statistics.mean,
+          "withoutGates" -> statsPerRun.map(r => r(true).median).statistics.mean,
+          "allPeds" -> resultsJson.map(r => {r.tt.map(_.tt).cutOfAfterQuantile(99.5).statistics}).map(r => r.median).statistics.mean)
       }
       case _: ParametersForFlowSeparators[_, _] => {
         val statsPerRun = resultsJson.map(r => {
@@ -189,8 +241,8 @@ package object simulation {
 
   }
 
-
-  case class ParametersForGating[T <: Measurement, U <: Flow](function: FunctionalForm[T, U], targetDensity: Double) extends ParameterModifications
+  case class ParametersForGating[T <: Measurement, U <: Flow](function: FunctionalForm[T, U]) extends ParameterModifications
+  case class ParametersForGatingWithDensity[T <: Measurement, U <: Flow](function: FunctionalForm[T, U], targetDensity: Double) extends ParameterModifications
   case class ParametersForFlowSeparators[T<: Measurement, U <: SeparatorPositionFraction](function: FunctionalForm[T, U]) extends ParameterModifications
 
 }

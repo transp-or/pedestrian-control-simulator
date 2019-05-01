@@ -16,7 +16,7 @@ class FlowSepOptimisation(val config: Config, ID: String, params: java.util.Arra
 
     val res = runFlowSepFunction(config)(x.get(0),x.get(1),x.get(2))
 
-    val fw = new FileWriter(ID + "_SO_flowSep_KPIs.csv", true)
+    val fw = new FileWriter(config.getString("output.dir") + "/SO_flowSep_KPIs_" + ID + ".csv", true)
     fw.write(res.getOrElse("allPeds", Double.MaxValue).toString + "\n")
     fw.close()
 

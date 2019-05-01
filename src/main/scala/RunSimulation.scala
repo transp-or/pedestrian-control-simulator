@@ -3,9 +3,10 @@ import com.typesafe.config.{Config, ConfigValueFactory}
 import hubmodel._
 import hubmodel.DES._
 import hubmodel.demand.readDemandSets
+import hubmodel.io.input.JSONReaders.{ODGroup_JSON, PedestrianResults_JSON}
 import hubmodel.io.output.TRANSFORM.PopulationSummaryProcessingTRANSFORM
 import hubmodel.ped.PedestrianNOMAD
-import hubmodel.results.{ResultsContainerRead, ResultsContainerReadWithDemandSet, readResults}
+import hubmodel.results.{ResultsContainerRead, ResultsContainerReadNew, ResultsContainerReadWithDemandSet, readResults, readResultsJson}
 import hubmodel.supply.graph.readPTStop2GraphVertexMap
 import hubmodel.tools.Time
 import myscala.math.stats.bootstrap.bootstrapMSE
@@ -13,9 +14,11 @@ import myscala.math.stats.{ComputeQuantiles, ComputeStats, computeBoxPlotData}
 import myscala.output.SeqOfSeqExtensions.SeqOfSeqWriter
 import myscala.output.SeqTuplesExtensions.SeqTuplesWriter
 import myscala.output.SeqExtension.SeqWriter
+import play.api.libs.json.{JsError, JsSuccess, JsValue, Json}
 import trackingdataanalysis.visualization.{Histogram, PlotOptions, ScatterPlot, computeHistogramDataWithXValues}
 
 import scala.collection.GenIterable
+import scala.io.BufferedSource
 
 
 
@@ -105,6 +108,13 @@ object RunSimulation extends App with StrictLogging {
   } else {
     readResults(config.getString("output.dir"), config.getString("output.output_prefix")).toVector
   }
+
+  val resultsJson: Vector[ResultsContainerReadNew] = if (demandSets.isDefined) {
+      throw new NotImplementedError("need to be implemented")
+    } else {
+      readResultsJson(config.getString("output.dir"), config.getString("output.output_prefix")).toVector
+    }
+
 
   if (results.isEmpty) {throw new Exception("No result collections have been read !")}
 
@@ -245,7 +255,7 @@ object RunSimulation extends App with StrictLogging {
     computeHistogramDataWithXValues(data, binSize, opts.xmin, opts.xmax).writeToCSV(config.getString("output.output_prefix") + "_travel_times_hist_data.csv", rowNames = None, columnNames = Some(Vector("x", "y")))
   }
 
-  // Writes the travel tim distribution of each simulation two a csv file.
+  // Writes the travel time distribution of each simulation two a csv file.
   if (config.getBoolean("output.travel-time.per-simulation-distributions") && results.nonEmpty) {
     val r: Seq[Seq[Double]] = (0.0 to 200.0 by 2.0) +: results.map(r => {
       val data = r.tt.map(_._3).cutOfAfterQuantile(99)
@@ -259,6 +269,31 @@ object RunSimulation extends App with StrictLogging {
     results.map(r => r.tt.map(_._3).statistics.median).writeToCSV(config.getString("output.output_prefix") + "_median-travel-time-per-simulation.csv")
   }
 
+  if (config.getBoolean("output.travel-time.per-simulation-median-by-OD") && results.nonEmpty) {
+
+    // reads the group json file
+    val odGroups = {
+      val source: BufferedSource = scala.io.Source.fromFile(config.getString("output.OD-groups"))
+      val input: JsValue = Json.parse(try source.mkString finally source.close)
+      input.validate[Vector[ODGroup_JSON]] match {
+        case s: JsSuccess[Vector[ODGroup_JSON]] => {
+          s.get
+        }
+        case e: JsError => throw new Error("Error while parsing od groups: " + JsError.toJson(e).toString())
+      }
+    }
+
+    // reverses the map and create a function to use it without re-creating it every time
+    val groupsReversed: ((String, String)) => String = odPair => {odGroups.flatMap(g => g.ods.map(od => (od.o, od.d) -> g.name)).toMap.getOrElse(odPair, "")}
+
+    // each gropu becomes one column. The columns are sorted alphabetically.
+    val columnNames: Vector[String] = resultsJson.head.tt.groupBy(p => groupsReversed((p.o, p.d))).keys.toVector.sortBy(a => a)
+    resultsJson
+      .map(r => r.tt.groupBy(p => groupsReversed((p.o, p.d))).map(g => (g._1, g._2.map(_.tt).statistics.median)).toVector.sortBy(_._1).map(_._2))
+      .transpose
+      .writeToCSV(config.getString("output.output_prefix") + "_median-travel-time-per-simulation-by-OD.csv", rowNames = None, columnNames = Some(columnNames))
+  }
+
   results.collect({
     case f: ResultsContainerReadWithDemandSet => {f}
   }).groupBy(_.demandFile).foreach(g => println((g._2.map(_.tt.map(_._3).cutOfAfterQuantile(99.5).statistics.median).statistics.median, g._2.map(_.tt.map(_._3).cutOfAfterQuantile(99.5).statistics.variance).statistics.median)))
@@ -268,7 +303,7 @@ object RunSimulation extends App with StrictLogging {
   //val ODPairsToAnalyse: Iterable[(String, String)] = config.getStringList("results-analysis.o_nodes").asScala.zip(config.getStringList("results-analysis.d_nodes").asScala).map(t => (t._1, t._2))
 
 
-  if (config.getBoolean("output.analyze_od_groups") && results.nonEmpty) {
+  /*if (config.getBoolean("output.analyze_od_groups") && results.nonEmpty) {
     //val ODGroupsToAnalyse: Seq[(Seq[String], Seq[String])] = Vector((Vector("top", "bottom"), Vector("left-top", "right-bottom")), (Vector("left-bottom", "right-top"), Vector("right-bottom", "left-top")))
     val ODGroupsToAnalyse: Seq[(Seq[String], Seq[String])] = Vector((Vector("top"), Vector("bottom")), (Vector("bottom"), Vector("top")))
 
@@ -298,7 +333,7 @@ object RunSimulation extends App with StrictLogging {
       }
       subPop._1.map(_._3).cutOfAfterQuantile(99).stats
     }).toVector.writeToCSV(config.getString("output.output_prefix") + "_statsByOD.csv", rowNames = Some(ODGroupsToAnalyse.map(makeStringODGroups)), columnNames = None)
-  }
+  }*/
 
   // ******************************************************************************************
   //                                  Processing for TRANS-FORM
