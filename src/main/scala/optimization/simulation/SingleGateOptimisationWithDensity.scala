@@ -18,7 +18,7 @@ class SingleGateOptimisationWithDensity(val config: Config, ID: String, params: 
     val res = runGatingSingleFunction(config)(x.get(0),x.get(1),x.get(2),x.get(3))
 
     val fw = new FileWriter(config.getString("output.dir") + "/SO_gating_KPIs_" + ID + ".csv", true)
-    fw.write(res.getOrElse("allPeds", Double.NaN) + "," + res.getOrElse("withGates", Double.NaN) + "," + res.getOrElse("withoutGates", Double.NaN) + "\n")
+    fw.write(res.getOrElse("allPeds", Double.NaN) + "," + res.getOrElse("allPedsSize", Double.NaN) + "," + res.getOrElse("withGates", Double.NaN) + "," + res.getOrElse("withoutGates", Double.NaN) + "\n")
     fw.close()
 
     res.getOrElse("allPeds", Double.MaxValue)

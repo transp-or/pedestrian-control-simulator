@@ -14,5 +14,4 @@ class SingleGateOptimizationWithDensityFactory(config: Config, ID: String) exten
     new SingleGateOptimisationWithDensity(config, ID, objects.asInstanceOf[java.util.ArrayList[java.lang.Double]])
 
   }
-
 }

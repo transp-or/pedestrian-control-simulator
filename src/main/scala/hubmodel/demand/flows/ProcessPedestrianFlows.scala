@@ -39,8 +39,7 @@ class ProcessPedestrianFlows[T <: PedestrianNOMAD](pedestrianFlows: Iterable[Ped
         }))
 
     pedestrianFlowsFunction
-      .foreach(flow => splitFractionsUniform(sim.stop2Vertices(flow.O), sim.stop2Vertices(flow.D))
-        .foreach(f => {
+      .foreach(flow => splitFractionsUniform(sim.stop2Vertices(flow.O), sim.stop2Vertices(flow.D)).foreach(f => {
           sim.insertEventAtAbsolute(flow.start)(new PedestrianGenerationNonHomogeneousRate[T](
             f._1,
             f._2,
