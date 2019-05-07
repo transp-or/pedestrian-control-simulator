@@ -4,9 +4,9 @@ import myscala.output.SeqOfSeqExtensions.SeqOfSeqWriter
 
 object ParetoFromCSV extends App {
 
-  val idx1: Int = 1
-  val idx2: Int = 2
-  val fileName: String = "/home/nicholas/PhD/code/hub-simulator/results-to-keep/parameter-optimisation/gating/without-density/SO_gating_KPIs_L0wzs2FzV.csv"
+  val idx1: Int = 5
+  val idx2: Int = 6
+  val fileName: String = "/home/nicholas/PhD/code/hub-simulator/SO_gating_KPIs_bHbYunNRq.csv"
 
 
   val bufferedSourceHeader = io.Source.fromFile(fileName)
