@@ -34,7 +34,7 @@ class SingleGateOptimisation(val config: Config, ID: String, params: java.util.A
     )
     fw.close()
 
-    res.getOrElse("allPedsTTmedmed", Double.MaxValue)
+    res.getOrElse("allPedsTTmed75quant", Double.MaxValue)
   }
 
   override def pbWithGoodType(newX: util.ArrayList[lang.Double]) = new SingleGateOptimisation(config, ID, newX)

@@ -33,7 +33,7 @@ class SingleGateOptimisationWithDensity(val config: Config, ID: String, params: 
     )
     fw.close()
 
-    res.getOrElse("allPedsTTmedmed", Double.MaxValue)
+    res.getOrElse("allPedsTTmed75quant", Double.MaxValue)
   }
 
   override def pbWithGoodType(newX: util.ArrayList[lang.Double]) = new SingleGateOptimisationWithDensity(config, ID, newX)
