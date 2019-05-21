@@ -87,6 +87,9 @@ class PedestrianSim(val origin: Rectangle,
   /** collection of zones which must not block the pedestrian (make him wait) */
   val freedFrom: scala.collection.mutable.ArrayBuffer[String] = scala.collection.mutable.ArrayBuffer()
 
+  /** time spent in each monitored area. The first value is the entrance time and the second value the exit time. */
+  val timeInMonitoredAreas: scala.collection.mutable.Map[String,(Time, Time)] = scala.collection.mutable.Map()
+
   /** target zone */
   var nextZone: Rectangle = finalDestination //route.head
 
@@ -197,16 +200,6 @@ class PedestrianSim(val origin: Rectangle,
   // ******************************************************************************************
 
   /**
-    * Overloaded constructor where the freeFlowVel is sampled from Weidmann's distribution.
-    *
-    * @param oZone     origin zone of the pedestrian
-    * @param dZone     destination zone of the pedestrian
-    * @param entryTime entry time into the system
-    * @param posO      current position (general point)
-    * @param route     initial route
-    */
-
-  /**
     *
     * @param oZone
     * @param dZone
@@ -219,15 +212,21 @@ class PedestrianSim(val origin: Rectangle,
     this.currentPosition = posO
   }
 
+  /** Writes the pedestrian to a JSON string.
+    *
+    * @param completed
+    * @return
+    */
   def toJSON(completed: Boolean): String = {
     "{" +
-      "\"o\":\"" + this.origin + "\"," +
+    "\"o\":\"" + this.origin + "\"," +
     "\"d\":\"" + this.finalDestination + "\"," +
     "\"tt\":" + this.travelTime + "," +
     "\"entry\":" + this.entryTime + "," +
     "\"exit\":" + {if (completed) this.exitTime else {"null"}} + "," +
     "\"td\":" + this.travelDistance + "," +
-      "\"gates\": [" + {if (this.freedFrom.nonEmpty) {"\"" + this.freedFrom.mkString("\",\"") + "\""} else {""}} + "]" +
+    "\"gates\": [" + {if (this.freedFrom.nonEmpty) {"\"" + this.freedFrom.mkString("\",\"") + "\""} else {""}} + "]," +
+    "\"tt-monitored-zones\": [" + {if(this.timeInMonitoredAreas.nonEmpty) {"{" + this.timeInMonitoredAreas.map(kv => "\"mz_id\": \"" + kv._1 + "\"," + "\"tt\":" + (kv._2._2-kv._2._1).toString).mkString("},{") + "}"} else {""} } + "]"+
     "}"
   }
 }

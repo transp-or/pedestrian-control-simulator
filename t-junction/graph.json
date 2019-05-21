@@ -246,7 +246,7 @@
       "end_pos_y": 16.95,
       "controlled_area": "junction-monitor",
       "functional_form": "quadratic",
-      "functional_parameters": [3.89, 0.38, -0.433]
+      "functional_parameters": [2.0505730722947, 4.81360355912343, -0.305645319555007]
     },
     {
       "o": "gate-bottom-bottom",
@@ -257,10 +257,9 @@
       "end_pos_y": 10.05,
       "controlled_area": "junction-monitor",
       "functional_form": "quadratic",
-      "functional_parameters": [3.89, 0.38, -0.433]
+      "functional_parameters": [2.0505730722947, 4.81360355912343, -0.305645319555007]
     }
   ],
-
   "controlled_areas" : [
     {
       "name": "junction-monitor",
@@ -272,7 +271,7 @@
       "y3": 15.5,
       "x4": 15,
       "y4": 15.5,
-      "target_density": 2.17
+      "target_density": 5.267154052416055
     }
   ],
   "binary_gates": [],

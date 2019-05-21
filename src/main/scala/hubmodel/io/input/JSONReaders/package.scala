@@ -454,8 +454,14 @@ package object JSONReaders {
   // ******************************************************************************************
 
 
+  case class TravelTimeThroughZone_JSON(ID: String, tt: Double)
+  implicit val TravelTimeThroughZone_JSON_Reads: Reads[TravelTimeThroughZone_JSON] = (
+    (JsPath \ "mz_id").read[String] and
+      (JsPath \ "tt").read[Double]
+    ) (TravelTimeThroughZone_JSON.apply _)
+
   // *********************** Pedestrian data with travel time, etc ****************************
-  case class PedestrianResults_JSON(o: String, d:String, tt: Double, entry: Double, exit: Option[Double], td: Double, gates: Vector[String])
+  case class PedestrianResults_JSON(o: String, d:String, tt: Double, entry: Double, exit: Option[Double], td: Double, gates: Vector[String], ttThroughZones: Vector[TravelTimeThroughZone_JSON])
 
   implicit val PedestrianResults_JSON_Reads: Reads[PedestrianResults_JSON] = (
     (JsPath \ "o").read[String] and
@@ -464,8 +470,10 @@ package object JSONReaders {
       (JsPath \ "entry").read[Double] and
       (JsPath \ "exit").readNullable[Double] and
       (JsPath \ "td").read[Double] and
-      (JsPath \ "gates").read[Vector[String]]
+      (JsPath \ "gates").read[Vector[String]] and
+      (JsPath \ "tt-monitored-zones").read[Vector[TravelTimeThroughZone_JSON]]
     ) (PedestrianResults_JSON.apply _)
+
 
 
 

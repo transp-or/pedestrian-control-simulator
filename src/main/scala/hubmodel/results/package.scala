@@ -249,7 +249,7 @@ package object results {
           case s: JsSuccess[Vector[PedestrianResults_JSON]] => {
             s.get
           }
-          case e: JsError => throw new Error("Error while parsing graph specification file: " + JsError.toJson(e).toString())
+          case e: JsError => throw new Error("Error while parsing results file: " + str + "\nerror: " + JsError.toJson(e).toString())
         }
       }
       ResultsContainerReadNew(tt, None, None)

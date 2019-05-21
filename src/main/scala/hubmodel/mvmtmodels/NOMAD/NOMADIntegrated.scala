@@ -231,9 +231,34 @@ class NOMADIntegrated[T <: PedestrianNOMAD](sim: NOMADGraphSimulator[T]) extends
       })
     }
 
+    // If monitored zones are defined, the track the time requires for pedestrians to walk through them.
+    // This is expensive to compute
+    if (sim.controlDevices.monitoredAreas.nonEmpty) {
+      sim.controlDevices.monitoredAreas.foreach(zone => {
+        val paxInZone: Iterable[PedestrianNOMAD] = sim.population.filter(ped => isInVertex(zone)(ped.currentPosition))
+        paxInZone.foreach(ped => {
+          val previousEntrance: (Time, Time) = ped.timeInMonitoredAreas.getOrElseUpdate(zone.name, (sim.currentTime, sim.currentTime))
+          ped.timeInMonitoredAreas.update(zone.name, (previousEntrance._1, sim.currentTime))
+        })
+      })
+    }
+
+    // One loop for all the tasks which must be applied to the pedestrians.
+    sim.population.foreach(ped => {
+
+      // store the entrance and exit times of each zones
+      sim.controlDevices.monitoredAreas.filter(zone => isInVertex(zone)(ped.currentPosition)).foreach(zone => {
+      val previousEntrance: (Time, Time) = ped.timeInMonitoredAreas.getOrElseUpdate(zone.name, (sim.currentTime, sim.currentTime))
+      ped.timeInMonitoredAreas.update(zone.name, (previousEntrance._1, sim.currentTime))
+      })
+
+      // updates the next destination if the current destination is reached
+      if (sim.intermediateDestinationReached(ped)) {sim.updateIntermediateDestination(ped)}
+    })
+
     sim.processCompletedPedestrian(sim.finalDestinationReached)
 
-    sim.population.filter(sim.intermediateDestinationReached).foreach(p => { sim.updateIntermediateDestination(p) })
+    //sim.population.filter(sim.intermediateDestinationReached).foreach(p => { sim.updateIntermediateDestination(p) })
 
     //sim.rebuildMTree()
 

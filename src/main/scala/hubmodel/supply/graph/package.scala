@@ -43,8 +43,8 @@ package object graph {
 
         val fg: Iterable[FlowGate] = if (useFlowGates) {
           s.get.flowGates.map(fg => fg.funcForm match {
-            case Some(str) if str == "quadratic" => new FlowGateFunctional(vertexMapReader(fg.o), vertexMapReader(fg.d), Vector2D(fg.start_pos_x, fg.start_pos_y), Vector2D(fg.end_pos_x, fg.end_pos_y), fg.area, { FunctionalFormGating((x: Density) => Flow(math.min(10.0, math.max(0.0, fg.funcParam.get(0) + fg.funcParam.get(1) * x.d + fg.funcParam.get(2) * x.d * x.d)))) })
-            case Some(str) if str == "linear" => new FlowGateFunctional(vertexMapReader(fg.o), vertexMapReader(fg.d), Vector2D(fg.start_pos_x, fg.start_pos_y), Vector2D(fg.end_pos_x, fg.end_pos_y), fg.area, { FunctionalFormGating((x: Density) => Flow(math.min(10.0, math.max(0.0, fg.funcParam.get(0) + fg.funcParam.get(1) * x.d)))) })
+            case Some(str) if str == "quadratic" => new FlowGateFunctional(vertexMapReader(fg.o), vertexMapReader(fg.d), Vector2D(fg.start_pos_x, fg.start_pos_y), Vector2D(fg.end_pos_x, fg.end_pos_y), fg.area, { FunctionalFormGating((x: Density) => Flow(math.max(0.0, fg.funcParam.get(0) + fg.funcParam.get(1) * x.d + fg.funcParam.get(2) * x.d * x.d))) })
+            case Some(str) if str == "linear" => new FlowGateFunctional(vertexMapReader(fg.o), vertexMapReader(fg.d), Vector2D(fg.start_pos_x, fg.start_pos_y), Vector2D(fg.end_pos_x, fg.end_pos_y), fg.area, { FunctionalFormGating((x: Density) => Flow(math.max(0.0, fg.funcParam.get(0) + fg.funcParam.get(1) * x.d))) })
             case None => new FlowGate(vertexMapReader(fg.o), vertexMapReader(fg.d), Vector2D(fg.start_pos_x, fg.start_pos_y), Vector2D(fg.end_pos_x, fg.end_pos_y), fg.area)
           })
         } else {

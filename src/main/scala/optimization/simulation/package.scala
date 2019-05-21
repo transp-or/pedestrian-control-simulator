@@ -9,7 +9,7 @@ import hubmodel._
 import hubmodel.demand.readDemandSets
 import hubmodel.mgmt._
 import hubmodel.ped.PedestrianNOMAD
-import myscala.math.stats.{ComputeQuantiles, ComputeStats, Statistics, computeBoxPlotData, computeQuantiles}
+import myscala.math.stats.{ComputeQuantiles, ComputeStats, Statistics, computeBoxPlotData, computeQuantile}
 
 import scala.collection.GenIterable
 import scala.collection.JavaConversions._
@@ -222,7 +222,10 @@ package object simulation {
           "allPedsSize" -> resultsJson.map(_.tt.size).sum,
           "withGatesTTvarmed" ->  statsPerRun.map(r => r(false).variance).statistics.median,
           "withoutGatesTTvarmed" ->  statsPerRun.map(r => r(true).variance).statistics.median,
-          "allPedsTTvarmed" -> resultsJson.map(r => {r.tt.map(_.tt).statistics}).map(r => r.variance).statistics.median
+          "allPedsTTvarmed" -> resultsJson.map(r => {r.tt.map(_.tt).statistics}).map(r => r.variance).statistics.median,
+          "allPedsTTmed75quant" -> computeQuantile(75)(resultsJson.map(r => {r.tt.map(_.tt)/*.cutOfAfterQuantile(99.5)*/.statistics}).map(r => r.median)).value,
+          "withGatesTTmed75quant" ->  computeQuantile(75)(statsPerRun.map(r => r(false).median).toVector).value,
+          "withoutGatesTTmed75quant" -> computeQuantile(75)(statsPerRun.map(r => r(true).median).toVector).value
         )
       }
       case _: ParametersForGatingWithDensity[_, _] => {
@@ -238,7 +241,10 @@ package object simulation {
           "allPedsSize" -> resultsJson.map(_.tt.size).sum,
           "withGatesTTvarmed" ->  statsPerRun.map(r => r(false).variance).statistics.median,
           "withoutGatesTTvarmed" ->  statsPerRun.map(r => r(true).variance).statistics.median,
-          "allPedsTTvarmed" -> resultsJson.map(r => {r.tt.map(_.tt).statistics}).map(r => r.variance).statistics.median
+          "allPedsTTvarmed" -> resultsJson.map(r => {r.tt.map(_.tt).statistics}).map(r => r.variance).statistics.median,
+          "allPedsTTmed75quant" -> computeQuantile(75)(resultsJson.map(r => {r.tt.map(_.tt)/*.cutOfAfterQuantile(99.5)*/.statistics}).map(r => r.median)).value,
+          "withGatesTTmed75quant" ->  computeQuantile(75)(statsPerRun.map(r => r(false).median).toVector).value,
+          "withoutGatesTTmed75quant" -> computeQuantile(75)(statsPerRun.map(r => r(true).median).toVector).value
         )
       }
       case _: ParametersForFlowSeparators[_, _] => {

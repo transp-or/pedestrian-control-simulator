@@ -2,6 +2,7 @@ package hubmodel.mgmt
 
 import hubmodel.DES.{Action, NOMADGraphSimulator}
 import hubmodel.ped.PedestrianNOMAD
+import hubmodel.tools.Time
 import hubmodel.tools.cells.isInVertex
 import kn.uni.voronoitreemap.datastructure.OpenList
 import kn.uni.voronoitreemap.diagram.PowerDiagram
@@ -25,11 +26,12 @@ class EvaluateState[T <: PedestrianNOMAD](sim: NOMADGraphSimulator[T]) extends A
 
     sim.criticalAreas.values.foreach(zone => {
 
-      // computes the number of people inside the zone(s) to control.
-      val paxInZone: Int = sim.population.count(ped => isInVertex(zone)(ped.currentPosition))
+      // computes the number of people inside the zone(s) to control and stores the entrance and exit time
+      // of the pedestrian in/out from this zone
+      val nbrPaxInZone: Int = sim.population.count(ped => isInVertex(zone)(ped.currentPosition))
 
       // voronoi density
-      if (paxInZone > 0) {
+      if (nbrPaxInZone > 0) {
         try {
           val voronoi: PowerDiagram = new PowerDiagram()
           val stupidList: OpenList = new OpenList()
@@ -40,7 +42,7 @@ class EvaluateState[T <: PedestrianNOMAD](sim: NOMADGraphSimulator[T]) extends A
           voronoi.setClipPoly(box)
           val voronoiTessellations: Vector[Site] = voronoi.computeDiagram().toVector
           zone.densityHistory.append(
-            (sim.currentTime, voronoiTessellations.filter(s => isInVertex(zone)(Vector2D(s.x, s.y))).foldLeft(0.0)((acc: Double, n: Site) => acc + 1.0 / (paxInZone * n.getPolygon.getArea)))
+            (sim.currentTime, voronoiTessellations.filter(s => isInVertex(zone)(Vector2D(s.x, s.y))).foldLeft(0.0)((acc: Double, n: Site) => acc + 1.0 / (nbrPaxInZone * n.getPolygon.getArea)))
           )
           zone.paxIndividualDensityHistory.append(
             (sim.currentTime, voronoiTessellations.filter(s => isInVertex(zone)(Vector2D(s.x, s.y))).map(1.0 / _.getPolygon.getArea))
@@ -79,7 +81,7 @@ class EvaluateState[T <: PedestrianNOMAD](sim: NOMADGraphSimulator[T]) extends A
     sim.eventLogger.trace("sim-time=" + sim.currentTime + ": state evaluation")
     this.computeDensity()
     if (sim.useFlowGates || sim.useBinaryGates) {
-      sim.insertEventWithZeroDelay(new DLQRGateController(sim))
+      sim.insertEventWithZeroDelay(new UpdateGates(sim))
     }
     if (sim.useFlowSep && !sim.controlDevices.fixedFlowSeparators) {
       sim.controlDevices.flowSeparators.foreach(fs => {

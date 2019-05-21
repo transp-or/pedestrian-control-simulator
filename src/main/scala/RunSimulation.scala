@@ -10,7 +10,7 @@ import hubmodel.results.{ResultsContainerRead, ResultsContainerReadNew, ResultsC
 import hubmodel.supply.graph.readPTStop2GraphVertexMap
 import hubmodel.tools.Time
 import myscala.math.stats.bootstrap.bootstrapMSE
-import myscala.math.stats.{ComputeQuantiles, ComputeStats, computeBoxPlotData}
+import myscala.math.stats.{ComputeQuantiles, ComputeStats, computeBoxPlotData, computeQuantile}
 import myscala.output.SeqOfSeqExtensions.SeqOfSeqWriter
 import myscala.output.SeqTuplesExtensions.SeqTuplesWriter
 import myscala.output.SeqExtension.SeqWriter
@@ -228,10 +228,10 @@ object RunSimulation extends App with StrictLogging {
 
     // writes stattistcs about each run
     val statsPerRun = results.map(r => {
-      r.tt.map(_._3).cutOfAfterQuantile(99).stats
+      r.tt.map(_._3).cutOfAfterQuantile(99).statistics
     })
 
-    Vector((0.0, computeBoxPlotData(statsPerRun.map(_._4)).toCSV, 0.8)).writeToCSV(config.getString("output.output_prefix") + "-travel-time-median-boxplot.csv", rowNames = None, columnNames = Some(Vector("pos", "mean", "median", "lq", "uq", "lw", "uw", "outliersize", "boxplotwidth")))
+    Vector((0.0, computeBoxPlotData(statsPerRun.map(_.median)).toCSV, 0.8)).writeToCSV(config.getString("output.output_prefix") + "-travel-time-median-boxplot.csv", rowNames = None, columnNames = Some(Vector("pos", "mean", "median", "lq", "uq", "lw", "uw", "outliersize", "boxplotwidth")))
 
     statsPerRun.writeToCSV(config.getString("output.output_prefix") + "_travel_times_stats.csv", rowNames = None, columnNames = Some(Vector("size", "mean", "variance", "median", "min", "max")))
 
@@ -239,11 +239,15 @@ object RunSimulation extends App with StrictLogging {
       data.sum / data.size
     }
 
-    println(bootstrapMSE(statsPerRun.map(_._4), mean))
+    println(bootstrapMSE(statsPerRun.map(_.median), mean))
 
-    (for (i <- 1 to results.size) yield {
-      (i, bootstrapMSE(statsPerRun.take(i).map(_._4), mean).MSE)
-    }).toVector.writeToCSV(config.getString("output.output_prefix") + "-MSE.csv", rowNames = None, columnNames = Some(Vector("n", "mse")))
+    println(statsPerRun.map(_.median).zipWithIndex.sortBy(_._1))
+
+    val quant: Double = 75
+    (for (i <- 1 to results.size by 2) yield {
+      val mseResults = for(j <- 1 to 100) yield {bootstrapMSE(util.Random.shuffle(statsPerRun).take(i).map(_.median), mean)}
+      (i, computeQuantile(quant)(mseResults.map(_.MSE)).value, computeQuantile(quant)(mseResults.map(r => r.MSE / r.parameter)).value)
+    }).toVector.writeToCSV(config.getString("output.output_prefix") + "-MSE.csv", rowNames = None, columnNames = Some(Vector("n", "mse", "rmse")))
 
 
     // creates hist data for all TT aggregated together
@@ -269,29 +273,42 @@ object RunSimulation extends App with StrictLogging {
     results.map(r => r.tt.map(_._3).statistics.median).writeToCSV(config.getString("output.output_prefix") + "_median-travel-time-per-simulation.csv")
   }
 
+
+  // reads the group json file
+  val odGroups = {
+    val source: BufferedSource = scala.io.Source.fromFile(config.getString("output.OD-groups"))
+    val input: JsValue = Json.parse(try source.mkString finally source.close)
+    input.validate[Vector[ODGroup_JSON]] match {
+      case s: JsSuccess[Vector[ODGroup_JSON]] => {
+        s.get
+      }
+      case e: JsError => throw new Error("Error while parsing od groups: " + JsError.toJson(e).toString())
+    }
+  }
+
+  // reverses the map and create a function to use it without re-creating it every time
+  val groupsReversed: ((String, String)) => String = odPair => {odGroups.flatMap(g => g.ods.map(od => (od.o, od.d) -> g.name)).toMap.getOrElse(odPair, "")}
+
+
   if (config.getBoolean("output.travel-time.per-simulation-median-by-OD") && results.nonEmpty) {
 
-    // reads the group json file
-    val odGroups = {
-      val source: BufferedSource = scala.io.Source.fromFile(config.getString("output.OD-groups"))
-      val input: JsValue = Json.parse(try source.mkString finally source.close)
-      input.validate[Vector[ODGroup_JSON]] match {
-        case s: JsSuccess[Vector[ODGroup_JSON]] => {
-          s.get
-        }
-        case e: JsError => throw new Error("Error while parsing od groups: " + JsError.toJson(e).toString())
-      }
-    }
-
-    // reverses the map and create a function to use it without re-creating it every time
-    val groupsReversed: ((String, String)) => String = odPair => {odGroups.flatMap(g => g.ods.map(od => (od.o, od.d) -> g.name)).toMap.getOrElse(odPair, "")}
-
-    // each gropu becomes one column. The columns are sorted alphabetically.
+    // each group becomes one column. The columns are sorted alphabetically.
     val columnNames: Vector[String] = resultsJson.head.tt.groupBy(p => groupsReversed((p.o, p.d))).keys.toVector.sortBy(a => a)
     resultsJson
       .map(r => r.tt.groupBy(p => groupsReversed((p.o, p.d))).map(g => (g._1, g._2.map(_.tt).statistics.median)).toVector.sortBy(_._1).map(_._2))
       .transpose
       .writeToCSV(config.getString("output.output_prefix") + "_median-travel-time-per-simulation-by-OD.csv", rowNames = None, columnNames = Some(columnNames))
+  }
+
+  if (config.getBoolean("output.travel-time.through-monitored-zones") && resultsJson.nonEmpty) {
+    val columnNames: Vector[String] = resultsJson.flatMap(r => r.tt.flatMap(p => p.ttThroughZones.map(ttZ => groupsReversed((p.o, p.d)) + "_" + ttZ.ID))).distinct.sorted
+    resultsJson
+      .map(r => r.tt.flatMap(p => p.ttThroughZones.map(ttZ => (p.o, p.d, ttZ.ID, ttZ.tt)))
+        .groupBy(p => (groupsReversed((p._1, p._2)), p._3))
+        .map(g => (g._1._1 + "_" + g._1._2, g._2.map(_._4).statistics.median))
+        .toVector.sortBy(_._1).map(_._2))
+      .transpose
+      .writeToCSV(config.getString("output.output_prefix") + "_median-travel-time-through-zones-per-simulation-by-OD.csv", rowNames = None, columnNames = Some(columnNames))
   }
 
   results.collect({

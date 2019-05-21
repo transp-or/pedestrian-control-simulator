@@ -25,7 +25,10 @@ class SingleGateOptimisationWithDensity(val config: Config, ID: String, params: 
         res.getOrElse("withGatesTTmedmed", Double.NaN) + "," +
         res.getOrElse("withoutGatesTTmedmed", Double.NaN) + "," +
         res.getOrElse("withGatesTTvarmed", Double.NaN) + "," +
-        res.getOrElse("withoutGatesTTvarmed", Double.NaN) +
+        res.getOrElse("withoutGatesTTvarmed", Double.NaN) + "," +
+        res.getOrElse("allPedsTTmed75quant", Double.NaN) + "," +
+        res.getOrElse("withGatesTTmed75quant", Double.NaN) + "," +
+        res.getOrElse("withoutGatesTTmed75quant", Double.NaN) +
         "\n"
     )
     fw.close()
