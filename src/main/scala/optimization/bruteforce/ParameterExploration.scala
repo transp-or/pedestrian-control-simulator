@@ -55,7 +55,9 @@ class ParameterExploration(config: Config) extends GridSearch {
         defaultParameters._11.monitoredAreas.map(_.deepCopy),
         defaultParameters._11.amws.map(_.clone()),
         if (config.getBoolean("sim.use_flow_gates")) {
-          defaultParameters._11.flowGates.map(fg => new FlowGateFunctional(fg.startVertex, fg.endVertex, fg.start, fg.end, fg.monitoredArea, { FunctionalFormGating((x: Density) => Flow(math.max(0.0000001, t._1 + t._2 * x.d))) }))
+          defaultParameters._11.flowGates.map(fg => new FlowGateFunctional(fg.startVertex, fg.endVertex, fg.start, fg.end, fg.monitoredArea, {
+            FunctionalFormGating((x: Density) => Flow(math.max(0.0000001, t._1 + t._2 * x.d)))
+          }))
         } else {
           Vector()
         },

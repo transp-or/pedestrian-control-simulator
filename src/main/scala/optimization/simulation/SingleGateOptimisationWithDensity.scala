@@ -6,6 +6,8 @@ import java.{lang, util}
 import SimulatedAnnealing.ContinuousProblem
 import com.typesafe.config.Config
 
+import scala.io.Source
+
 class SingleGateOptimisationWithDensity(val config: Config, ID: String, params: java.util.ArrayList[java.lang.Double]) extends ContinuousProblem(params) {
 
   private val curr_x1 = super.getXs.get(0).asInstanceOf[Double]
@@ -15,7 +17,14 @@ class SingleGateOptimisationWithDensity(val config: Config, ID: String, params: 
 
   def getObjectiveFunction(x: util.ArrayList[lang.Double]): Double = {
 
-    val res = runGatingSingleFunction(config)(x.get(0),x.get(1),x.get(2),x.get(3))
+    val continue = false
+    val simDirToUse: Option[String] = if (continue) {
+      Some(Source.fromFile(config.getString("output.dir") + "/" + ID + "_previous-simulation-dir.txt").getLines.mkString)
+    } else {
+      None
+    }
+
+    val (simDir: String, res: Map[String, Double]) = runGatingSingleFunction(config, simDir = simDirToUse)(x.get(0), x.get(1), x.get(2), x.get(3))
 
     val fw = new FileWriter(config.getString("output.dir") + "/SO_gating_KPIs_" + ID + ".csv", true)
     fw.write(
@@ -28,7 +37,7 @@ class SingleGateOptimisationWithDensity(val config: Config, ID: String, params: 
         res.getOrElse("withoutGatesTTvarmed", Double.NaN) + "," +
         res.getOrElse("allPedsTTmed75quant", Double.NaN) + "," +
         res.getOrElse("withGatesTTmed75quant", Double.NaN) + "," +
-        res.getOrElse("withoutGatesTTmed75quant", Double.NaN) +"," +
+        res.getOrElse("withoutGatesTTmed75quant", Double.NaN) + "," +
         res.getOrElse("allPedsTT75quantmed", Double.NaN) + "," +
         res.getOrElse("indDens75quantmed", Double.NaN) + "," +
         res.getOrElse("indDens90quantmed", Double.NaN) + "," +
@@ -37,6 +46,10 @@ class SingleGateOptimisationWithDensity(val config: Config, ID: String, params: 
         "\n"
     )
     fw.close()
+
+    val simDirFile = new FileWriter(config.getString("output.dir") + "/" + ID + "_previous-simulation-dir.txt", false)
+    simDirFile.write(simDir)
+    simDirFile.close()
 
     res.getOrElse("combined-allPedsTT75quantmed-allPedsTTzones75quantmed", Double.MaxValue)
   }

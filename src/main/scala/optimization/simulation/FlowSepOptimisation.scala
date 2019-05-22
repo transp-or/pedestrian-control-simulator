@@ -14,7 +14,7 @@ class FlowSepOptimisation(val config: Config, ID: String, params: java.util.Arra
 
   def getObjectiveFunction(x: util.ArrayList[lang.Double]): Double = {
 
-    val res = runFlowSepFunction(config)(x.get(0),x.get(1),x.get(2))
+    val (simDir: String, res: Map[String, Double]) = runFlowSepFunction(config)(x.get(0), x.get(1), x.get(2))
 
     val fw = new FileWriter(config.getString("output.dir") + "/SO_flowSep_KPIs_" + ID + ".csv", true)
     fw.write(res.getOrElse("allPeds", Double.MaxValue).toString + "\n")
@@ -27,6 +27,6 @@ class FlowSepOptimisation(val config: Config, ID: String, params: java.util.Arra
 
   override def printSolution(s: String, currObjective: Double): Unit = {
     System.out.println(s)
-    System.out.println("For x1 = " + curr_x1 + ", x2 = " + curr_x2 + ", x3 = " + curr_x3  + " ---> y = " + currObjective)
+    System.out.println("For x1 = " + curr_x1 + ", x2 = " + curr_x2 + ", x3 = " + curr_x3 + " ---> y = " + currObjective)
   }
 }

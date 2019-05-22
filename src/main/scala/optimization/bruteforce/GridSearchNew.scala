@@ -14,7 +14,6 @@ import myscala.math.stats.ComputeStats
 import scala.collection.GenIterable
 
 
-
 abstract class GridSearchNew[T <: ParameterModifications](val config: Config) extends GridSearch {
 
   val defaultParameters: SimulatorParameters = createSimulation[PedestrianNOMAD](config).getSetupArguments

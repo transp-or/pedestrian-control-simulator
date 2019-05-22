@@ -20,20 +20,20 @@ object ParetoFromCSV extends App {
     line.split(",").map(_.trim.toDouble).toSeq
   }).toSeq
 
-  val min1: (Double, Int) = data.map(_(idx1)).zipWithIndex.minBy(_._1)
-  val min2: (Double, Int) = data.map(_(idx2)).zipWithIndex.minBy(_._1)
+  val min1: (Double, Int) = data.map(_ (idx1)).zipWithIndex.minBy(_._1)
+  val min2: (Double, Int) = data.map(_ (idx2)).zipWithIndex.minBy(_._1)
 
 
-  val sortedIdx1: Seq[Seq[Double]] = data.filter(v => v(idx1) <= data(min2._2)(idx1) && v(idx2) <= data(min1._2)(idx2)).sortBy(_(idx1))
+  val sortedIdx1: Seq[Seq[Double]] = data.filter(v => v(idx1) <= data(min2._2)(idx1) && v(idx2) <= data(min1._2)(idx2)).sortBy(_ (idx1))
   val size: Int = sortedIdx1.size
 
   var previousPointIdx: Int = 0
-  val pareto: Seq[Seq[Double]]= sortedIdx1.head +: (for (i <- 1 until size if sortedIdx1(previousPointIdx)(idx2) > sortedIdx1(i)(idx2)) yield {
+  val pareto: Seq[Seq[Double]] = sortedIdx1.head +: (for (i <- 1 until size if sortedIdx1(previousPointIdx)(idx2) > sortedIdx1(i)(idx2)) yield {
     previousPointIdx = i
     sortedIdx1(i)
   }).toVector
 
-  pareto.transpose.writeToCSV(fileName.replace(".csv", "_pareto.csv"), rowNames=None, columnNames=Some(headers))
+  pareto.transpose.writeToCSV(fileName.replace(".csv", "_pareto.csv"), rowNames = None, columnNames = Some(headers))
 
   bufferedSourceHeader.close
   bufferedSource.close

@@ -97,7 +97,7 @@ package object hubmodel {
     *
     * @return UUID formatted as a String
     */
-  def generateUUID: String = RandomStringUtils.randomAlphabetic(1) + RandomStringUtils.randomAlphanumeric(8) // java.util.UUID.randomUUID.toString
+  def generateUUID: String = RandomStringUtils.randomAlphabetic(1) + RandomStringUtils.randomAlphanumeric(10) // java.util.UUID.randomUUID.toString
 
 
 

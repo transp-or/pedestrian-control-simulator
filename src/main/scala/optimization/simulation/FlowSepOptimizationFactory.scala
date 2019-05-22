@@ -11,7 +11,7 @@ class FlowSepOptimizationFactory(config: Config, ID: String) extends SAProblemsA
 
   def createSAProblem(objects: util.List[java.lang.Object]): SAProblem = {
 
-    new FlowSepOptimisation(config, ID,  objects.asInstanceOf[java.util.ArrayList[java.lang.Double]])
+    new FlowSepOptimisation(config, ID, objects.asInstanceOf[java.util.ArrayList[java.lang.Double]])
 
   }
 
