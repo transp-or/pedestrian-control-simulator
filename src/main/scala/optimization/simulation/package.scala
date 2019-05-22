@@ -216,8 +216,7 @@ package object simulation {
             .map(g => g._1 -> g._2.map(_.tt).statistics)
         })
 
-
-        Map("withGatesTTmedmed" ->  statsPerRun.map(r => r(false).median).statistics.median,
+        val res: Map[String, Double]  = Map("withGatesTTmedmed" ->  statsPerRun.map(r => r(false).median).statistics.median,
           "withoutGatesTTmedmed" -> statsPerRun.map(r => r(true).median).statistics.median,
           "allPedsTTmedmed" -> resultsJson.map(r => {r.tt.map(_.tt).statistics}).map(r => r.median).statistics.median,
           "allPedsSize" -> resultsJson.map(r => r.tt.count(_.exit.isDefined)).sum,
@@ -228,8 +227,13 @@ package object simulation {
           "withGatesTTmed75quant" ->  computeQuantile(75)(statsPerRun.map(r => r(false).median).toVector).value,
           "withoutGatesTTmed75quant" -> computeQuantile(75)(statsPerRun.map(r => r(true).median).toVector).value,
           "allPedsTT75quantmed" -> resultsJson.map(r => {computeQuantile(75)(r.tt.map(_.tt))}).map(r => r.value).statistics.median,
-          "indDens75quantmed" -> results.map(_.monitoredAreaIndividualDensity.get).map(r => computeQuantile(75)(r.map(_._2)).value.toDouble).statistics.median
+          "indDens75quantmed" -> results.map(_.monitoredAreaIndividualDensity.get).map(r => computeQuantile(75)(r.map(_._2)).value.toDouble).statistics.median,
+          "indDens90quantmed" -> results.map(_.monitoredAreaIndividualDensity.get).map(r => computeQuantile(90)(r.map(_._2)).value.toDouble).statistics.median,
+          "allPedsTTzones75quantmed" -> resultsJson.map(r => {computeQuantile(75)(r.tt.flatMap(_.ttThroughZones.map(_.tt)))}).map(r => r.value).statistics.median
         )
+
+        res + ("combined-allPedsTT75quantmed-allPedsTTzones75quantmed" -> (res("allPedsTT75quantmed")/31.0 + res("allPedsTTzones75quantmed")/5.75))
+
       }
       case _: ParametersForGatingWithDensity[_, _] => {
         val statsPerRun: Iterable[Map[Boolean, Statistics[_]]] = resultsJson.map(r => {
@@ -238,7 +242,7 @@ package object simulation {
             .map(g => g._1 -> g._2.map(_.tt).statistics)
         })
 
-        Map("withGatesTTmedmed" ->  statsPerRun.map(r => r(false).median).statistics.median,
+        val res: Map[String, Double] = Map("withGatesTTmedmed" ->  statsPerRun.map(r => r(false).median).statistics.median,
           "withoutGatesTTmedmed" -> statsPerRun.map(r => r(true).median).statistics.median,
           "allPedsTTmedmed" -> resultsJson.map(r => {r.tt.map(_.tt).statistics}).map(r => r.median).statistics.median,
           "allPedsSize" -> resultsJson.map(r => r.tt.count(_.exit.isDefined)).sum,
@@ -249,8 +253,12 @@ package object simulation {
           "withGatesTTmed75quant" ->  computeQuantile(75)(statsPerRun.map(r => r(false).median).toVector).value,
           "withoutGatesTTmed75quant" -> computeQuantile(75)(statsPerRun.map(r => r(true).median).toVector).value,
           "allPedsTT75quantmed" -> resultsJson.map(r => {computeQuantile(75)(r.tt.map(_.tt))}).map(r => r.value).statistics.median,
-          "indDens75quantmed" -> results.map(_.monitoredAreaIndividualDensity.get).map(r => computeQuantile(75)(r.map(_._2)).value.toDouble).statistics.median
+          "indDens75quantmed" -> results.map(_.monitoredAreaIndividualDensity.get).map(r => computeQuantile(75)(r.map(_._2)).value.toDouble).statistics.median,
+          "indDens90quantmed" -> results.map(_.monitoredAreaIndividualDensity.get).map(r => computeQuantile(90)(r.map(_._2)).value.toDouble).statistics.median,
+          "allPedsTTzones75quantmed" -> resultsJson.map(r => {computeQuantile(75)(r.tt.flatMap(_.ttThroughZones.map(_.tt)))}).map(r => r.value).statistics.median
         )
+
+        res + ("combined-allPedsTT75quantmed-allPedsTTzones75quantmed" -> (res("allPedsTT75quantmed")/31.0 + res("allPedsTTzones75quantmed")/5.75))
       }
       case _: ParametersForFlowSeparators[_, _] => {
         val statsPerRun = resultsJson.map(r => {

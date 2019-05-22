@@ -81,9 +81,9 @@ package object results {
         val file = new File(path + prefix + "tt_" + simulator.ID + ".json")
         val bw = new BufferedWriter(new FileWriter(file))
         bw.write("[")
-        simulator.population.foreach(p => bw.write(p.toJSON(true)+ ",\n"))
-        simulator.populationCompleted.tail.foreach(p => bw.write(p.toJSON(false) + ",\n"))
-        bw.write(simulator.populationCompleted.head.toJSON(false))
+        simulator.population.foreach(p => bw.write(p.toJSON(false)+ ",\n"))
+        simulator.populationCompleted.tail.foreach(p => bw.write(p.toJSON(true) + ",\n"))
+        bw.write(simulator.populationCompleted.head.toJSON(true))
         bw.write("]")
         bw.close()
 

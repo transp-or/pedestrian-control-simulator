@@ -31,12 +31,15 @@ class SingleGateOptimisation(val config: Config, ID: String, params: java.util.A
         res.getOrElse("withGatesTTmed75quant", Double.NaN) + "," +
         res.getOrElse("withoutGatesTTmed75quant", Double.NaN) + "," +
         res.getOrElse("allPedsTT75quantmed", Double.NaN) + "," +
-        res.getOrElse("indDens75quantmed", Double.NaN) +
-      "\n"
+        res.getOrElse("indDens75quantmed", Double.NaN) + "," +
+        res.getOrElse("indDens90quantmed", Double.NaN) + "," +
+        res.getOrElse("allPedsTTzones75quantmed", Double.NaN) + "," +
+        res.getOrElse("combined-allPedsTT75quantmed-allPedsTTzones75quantmed", Double.NaN) +
+        "\n"
     )
     fw.close()
 
-    res.getOrElse("allPedsTT75quantmed", Double.MaxValue)
+    res.getOrElse("combined-allPedsTT75quantmed-allPedsTTzones75quantmed", Double.MaxValue)
   }
 
   override def pbWithGoodType(newX: util.ArrayList[lang.Double]) = new SingleGateOptimisation(config, ID, newX)
