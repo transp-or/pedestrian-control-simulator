@@ -28,12 +28,14 @@ class SingleGateOptimisationWithDensity(val config: Config, ID: String, params: 
         res.getOrElse("withoutGatesTTvarmed", Double.NaN) + "," +
         res.getOrElse("allPedsTTmed75quant", Double.NaN) + "," +
         res.getOrElse("withGatesTTmed75quant", Double.NaN) + "," +
-        res.getOrElse("withoutGatesTTmed75quant", Double.NaN) +
+        res.getOrElse("withoutGatesTTmed75quant", Double.NaN) +"," +
+        res.getOrElse("allPedsTT75quantmed", Double.NaN) + "," +
+        res.getOrElse("indDens75quantmed", Double.NaN) +
         "\n"
     )
     fw.close()
 
-    res.getOrElse("allPedsTTmed75quant", Double.MaxValue)
+    res.getOrElse("allPedsTT75quantmed", Double.MaxValue)
   }
 
   override def pbWithGoodType(newX: util.ArrayList[lang.Double]) = new SingleGateOptimisationWithDensity(config, ID, newX)

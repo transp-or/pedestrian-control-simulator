@@ -213,43 +213,48 @@ package object simulation {
         val statsPerRun: Iterable[Map[Boolean, Statistics[_]]] = resultsJson.map(r => {
           r.tt
             .groupBy(_.gates.isEmpty)
-            .map(g => g._1 -> g._2.map(_.tt)/*.cutOfAfterQuantile(99.5)*/.statistics)
+            .map(g => g._1 -> g._2.map(_.tt).statistics)
         })
+
 
         Map("withGatesTTmedmed" ->  statsPerRun.map(r => r(false).median).statistics.median,
           "withoutGatesTTmedmed" -> statsPerRun.map(r => r(true).median).statistics.median,
-          "allPedsTTmedmed" -> resultsJson.map(r => {r.tt.map(_.tt)/*.cutOfAfterQuantile(99.5)*/.statistics}).map(r => r.median).statistics.median,
-          "allPedsSize" -> resultsJson.map(_.tt.size).sum,
+          "allPedsTTmedmed" -> resultsJson.map(r => {r.tt.map(_.tt).statistics}).map(r => r.median).statistics.median,
+          "allPedsSize" -> resultsJson.map(r => r.tt.count(_.exit.isDefined)).sum,
           "withGatesTTvarmed" ->  statsPerRun.map(r => r(false).variance).statistics.median,
           "withoutGatesTTvarmed" ->  statsPerRun.map(r => r(true).variance).statistics.median,
           "allPedsTTvarmed" -> resultsJson.map(r => {r.tt.map(_.tt).statistics}).map(r => r.variance).statistics.median,
-          "allPedsTTmed75quant" -> computeQuantile(75)(resultsJson.map(r => {r.tt.map(_.tt)/*.cutOfAfterQuantile(99.5)*/.statistics}).map(r => r.median)).value,
+          "allPedsTTmed75quant" -> computeQuantile(75)(resultsJson.map(r => {r.tt.map(_.tt).statistics}).map(r => r.median)).value,
           "withGatesTTmed75quant" ->  computeQuantile(75)(statsPerRun.map(r => r(false).median).toVector).value,
-          "withoutGatesTTmed75quant" -> computeQuantile(75)(statsPerRun.map(r => r(true).median).toVector).value
+          "withoutGatesTTmed75quant" -> computeQuantile(75)(statsPerRun.map(r => r(true).median).toVector).value,
+          "allPedsTT75quantmed" -> resultsJson.map(r => {computeQuantile(75)(r.tt.map(_.tt))}).map(r => r.value).statistics.median,
+          "indDens75quantmed" -> results.map(_.monitoredAreaIndividualDensity.get).map(r => computeQuantile(75)(r.map(_._2)).value.toDouble).statistics.median
         )
       }
       case _: ParametersForGatingWithDensity[_, _] => {
         val statsPerRun: Iterable[Map[Boolean, Statistics[_]]] = resultsJson.map(r => {
           r.tt
             .groupBy(_.gates.isEmpty)
-            .map(g => g._1 -> g._2.map(_.tt)/*.cutOfAfterQuantile(99.5)*/.statistics)
+            .map(g => g._1 -> g._2.map(_.tt).statistics)
         })
 
         Map("withGatesTTmedmed" ->  statsPerRun.map(r => r(false).median).statistics.median,
           "withoutGatesTTmedmed" -> statsPerRun.map(r => r(true).median).statistics.median,
-          "allPedsTTmedmed" -> resultsJson.map(r => {r.tt.map(_.tt)/*.cutOfAfterQuantile(99.5)*/.statistics}).map(r => r.median).statistics.median,
-          "allPedsSize" -> resultsJson.map(_.tt.size).sum,
+          "allPedsTTmedmed" -> resultsJson.map(r => {r.tt.map(_.tt).statistics}).map(r => r.median).statistics.median,
+          "allPedsSize" -> resultsJson.map(r => r.tt.count(_.exit.isDefined)).sum,
           "withGatesTTvarmed" ->  statsPerRun.map(r => r(false).variance).statistics.median,
           "withoutGatesTTvarmed" ->  statsPerRun.map(r => r(true).variance).statistics.median,
           "allPedsTTvarmed" -> resultsJson.map(r => {r.tt.map(_.tt).statistics}).map(r => r.variance).statistics.median,
-          "allPedsTTmed75quant" -> computeQuantile(75)(resultsJson.map(r => {r.tt.map(_.tt)/*.cutOfAfterQuantile(99.5)*/.statistics}).map(r => r.median)).value,
+          "allPedsTTmed75quant" -> computeQuantile(75)(resultsJson.map(r => {r.tt.map(_.tt).statistics}).map(r => r.median)).value,
           "withGatesTTmed75quant" ->  computeQuantile(75)(statsPerRun.map(r => r(false).median).toVector).value,
-          "withoutGatesTTmed75quant" -> computeQuantile(75)(statsPerRun.map(r => r(true).median).toVector).value
+          "withoutGatesTTmed75quant" -> computeQuantile(75)(statsPerRun.map(r => r(true).median).toVector).value,
+          "allPedsTT75quantmed" -> resultsJson.map(r => {computeQuantile(75)(r.tt.map(_.tt))}).map(r => r.value).statistics.median,
+          "indDens75quantmed" -> results.map(_.monitoredAreaIndividualDensity.get).map(r => computeQuantile(75)(r.map(_._2)).value.toDouble).statistics.median
         )
       }
       case _: ParametersForFlowSeparators[_, _] => {
         val statsPerRun = resultsJson.map(r => {
-          r.tt.map(_.tt)/*.cutOfAfterQuantile(99.5)*/.statistics
+          r.tt.map(_.tt).statistics
         })
         Map("allPedsTTmedmed" -> statsPerRun.map(r => r.median).statistics.median)
       }
