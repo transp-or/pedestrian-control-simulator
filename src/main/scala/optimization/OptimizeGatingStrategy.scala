@@ -35,7 +35,7 @@ object OptimizeGatingStrategy extends App {
     val x_only1 = ContinuousProblem.problemInit(dimension, util.Arrays.asList(2.0, -5.0, -3.0), util.Arrays.asList(20.0, 5.0, 0.0))
     val factory1 = new SingleGateOptimizationFactory(config, ID)
     val title1 = config.getString("output.dir") + "DSA_results_" + ID + ".txt"
-    ContinuousProblem.optimizationDSA(15, 0.002, 0.05, new java.util.ArrayList[java.lang.Object](x_only1), factory1, title1, false)
+    ContinuousProblem.optimizationDSA(15, 0.002, new java.util.ArrayList[java.lang.Object](x_only1), factory1, title1, false, 0.01)
   */
 
   val dimension = 4
@@ -48,5 +48,5 @@ object OptimizeGatingStrategy extends App {
   val x_only1 = ContinuousProblem.problemInit(dimension, util.Arrays.asList(2.0, -2.0, -3.0, 1.0), util.Arrays.asList(6.0, 2.0, 0.0, 5.0))
   val factory1 = new SingleGateOptimizationWithDensityFactory(config, ID)
   val title1 = config.getString("output.dir") + "DSA_results_" + ID + ".txt"
-  ContinuousProblem.optimizationDSA(15, 0.002, 0.05, new java.util.ArrayList[java.lang.Object](x_only1), factory1, title1, false)
+  ContinuousProblem.optimizationDSA(15, 0.002, new java.util.ArrayList[java.lang.Object](x_only1), factory1, title1, false, 0.01)
 }

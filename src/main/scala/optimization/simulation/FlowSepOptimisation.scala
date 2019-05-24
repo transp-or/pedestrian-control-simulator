@@ -12,7 +12,7 @@ class FlowSepOptimisation(val config: Config, ID: String, params: java.util.Arra
   private val curr_x2 = super.getXs.get(1).asInstanceOf[Double]
   private val curr_x3 = super.getXs.get(2).asInstanceOf[Double]
 
-  def getObjectiveFunction(x: util.ArrayList[lang.Double]): Double = {
+  def getObjectiveFunction(x: util.ArrayList[lang.Double], nbrReplications: Int, newSimulation: Boolean): Double = {
 
     val (simDir: String, res: Map[String, Double]) = runFlowSepFunction(config)(x.get(0), x.get(1), x.get(2))
 

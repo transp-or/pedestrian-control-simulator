@@ -194,8 +194,8 @@ object RunSimulation extends App with StrictLogging {
       PlotOptions(ymax = Some(80))
     )
 
-    val binSize = 0.15
-    val opts = PlotOptions(xmin = Some(0), xmax = Some(10), ymax = Some(0.05), width = 700, height = 400)
+    val binSize = 0.05
+    val opts = PlotOptions(xmin = Some(0.5), xmax = Some(3), ymax = Some(0.15), width = 700, height = 400)
     val dataAgg = results.flatMap(_.monitoredAreaDensity.get._2.flatten).filter(_ > 0)
     new Histogram(config.getString("output.output_prefix") + "_density-histogram.png",
       dataAgg,
@@ -208,18 +208,20 @@ object RunSimulation extends App with StrictLogging {
     //println(computeQuantiles(Vector(65,70,75,80,85,90,95,97,99))(results.flatMap(_.monitoredAreaDensity.get._2.flatten)))
     computeHistogramDataWithXValues(dataAgg, binSize, opts.xmin, opts.xmax).writeToCSV(config.getString("output.output_prefix") + "_density-hist_data.csv", rowNames = None, columnNames = Some(Vector("x", "y")))
 
-    val dataDisagg = results.flatMap(_.monitoredAreaIndividualDensity.get.map(_._2))
-    new Histogram(config.getString("output.output_prefix") + "_individual-densities-histogram.png",
-      dataDisagg.map(_.toDouble),
+    val dataDisagg = results.map(_.monitoredAreaIndividualDensity.get.map(_._2))
+    /*new Histogram(config.getString("output.output_prefix") + "_median-individual-densities-histogram.png",
+      dataDisagg,
       binSize,
       "individual density [pax/m^2]",
       "Histogram of individual densities",
       opts
-    )
-    //println(results.flatMap(_.monitoredAreaIndividualDensity.map(_.tail).flatten))
-    //println("individual density " + results.flatMap(_.monitoredAreaIndividualDensity.get.map(_.tail).flatten).stats)
-    //println(computeQuantiles(Vector(65,70,75,80,85,90,95,97,99))(results.flatMap(_.monitoredAreaIndividualDensity.get.map(_.tail).flatten)))
-    computeHistogramDataWithXValues(dataDisagg.map(_.toDouble), binSize, opts.xmin, opts.xmax).writeToCSV(config.getString("output.output_prefix") + "_individual-densities-hist_data.csv", rowNames = None, columnNames = Some(Vector("x", "y")))
+    )*/
+
+    dataDisagg.map(_.statistics.mean).writeToCSV(config.getString("output.output_prefix") + "-mean-individual-densities-per-simulation.csv")
+
+    (for (i <- Vector(50,55,60,65,70,75,80,85,90,95)) yield {
+      (i, computeBoxPlotData(dataDisagg.map(d => computeQuantile(i)(d).value.toDouble)).toCSV, 1)
+    }).writeToCSV(config.getString("output.output_prefix") + "-individual-densities-boxplot-per-quantile.csv", rowNames = None, columnNames = Some(Vector("quantile", "mean", "median", "lq", "uq", "lw", "uw", "outliersize", "boxplotwidth")))
 
   }
 
@@ -228,7 +230,7 @@ object RunSimulation extends App with StrictLogging {
 
     // writes stattistcs about each run
     val statsPerRun = results.map(r => {
-      r.tt.map(_._3).cutOfAfterQuantile(99).statistics
+      r.tt.map(_._3).cutOfAfterQuantile(99.9).statistics
     })
 
     Vector((0.0, computeBoxPlotData(statsPerRun.map(_.median)).toCSV, 0.8)).writeToCSV(config.getString("output.output_prefix") + "-travel-time-median-boxplot.csv", rowNames = None, columnNames = Some(Vector("pos", "mean", "median", "lq", "uq", "lw", "uw", "outliersize", "boxplotwidth")))
@@ -241,13 +243,13 @@ object RunSimulation extends App with StrictLogging {
 
     println(bootstrapMSE(statsPerRun.map(_.median), mean))
 
-    println(statsPerRun.map(_.median).zipWithIndex.sortBy(_._1))
+    //println(statsPerRun.map(_.median).zipWithIndex.sortBy(_._1))
 
     val quant: Double = 75
     (for (i <- 1 to results.size by 2) yield {
       val mseResults = for(j <- 1 to 100) yield {bootstrapMSE(util.Random.shuffle(statsPerRun).take(i).map(_.median), mean)}
       (i, computeQuantile(quant)(mseResults.map(_.MSE)).value, computeQuantile(quant)(mseResults.map(r => r.MSE / r.parameter)).value)
-    }).toVector.writeToCSV(config.getString("output.output_prefix") + "-MSE.csv", rowNames = None, columnNames = Some(Vector("n", "mse", "rmse")))
+    }).toVector.writeToCSV(config.getString("output.output_prefix") + "-" + quant.toString  + "quant-MSE.csv", rowNames = None, columnNames = Some(Vector("n", "mse", "rmse")))
 
 
     // creates hist data for all TT aggregated together
@@ -298,6 +300,13 @@ object RunSimulation extends App with StrictLogging {
       .map(r => r.tt.groupBy(p => groupsReversed((p.o, p.d))).map(g => (g._1, g._2.map(_.tt).statistics.median)).toVector.sortBy(_._1).map(_._2))
       .transpose
       .writeToCSV(config.getString("output.output_prefix") + "_median-travel-time-per-simulation-by-OD.csv", rowNames = None, columnNames = Some(columnNames))
+
+    resultsJson
+      .flatMap(r => r.tt.groupBy(p => groupsReversed((p.o, p.d))).map(g => (g._1, g._2.map(_.tt).statistics.median)))
+      .groupBy(_._1)
+      .zipWithIndex
+      .map(g => (g._2, g._1._1, computeBoxPlotData(g._1._2.map(_._2)).toCSV, 1.0)).toVector
+      .writeToCSV(config.getString("output.output_prefix") + "_median-travel-time-per-simulation-by-OD-boxplot-data.csv", rowNames = None, columnNames = Some(Vector("pos","name", "mean", "median", "lq", "uq", "lw", "uw", "outliersize", "boxplotwidth")))
   }
 
   if (config.getBoolean("output.travel-time.through-monitored-zones") && resultsJson.nonEmpty) {

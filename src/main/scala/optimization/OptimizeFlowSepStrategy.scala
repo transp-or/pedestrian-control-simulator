@@ -34,5 +34,5 @@ object OptimizeFlowSepStrategy extends App {
   val x_only1 = ContinuousProblem.problemInit(dimension, util.Arrays.asList(0.5, 0.5, -3.0), util.Arrays.asList(2.0, 2.0, -0.25))
   val factory1 = new FlowSepOptimizationFactory(config, ID)
   val title1 = ID + "_DSA_results.txt"
-  ContinuousProblem.optimizationDSA(10e3, 0.002, 0.05, new java.util.ArrayList[java.lang.Object](x_only1), factory1, title1, false)
+  ContinuousProblem.optimizationDSA(10e3, 0.002, new java.util.ArrayList[java.lang.Object](x_only1), factory1, title1, false, 0.05)
 }

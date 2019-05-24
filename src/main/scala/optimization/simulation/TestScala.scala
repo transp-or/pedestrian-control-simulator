@@ -17,7 +17,7 @@ object TestScala extends App {
   val factory1 = new MinFunctionFactory
   val title1 = path + "DSA_MinFunction.txt"
   if (MiF_DSA) {
-    ContinuousProblem.optimizationDSA(10e3, 0.002, 0.05, new java.util.ArrayList[java.lang.Object](x_only1), factory1, title1, false)
+    ContinuousProblem.optimizationDSA(10e3, 0.002, new java.util.ArrayList[java.lang.Object](x_only1), factory1, title1, false, 0.05)
   }
 
 

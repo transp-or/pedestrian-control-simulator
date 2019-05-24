@@ -15,16 +15,15 @@ class SingleGateOptimisationWithDensity(val config: Config, ID: String, params: 
   private val curr_x3 = super.getXs.get(2).asInstanceOf[Double]
   private val curr_x4 = super.getXs.get(3).asInstanceOf[Double]
 
-  def getObjectiveFunction(x: util.ArrayList[lang.Double]): Double = {
+  def getObjectiveFunction(x: util.ArrayList[lang.Double], nbrReplications: Int, newSimulation: Boolean): Double = {
 
-    val continue = false
-    val simDirToUse: Option[String] = if (continue) {
+    val simDirToUse: Option[String] = if (!newSimulation) {
       Some(Source.fromFile(config.getString("output.dir") + "/" + ID + "_previous-simulation-dir.txt").getLines.mkString)
     } else {
       None
     }
 
-    val (simDir: String, res: Map[String, Double]) = runGatingSingleFunction(config, simDir = simDirToUse)(x.get(0), x.get(1), x.get(2), x.get(3))
+    val (simDir: String, res: Map[String, Double]) = runGatingSingleFunction(config, nbrReplications = Some(nbrReplications), simDir = simDirToUse)(x.get(0), x.get(1), x.get(2), x.get(3))
 
     val fw = new FileWriter(config.getString("output.dir") + "/SO_gating_KPIs_" + ID + ".csv", true)
     fw.write(
