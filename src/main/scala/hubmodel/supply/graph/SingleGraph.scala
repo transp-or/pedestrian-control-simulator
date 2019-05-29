@@ -7,14 +7,15 @@ import hubmodel.ped.PedestrianNOMAD
 import hubmodel.tools.cells.Rectangle
 
 class SingleGraph(private val baseVertices: Iterable[Rectangle],
-                                       private val standardEdges: Iterable[MyEdge],
-                                       private val levelChanges: Iterable[MyEdgeLevelChange],
-                                       fg: Iterable[FlowGate],
-                                       bg: Iterable[BinaryGate],
-                                       mw: Iterable[MovingWalkway],
-                                       fs: Iterable[FlowSeparator[_, _]]) extends GraphContainer(fg, bg, mw, fs) {
+                  private val standardEdges: Iterable[MyEdge],
+                  private val levelChanges: Iterable[MyEdgeLevelChange],
+                  private val destinationGroups: Iterable[(String, Vector[String])],
+                  fg: Iterable[FlowGate],
+                  bg: Iterable[BinaryGate],
+                  mw: Iterable[MovingWalkway],
+                  fs: Iterable[FlowSeparator[_, _]]) extends GraphContainer(fg, bg, mw, fs) {
 
-  private val graph = new RouteGraph(baseVertices, standardEdges, levelChanges, this.flowGates, this.binaryGates, this.movingWalkways, this.flowSeparators)
+  private val graph = new RouteGraph(baseVertices, standardEdges, levelChanges, this.flowGates, this.binaryGates, this.movingWalkways, this.flowSeparators, destinationGroups = destinationGroups)
 
   def edges: Set[MyEdge] = this.graph.edgeCollection
 
@@ -38,11 +39,11 @@ class SingleGraph(private val baseVertices: Iterable[Rectangle],
     * @return Copy of the graph.
     */
   def deepCopy(devices: ControlDevices): T = new SingleGraph(
-    this.baseVertices, this.standardEdges, this.levelChanges, devices.flowGates, devices.binaryGates, devices.amws, devices.flowSeparators
+    this.baseVertices, this.standardEdges, this.levelChanges, this.destinationGroups, devices.flowGates, devices.binaryGates, devices.amws, devices.flowSeparators
   )
 
   def deepCopy2AlternateGraphs(devices: ControlDevices, popFraction: Double): T = new SingleGraph(
-    this.baseVertices, this.standardEdges, this.levelChanges, devices.flowGates, devices.binaryGates, devices.amws, devices.flowSeparators
+    this.baseVertices, this.standardEdges, this.levelChanges, this.destinationGroups, devices.flowGates, devices.binaryGates, devices.amws, devices.flowSeparators
   )
 
   override def toString: String = {

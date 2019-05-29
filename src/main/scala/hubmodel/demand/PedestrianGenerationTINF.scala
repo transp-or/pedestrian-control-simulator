@@ -50,7 +50,9 @@ class PedestrianGenerationTINF[T <: PedestrianNOMAD](o: Rectangle, d: Rectangle,
         new ReleasePedPTInducedFlow(o, sim)
       }
     }
-    tinfQueue.appendPeds(Vector.fill(numberPeople) { new CreatePedestrian(o, d, isTransfer, sim) })
+    tinfQueue.appendPeds(Vector.fill(numberPeople) {
+      new CreatePedestrian(o, d, isTransfer, sim)
+    })
   }
 }
 

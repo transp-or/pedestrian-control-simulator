@@ -17,16 +17,19 @@ import myscala.math.vector.ZeroVector2D
   *
   * @param origin             origin zone of the pedestrian
   * @param finalDestination   destination zone of the pedestrian
-  * @param speed        free flow speed of the individual
+  * @param speed              free flow speed of the individual
   * @param entryTime          entry time into the system
   * @param currentPosition    current position (general point)
   * @param currentDestination intermediate destination point (next target)
   * @param route              initial route
   */
 class PedestrianSim(val origin: Rectangle,
-                    val finalDestination: Rectangle,
+                    val originalFinalDestination: Rectangle,
                     val entryTime: Time,
                     val logFullHistory: Boolean = false) extends PedestrianTrait {
+
+  // The final destination can change if there is an equivalent one which is closer than the original one.
+  var finalDestination: Rectangle = originalFinalDestination
 
   /** Free flow walking speed of the pedestrian
     *
@@ -67,7 +70,9 @@ class PedestrianSim(val origin: Rectangle,
   var currentDestination: Position = new Position(0, 0) //route.head.uniformSamplePointInside
 
   // Checks that the velocity is realistic
-  if (desiredWalkingSpeed < 0.0 || desiredWalkingSpeed > 4.0) {throw new IllegalArgumentException("Unacceptable free flow velocity")}
+  if (desiredWalkingSpeed < 0.0 || desiredWalkingSpeed > 4.0) {
+    throw new IllegalArgumentException("Unacceptable free flow velocity")
+  }
 
   /** current velocity, initialized to 0.0 */
   var currentVelocity: Velocity = new ZeroVector2D
@@ -88,7 +93,7 @@ class PedestrianSim(val origin: Rectangle,
   val freedFrom: scala.collection.mutable.ArrayBuffer[String] = scala.collection.mutable.ArrayBuffer()
 
   /** time spent in each monitored area. The first value is the entrance time and the second value the exit time. */
-  val timeInMonitoredAreas: scala.collection.mutable.Map[String,(Time, Time)] = scala.collection.mutable.Map()
+  val timeInMonitoredAreas: scala.collection.mutable.Map[String, (Time, Time)] = scala.collection.mutable.Map()
 
   /** target zone */
   var nextZone: Rectangle = finalDestination //route.head
@@ -219,15 +224,31 @@ class PedestrianSim(val origin: Rectangle,
     */
   def toJSON(completed: Boolean): String = {
     "{" +
-    "\"o\":\"" + this.origin + "\"," +
-    "\"d\":\"" + this.finalDestination + "\"," +
-    "\"tt\":" + this.travelTime + "," +
-    "\"entry\":" + this.entryTime + "," +
-    "\"exit\":" + {if (completed) this.exitTime else {"null"}} + "," +
-    "\"td\":" + this.travelDistance + "," +
-    "\"gates\": [" + {if (this.freedFrom.nonEmpty) {"\"" + this.freedFrom.mkString("\",\"") + "\""} else {""}} + "]," +
-    "\"tt-monitored-zones\": [" + {if(this.timeInMonitoredAreas.nonEmpty) {"{" + this.timeInMonitoredAreas.map(kv => "\"mz_id\": \"" + kv._1 + "\"," + "\"tt\":" + (kv._2._2-kv._2._1).toString).mkString("},{") + "}"} else {""} } + "]"+
-    "}"
+      "\"o\":\"" + this.origin + "\"," +
+      "\"d\":\"" + this.finalDestination + "\"," +
+      "\"tt\":" + this.travelTime + "," +
+      "\"entry\":" + this.entryTime + "," +
+      "\"exit\":" + {
+      if (completed) this.exitTime else {
+        "null"
+      }
+    } + "," +
+      "\"td\":" + this.travelDistance + "," +
+      "\"gates\": [" + {
+      if (this.freedFrom.nonEmpty) {
+        "\"" + this.freedFrom.mkString("\",\"") + "\""
+      } else {
+        ""
+      }
+    } + "]," +
+      "\"tt-monitored-zones\": [" + {
+      if (this.timeInMonitoredAreas.nonEmpty) {
+        "{" + this.timeInMonitoredAreas.map(kv => "\"mz_id\": \"" + kv._1 + "\"," + "\"tt\":" + (kv._2._2 - kv._2._1).toString).mkString("},{") + "}"
+      } else {
+        ""
+      }
+    } + "]" +
+      "}"
   }
 }
 

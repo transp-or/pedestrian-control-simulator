@@ -263,7 +263,11 @@ package hubmodel {
       val input: JsValue = Json.parse(try source.mkString finally source.close)
 
       input.validate[PedestrianCollectionReaderTF] match {
-        case s: JsSuccess[PedestrianCollectionReaderTF] => s.get.population.map(p => (p.oZone, p.dZone, if (p.oTime.isDefined) { Some(Time(p.oTime.get)) } else { None }))
+        case s: JsSuccess[PedestrianCollectionReaderTF] => s.get.population.map(p => (p.oZone, p.dZone, if (p.oTime.isDefined) {
+          Some(Time(p.oTime.get))
+        } else {
+          None
+        }))
         case e: JsError => throw new Error("Error while parsing disaggregate pedestrian for TF: " + JsError.toJson(e).toString())
       }
     }

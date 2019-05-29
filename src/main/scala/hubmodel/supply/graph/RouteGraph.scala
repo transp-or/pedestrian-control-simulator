@@ -32,13 +32,20 @@ class RouteGraph(protected val baseVertices: Iterable[Rectangle],
                  protected val movingWalkways: Iterable[MovingWalkway],
                  protected val flowSeparators: Iterable[FlowSeparator[_, _]],
                  val edges2Add: Set[MyEdge] = Set(),
-                 val edges2Remove: Set[MyEdge] = Set()) {
+                 val edges2Remove: Set[MyEdge] = Set(),
+                 val destinationGroups: Iterable[(String, Vector[String])]) {
 
-
+  // Collection of all vertices in the network. This map can be used to get a vertex based on it's name.
   val vertexCollection: Map[String, Rectangle] = this.baseVertices.map(v => v.name -> v).toMap ++
     flowSeparators.flatMap(fs => fs.associatedZonesStart.map(oz => oz.name -> oz)) ++
     flowSeparators.flatMap(fs => fs.associatedZonesEnd.map(oz => oz.name -> oz)) --
     flowSeparators.flatMap(fs => fs.overridenZones)
+
+  // Inverted destination groups which is used to check if alternative equivalent destination are available
+  private val destination2EquivalentDestinations: Map[String, Vector[String]] = destinationGroups.flatMap(kv => kv._2.map(r => r -> kv._2)).toMap
+
+  private def destination2EquivalentDestinations(zone: Rectangle): Vector[Rectangle] = destination2EquivalentDestinations.getOrElse(zone.name, Vector(zone.name)).map(zID => this.vertexCollection(zID))
+
 
   //def vertexMapNew: Map[String, Rectangle] = this.vertexCollection
 
@@ -103,7 +110,7 @@ class RouteGraph(protected val baseVertices: Iterable[Rectangle],
     * @param d destination node
     * @return the list if vertices representing the path
     */
-  private def getShortestPath(o: Rectangle, d: Rectangle): List[Rectangle] = {
+  private def getShortestPath(o: Rectangle, d: Rectangle): (Double, List[Rectangle]) = {
 
     // Chooses the route between the five shortest ones and selects it using the logit model with equal weights.
     /*val paths: Seq[GraphPath[Rectangle, MyEdge]] = this.multipleShortestPathsBuilder.getPaths(o, d).asScala.toVector
@@ -114,7 +121,7 @@ class RouteGraph(protected val baseVertices: Iterable[Rectangle],
 
     Try(shortestPathBuilder.getPath(o, d)) match {
       case Success(s) if (s.getVertexList.size() > 0) => {
-        s.getVertexList.asScala.toList
+        (s.getWeight, s.getVertexList.asScala.toList)
       }
       case Failure(f) => {
         throw f
@@ -133,6 +140,7 @@ class RouteGraph(protected val baseVertices: Iterable[Rectangle],
     this.levelChanges.map(e => (e.startVertex.ID, e.endVertex.ID)).exists(_ == (a.ID, b.ID))
   }
 
+
   /**
     * Changes the pedestrian's intermediat destination when the current intermediat destination is reached.
     *
@@ -141,21 +149,23 @@ class RouteGraph(protected val baseVertices: Iterable[Rectangle],
   def processIntermediateArrival(p: PedestrianNOMAD): Unit = {
     //println(p.route)
     if (p.route.isEmpty) {
-      p.route = this.getShortestPath(p.origin, p.finalDestination).tail
+      p.route = destination2EquivalentDestinations(p.finalDestination).filter(_ != p.origin).map(d => this.getShortestPath(p.origin, d)).minBy(_._1)._2.tail
+      p.finalDestination = p.route.last
       p.nextZone = p.route.head
       p.route = p.route.tail
     }
     else if (this.isFloorChange(p.nextZone, p.route.head)) {
-      //println("Changing level: " + p.nextZone + " to " + p.route.head)
       p.previousZone = p.route.head
       p.currentPosition = p.route.head.uniformSamplePointInside
       p.previousPosition = p.currentPosition
       p.nextZone = p.route.tail.head
-      p.route = this.getShortestPath(p.nextZone, p.finalDestination).tail
+      p.route = destination2EquivalentDestinations(p.finalDestination).filter(_ != p.origin).map(d => this.getShortestPath(p.nextZone, d)).minBy(_._1)._2.tail
+      p.finalDestination = p.route.last
     }
     else {
       p.previousZone = p.nextZone
-      p.route = this.getShortestPath(p.previousZone, p.finalDestination).tail
+      p.route = destination2EquivalentDestinations(p.finalDestination).filter(_ != p.origin).map(d => this.getShortestPath(p.previousZone, d)).minBy(_._1)._2.tail
+      p.finalDestination = p.route.last
       p.nextZone = p.route.head
       p.route = p.route.tail
     }
@@ -171,7 +181,7 @@ class RouteGraph(protected val baseVertices: Iterable[Rectangle],
     * @return Copy of the graph.
     */
   def clone(devices: ControlDevices): RouteGraph = new RouteGraph(
-    this.baseVertices, this.standardEdges, this.levelChanges, devices.flowGates, devices.binaryGates, devices.amws, devices.flowSeparators
+    this.baseVertices, this.standardEdges, this.levelChanges, devices.flowGates, devices.binaryGates, devices.amws, devices.flowSeparators, destinationGroups = this.destinationGroups
   )
 
 }

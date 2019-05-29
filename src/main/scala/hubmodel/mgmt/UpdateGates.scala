@@ -45,8 +45,8 @@ class UpdateGates[T <: PedestrianNOMAD](sim: NOMADGraphSimulator[T]) extends Act
                 sim.currentTime
               )
 
-                // mean voronoi density
-                /*fg.flowRate = math.min(fg.functionalForm(sim.criticalAreas(fg.monitoredArea).targetDensity - sim.criticalAreas(fg.monitoredArea).densityHistory.last._2), 10.0)*/
+              // mean voronoi density
+              /*fg.flowRate = math.min(fg.functionalForm(sim.criticalAreas(fg.monitoredArea).targetDensity - sim.criticalAreas(fg.monitoredArea).densityHistory.last._2), 10.0)*/
             }
           }
         }

@@ -1,9 +1,10 @@
 package optimization.bruteforce
 
 import com.typesafe.config.Config
-import hubmodel.demand.{PedestrianFlowFunction_New, PedestrianFlowPT_New, PedestrianFlow_New}
-import hubmodel.{SimulatorParameters}
 import hubmodel.DES.getFlows
+import hubmodel.SimulatorParameters
+import hubmodel.demand.{PedestrianFlowFunction_New, PedestrianFlowPT_New, PedestrianFlow_New}
+
 import scala.collection.GenIterable
 import scala.collection.parallel.ForkJoinTaskSupport
 

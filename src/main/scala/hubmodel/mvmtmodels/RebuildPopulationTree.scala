@@ -23,7 +23,7 @@ class RebuildPopulationTree[T <: PedestrianNOMAD](sim: NOMADGraphSimulator[T]) e
 
     sim.population.foreach(ped => {
       ped.closePeds = sim.findNeighbours(ped.ID, sim.rebuildTreeInterval.get.value.toDouble * 8.0)
-    //  println("pause")
+      //  println("pause")
     })
 
     // inserts new rebuild tree event

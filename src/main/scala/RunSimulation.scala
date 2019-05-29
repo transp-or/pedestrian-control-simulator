@@ -1,9 +1,9 @@
 
-import com.typesafe.config.{Config, ConfigValueFactory}
-import hubmodel._
+import com.typesafe.config.Config
 import hubmodel.DES._
+import hubmodel._
 import hubmodel.demand.readDemandSets
-import hubmodel.io.input.JSONReaders.{ODGroup_JSON, PedestrianResults_JSON}
+import hubmodel.io.input.JSONReaders.ODGroup_JSON
 import hubmodel.io.output.TRANSFORM.PopulationSummaryProcessingTRANSFORM
 import hubmodel.ped.PedestrianNOMAD
 import hubmodel.results.{ResultsContainerRead, ResultsContainerReadNew, ResultsContainerReadWithDemandSet, readResults, readResultsJson}
@@ -11,15 +11,14 @@ import hubmodel.supply.graph.readPTStop2GraphVertexMap
 import hubmodel.tools.Time
 import myscala.math.stats.bootstrap.bootstrapMSE
 import myscala.math.stats.{ComputeQuantiles, ComputeStats, computeBoxPlotData, computeQuantile}
+import myscala.output.SeqExtension.SeqWriter
 import myscala.output.SeqOfSeqExtensions.SeqOfSeqWriter
 import myscala.output.SeqTuplesExtensions.SeqTuplesWriter
-import myscala.output.SeqExtension.SeqWriter
 import play.api.libs.json.{JsError, JsSuccess, JsValue, Json}
 import trackingdataanalysis.visualization.{Histogram, PlotOptions, ScatterPlot, computeHistogramDataWithXValues}
 
 import scala.collection.GenIterable
 import scala.io.BufferedSource
-
 
 
 /**
@@ -60,7 +59,11 @@ object RunSimulation extends App with StrictLogging {
 
   if (config.getBoolean("output.make_video")) {
     logger.info("Running simulation for video...")
-    runSimulationWithVideo(config)
+    runSimulationWithVideo(config, if (demandSets.isDefined) {
+      Some(demandSets.get.head._1)
+    } else {
+      None
+    })
   }
 
 
@@ -110,13 +113,15 @@ object RunSimulation extends App with StrictLogging {
   }
 
   val resultsJson: Vector[ResultsContainerReadNew] = if (demandSets.isDefined) {
-      throw new NotImplementedError("need to be implemented")
-    } else {
-      readResultsJson(config.getString("output.dir"), config.getString("output.output_prefix")).toVector
-    }
+    readResultsJson(config.getString("output.dir"), config.getString("output.output_prefix"), demandSets.get.map(_._1.split("\\.").head)).toVector
+  } else {
+    readResultsJson(config.getString("output.dir"), config.getString("output.output_prefix")).toVector
+  }
 
 
-  if (results.isEmpty) {throw new Exception("No result collections have been read !")}
+  if (results.isEmpty) {
+    throw new Exception("No result collections have been read !")
+  }
 
 
   // Processing results
@@ -219,7 +224,7 @@ object RunSimulation extends App with StrictLogging {
 
     dataDisagg.map(_.statistics.mean).writeToCSV(config.getString("output.output_prefix") + "-mean-individual-densities-per-simulation.csv")
 
-    (for (i <- Vector(50,55,60,65,70,75,80,85,90,95)) yield {
+    (for (i <- Vector(50, 55, 60, 65, 70, 75, 80, 85, 90, 95)) yield {
       (i, computeBoxPlotData(dataDisagg.map(d => computeQuantile(i)(d).value.toDouble)).toCSV, 1)
     }).writeToCSV(config.getString("output.output_prefix") + "-individual-densities-boxplot-per-quantile.csv", rowNames = None, columnNames = Some(Vector("quantile", "mean", "median", "lq", "uq", "lw", "uw", "outliersize", "boxplotwidth")))
 
@@ -247,9 +252,11 @@ object RunSimulation extends App with StrictLogging {
 
     val quant: Double = 75
     (for (i <- 1 to results.size by 2) yield {
-      val mseResults = for(j <- 1 to 100) yield {bootstrapMSE(util.Random.shuffle(statsPerRun).take(i).map(_.median), mean)}
+      val mseResults = for (j <- 1 to 100) yield {
+        bootstrapMSE(util.Random.shuffle(statsPerRun).take(i).map(_.median), mean)
+      }
       (i, computeQuantile(quant)(mseResults.map(_.MSE)).value, computeQuantile(quant)(mseResults.map(r => r.MSE / r.parameter)).value)
-    }).toVector.writeToCSV(config.getString("output.output_prefix") + "-" + quant.toString  + "quant-MSE.csv", rowNames = None, columnNames = Some(Vector("n", "mse", "rmse")))
+    }).toVector.writeToCSV(config.getString("output.output_prefix") + "-" + quant.toString + "quant-MSE.csv", rowNames = None, columnNames = Some(Vector("n", "mse", "rmse")))
 
 
     // creates hist data for all TT aggregated together
@@ -264,10 +271,10 @@ object RunSimulation extends App with StrictLogging {
   // Writes the travel time distribution of each simulation two a csv file.
   if (config.getBoolean("output.travel-time.per-simulation-distributions") && results.nonEmpty) {
     val r: Seq[Seq[Double]] = (0.0 to 200.0 by 2.0) +: results.map(r => {
-      val data = r.tt.map(_._3).cutOfAfterQuantile(99)
-      computeHistogramDataWithXValues(data, 2.0, Some(0), Some(200), normalized=false).map(_._2)
+      val data = r.tt.map(_._3) //.cutOfAfterQuantile(99)
+      computeHistogramDataWithXValues(data, 2.0, Some(0), Some(200), normalized = false).map(_._2)
     })
-      r.writeToCSV(config.getString("output.output_prefix") + "_travel_times_distributions.csv")
+    r.writeToCSV(config.getString("output.output_prefix") + "_travel_times_distributions.csv")
   }
 
   // Writes the median travel times to a csv file
@@ -277,7 +284,7 @@ object RunSimulation extends App with StrictLogging {
 
 
   // reads the group json file
-  val odGroups = {
+  lazy val odGroups = {
     val source: BufferedSource = scala.io.Source.fromFile(config.getString("output.OD-groups"))
     val input: JsValue = Json.parse(try source.mkString finally source.close)
     input.validate[Vector[ODGroup_JSON]] match {
@@ -289,7 +296,9 @@ object RunSimulation extends App with StrictLogging {
   }
 
   // reverses the map and create a function to use it without re-creating it every time
-  val groupsReversed: ((String, String)) => String = odPair => {odGroups.flatMap(g => g.ods.map(od => (od.o, od.d) -> g.name)).toMap.getOrElse(odPair, "")}
+  lazy val groupsReversed: ((String, String)) => String = odPair => {
+    odGroups.flatMap(g => g.ods.map(od => (od.o, od.d) -> g.name)).toMap.getOrElse(odPair, "")
+  }
 
 
   if (config.getBoolean("output.travel-time.per-simulation-median-by-OD") && results.nonEmpty) {
@@ -297,7 +306,10 @@ object RunSimulation extends App with StrictLogging {
     // each group becomes one column. The columns are sorted alphabetically.
     val columnNames: Vector[String] = resultsJson.head.tt.groupBy(p => groupsReversed((p.o, p.d))).keys.toVector.sortBy(a => a)
     resultsJson
-      .map(r => r.tt.groupBy(p => groupsReversed((p.o, p.d))).map(g => (g._1, g._2.map(_.tt).statistics.median)).toVector.sortBy(_._1).map(_._2))
+      .map(r => {
+        val tmp = r.tt.groupBy(p => groupsReversed((p.o, p.d))).map(g => (g._1, g._2.map(_.tt).statistics.median))
+        tmp ++ columnNames.filterNot(c => tmp.keys.toVector.contains(c)).map(n => (n, Double.NaN))
+      }.toVector.sortBy(_._1).map(_._2))
       .transpose
       .writeToCSV(config.getString("output.output_prefix") + "_median-travel-time-per-simulation-by-OD.csv", rowNames = None, columnNames = Some(columnNames))
 
@@ -306,10 +318,10 @@ object RunSimulation extends App with StrictLogging {
       .groupBy(_._1)
       .zipWithIndex
       .map(g => (g._2, g._1._1, computeBoxPlotData(g._1._2.map(_._2)).toCSV, 1.0)).toVector
-      .writeToCSV(config.getString("output.output_prefix") + "_median-travel-time-per-simulation-by-OD-boxplot-data.csv", rowNames = None, columnNames = Some(Vector("pos","name", "mean", "median", "lq", "uq", "lw", "uw", "outliersize", "boxplotwidth")))
+      .writeToCSV(config.getString("output.output_prefix") + "_median-travel-time-per-simulation-by-OD-boxplot-data.csv", rowNames = None, columnNames = Some(Vector("pos", "name", "mean", "median", "lq", "uq", "lw", "uw", "outliersize", "boxplotwidth")))
   }
 
-  if (config.getBoolean("output.travel-time.through-monitored-zones") && resultsJson.nonEmpty) {
+  if (config.getBoolean("output.travel-time.through-monitored-zones-by-OD") && resultsJson.nonEmpty) {
     val columnNames: Vector[String] = resultsJson.flatMap(r => r.tt.flatMap(p => p.ttThroughZones.map(ttZ => groupsReversed((p.o, p.d)) + "_" + ttZ.ID))).distinct.sorted
     resultsJson
       .map(r => r.tt.flatMap(p => p.ttThroughZones.map(ttZ => (p.o, p.d, ttZ.ID, ttZ.tt)))
@@ -320,9 +332,13 @@ object RunSimulation extends App with StrictLogging {
       .writeToCSV(config.getString("output.output_prefix") + "_median-travel-time-through-zones-per-simulation-by-OD.csv", rowNames = None, columnNames = Some(columnNames))
   }
 
-  results.collect({
-    case f: ResultsContainerReadWithDemandSet => {f}
-  }).groupBy(_.demandFile).foreach(g => println((g._2.map(_.tt.map(_._3).cutOfAfterQuantile(99.5).statistics.median).statistics.median, g._2.map(_.tt.map(_._3).cutOfAfterQuantile(99.5).statistics.variance).statistics.median)))
+  results.collect({ case f: ResultsContainerReadWithDemandSet => {
+    f
+  }
+  })
+    .groupBy(_.demandFile)
+    .foreach(g => println((g._2.map(_.tt.map(_._3).cutOfAfterQuantile(99.5).statistics.median).statistics.median, g._2.map(_.tt.map(_._3).cutOfAfterQuantile(99.5).statistics.variance).statistics.median)))
+
 
   // Analyse pedestrian data like travel time and walking speed by departure time interval.
   //if (!config.getStringList("results-analysis.o_nodes").isEmpty && !config.getStringList("results-analysis.d_nodes").isEmpty) {

@@ -11,7 +11,7 @@ import hubmodel.tools.cells.Rectangle
 class MultipleGraph(fg: Iterable[FlowGate],
                     bg: Iterable[BinaryGate],
                     mw: Iterable[MovingWalkway],
-                    fs: Iterable[FlowSeparator[_ , _]]
+                    fs: Iterable[FlowSeparator[_, _]]
                    ) extends GraphContainer(fg, bg, mw, fs) {
 
 
@@ -39,12 +39,12 @@ class MultipleGraph(fg: Iterable[FlowGate],
    }*/
 
   // Adds a new [[RouteGraph]] object to the collection.
-  def addGraph(id: String, frac: PopulationFraction, vertices: Iterable[Rectangle], edges: Iterable[MyEdge], edges2Add: Set[MyEdge], edges2Remove: Set[MyEdge], lc: Iterable[MyEdgeLevelChange]): Unit = {
+  def addGraph(id: String, frac: PopulationFraction, vertices: Iterable[Rectangle], edges: Iterable[MyEdge], edges2Add: Set[MyEdge], edges2Remove: Set[MyEdge], lc: Iterable[MyEdgeLevelChange], destinationGroups: Iterable[(String, Vector[String])]): Unit = {
     if (this._graphCollection.keySet.contains(id)) {
       throw new Exception("ID is not unique for graph ! " + id)
     }
     else {
-      this._graphCollection += id -> (frac, new RouteGraph(vertices, edges, lc, this.flowGates, this.binaryGates, this.movingWalkways, this.flowSeparators, edges2Add, edges2Remove))
+      this._graphCollection += id -> (frac, new RouteGraph(vertices, edges, lc, this.flowGates, this.binaryGates, this.movingWalkways, this.flowSeparators, edges2Add, edges2Remove, destinationGroups = destinationGroups))
     }
   }
 
@@ -84,7 +84,7 @@ class MultipleGraph(fg: Iterable[FlowGate],
 
     val graphs = new MultipleGraph(devices.flowGates, devices.binaryGates, devices.amws, devices.flowSeparators)
     this._graphCollection.foreach(g => {
-      graphs.addGraph(g._1, g._2._1, g._2._2.vertexCollection.values, g._2._2.edgeCollection, Set(), Set(), g._2._2.levelChanges)
+      graphs.addGraph(g._1, g._2._1, g._2._2.vertexCollection.values, g._2._2.edgeCollection, Set(), Set(), g._2._2.levelChanges, g._2._2.destinationGroups)
     })
     graphs
   }
@@ -104,11 +104,11 @@ class MultipleGraph(fg: Iterable[FlowGate],
 
     val graphs = new MultipleGraph(devices.flowGates, devices.binaryGates, devices.amws, devices.flowSeparators)
     val refGraph = this._graphCollection("reference")
-    graphs.addGraph("reference", 1.0 - populationFraction, refGraph._2.vertexCollection.values, refGraph._2.edgeCollection, Set(), Set(), refGraph._2.levelChanges)
+    graphs.addGraph("reference", 1.0 - populationFraction, refGraph._2.vertexCollection.values, refGraph._2.edgeCollection, Set(), Set(), refGraph._2.levelChanges, refGraph._2.destinationGroups)
 
     if (populationFraction > 0.0) {
       val alternateGraph = this._graphCollection.filterNot(kv => kv._1 == "reference").head
-      graphs.addGraph(alternateGraph._1, populationFraction, alternateGraph._2._2.vertexCollection.values, alternateGraph._2._2.edgeCollection, alternateGraph._2._2.edges2Add, alternateGraph._2._2.edges2Remove, alternateGraph._2._2.levelChanges)
+      graphs.addGraph(alternateGraph._1, populationFraction, alternateGraph._2._2.vertexCollection.values, alternateGraph._2._2.edgeCollection, alternateGraph._2._2.edges2Add, alternateGraph._2._2.edges2Remove, alternateGraph._2._2.levelChanges, alternateGraph._2._2.destinationGroups)
     }
     graphs
   }

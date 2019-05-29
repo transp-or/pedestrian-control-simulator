@@ -1,24 +1,21 @@
 package hubmodel.mgmt.flowsep
 
 import hubmodel.Position
-import hubmodel.io.input.JSONReaders.Connectivity_JSON
 import hubmodel.mgmt.{FunctionalForm, Measurement, Output}
-import hubmodel.supply.graph.MyEdge
-import hubmodel.tools.cells.RectangleModifiable
 
 /** Container for all the parameters need to build a [[FlowSeparator]].
   *
-  * @param startA extreme position of start
-  * @param startB other extreme position of start
-  * @param endA extreme position of end
-  * @param endB other extrem position of end
-  * @param inflowLinesStart lines across which pedestrian flow is mesured for the start
-  * @param inflowLinesEnd lines across which pedestrian flow is mesured for the end
-  * @param associatedZonesStart zones to add in the graph for this separator
-  * @param associatedZonesEnd zones to add in the graph for this separator
+  * @param startA                 extreme position of start
+  * @param startB                 other extreme position of start
+  * @param endA                   extreme position of end
+  * @param endB                   other extrem position of end
+  * @param inflowLinesStart       lines across which pedestrian flow is mesured for the start
+  * @param inflowLinesEnd         lines across which pedestrian flow is mesured for the end
+  * @param associatedZonesStart   zones to add in the graph for this separator
+  * @param associatedZonesEnd     zones to add in the graph for this separator
   * @param associatedConnectivity connectivity of the new zones
-  * @param overriddenZones zones to delete
-  * @param function function linking the KPI to the position of the separator.
+  * @param overriddenZones        zones to delete
+  * @param function               function linking the KPI to the position of the separator.
   * @tparam T measurement type
   * @tparam U output type
   */

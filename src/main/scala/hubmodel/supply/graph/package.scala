@@ -24,27 +24,31 @@ package object graph {
     * @param graphSpecificationFile JSON file containing the graph specification
     */
   def readGraph[T <: PedestrianNOMAD](graphSpecificationFile: String,
-                                                                    useFlowGates: Boolean,
-                                                                    useBinarygates: Boolean,
-                                                                    useAMWs: Boolean,
-                                                                    useFlowSep: Boolean,
-                                                                    fixedFlowSep: Boolean,
-                                                                    measureDensity: Boolean,
-                                                                    useAlternatGraphs: Boolean)(implicit tagT: ClassTag[T]): (GraphContainer, ControlDevices) = {
+                                      useFlowGates: Boolean,
+                                      useBinarygates: Boolean,
+                                      useAMWs: Boolean,
+                                      useFlowSep: Boolean,
+                                      fixedFlowSep: Boolean,
+                                      measureDensity: Boolean,
+                                      useAlternatGraphs: Boolean)(implicit tagT: ClassTag[T]): (GraphContainer, ControlDevices) = {
 
 
     val source: BufferedSource = scala.io.Source.fromFile(graphSpecificationFile)
     val input: JsValue = Json.parse(try source.mkString finally source.close)
 
     input.validate[InfraGraphParser] match {
-      case s: JsSuccess[InfraGraphParser] =>
+      case s: JsSuccess[InfraGraphParser] => {
         val v: Vector[Rectangle] = s.get.nodes.map(n => new Rectangle(n.name, Vector2D(n.x1, n.y1), Vector2D(n.x2, n.y2), Vector2D(n.x3, n.y3), Vector2D(n.x4, n.y4), n.OD, n.rate))
         val vertexMapReader: collection.mutable.Map[String, Rectangle] = collection.mutable.Map() ++ v.map(v => v.name -> v)
 
         val fg: Iterable[FlowGate] = if (useFlowGates) {
           s.get.flowGates.map(fg => fg.funcForm match {
-            case Some(str) if str == "quadratic" => new FlowGateFunctional(vertexMapReader(fg.o), vertexMapReader(fg.d), Vector2D(fg.start_pos_x, fg.start_pos_y), Vector2D(fg.end_pos_x, fg.end_pos_y), fg.area, { FunctionalFormGating((x: Density) => Flow(math.max(0.0, fg.funcParam.get(0) + fg.funcParam.get(1) * x.d + fg.funcParam.get(2) * x.d * x.d))) })
-            case Some(str) if str == "linear" => new FlowGateFunctional(vertexMapReader(fg.o), vertexMapReader(fg.d), Vector2D(fg.start_pos_x, fg.start_pos_y), Vector2D(fg.end_pos_x, fg.end_pos_y), fg.area, { FunctionalFormGating((x: Density) => Flow(math.max(0.0, fg.funcParam.get(0) + fg.funcParam.get(1) * x.d))) })
+            case Some(str) if str == "quadratic" => new FlowGateFunctional(vertexMapReader(fg.o), vertexMapReader(fg.d), Vector2D(fg.start_pos_x, fg.start_pos_y), Vector2D(fg.end_pos_x, fg.end_pos_y), fg.area, {
+              FunctionalFormGating((x: Density) => Flow(math.max(0.0, fg.funcParam.get(0) + fg.funcParam.get(1) * x.d + fg.funcParam.get(2) * x.d * x.d)))
+            })
+            case Some(str) if str == "linear" => new FlowGateFunctional(vertexMapReader(fg.o), vertexMapReader(fg.d), Vector2D(fg.start_pos_x, fg.start_pos_y), Vector2D(fg.end_pos_x, fg.end_pos_y), fg.area, {
+              FunctionalFormGating((x: Density) => Flow(math.max(0.0, fg.funcParam.get(0) + fg.funcParam.get(1) * x.d)))
+            })
             case None => new FlowGate(vertexMapReader(fg.o), vertexMapReader(fg.d), Vector2D(fg.start_pos_x, fg.start_pos_y), Vector2D(fg.end_pos_x, fg.end_pos_y), fg.area)
           })
         } else {
@@ -108,7 +112,7 @@ package object graph {
               oz_2,
               fs.overConn.collect({ case c if vertexMapReader.contains(c.node) => c.conn.collect({ case neigh if vertexMapReader.contains(neigh) => new MyEdge(vertexMapReader(c.node), vertexMapReader(neigh)) }) }).flatten,
               oldZones,
-              FunctionalFormFlowSeparator((bf: BidirectionalFlow) => SeparatorPositionFraction(bf.f2/(bf.f1+bf.f2)))
+              FunctionalFormFlowSeparator((bf: BidirectionalFlow) => SeparatorPositionFraction(bf.f2 / (bf.f1 + bf.f2)))
             )
           }
           )
@@ -143,12 +147,12 @@ package object graph {
               Vector2D(fs.x1b, fs.y1b),
               Vector2D(fs.x2a, fs.y2a),
               Vector2D(fs.x2b, fs.y2b),
-              fs.inf_1.map(il => FlowLineParameters(Vector2D(il.x1, il.y1), Vector2D(il.x2, il.y2),0)),
-              fs.inf_2.map(il => FlowLineParameters(Vector2D(il.x1, il.y1), Vector2D(il.x2, il.y2),0)),
+              fs.inf_1.map(il => FlowLineParameters(Vector2D(il.x1, il.y1), Vector2D(il.x2, il.y2), 0)),
+              fs.inf_2.map(il => FlowLineParameters(Vector2D(il.x1, il.y1), Vector2D(il.x2, il.y2), 0)),
               oz_1,
               oz_2,
               fs.overConn.flatMap(conn => conn.conn.map(c => (conn.node, c))),
-              FunctionalFormFlowSeparator((bf: BidirectionalFlow) => SeparatorPositionFraction(bf.f2/(bf.f1+bf.f2)))
+              FunctionalFormFlowSeparator((bf: BidirectionalFlow) => SeparatorPositionFraction(bf.f2 / (bf.f1 + bf.f2)))
             )
           }
           )
@@ -165,7 +169,7 @@ package object graph {
         def connections2Edges[U <: MyEdge](edges: Iterable[Connectivity_JSON])(implicit tag: ClassTag[U]): Set[U] = {
           edges
             .flatMap(c => c.conn
-              .collect({case neigh if vertexMapReader.keySet.contains(c.node) && vertexMapReader.keySet.contains(neigh) =>
+              .collect({ case neigh if vertexMapReader.keySet.contains(c.node) && vertexMapReader.keySet.contains(neigh) =>
                 tag.runtimeClass.getConstructors()(0).newInstance(vertexMapReader(c.node), vertexMapReader(neigh)).asInstanceOf[U]
               })
             ).toSet
@@ -179,12 +183,12 @@ package object graph {
         val graph: Try[GraphContainer] = Try(
           if (!useAlternatGraphs && s.get.alternateConnections.isEmpty) {
             //tagT.runtimeClass.getConstructors()(0).newInstance(v, baseEdgeCollection, levelChanges, fg, bg, mv, flowSeparators).asInstanceOf[T]
-            new SingleGraph(v, baseEdgeCollection, levelChanges, fg, bg, mv, flowSeparators)
+            new SingleGraph(v, baseEdgeCollection, levelChanges, s.get.destinationEquivalencies.map(r => (r.name, r.zones)), fg, bg, mv, flowSeparators)
           } else if (useAlternatGraphs && s.get.alternateConnections.nonEmpty) {
             val graphs = new MultipleGraph(fg, bg, mv, flowSeparators)
-            graphs.addGraph("reference", 1.0 - s.get.alternateConnections.foldLeft(0.0)((a, b) => a + b.frac), v, baseEdgeCollection, Set(), Set(), levelChanges)
+            graphs.addGraph("reference", 1.0 - s.get.alternateConnections.foldLeft(0.0)((a, b) => a + b.frac), v, baseEdgeCollection, Set(), Set(), levelChanges, s.get.destinationEquivalencies.map(r => (r.name, r.zones)))
             s.get.alternateConnections.foreach(g => {
-              graphs.addGraph(g.name, g.frac, v, baseEdgeCollection, connections2Edges[MyEdge](g.conn2Add), connections2Edges[MyEdge](g.conn2Remove), levelChanges)
+              graphs.addGraph(g.name, g.frac, v, baseEdgeCollection, connections2Edges[MyEdge](g.conn2Add), connections2Edges[MyEdge](g.conn2Remove), levelChanges, s.get.destinationEquivalencies.map(r => (r.name, r.zones)))
             })
             graphs
           } else {
@@ -196,13 +200,13 @@ package object graph {
           graph match {
             case Success(g) => g
             case Failure(f) => {
-              new SingleGraph(v, baseEdgeCollection, levelChanges, fg, bg, mv, flowSeparators)
+              new SingleGraph(v, baseEdgeCollection, levelChanges, s.get.destinationEquivalencies.map(r => (r.name, r.zones)), fg, bg, mv, flowSeparators)
             }
           }
           ,
           new ControlDevices(monitoredAreas, mv, fg, bg, flowSeparators, fixedFlowSep, Some(flowSepParameters))
         )
-
+      }
       case e: JsError => throw new Error("Error while parsing graph specification file: " + JsError.toJson(e).toString())
     }
   }

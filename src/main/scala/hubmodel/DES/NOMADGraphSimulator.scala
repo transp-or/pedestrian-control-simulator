@@ -2,7 +2,6 @@ package hubmodel.DES
 
 import hubmodel._
 import hubmodel.demand.{PTInducedQueue, PublicTransportSchedule}
-import hubmodel.mgmt.flowsep.FlowSeparator
 import hubmodel.mgmt.{ControlDevices, EvaluateState}
 import hubmodel.mvmtmodels.NOMAD.NOMADIntegrated
 import hubmodel.mvmtmodels.{RebuildPopulationTree, UpdateClosestWall}

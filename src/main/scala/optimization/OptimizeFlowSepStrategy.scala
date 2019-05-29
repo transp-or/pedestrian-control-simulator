@@ -6,7 +6,6 @@ import java.util
 import SimulatedAnnealing.ContinuousProblem
 import com.typesafe.config.Config
 import hubmodel.parseConfigFile
-import optimization.OptimizeGatingStrategy.ID
 import optimization.simulation.FlowSepOptimizationFactory
 import org.apache.commons.lang3.RandomStringUtils
 

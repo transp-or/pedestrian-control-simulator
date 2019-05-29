@@ -1501,7 +1501,25 @@
     }
   ],
   "connectivity_level_change": [],
-  "alternate_graphs": []
+  "alternate_graphs": [],
+  "destination_groups": [
+    {
+      "name": "plat34",
+      "zones": ["9", "10"]
+    },
+    {
+      "name": "plat56",
+      "zones": ["7", "8"]
+    },
+    {
+      "name": "plat78",
+      "zones": ["5", "6"]
+    },
+    {
+      "name": "plat1",
+      "zones": ["11", "12"]
+    }
+  ]
 }
 
 

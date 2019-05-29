@@ -1,16 +1,16 @@
 package hubmodel
 
 import java.io.{BufferedWriter, File, FileWriter}
-import java.nio.file.{Files, Path, Paths}
+import java.nio.file.{Files, Paths}
 
 import hubmodel.DES.NOMADGraphSimulator
+import hubmodel.io.input.JSONReaders.PedestrianResults_JSON
 import hubmodel.ped.{PedestrianNOMAD, PedestrianSim}
 import hubmodel.tools.cells.Rectangle
 import myscala.math.stats.{ComputeStats, Statistics}
 import myscala.output.SeqOfSeqExtensions.SeqOfSeqWriter
 import myscala.output.SeqTuplesExtensions.SeqTuplesWriter
 import play.api.libs.json.{JsError, JsSuccess, JsValue, Json}
-import hubmodel.io.input.JSONReaders.PedestrianResults_JSON
 
 import scala.collection.JavaConversions._
 import scala.io.BufferedSource
@@ -54,10 +54,11 @@ package object results {
     // TODO: check if files exists and remove them if they are inside tmp, and warn about them if they are in output_dir
     if (!Files.exists(Paths.get(dir))) {
       Files.createDirectory(Paths.get(dir))
-    }/* else {
-      Files.newDirectoryStream(Paths.get(dir)).toVector.foreach(f => Files.delete(f))
-    }*/
-    val path: String = dir/* match {
+    }
+    /* else {
+          Files.newDirectoryStream(Paths.get(dir)).toVector.foreach(f => Files.delete(f))
+        }*/
+    val path: String = dir /* match {
       case Some(str) => str
       case None => {
         val dirName: String = "tmp-" + simulator.ID + "/"
@@ -75,33 +76,38 @@ package object results {
         simulator.populationCompleted
           .filter(p => simulator.transferringPassengers.contains(p.ID))
           .map(p => (p.origin.name, p.finalDestination.name, p.travelTime.value, p.entryTime.value, p.exitTime.value, p.travelDistance))
-          .writeToCSV(prefix + "tt_" + simulator.ID + ".csv", columnNames=Some(Vector("origin", "destination", "travelTime", "entryTime", "exitTime", "travelDistance")), rowNames=None, path=path)
+          .writeToCSV(prefix + "tt_" + simulator.ID + ".csv", columnNames = Some(Vector("origin", "destination", "travelTime", "entryTime", "exitTime", "travelDistance")), rowNames = None, path = path)
       } else {
 
         val file = new File(path + prefix + "tt_" + simulator.ID + ".json")
         val bw = new BufferedWriter(new FileWriter(file))
         bw.write("[")
-        simulator.population.foreach(p => bw.write(p.toJSON(false)+ ",\n"))
-        simulator.populationCompleted.tail.foreach(p => bw.write(p.toJSON(true) + ",\n"))
-        bw.write(simulator.populationCompleted.head.toJSON(true))
+        simulator.population.foreach(p => bw.write(p.toJSON(false) + ",\n"))
+        if (simulator.populationCompleted.size == 1) {
+          bw.write(simulator.populationCompleted.head.toJSON(true))
+        }
+        else if (simulator.populationCompleted.size >= 2) {
+          simulator.populationCompleted.tail.foreach(p => bw.write(p.toJSON(true) + ",\n"))
+          bw.write(simulator.populationCompleted.head.toJSON(true))
+        }
         bw.write("]")
         bw.close()
 
         (
           simulator.population
-          .map(p => (p.origin.name, "", p.travelTime.value, p.entryTime.value, Double.NaN, p.travelDistance)).toSeq
-          ++
-        simulator.populationCompleted
-          .map(p => (p.origin.name, p.finalDestination.name, p.travelTime.value, p.entryTime.value, p.exitTime.value, p.travelDistance))
+            .map(p => (p.origin.name, "", p.travelTime.value, p.entryTime.value, Double.NaN, p.travelDistance)).toSeq
+            ++
+            simulator.populationCompleted
+              .map(p => (p.origin.name, p.finalDestination.name, p.travelTime.value, p.entryTime.value, p.exitTime.value, p.travelDistance))
           )
-          .writeToCSV(prefix + "tt_" + simulator.ID + ".csv", columnNames=Some(Vector("origin", "destination", "travelTime", "entryTime", "exitTime", "travelDistance")), rowNames=None, path=path)
+          .writeToCSV(prefix + "tt_" + simulator.ID + ".csv", columnNames = Some(Vector("origin", "destination", "travelTime", "entryTime", "exitTime", "travelDistance")), rowNames = None, path = path)
       }
       Try(
         if (simulator.criticalAreas.nonEmpty) {
           (simulator.criticalAreas.head._2.densityHistory.map(_._1.value).toVector +: simulator.criticalAreas.map(_._2.densityHistory.map(_._2).toVector).toVector).writeToCSV(prefix + "density_" + simulator.ID + ".csv", path)
           simulator.criticalAreas.head._2.paxIndividualDensityHistory.flatMap(v => Vector.fill(v._2.size)(v._1.value).zip(v._2)).toVector.writeToCSV(prefix + "individual_densities_" + simulator.ID + ".csv", path)
         }
-        ) match {
+      ) match {
         case Success(s) => {
           println("written critical zone successfully")
         }
@@ -125,9 +131,9 @@ package object results {
   }
 
   def readResults(dir: String, prefix: String, demandSets: Seq[String]): Iterable[ResultsContainerReadWithDemandSet] = {
-    if (demandSets.isEmpty){
+    if (demandSets.isEmpty) {
       val dirContents = Files.newDirectoryStream(Paths.get(dir))
-      val subDirs: Iterable[String] = dirContents.toVector.collect({case f if Files.isDirectory(f) => f.getFileName.toString})
+      val subDirs: Iterable[String] = dirContents.toVector.collect({ case f if Files.isDirectory(f) => f.getFileName.toString })
       dirContents.close()
       subDirs.flatMap(ff => readResults(dir + ff, prefix).map(_.addDemandFile(ff)))
     } else {
@@ -136,17 +142,18 @@ package object results {
   }
 
 
-    /**
+  /**
     * Reads the files located in the argument and processes them to an  Iterable of [[ResultsContainerRead]] object.
     *
     * @param path dir where the files are located
     * @return Iterable containing the results
     */
   def readResults(dir: String, prefix: String): Iterable[ResultsContainerRead] = {
-    val path: String = dir /*match {
-      case Some(str) => str
-      case None => "tmp/"
-    }*/
+    val path: String = dir
+    /*match {
+         case Some(str) => str
+         case None => "tmp/"
+       }*/
     val outputDir = new File(path)
     if (!outputDir.exists || !outputDir.isDirectory) {
       throw new IllegalArgumentException("Output dir for files does not exist ! dir=" + path)
@@ -172,7 +179,7 @@ package object results {
           val cols = line.split(",").map(_.trim)
           if (cols.length == 6) {
             (cols(0), cols(1), cols(2).toDouble, cols(3).toDouble, cols(4).toDouble, cols(5).toDouble)
-          } else if (cols.length==5){
+          } else if (cols.length == 5) {
             (cols(0), cols(1), cols(2).toDouble, cols(3).toDouble, cols(4).toDouble, Double.NaN)
           } else {
             throw new IllegalAccessError("Data does not have the right shape")
@@ -217,11 +224,23 @@ package object results {
     })
   }
 
+  def readResultsJson(dir: String, prefix: String, demandSets: Seq[String]): Iterable[ResultsContainerReadWithDemandSetNew] = {
+    if (demandSets.isEmpty) {
+      val dirContents = Files.newDirectoryStream(Paths.get(dir))
+      val subDirs: Iterable[String] = dirContents.toVector.collect({ case f if Files.isDirectory(f) => f.getFileName.toString })
+      dirContents.close()
+      subDirs.flatMap(ff => readResultsJson(dir + ff, prefix).map(_.addDemandFile(ff)))
+    } else {
+      demandSets.flatMap(ff => readResultsJson(dir + ff, prefix).map(_.addDemandFile(ff)))
+    }
+  }
+
   def readResultsJson(dir: String, prefix: String): Iterable[ResultsContainerReadNew] = {
-    val path: String = dir /*match {
-      case Some(str) => str
-      case None => "tmp/"
-    }*/
+    val path: String = dir
+    /*match {
+         case Some(str) => str
+         case None => "tmp/"
+       }*/
     val outputDir = new File(path)
     if (!outputDir.exists || !outputDir.isDirectory) {
       throw new IllegalArgumentException("Output dir for files does not exist ! dir=" + path)
@@ -231,12 +250,13 @@ package object results {
       .listFiles
       .filter(f => f.isFile && f.getName.contains(prefix) && f.getName.endsWith(".json"))
       .toList.groupBy(f => f.getName.substring(f.getName.indexOf(".json") - 10, f.getName.indexOf(".json")))
-      .map(kv => kv._1 -> kv._2.map(f => {f.getName match {
-        case a if a.contains("_tt_") => "tt"
-        case b if b.contains("_density_") => "density"
-        case c if c.contains("_individual_densities_") => "individual_densities"
-        case other => throw new IllegalArgumentException("File should not be present: " + other)
-      }
+      .map(kv => kv._1 -> kv._2.map(f => {
+        f.getName match {
+          case a if a.contains("_tt_") => "tt"
+          case b if b.contains("_density_") => "density"
+          case c if c.contains("_individual_densities_") => "individual_densities"
+          case other => throw new IllegalArgumentException("File should not be present: " + other)
+        }
       } -> f
       ).toMap
       )
@@ -260,6 +280,7 @@ package object results {
     * Implicit class for processing the pedestrian results. This means the anaylsis can be chained without having
     * to pass the population as an argument. This class should be used directly on the results from the
     * simulation.
+    *
     * @param pop collection of [[PedestrianSim]] to analyse
     */
   implicit class PopulationProcessing(pop: Iterable[PedestrianSim]) {
@@ -278,7 +299,8 @@ package object results {
 
     /**
       * Groups the pedestrians by OD and then computes the statistics of the KPI extraced using the pedFunc argument.
-      * @param filter removes undesired pedestrians
+      *
+      * @param filter  removes undesired pedestrians
       * @param pedFunc extracts the KPI from the pedestrian
       * @return [[Statistics]] of the KPI from the pedestrians
       */
@@ -291,6 +313,7 @@ package object results {
     * Implicit class for processing the pedestrian results. This means the anaylsis can be chained without having
     * to pass the population as an argument. This class shoulc be used on the travel time summary read from the
     * intermediate results.
+    *
     * @param popSummary summary of the pedestrian's travel times to analyse
     */
   implicit class PopulationSummaryProcessing(popSummary: Vector[(String, String, Double, Double, Double)]) {
@@ -309,7 +332,8 @@ package object results {
 
     /**
       * Groups the pedestrians by OD and then computes the statistics of the KPI extraced using the pedFunc argument.
-      * @param f removes undesired pedestrians
+      *
+      * @param f       removes undesired pedestrians
       * @param pedFunc extracts the KPI from the pedestrian summary
       * @return [[Statistics]] of the KPI from the pedestrians
       */

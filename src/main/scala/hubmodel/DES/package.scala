@@ -6,9 +6,9 @@ import com.typesafe.config.{Config, ConfigFactory}
 import hubmodel.demand.flows.{ProcessDisaggregatePedestrianFlows, ProcessPedestrianFlows}
 import hubmodel.demand.{PedestrianFlowFunction_New, PedestrianFlowPT_New, PedestrianFlow_New, ProcessTimeTable, PublicTransportSchedule, readDisaggDemand, readDisaggDemandTF, readPedestrianFlows, readSchedule, readScheduleTF}
 import hubmodel.ped.PedestrianNOMAD
-import hubmodel.supply.{NodeID_New, NodeParent, StopID_New, TrainID_New}
 import hubmodel.supply.continuous.ReadContinuousSpace
 import hubmodel.supply.graph.{Stop2Vertex, readGraph, readPTStop2GraphVertexMap}
+import hubmodel.supply.{NodeID_New, NodeParent, StopID_New, TrainID_New}
 import hubmodel.tools.Time
 import hubmodel.tools.cells.Rectangle
 
@@ -23,8 +23,6 @@ package object DES {
     * @return simulator ready to run
     */
   def createSimulation[T <: PedestrianNOMAD](config: Config, flows_TF: Option[String] = None, timetable_TF: Option[String] = None)(implicit tag: ClassTag[T]): NOMADGraphSimulator[T] = {
-
-
 
 
     /*if ((timetable_TF.isEmpty && flows_TF.isDefined) || (timetable_TF.isDefined && flows_TF.isEmpty)) {
@@ -67,7 +65,7 @@ package object DES {
       }
 
     val disaggPopulation =
-      if (timetable_TF.isEmpty && flows_TF.isEmpty) {
+      if (timetable_TF.isEmpty && flows_TF.isEmpty) { // no
         getDisaggPopulation(config)
       } else if (flows_TF.nonEmpty && timetable_TF.isEmpty) {
         getDisaggPopulation(config, flows_TF.get)
@@ -156,7 +154,6 @@ package object DES {
   }
 
 
-
   // Loads the train time table used to create demand from trains
   def getPTSchedule(flows: (Iterable[PedestrianFlow_New], Iterable[PedestrianFlowPT_New], Iterable[PedestrianFlowFunction_New]), config: Config): (PublicTransportSchedule, Stop2Vertex) = {
     if (!config.getIsNull("files.timetable")) {
@@ -191,25 +188,25 @@ package object DES {
 
   // Loads the disaggregate pedestrian demand.
   def getDisaggPopulation(config: Config): Iterable[(String, String, Option[Time])] = {
-    if (config.getIsNull("files.flows_TF") && !config.getIsNull("files.disaggregate_demand")) {
+    if (config.getIsNull("files.flows_TF") && !config.getIsNull("files.disaggregate_demand")) { // single disaggregate demand
       readDisaggDemand(config.getString("files.disaggregate_demand"))
         .flatMap(p =>
-          if (!config.getIsNull("sim.increase_disaggregate_demand") && ThreadLocalRandom.current().nextDouble() >= (1.0-config.getDouble("sim.increase_disaggregate_demand")/100.0)) {
-            Iterable(p, (p._1, p._2, Option(p._3.get.addDouble(ThreadLocalRandom.current().nextDouble(-15,15)))))
+          if (!config.getIsNull("sim.increase_disaggregate_demand") && ThreadLocalRandom.current().nextDouble() >= (1.0 - config.getDouble("sim.increase_disaggregate_demand") / 100.0)) {
+            Iterable(p, (p._1, p._2, Option(p._3.get.addDouble(ThreadLocalRandom.current().nextDouble(-15, 15)))))
           } else {
             Iterable(p)
           }
         )
-    } else if (config.getBoolean("sim.read_multiple_demand_sets")) {
+    } else if (config.getBoolean("sim.read_multiple_demand_sets")) { // multiple disaggregate demand sets
       readDisaggDemand(config.getString("files.disaggregate_demand"))
         .flatMap(p =>
-          if (!config.getIsNull("sim.increase_disaggregate_demand") && ThreadLocalRandom.current().nextDouble() >= (1.0-config.getDouble("sim.increase_disaggregate_demand")/100.0)) {
-            Iterable(p, (p._1, p._2, Option(p._3.get.addDouble(ThreadLocalRandom.current().nextDouble(-15,15)))))
+          if (!config.getIsNull("sim.increase_disaggregate_demand") && ThreadLocalRandom.current().nextDouble() >= (1.0 - config.getDouble("sim.increase_disaggregate_demand") / 100.0)) {
+            Iterable(p, (p._1, p._2, Option(p._3.get.addDouble(ThreadLocalRandom.current().nextDouble(-15, 15)))))
           } else {
             Iterable(p)
           }
         )
-    } else if (config.getIsNull("files.disaggregate_demand") && !config.getIsNull("files.flows_TF")) {
+    } else if (config.getIsNull("files.disaggregate_demand") && !config.getIsNull("files.flows_TF")) { // TRANS-FORM disaggregate demand
       readDisaggDemandTF(config.getString("files.flows_TF"))
     } else {
       println(" * using only standard pedestrian flows")
@@ -218,14 +215,14 @@ package object DES {
   }
 
   def getDisaggPopulation(config: Config, file: String): Iterable[(String, String, Option[Time])] = {
-      readDisaggDemand(config.getString("files.TF_demand_sets") + file)
-        .flatMap(p =>
-          if (!config.getIsNull("sim.increase_disaggregate_demand") && ThreadLocalRandom.current().nextDouble() >= (1.0-config.getDouble("sim.increase_disaggregate_demand")/100.0)) {
-            Iterable(p, (p._1, p._2, Option(p._3.get.addDouble(ThreadLocalRandom.current().nextDouble(-15,15)))))
-          } else {
-            Iterable(p)
-          }
-        )
+    readDisaggDemand(config.getString("files.TF_demand_sets") + file)
+      .flatMap(p =>
+        if (!config.getIsNull("sim.increase_disaggregate_demand") && ThreadLocalRandom.current().nextDouble() >= (1.0 - config.getDouble("sim.increase_disaggregate_demand") / 100.0)) {
+          Iterable(p, (p._1, p._2, Option(p._3.get.addDouble(ThreadLocalRandom.current().nextDouble(-15, 15)))))
+        } else {
+          Iterable(p)
+        }
+      )
   }
 
   // Loads the disaggregate pedestrian demand.
@@ -240,7 +237,7 @@ package object DES {
                                                       timeTable: PublicTransportSchedule)(implicit tag: ClassTag[T]): Unit = {
 
     if (disaggPopulation.nonEmpty) {
-      val newDisaggPopulation = disaggPopulation/*.groupBy(p => (p._1, p._2)).flatMap(gp => gp._2.take(2))*/
+      val newDisaggPopulation = disaggPopulation /*.groupBy(p => (p._1, p._2)).flatMap(gp => gp._2.take(2))*/
       sim.insertEventWithZeroDelay(new ProcessDisaggregatePedestrianFlows[T](newDisaggPopulation, sim))
     }
 

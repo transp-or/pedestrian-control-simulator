@@ -333,6 +333,23 @@ package object JSONReaders {
     ) (MonitoredAreas_JSON.apply _)
 
 
+  /**
+    * Group of zones where a pedestrian can go to. The idea is that the pedestrian takes the closest one.
+    *
+    * @param name  name of the destination group
+    * @param zones vector of zone ids
+    */
+  private[JSONReaders] case class destinationGroup_JSON(name: String, zones: Vector[String])
+
+  /**
+    * Reads the JSON structure into a [[destinationGroup_JSON]] object. No validation on arguments is done.
+    */
+  implicit val destinationGroup_JSONReads: Reads[destinationGroup_JSON] = (
+    (JsPath \ "name").read[String] and
+      (JsPath \ "zones").read[Vector[String]]
+    ) (destinationGroup_JSON.apply _)
+  destinationGroup_JSON
+
   // ******************************************************************************************
   //                   CASE CLASSES AND IMPLICIT CONVERSIONS FOR CONTINUOUS SPACE
   // ******************************************************************************************
@@ -408,7 +425,8 @@ package object JSONReaders {
       (JsPath \ "binary_gates").read[Vector[FlowGates_JSON]] and
       (JsPath \ "moving_walkways").read[Vector[MovingWalkways_JSON]] and
       (JsPath \ "flow_separators").read[Vector[FlowSeparator_JSON]] and
-      (JsPath \ "alternate_graphs").read[Vector[ConnectivityAlternatives_JSON]]
+      (JsPath \ "alternate_graphs").read[Vector[ConnectivityAlternatives_JSON]] and
+      (JsPath \ "destination_groups").read[Vector[destinationGroup_JSON]]
     ) (InfraGraphParser.apply _)
 
   // ******************************************************************************************
@@ -455,13 +473,14 @@ package object JSONReaders {
 
 
   case class TravelTimeThroughZone_JSON(ID: String, tt: Double)
+
   implicit val TravelTimeThroughZone_JSON_Reads: Reads[TravelTimeThroughZone_JSON] = (
     (JsPath \ "mz_id").read[String] and
       (JsPath \ "tt").read[Double]
     ) (TravelTimeThroughZone_JSON.apply _)
 
   // *********************** Pedestrian data with travel time, etc ****************************
-  case class PedestrianResults_JSON(o: String, d:String, tt: Double, entry: Double, exit: Option[Double], td: Double, gates: Vector[String], ttThroughZones: Vector[TravelTimeThroughZone_JSON])
+  case class PedestrianResults_JSON(o: String, d: String, tt: Double, entry: Double, exit: Option[Double], td: Double, gates: Vector[String], ttThroughZones: Vector[TravelTimeThroughZone_JSON])
 
   implicit val PedestrianResults_JSON_Reads: Reads[PedestrianResults_JSON] = (
     (JsPath \ "o").read[String] and
@@ -473,8 +492,6 @@ package object JSONReaders {
       (JsPath \ "gates").read[Vector[String]] and
       (JsPath \ "tt-monitored-zones").read[Vector[TravelTimeThroughZone_JSON]]
     ) (PedestrianResults_JSON.apply _)
-
-
 
 
   // ******************************************************************************************

@@ -2,12 +2,11 @@ package optimization
 
 import java.io.FileWriter
 import java.util
-import java.util.{Arrays, Collections}
 
 import SimulatedAnnealing.ContinuousProblem
 import com.typesafe.config.Config
 import hubmodel.parseConfigFile
-import optimization.simulation.{SingleGateOptimizationFactory, SingleGateOptimizationWithDensityFactory}
+import optimization.simulation.SingleGateOptimizationWithDensityFactory
 import org.apache.commons.lang3.RandomStringUtils
 
 object OptimizeGatingStrategy extends App {

@@ -1,6 +1,6 @@
-import java.util.concurrent.ThreadLocalRandom
+val l = List(1, 2, 3)
+l.last
 
+val l2 = List()
 
-val v = Vector(0.1,0.4,0.5).scanLeft(0.0)(_ + _).tail
-val p = ThreadLocalRandom.current().nextDouble()
-v.indexWhere(a => p < a)
+l2.last

@@ -248,12 +248,14 @@ class NOMADIntegrated[T <: PedestrianNOMAD](sim: NOMADGraphSimulator[T]) extends
 
       // store the entrance and exit times of each zones
       sim.controlDevices.monitoredAreas.filter(zone => isInVertex(zone)(ped.currentPosition)).foreach(zone => {
-      val previousEntrance: (Time, Time) = ped.timeInMonitoredAreas.getOrElseUpdate(zone.name, (sim.currentTime, sim.currentTime))
-      ped.timeInMonitoredAreas.update(zone.name, (previousEntrance._1, sim.currentTime))
+        val previousEntrance: (Time, Time) = ped.timeInMonitoredAreas.getOrElseUpdate(zone.name, (sim.currentTime, sim.currentTime))
+        ped.timeInMonitoredAreas.update(zone.name, (previousEntrance._1, sim.currentTime))
       })
 
       // updates the next destination if the current destination is reached
-      if (sim.intermediateDestinationReached(ped)) {sim.updateIntermediateDestination(ped)}
+      if (sim.intermediateDestinationReached(ped)) {
+        sim.updateIntermediateDestination(ped)
+      }
     })
 
     sim.processCompletedPedestrian(sim.finalDestinationReached)
@@ -369,12 +371,12 @@ class NOMADIntegrated[T <: PedestrianNOMAD](sim: NOMADGraphSimulator[T]) extends
       //movePedestriansInQueues(this.collisionTimeStepSeconds, currentTime)
       // ask the in collision pedestrians to perform the activity(walking included)
       this.pedestrianToMoveInCollision.foreach(ped => {
-        walkPedestrian(ped, getPedInLevelVicinity_3D(ped, ped.closePeds/*sim.population.filter(p => (p.currentPosition- ped.currentPosition).norm <= 10)*/), getClosestCoordinates3D(ped), this.collisionTimeStepSeconds)
+        walkPedestrian(ped, getPedInLevelVicinity_3D(ped, ped.closePeds /*sim.population.filter(p => (p.currentPosition- ped.currentPosition).norm <= 10)*/), getClosestCoordinates3D(ped), this.collisionTimeStepSeconds)
       })
       //walkPedestrians(this.pedestrianToMoveInCollision, this.collisionTimeStepSeconds, currentTime)
       // check if the range step is reached
       if (colStep % this.rangeTimeStepSeconds == 0) {
-        this.pedestrianToMoveInRange.foreach(ped => {  })
+        this.pedestrianToMoveInRange.foreach(ped => {})
         //walkPedestrians(this.pedestrianToMoveInRange, this.rangeTimeStepSeconds, currentTime)
         rangeStep += this.rangeTimeStepSeconds
         //println("range step process in collison", rangeStep)

@@ -4,8 +4,8 @@ import java.awt.geom.AffineTransform
 import java.awt.image.BufferedImage
 import java.awt.{Color, Graphics2D}
 
-import hubmodel.mgmt.ControlDevices
 import hubmodel.io.output._
+import hubmodel.mgmt.ControlDevices
 import hubmodel.supply.continuous.Wall
 import javax.imageio.ImageIO
 import myscala.math.vector.Vector2D

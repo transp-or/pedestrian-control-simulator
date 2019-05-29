@@ -14,7 +14,7 @@ class ProcessDisaggregatePedestrianFlows[T <: PedestrianNOMAD](eventCollection: 
 
   def execute(): Unit = {
     eventCollection
-      .filter(ec => ec._1 != ec._2)// && ec._1 != "-1" && ec._2 != "-1" && sim.graph.vertexMapNew.keySet.contains(ec._1.drop(2)) && sim.graph.vertexMapNew.keySet.contains(ec._2.drop(2)))
+      .filter(ec => ec._1 != ec._2) // && ec._1 != "-1" && ec._2 != "-1" && sim.graph.vertexMapNew.keySet.contains(ec._1.drop(2)) && sim.graph.vertexMapNew.keySet.contains(ec._2.drop(2)))
       .foreach(ec => {
       if (ec._1.contains("z_") && ec._2.contains("z_")) {
         if (ec._1.drop(2) != "-1" && ec._2.drop(2) != "-1") {

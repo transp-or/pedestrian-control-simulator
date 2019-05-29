@@ -7,7 +7,7 @@ import hubmodel.supply.continuous.{MovableWall, SINGLELINE, Wall}
 import hubmodel.supply.graph.MyEdge
 import hubmodel.tools.Time
 import hubmodel.tools.cells.RectangleModifiable
-import hubmodel.tools.exceptions.{IllegalFlowSeparatorPosition, IllegalPhysicalQuantity}
+import hubmodel.tools.exceptions.IllegalFlowSeparatorPosition
 import hubmodel.{FLOW_SEPARATOR_SPEED, FLOW_SEPARATOR_UPDATE, Position, generateUUID}
 
 import scala.util.{Failure, Success, Try}
@@ -20,36 +20,37 @@ import scala.util.{Failure, Success, Try}
   * information is stored here and will be processed by the graph builder. The list of zones to be deleted is also
   * specified. The connectivity of these deleted zones will also be removed.
   *
-  * @param startA extreme position of start
-  * @param startB other extreme position of start
-  * @param endA extreme position of end
-  * @param endB other extrem position of end
-  * @param inflowLinesStart lines across which pedestrian flow is mesured for the start
-  * @param inflowLinesEnd lines across which pedestrian flow is mesured for the end
-  * @param associatedZonesStart zones to add in the graph for this separator
-  * @param associatedZonesEnd zones to add in the graph for this separator
+  * @param startA                 extreme position of start
+  * @param startB                 other extreme position of start
+  * @param endA                   extreme position of end
+  * @param endB                   other extrem position of end
+  * @param inflowLinesStart       lines across which pedestrian flow is mesured for the start
+  * @param inflowLinesEnd         lines across which pedestrian flow is mesured for the end
+  * @param associatedZonesStart   zones to add in the graph for this separator
+  * @param associatedZonesEnd     zones to add in the graph for this separator
   * @param associatedConnectivity connectivity of the new zones
-  * @param overridenZones zones to delete
-  * @param function function linking the KPI to the position of the separator.
+  * @param overridenZones         zones to delete
+  * @param function               function linking the KPI to the position of the separator.
   * @tparam T measurement type
   * @tparam U output type
   */
-class FlowSeparator[T <: Measurement, U <: SeparatorPositionFraction] (val startA: Position,
-                                                   val startB: Position,
-                                                   val endA: Position,
-                                                   val endB: Position,
-                                                   val inflowLinesStart: Iterable[FlowLine],
-                                                   val inflowLinesEnd: Iterable[FlowLine],
-                                                   val associatedZonesStart: Iterable[RectangleModifiable],
-                                                   val associatedZonesEnd: Iterable[RectangleModifiable],
-                                                   val associatedConnectivity: Iterable[MyEdge],
-                                                   val overridenZones: Iterable[String],
-                                                   val function: FunctionalForm[T, U]) extends ControlDeviceComponent {
+class FlowSeparator[T <: Measurement, U <: SeparatorPositionFraction](val startA: Position,
+                                                                      val startB: Position,
+                                                                      val endA: Position,
+                                                                      val endB: Position,
+                                                                      val inflowLinesStart: Iterable[FlowLine],
+                                                                      val inflowLinesEnd: Iterable[FlowLine],
+                                                                      val associatedZonesStart: Iterable[RectangleModifiable],
+                                                                      val associatedZonesEnd: Iterable[RectangleModifiable],
+                                                                      val associatedConnectivity: Iterable[MyEdge],
+                                                                      val overridenZones: Iterable[String],
+                                                                      val function: FunctionalForm[T, U]) extends ControlDeviceComponent {
 
 
   /**
     * Constructor for building the [[FlowSeparator]] from the collection of parameters stored
     * in [[FlowSeparatorParameters]].
+    *
     * @param params new [[FlowSeparator]] from the parameters
     */
   /*def this(params: FlowSeparatorParameters[T, U]) {
@@ -68,7 +69,7 @@ class FlowSeparator[T <: Measurement, U <: SeparatorPositionFraction] (val start
     )
   }*/
 
-  /**  Unique identifier
+  /** Unique identifier
     *
     */
   val ID: String = generateUUID
@@ -96,6 +97,7 @@ class FlowSeparator[T <: Measurement, U <: SeparatorPositionFraction] (val start
 
   /**
     * Indicates if the wall should move to it's new position or not. This
+    *
     * @param updateStep
     * @return
     */
@@ -121,9 +123,15 @@ class FlowSeparator[T <: Measurement, U <: SeparatorPositionFraction] (val start
           case Success(s) => s
           case Failure(f) => f match {
             case outsideBounds: IllegalFlowSeparatorPosition => {
-              if (outsideBounds.position > 1.0) {SeparatorPositionFraction(1.0)}
-              else if (outsideBounds.position < 0.0) { SeparatorPositionFraction(0.0)}
-              else { throw new Exception("This case should never happen") }
+              if (outsideBounds.position > 1.0) {
+                SeparatorPositionFraction(1.0)
+              }
+              else if (outsideBounds.position < 0.0) {
+                SeparatorPositionFraction(0.0)
+              }
+              else {
+                throw new Exception("This case should never happen")
+              }
             }
             case illegalArg: IllegalArgumentException => {
               println("Warning ! Error when computing flow separator fraction, defaulting to 0.5")
@@ -179,6 +187,7 @@ class FlowSeparator[T <: Measurement, U <: SeparatorPositionFraction] (val start
 
   /**
     * Deeply copies this [[FlowSeparator]] to make a new one.
+    *
     * @return deep copy of the current component
     */
   override def deepCopy: FlowSeparator[T, U] = new FlowSeparator[T, U](
@@ -202,7 +211,7 @@ class FlowSeparator[T <: Measurement, U <: SeparatorPositionFraction] (val start
     * @tparam W an output compatible with the flow separator is required
     * @return deep copy of the current component with a different function form
     */
-  def deepCopy[V <: Measurement, W <: SeparatorPositionFraction](newFunction: FunctionalForm[V, W]): FlowSeparator[V, W] = new FlowSeparator[V, W] (
+  def deepCopy[V <: Measurement, W <: SeparatorPositionFraction](newFunction: FunctionalForm[V, W]): FlowSeparator[V, W] = new FlowSeparator[V, W](
     this.startA,
     this.startB,
     this.endA,

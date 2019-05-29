@@ -30,7 +30,7 @@ abstract class GraphContainer(protected val flowGates: Iterable[FlowGate],
 
   /** Creates a copy of the graph with the fraction of people using this alternative.
     *
-    * @param devices new set of devices to use
+    * @param devices            new set of devices to use
     * @param populationFraction fraction to use the alternate graph
     * @return
     */

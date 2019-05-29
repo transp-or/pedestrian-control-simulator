@@ -1,11 +1,12 @@
 package hubmodel.results
 
-import java.nio.file.{Files, Path, Paths}
+import java.nio.file.{Files, Paths}
 
 import com.typesafe.config.Config
 import hubmodel.parseConfigFile
-import myscala.math.stats.{ComputeStats, Statistics, ComputeQuantiles}
+import myscala.math.stats.{ComputeQuantiles, ComputeStats}
 import myscala.output.SeqTuplesExtensions.SeqTuplesWriter
+
 import scala.collection.JavaConversions._
 
 
@@ -80,7 +81,7 @@ object CompareTravelTimeResultsPIW extends App {
       ("6", "11"),
     ))
 
-  def groupsReversed(odPairs: (String, String)): String = groups.flatMap(g => g._2.map(t => t -> g._1)).getOrElse(odPairs, "xNone")
+  def groupsReversed(odPairs: (String, String)): String = groups.flatMap(g => g._2.map(t => t -> g._1)).getOrElse(odPairs, "None")
 
   val config: Config = parseConfigFile(args)
   val multipleDemandStream = Files.newDirectoryStream(Paths.get(config.getString("sim.TF_demand_sets")), "*.json")
@@ -103,21 +104,22 @@ object CompareTravelTimeResultsPIW extends App {
         val temp = r._2.map(
           sim => sim._1.tt // using travel time
             .groupBy(p => (p._1, p._2)) // grouped by OD pair
-            //.map(rr => (rr._1, (rr._2.map(_._3).statistics.median, rr._2.map(_._6).statistics.median, rr._2.map(p => p._6/p._3).statistics.median, rr._2.size))).toVector
+          //.map(rr => (rr._1, (rr._2.map(_._3).statistics.median, rr._2.map(_._6).statistics.median, rr._2.map(p => p._6/p._3).statistics.median, rr._2.size))).toVector
         )
 
         r._1 -> temp.flatten
-            .groupBy(g => groupsReversed(g._1))
-            .map(group => {
-              val dataByGroup = group._2.flatMap(d => d._2)
-              group._1 -> (
-                dataByGroup.map(d => d._3).cutOfAfterQuantile(99.5).statistics.median,
-                dataByGroup.map(d => d._6).cutOfAfterQuantile(99.5).statistics.median,
-                dataByGroup.map(d => d._6/d._3).cutOfAfterQuantile(99.5).statistics.median,
-                dataByGroup.size
-              )
-            })})
-    }
+          .groupBy(g => groupsReversed(g._1))
+          .map(group => {
+            val dataByGroup = group._2.flatMap(d => d._2)
+            group._1 -> (
+              dataByGroup.map(d => d._3).cutOfAfterQuantile(99.5).statistics.median,
+              dataByGroup.map(d => d._6).cutOfAfterQuantile(99.5).statistics.median,
+              dataByGroup.map(d => d._6 / d._3).cutOfAfterQuantile(99.5).statistics.median,
+              dataByGroup.size
+            )
+          })
+      })
+  }
 
   val resultsByODRef: Map[String, Map[String, (Double, Double, Double, Int)]] = resultsByOD(resultsRef)
   val resultsByODOther: Map[String, Map[String, (Double, Double, Double, Int)]] = resultsByOD(resultsOther)
@@ -136,9 +138,9 @@ object CompareTravelTimeResultsPIW extends App {
 
   r.flatMap(rr => rr._2.map(rrr => (rr._1, rrr._1, rrr._2, rrr._3, rrr._4, rrr._5, rrr._6, rrr._7, rrr._8, rrr._9))).toVector
     .filterNot(v => v._3.isNaN || v._4.isNaN)
-    .sortBy(v => v._2)//(v._3-v._2)/v._2)//v._1)
-   // .filterNot(v => v._9 == "non")
+    .sortBy(v => v._2) //(v._3-v._2)/v._2)//v._1)
+    // .filterNot(v => v._9 == "non")
     .zipWithIndex
     .map(v => (v._2, v._1._1, v._1._2, v._1._3, v._1._4, v._1._5, v._1._6, v._1._7, v._1._8, v._1._9, v._1._10))
-    .writeToCSV(config.getString("files_1.output_prefix") + "_VS_" + config.getString("files_2.output_prefix") + "_walking_time_distributions_by_OD.csv", columnNames = Some(Vector("idx", "demandFile","odGroup", "refTT", "otherTT", "refTravelDistance", "otherTravelDistance", "refMeanSpeed", "otherMeanSpeed", "refPopulationSize", "otherPopulationSize")), rowNames = None)
+    .writeToCSV(config.getString("files_1.output_prefix") + "_VS_" + config.getString("files_2.output_prefix") + "_walking_time_distributions_by_OD.csv", columnNames = Some(Vector("idx", "demandFile", "odGroup", "refTT", "otherTT", "refTravelDistance", "otherTravelDistance", "refMeanSpeed", "otherMeanSpeed", "refPopulationSize", "otherPopulationSize")), rowNames = None)
 }

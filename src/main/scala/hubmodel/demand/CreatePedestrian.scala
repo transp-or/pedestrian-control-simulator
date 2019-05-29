@@ -44,7 +44,7 @@ class CreatePedestrian[T <: PedestrianNOMAD](o: Rectangle, d: Rectangle, val isT
     val newPed: PedestrianNOMAD = new PedestrianNOMAD(o, d, sim.currentTime, generationPoint, sim.logFullPedestrianHistory)
     sim.setFirstRoute(newPed)
     newPed.updateDesiredSpeed()
-    newPed.currentVelocity = newPed.desiredDirection*newPed.desiredWalkingSpeed
+    newPed.currentVelocity = newPed.desiredDirection * newPed.desiredWalkingSpeed
     newPed.updateClosestWalls(sim.walls)
 
     sim.insertInPopulation(newPed) //new T(o, d, sim.currentTime, generationPoint, route, ""))

@@ -4,20 +4,18 @@ package optimization
 import java.nio.file.{Files, Paths}
 
 import com.typesafe.config.Config
-import hubmodel.DES.NOMADGraphSimulator
+import hubmodel.DES.{NOMADGraphSimulator, _}
 import hubmodel._
 import hubmodel.demand.readDemandSets
 import hubmodel.mgmt._
-import hubmodel.ped.PedestrianNOMAD
-import myscala.math.stats.{ComputeQuantiles, ComputeStats, Statistics, computeBoxPlotData, computeQuantile}
-
-import scala.collection.GenIterable
-import scala.collection.JavaConversions._
-import hubmodel.DES._
 import hubmodel.mgmt.flowgate.{FlowGate, FlowGateFunctional}
+import hubmodel.ped.PedestrianNOMAD
 import hubmodel.results.{ResultsContainerRead, ResultsContainerReadNew, readResults, readResultsJson}
 import hubmodel.tools.exceptions.{ControlDevicesException, IllegalPhysicalQuantity}
+import myscala.math.stats.{ComputeStats, Statistics, computeQuantile}
 import optimization.bruteforce.ParameterModifications
+
+import scala.collection.GenIterable
 
 package object simulation {
 
@@ -101,7 +99,11 @@ package object simulation {
 
     val demandSets: Option[Seq[(String, String)]] = readDemandSets(config)
 
-    val n: Int = if (nbrReplications.isDefined) {nbrReplications.get} else {computeNumberOfSimulations(config, demandSets)}
+    val n: Int = if (nbrReplications.isDefined) {
+      nbrReplications.get
+    } else {
+      computeNumberOfSimulations(config, demandSets)
+    }
 
     val range: GenIterable[Int] = getIteratorForSimulations(if (config.getBoolean("execution.parallel")) {
       Some(config.getInt("execution.threads"))
@@ -109,7 +111,11 @@ package object simulation {
       None
     }, n)
 
-    val ID: String = if (simDir.isDefined) {simDir.get} else { generateUUID }
+    val ID: String = if (simDir.isDefined) {
+      simDir.get
+    } else {
+      generateUUID
+    }
     val outputDir: String = config.getString("output.dir") + "/sim-results-" + ID + "/"
     if (!Files.exists(Paths.get(outputDir))) {
       Files.createDirectory(Paths.get(outputDir))
@@ -222,7 +228,6 @@ package object simulation {
     // Reads intermediate results
     val results: Vector[ResultsContainerRead] = readResults(outputDir, config.getString("output.output_prefix")).toVector
     val resultsJson: Vector[ResultsContainerReadNew] = readResultsJson(outputDir, config.getString("output.output_prefix")).toVector
-
 
 
     // writes statistcs about each run

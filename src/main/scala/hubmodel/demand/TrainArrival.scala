@@ -17,8 +17,12 @@ class TrainArrival[T <: PedestrianNOMAD](train: Vehicle, tinf: Seq[PedestrianFlo
     }) ++ tinf)
       .flatMap(pedFlow => {
         pedFlow.D match {
-          case t: TrainID_New => { splitFractionsUniform(sim.stop2Vertices(pedFlow.O), sim.stop2Vertices(pedFlow.D), pedFlow.f).map(d => (d._1, d._2,d._3, true))}
-          case _ => { splitFractionsUniform(sim.stop2Vertices(pedFlow.O), sim.stop2Vertices(pedFlow.D), pedFlow.f).map(d => (d._1, d._2,d._3, false)) }
+          case t: TrainID_New => {
+            splitFractionsUniform(sim.stop2Vertices(pedFlow.O), sim.stop2Vertices(pedFlow.D), pedFlow.f).map(d => (d._1, d._2, d._3, true))
+          }
+          case _ => {
+            splitFractionsUniform(sim.stop2Vertices(pedFlow.O), sim.stop2Vertices(pedFlow.D), pedFlow.f).map(d => (d._1, d._2, d._3, false))
+          }
         }
       })
       .foreach(flow => sim.insertEventWithZeroDelay {

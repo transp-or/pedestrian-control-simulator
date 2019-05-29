@@ -3,34 +3,24 @@ import java.nio.file.{Files, Paths}
 import java.util.concurrent.ThreadLocalRandom
 
 import com.typesafe.config.{Config, ConfigFactory, ConfigValueFactory}
-import hubmodel.DES.NOMADGraphSimulator
-import hubmodel.demand.flows.{ProcessDisaggregatePedestrianFlows, ProcessPedestrianFlows}
-import hubmodel.demand.{PedestrianFlowFunction_New, PedestrianFlowPT_New, PedestrianFlow_New, ProcessTimeTable, PublicTransportSchedule, readDisaggDemand, readDisaggDemandTF, readPedestrianFlows, readSchedule, readScheduleTF}
-import hubmodel.mgmt.ControlDevices
+import hubmodel.DES.{NOMADGraphSimulator, _}
+import hubmodel.demand.PublicTransportSchedule
 import hubmodel.io.output.image.{DrawControlDevicesAndWalls, DrawGraph, DrawWalls, DrawWallsAndGraph}
 import hubmodel.io.output.video.MovingPedestriansWithDensityWithWallVideo
+import hubmodel.mgmt.ControlDevices
+import hubmodel.mgmt.flowgate.BinaryGate
 import hubmodel.ped.{PedestrianNOMAD, PedestrianSim, PedestrianTrait}
-import hubmodel.supply.continuous.{ContinuousSpace, MovableWall, ReadContinuousSpace}
+import hubmodel.results.{ResultsContainerFromSimulation, collectResults, writeResults}
+import hubmodel.supply.NodeParent
+import hubmodel.supply.continuous.{ContinuousSpace, MovableWall}
 import hubmodel.supply.graph._
-import hubmodel.supply.{NodeID_New, NodeParent, StopID_New, TrainID_New}
 import hubmodel.tools.Time
-import hubmodel.tools.cells.{DensityMeasuredArea, Rectangle}
+import hubmodel.tools.cells.Rectangle
 import myscala.math.vector.{Vector2D, Vector3D}
-import myscala.output.SeqOfSeqExtensions.SeqOfSeqWriter
-import myscala.output.SeqTuplesExtensions.SeqTuplesWriter
 import myscala.timeBlock
 import org.apache.commons.lang3.RandomStringUtils
 
-import scala.collection.GenIterable
 import scala.collection.immutable.NumericRange
-import scala.collection.parallel.ForkJoinTaskSupport
-import scala.reflect.ClassTag
-import scala.util.{Failure, Success, Try}
-import hubmodel.DES._
-import hubmodel.mgmt.flowgate.BinaryGate
-import hubmodel.results.{ResultsContainerFromSimulation, ResultsContainerRead}
-import hubmodel.results.{collectResults, writeResults}
-
 
 
 /**
@@ -71,7 +61,6 @@ package object hubmodel {
   def pedestrianWalkingSpeed: Double = 1.34 + math.min(0.2 * ThreadLocalRandom.current().nextGaussian(), 3.0)
 
 
-
   type GroupID = Int
 
   /* pedestrian isolations */
@@ -98,7 +87,6 @@ package object hubmodel {
     * @return UUID formatted as a String
     */
   def generateUUID: String = RandomStringUtils.randomAlphabetic(1) + RandomStringUtils.randomAlphanumeric(10) // java.util.UUID.randomUUID.toString
-
 
 
   // ******************************************************************************************
@@ -215,7 +203,7 @@ package object hubmodel {
 
   //type T <: PedestrianNOMAD
 
-    // Loads the pedestrian flows. These are either exogenous to the trains (from outside) or flows originating from trains.
+  // Loads the pedestrian flows. These are either exogenous to the trains (from outside) or flows originating from trains.
 
 
   // ******************************************************************************************
@@ -223,14 +211,13 @@ package object hubmodel {
   // ******************************************************************************************
 
 
-
   /** Creates, runs and makes a video from the simulation. No results are processed.
     * Making the video can take some time.
     */
-  def runSimulationWithVideo(config: Config): Unit = {
+  def runSimulationWithVideo(config: Config, singleDemandSet: Option[String] = None): Unit = {
 
     // create simulation
-    val sim = createSimulation[PedestrianNOMAD](config)
+    val sim = createSimulation[PedestrianNOMAD](config, singleDemandSet)
 
     // Creates images representing the walls, route graph and both overlaid.
     new DrawWalls(sim.walls, config.getString("output.output_prefix") + "_wallsWithNames.png", showNames = true)
@@ -288,19 +275,18 @@ package object hubmodel {
   /**
     * Takes a simulation as input and will run it then write the results to a file.
     *
-    * @param simulator simulation to run
-    * @param prefix prefix for all output files
-    * @param dir directory where to write the intermediate results
-    * @param writeTrajectoriesVS should the trajectories be written as VisioSafe format ?
+    * @param simulator             simulation to run
+    * @param prefix                prefix for all output files
+    * @param dir                   directory where to write the intermediate results
+    * @param writeTrajectoriesVS   should the trajectories be written as VisioSafe format ?
     * @param writeTrajectoriesJSON should the trajectories be written as CSV format ?
-    * @param writeTRANSFORMTT should the outputs for TRANS-FORM be computed and written ?
+    * @param writeTRANSFORMTT      should the outputs for TRANS-FORM be computed and written ?
     * @tparam T pedestrian type used for the simulation
     */
-  def runAndWriteResults[T <: PedestrianNOMAD](simulator: NOMADGraphSimulator[T], prefix: String = "", dir: String, writeTrajectoriesVS: Boolean = false, writeTrajectoriesJSON: Boolean = false, writeTRANSFORMTT:Boolean = false): Unit = {
+  def runAndWriteResults[T <: PedestrianNOMAD](simulator: NOMADGraphSimulator[T], prefix: String = "", dir: String, writeTrajectoriesVS: Boolean = false, writeTrajectoriesJSON: Boolean = false, writeTRANSFORMTT: Boolean = false): Unit = {
     timeBlock(simulator.run())
     writeResults(simulator, prefix, dir, writeTrajectoriesVS, writeTrajectoriesJSON, writeTRANSFORMTT)
   }
-
 
 
   @deprecated

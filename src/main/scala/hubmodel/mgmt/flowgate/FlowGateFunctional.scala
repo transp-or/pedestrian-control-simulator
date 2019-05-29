@@ -38,6 +38,7 @@ class FlowGateFunctional[T <: Measurement, U <: Output](startVertex: Rectangle, 
 
   /**
     * Copies this flow gate but changed the function linking the density to the controlled flow.
+    *
     * @param newFunctionForm new functional form
     * @return copy of the flow gate
     */

@@ -1,10 +1,10 @@
 package optimization.simulation
 
 
-import SimulatedAnnealing.SAProblem
 import java.util
 
 import SimulatedAnnealing.Factories.SAProblemsAbstractFactory
+import SimulatedAnnealing.SAProblem
 import com.typesafe.config.Config
 
 

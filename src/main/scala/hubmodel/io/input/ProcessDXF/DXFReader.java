@@ -14,45 +14,45 @@ import java.io.FileNotFoundException;
  */
 class DXFReader {
 
-    /**
-     * Storage of the document. Private as must no be modified
-     */
-    private DXFDocument _document;
+	/**
+	 * Storage of the document. Private as must no be modified
+	 */
+	private DXFDocument _document;
 
-    /**
-     * Getter method for the DXFDocument
-     *
-     * @return DXFDocuement
-     */
-    DXFDocument getDXFDocument() {
-        return _document;
-    }
+	/**
+	 * Getter method for the DXFDocument
+	 *
+	 * @return DXFDocuement
+	 */
+	DXFDocument getDXFDocument() {
+		return _document;
+	}
 
-    /**
-     * Constructor. First checks that the file can be opened, then opens it and reads the contents into a
-     * DXFDocument object.
-     *
-     * @param fileName file to read
-     */
-    DXFReader(String fileName) {
+	/**
+	 * Constructor. First checks that the file can be opened, then opens it and reads the contents into a
+	 * DXFDocument object.
+	 *
+	 * @param fileName file to read
+	 */
+	DXFReader(String fileName) {
 
-        // parser
-        Parser parser = ParserBuilder.createDefaultParser();
+		// parser
+		Parser parser = ParserBuilder.createDefaultParser();
 
-        try {
-            // opens the file
-            FileInputStream file = new FileInputStream(fileName);
-            try {
-                // parses the file
-                parser.parse(file, DXFParser.DEFAULT_ENCODING);
-            } catch (ParseException e) {
-                e.printStackTrace();
-            }
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        }
+		try {
+			// opens the file
+			FileInputStream file = new FileInputStream(fileName);
+			try {
+				// parses the file
+				parser.parse(file, DXFParser.DEFAULT_ENCODING);
+			} catch (ParseException e) {
+				e.printStackTrace();
+			}
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		}
 
-        //get the document and the different layers
-        this._document = parser.getDocument();
-    }
+		//get the document and the different layers
+		this._document = parser.getDocument();
+	}
 }

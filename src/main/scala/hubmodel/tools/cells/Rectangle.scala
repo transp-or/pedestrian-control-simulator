@@ -41,7 +41,11 @@ class Rectangle(val name: String, C1: Position, C2: Position, C3: Position, C4: 
   val corners: Vector[Position] = Vector(A, B, C, D)
 
   // Rate in pedestrians/second at which to generate pedestrians inside this cell.
-  val generationRate: Double = if (genRate.isDefined) {genRate.get} else {10.0}
+  val generationRate: Double = if (genRate.isDefined) {
+    genRate.get
+  } else {
+    10.0
+  }
 
 
   /** Is the point inside the vertex ?
@@ -50,16 +54,17 @@ class Rectangle(val name: String, C1: Position, C2: Position, C3: Position, C4: 
     * @return boolean indicating if the point is inside the vertex.
     */
   def isInside(pos: Position): Boolean = {
-    val AB: Position = (B+new Position(-0.1, 0.1)) - (A+new Position(0.1, 0.1))
-    val BC: Position = (C+new Position(-0.1, -0.1)) - (B+new Position(-0.1, 0.1))
-    val AP: Position = pos - (A+new Position(0.1, 0.1))
-    val BP: Position = pos - (B+new Position(-0.1, 0.1))
+    val AB: Position = (B + new Position(-0.1, 0.1)) - (A + new Position(0.1, 0.1))
+    val BC: Position = (C + new Position(-0.1, -0.1)) - (B + new Position(-0.1, 0.1))
+    val AP: Position = pos - (A + new Position(0.1, 0.1))
+    val BP: Position = pos - (B + new Position(-0.1, 0.1))
     if (0 <= (AB dot AP) && (AB dot AP) <= (AB dot AB) && 0 <= (BC dot BP) && (BC dot BP) <= (BC dot BC)) true
     else false
   }
 
   /**
     * Generate a point inside the rectangle with uniform probabilities in both directions
+    *
     * @return
     */
   def uniformSamplePointInside: Position = {

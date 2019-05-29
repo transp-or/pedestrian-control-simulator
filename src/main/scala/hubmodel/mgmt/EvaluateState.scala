@@ -2,7 +2,6 @@ package hubmodel.mgmt
 
 import hubmodel.DES.{Action, NOMADGraphSimulator}
 import hubmodel.ped.PedestrianNOMAD
-import hubmodel.tools.Time
 import hubmodel.tools.cells.isInVertex
 import kn.uni.voronoitreemap.datastructure.OpenList
 import kn.uni.voronoitreemap.diagram.PowerDiagram

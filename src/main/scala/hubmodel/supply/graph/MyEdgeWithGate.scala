@@ -1,11 +1,11 @@
 package hubmodel.supply.graph
 
 import hubmodel.DES.{Action, NOMADGraphSimulator}
-import hubmodel.{Position, GATE_MAXIMUM_QUEUE_SIZE}
 import hubmodel.ped.{PedestrianNOMAD, PedestrianSim}
 import hubmodel.tools.Time
 import hubmodel.tools.cells.Rectangle
 import hubmodel.tools.exceptions.ControlDevicesException
+import hubmodel.{GATE_MAXIMUM_QUEUE_SIZE, Position}
 
 abstract class MyEdgeWithGate(override val startVertex: Rectangle, override val endVertex: Rectangle, val start: Position, val end: Position, val monitoredArea: String) extends MyEdge(startVertex, endVertex) {
 
@@ -80,7 +80,9 @@ abstract class MyEdgeWithGate(override val startVertex: Rectangle, override val 
       ped.isWaiting = true
       pedestrianQueue.enqueue(ped)
       sim.eventLogger.trace("sim-time=" + sim.currentTime + ": enqueued pedestrian in " + gate.ID + ". # peds in queue: " + pedestrianQueue.size)
-      if (gate.pedestrianQueue.size > GATE_MAXIMUM_QUEUE_SIZE) {throw new ControlDevicesException("Too many pedestrians in queue for gate " + gate.ID)}
+      if (gate.pedestrianQueue.size > GATE_MAXIMUM_QUEUE_SIZE) {
+        throw new ControlDevicesException("Too many pedestrians in queue for gate " + gate.ID)
+      }
     }
   }
 

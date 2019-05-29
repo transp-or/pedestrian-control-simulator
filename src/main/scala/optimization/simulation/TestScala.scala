@@ -2,8 +2,8 @@ package optimization.simulation
 
 import java.util.Collections
 
-import SimulatedAnnealing.Factories.MinFunctionFactory
 import SimulatedAnnealing.ContinuousProblem
+import SimulatedAnnealing.Factories.MinFunctionFactory
 
 object TestScala extends App {
 

@@ -56,7 +56,7 @@ class MyEdge(val startVertex: Rectangle, val endVertex: Rectangle) extends Defau
 
   override def toString: String = this.ID
 
-  def deepCopy: MyEdge = new MyEdge (
+  def deepCopy: MyEdge = new MyEdge(
     this.startVertex, this.endVertex
   )
 }

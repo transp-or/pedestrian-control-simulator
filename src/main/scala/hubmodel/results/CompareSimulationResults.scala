@@ -2,10 +2,8 @@ package hubmodel.results
 
 
 import com.typesafe.config.{Config, ConfigFactory}
-import hubmodel._
 import myscala.math.stats.ComputeQuantiles
 import org.apache.commons.math3.stat.inference.KolmogorovSmirnovTest
-
 
 
 object CompareSimulationResults extends App {
@@ -15,7 +13,7 @@ object CompareSimulationResults extends App {
   //                    Read CLI arguments and process parameters file
   // ******************************************************************************************
 
-    // Used to parse command line inputs
+  // Used to parse command line inputs
   case class CLInput(conf: String = "")
 
   // Actually parses the command line arguments
@@ -48,7 +46,6 @@ object CompareSimulationResults extends App {
   val config: Config = ConfigFactory.load(confFile)
 
 
-
   // ******************************************************************************************
   //                           Processes and writes results to CSV
   // ******************************************************************************************
@@ -57,7 +54,6 @@ object CompareSimulationResults extends App {
   // Reads results from both dirs
   val refResults: Vector[ResultsContainerRead] = readResults(config.getString("dirs.reference-dir"), config.getString("output.output_prefix")).toVector
   val otherResults: Vector[ResultsContainerRead] = readResults(config.getString("dirs.other-dir"), config.getString("output.output_prefix")).toVector
-
 
 
   // Processing results
@@ -84,7 +80,6 @@ object CompareSimulationResults extends App {
     //println(KS.kolmogorovSmirnovStatistic(refAggDensities.toArray, otherAggDensities.toArray))
 
   }
-
 
 
 }

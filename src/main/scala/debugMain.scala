@@ -152,8 +152,9 @@ object debugMain extends App {
 
   val infraSF = new ReadContinuousSpace("piw-corridor/walls.json")
 
-def insideSpace: Position =>  Boolean = infraSF.continuousSpace.isInsideWalkableArea
-//  def insideSpace: Position =>  Boolean = i => true
+  def insideSpace: Position => Boolean = infraSF.continuousSpace.isInsideWalkableArea
+
+  //  def insideSpace: Position =>  Boolean = i => true
 
 
   val xMin = infraSF.continuousSpace.walls.map(w => Math.min(w.startPoint.X, w.endPoint.X)).min
@@ -163,32 +164,32 @@ def insideSpace: Position =>  Boolean = infraSF.continuousSpace.isInsideWalkable
   val radius: Double = 1.5
 
 
-/*
-  def insideSpace(p: Position): Boolean = {
+  /*
+    def insideSpace(p: Position): Boolean = {
 
-    val xMin1 = 0.0
-    val xMax1 = 10.0
-    val yMin1 = 0.0
-    val yMax1 = 7.0
+      val xMin1 = 0.0
+      val xMax1 = 10.0
+      val yMin1 = 0.0
+      val yMax1 = 7.0
 
 
-    val xMin2 = 0.0
-    val xMax2 = 100.0
-    val yMin2 = 7.0
-    val yMax2 = 13.0
+      val xMin2 = 0.0
+      val xMax2 = 100.0
+      val yMin2 = 7.0
+      val yMax2 = 13.0
 
-    (p.X >= xMin1 && p.X <= xMax1 && p.Y >= yMin1 && p.Y <= yMax1) || (p.X >= xMin2 && p.X <= xMax2 && p.Y >= yMin2 && p.Y <= yMax2)
-  }*/
+      (p.X >= xMin1 && p.X <= xMax1 && p.Y >= yMin1 && p.Y <= yMax1) || (p.X >= xMin2 && p.X <= xMax2 && p.Y >= yMin2 && p.Y <= yMax2)
+    }*/
 
 
   val hexagons: IndexedSeq[HexagonPotentialField] = (for (
-    x <- xMin to (xMax+radius) by 2 * radius * cos(30.0 * math.Pi / 180.0);
-    y <- yMin to (yMax+radius) by 3 * radius)
+    x <- xMin to (xMax + radius) by 2 * radius * cos(30.0 * math.Pi / 180.0);
+    y <- yMin to (yMax + radius) by 3 * radius)
     yield {
       new HexagonPotentialField(Vector2D(x, y), radius)
     }).filter(h => h.corners.exists(insideSpace)) ++ (for (
-    x <- (xMin + radius * cos(30.0 * math.Pi / 180.0)) to (xMax+radius) by 2 * radius * cos(30.0 * math.Pi / 180.0);
-    y <- yMin + 1.5 * radius to (yMax+radius) by 3 * radius)
+    x <- (xMin + radius * cos(30.0 * math.Pi / 180.0)) to (xMax + radius) by 2 * radius * cos(30.0 * math.Pi / 180.0);
+    y <- yMin + 1.5 * radius to (yMax + radius) by 3 * radius)
     yield {
       new HexagonPotentialField(Vector2D(x, y), radius)
     }).filter(h => h.corners.exists(insideSpace))
@@ -240,7 +241,8 @@ def insideSpace: Position =>  Boolean = infraSF.continuousSpace.isInsideWalkable
   var mCounter = finalCells.length
   //var l = 1
   finalCells.foreach(v => {
-    v.updateState = 1; v.potential = 1
+    v.updateState = 1;
+    v.potential = 1
   })
   var lCounter: Int = 1
   while (mCounter != 0) {
