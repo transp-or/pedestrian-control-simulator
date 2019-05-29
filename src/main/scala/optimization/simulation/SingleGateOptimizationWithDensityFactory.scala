@@ -12,6 +12,6 @@ class SingleGateOptimizationWithDensityFactory(config: Config, ID: String) exten
   def createSAProblem(objects: util.List[java.lang.Object]): SAProblem = {
 
     new SingleGateOptimisationWithDensity(config, ID, objects.asInstanceOf[java.util.ArrayList[java.lang.Double]])
-
   }
+  
 }
