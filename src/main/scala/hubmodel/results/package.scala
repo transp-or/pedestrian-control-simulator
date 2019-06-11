@@ -272,7 +272,7 @@ package object results {
           case e: JsError => throw new Error("Error while parsing results file: " + str + "\nerror: " + JsError.toJson(e).toString())
         }
       }
-      ResultsContainerReadNew(tt, None, None)
+      new ResultsContainerReadNew(tt, None, None)
     })
   }
 

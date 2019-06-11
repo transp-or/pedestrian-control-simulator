@@ -6,7 +6,7 @@ import hubmodel.demand.readDemandSets
 import hubmodel.io.input.JSONReaders.ODGroup_JSON
 import hubmodel.io.output.TRANSFORM.PopulationSummaryProcessingTRANSFORM
 import hubmodel.ped.PedestrianNOMAD
-import hubmodel.results.{ResultsContainerRead, ResultsContainerReadNew, ResultsContainerReadWithDemandSet, readResults, readResultsJson}
+import hubmodel.results.{ResultsContainerRead, ResultsContainerReadNew, ResultsContainerReadWithDemandSet, ResultsContainerReadWithDemandSetNew, readResults, readResultsJson}
 import hubmodel.supply.graph.readPTStop2GraphVertexMap
 import hubmodel.tools.Time
 import myscala.math.stats.bootstrap.bootstrapMSE
@@ -127,21 +127,16 @@ object RunSimulation extends App with StrictLogging {
   // Processing results
   logger.info("Processing results")
 
-  private val entranceTimes: Iterable[Time] = results.flatMap(_.tt.map(t => Time(t._4)))
-  val ttMin: Time = entranceTimes.min
-  val ttMax: Time = entranceTimes.max
-  val binnedData: Iterable[Seq[(Double, Double)]] = results.map(r => computeHistogramDataWithXValues(r.tt.map(_._4), 60, Some(math.floor(ttMin.value.toDouble / 60.0) * 60.0), Some(ttMax.value.toDouble), normalized = false))
-  (binnedData.head.map(_._1) +: binnedData.map(_.map(_._2)).toVector).writeToCSV(config.getString("output.output_prefix") + "_entrance_times_distribution.csv")
-
-
   // Collects then writes individual travel times to csv
-  if (config.getBoolean("output.write_travel_times") && results.nonEmpty) results
-    .map(r => r.tt.map(_._3))
-    .writeToCSV(
-      config.getString("output.output_prefix") + "_travel_times.csv",
-      columnNames = Some(Vector.fill(results.size)("r").zipWithIndex.map(t => t._1 + t._2.toString)),
-      rowNames = None
-    )
+  if (config.getBoolean("output.write_travel_times") && results.nonEmpty){
+    results
+      .map(r => r.tt.map(_._3))
+      .writeToCSV(
+        config.getString("output.output_prefix") + "_travel_times.csv",
+        columnNames = Some(Vector.fill(results.size)("r").zipWithIndex.map(t => t._1 + t._2.toString)),
+        rowNames = None
+      )
+  }
 
   // Collects then writes individual travel times with OD to csv
   /*if (config.getBoolean("output.write_travel_times")) results
@@ -235,7 +230,7 @@ object RunSimulation extends App with StrictLogging {
 
     // writes stattistcs about each run
     val statsPerRun = results.map(r => {
-      r.tt.map(_._3).cutOfAfterQuantile(99.9).statistics
+      r.tt.map(_._3)/*.cutOfAfterQuantile(99.9)*/.statistics
     })
 
     Vector((0.0, computeBoxPlotData(statsPerRun.map(_.median)).toCSV, 0.8)).writeToCSV(config.getString("output.output_prefix") + "-travel-time-median-boxplot.csv", rowNames = None, columnNames = Some(Vector("pos", "mean", "median", "lq", "uq", "lw", "uw", "outliersize", "boxplotwidth")))
@@ -261,7 +256,6 @@ object RunSimulation extends App with StrictLogging {
 
     // creates hist data for all TT aggregated together
     val data: Seq[Double] = results.flatMap(_.tt.map(_._3))
-    //.cutOfAfterQuantile(99)
     val binSize = 1.0
     val opts = PlotOptions(xmin = Some(10), xmax = Some(50), ymax = Some(0.25), width = 700, height = 400)
     new Histogram(config.getString("output.output_prefix") + "_travel_times_hist.png", data, binSize, "travel times [s]", "Fixed separator", opts)
@@ -331,6 +325,30 @@ object RunSimulation extends App with StrictLogging {
       .transpose
       .writeToCSV(config.getString("output.output_prefix") + "_median-travel-time-through-zones-per-simulation-by-OD.csv", rowNames = None, columnNames = Some(columnNames))
   }
+
+  if (demandSets.isDefined && config.getBoolean("output.travel-time.per-demand-set-median-distribution")) {
+    val mediansPerDemand = resultsJson
+      .asInstanceOf[Vector[ResultsContainerReadWithDemandSetNew]]
+      .groupBy(_.demandFile)
+      .mapValues(rr => rr.map(r => r.tt.map(_.tt).statistics.median))
+
+    mediansPerDemand
+      .map(r => computeHistogramDataWithXValues(r._2, 0.05, Some(40), Some(55)))
+      .map(_.map(_._3)).toSeq
+      .writeToCSV(config.getString("output.output_prefix") + "_travel_times_median_hist_data.csv", rowNames = None, columnNames = None)
+
+    mediansPerDemand
+      .map(r => (r._1, computeBoxPlotData(r._2).toCSV, 1.0)).toVector.sortBy(_._1)
+      .writeToCSV(config.getString("output.output_prefix") + "-travel-time-medians-boxplots-per-demand-set.csv", rowNames = None, columnNames = Some(Vector("demandset", "mean", "median", "lq", "uq", "lw", "uw", "outliersize", "boxplotwidth")))
+  }
+
+
+  private val entranceTimes: Iterable[Time] = results.flatMap(_.tt.map(t => Time(t._4)))
+  val ttMin: Time = entranceTimes.min
+  val ttMax: Time = entranceTimes.max
+  val binnedData: Iterable[Seq[(Int, Double, Double)]] = results.map(r => computeHistogramDataWithXValues(r.tt.map(_._4), 60, Some(math.floor(ttMin.value.toDouble / 60.0) * 60.0), Some(ttMax.value.toDouble), normalized = false))
+  (binnedData.head.map(_._2) +: binnedData.map(_.map(_._3)).toVector).writeToCSV(config.getString("output.output_prefix") + "_entrance_times_distribution.csv")
+
 
   results.collect({ case f: ResultsContainerReadWithDemandSet => {
     f
