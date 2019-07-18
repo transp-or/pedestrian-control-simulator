@@ -13,7 +13,7 @@ import myscala.math.vector.Vector2D
 import nl.tudelft.pedestrians.agents.WalkingBehavior.{pedestrianPhysical, pedestrianRepellOpposing}
 import nl.tudelft.pedestrians.collection.InfluenceAreaReturnPedData
 import nl.tudelft.pedestrians.utils.GeometryUtils
-import nomad.operational.InfluenceAreaReturnObsData
+//import InfluenceAreaReturnObsData
 
 class NOMADIntegrated[T <: PedestrianNOMAD](sim: NOMADGraphSimulator[T]) extends Action {
 
