@@ -3,7 +3,6 @@ package hubmodel.io.output.video
 import java.awt.Graphics2D
 import java.awt.geom.Ellipse2D
 
-import breeze.numerics.floor
 import hubmodel.Position
 import hubmodel.tools.Time
 
@@ -46,7 +45,7 @@ trait Tools4Videos {
     * @param coord     point to map
     * @return the position in pixels of the original coordinate
     */
-  def mapCoordLinear(trueSize: Double, pixelSize: Int)(coord: Double): Int = floor(coord / trueSize * pixelSize).toInt
+  def mapCoordLinear(trueSize: Double, pixelSize: Int)(coord: Double): Int = scala.math.floor(coord / trueSize * pixelSize).toInt
 
 
 }

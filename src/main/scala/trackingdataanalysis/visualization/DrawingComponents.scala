@@ -3,9 +3,6 @@ package trackingdataanalysis.visualization
 import java.awt.geom.Ellipse2D
 import java.awt.{Color, Font, Graphics2D}
 
-import breeze.linalg.min
-import breeze.numerics.floor
-
 import scala.collection.immutable.NumericRange
 
 abstract class DrawingComponents(val border2HAxis: Int, val border2VAxis: Int, val pixelCanvasSize: (Int, Int)) extends VisualizationTools {
@@ -76,7 +73,7 @@ abstract class DrawingComponents(val border2HAxis: Int, val border2VAxis: Int, v
       graphics.drawString(xDataArg.get._4, (pixelCanvasSize._1 * 0.5 - 0.5 * graphics.getFontMetrics.stringWidth(xDataArg.get._4)).toInt, verticalTransformation(3))
     }
     if (yDataArg.isDefined) {
-      drawRotate(graphics, graphics.getFontMetrics.getHeight - 3, verticalTransformation(floor(pixelCanvasSize._2 * 0.5).toInt) + 0.5 * graphics.getFontMetrics.stringWidth(yDataArg.get._4), 270, yDataArg.get._4)
+      drawRotate(graphics, graphics.getFontMetrics.getHeight - 3, verticalTransformation(scala.math.floor(pixelCanvasSize._2 * 0.5).toInt) + 0.5 * graphics.getFontMetrics.stringWidth(yDataArg.get._4), 270, yDataArg.get._4)
     }
     graphics.setFont(currentFont.deriveFont(currentFont.getSize * 1.5F))
 
@@ -88,7 +85,7 @@ abstract class DrawingComponents(val border2HAxis: Int, val border2VAxis: Int, v
       // draws x ticks
       posXTicks.foreach(tick => {
         graphics.drawLine(border2VAxis + tick._1, verticalTransformation(border2HAxis - 5 + mapVCoord(0.0)), border2VAxis + tick._1, verticalTransformation(border2HAxis + 5 + mapVCoord(0.0)))
-        graphics.drawString(f"${tick._2}%1.2f", border2VAxis + tick._1 - floor(0.5 * graphics.getFontMetrics.stringWidth(f"${tick._2}%1.2f")).toInt, verticalTransformation(border2HAxis - 5 - 2 + mapVCoord(0.0) - graphics.getFontMetrics.getHeight))
+        graphics.drawString(f"${tick._2}%1.2f", border2VAxis + tick._1 - scala.math.floor(0.5 * graphics.getFontMetrics.stringWidth(f"${tick._2}%1.2f")).toInt, verticalTransformation(border2HAxis - 5 - 2 + mapVCoord(0.0) - graphics.getFontMetrics.getHeight))
       })
     }
 
@@ -99,7 +96,7 @@ abstract class DrawingComponents(val border2HAxis: Int, val border2VAxis: Int, v
       // draws y ticks
       posYTicks.foreach(tick => {
         graphics.drawLine(border2VAxis - 5, verticalTransformation(border2HAxis + tick._1), border2VAxis + 5, verticalTransformation(border2HAxis + tick._1))
-        graphics.drawString(f"${tick._2}%1.2f", border2VAxis - 5 - 2 - graphics.getFontMetrics.stringWidth(f"${tick._2}%1.2f"), verticalTransformation(border2HAxis + tick._1 - floor(0.33 * graphics.getFontMetrics.getHeight).toInt))
+        graphics.drawString(f"${tick._2}%1.2f", border2VAxis - 5 - 2 - graphics.getFontMetrics.stringWidth(f"${tick._2}%1.2f"), verticalTransformation(border2HAxis + tick._1 - scala.math.floor(0.33 * graphics.getFontMetrics.getHeight).toInt))
       })
     }
 
@@ -134,7 +131,7 @@ abstract class DrawingComponents(val border2HAxis: Int, val border2VAxis: Int, v
       graphics.drawString(xDataArg.get._4, (pixelCanvasSize._1 * 0.5 - 0.5 * graphics.getFontMetrics.stringWidth(xDataArg.get._4)).toInt, verticalTransformation(3))
     }
     if (yDataArg.isDefined) {
-      drawRotate(graphics, graphics.getFontMetrics.getHeight - 3, verticalTransformation(floor(pixelCanvasSize._2 * 0.5).toInt) + 0.5 * graphics.getFontMetrics.stringWidth(yDataArg.get._4), 270, yDataArg.get._4)
+      drawRotate(graphics, graphics.getFontMetrics.getHeight - 3, verticalTransformation(scala.math.floor(pixelCanvasSize._2 * 0.5).toInt) + 0.5 * graphics.getFontMetrics.stringWidth(yDataArg.get._4), 270, yDataArg.get._4)
     }
     graphics.setFont(currentFont.deriveFont(currentFont.getSize * 1.5F))
 
@@ -146,7 +143,7 @@ abstract class DrawingComponents(val border2HAxis: Int, val border2VAxis: Int, v
       // draws x ticks
       posXTicks.foreach(tick => {
         graphics.drawLine(border2VAxis + tick._1, verticalTransformation(border2HAxis - 5 + mapVCoordBD(origin._2)), border2VAxis + tick._1, verticalTransformation(border2HAxis + 5 + mapVCoordBD(origin._2)))
-        graphics.drawString(f"${tick._2}%1.2f", border2VAxis + tick._1 - floor(0.5 * graphics.getFontMetrics.stringWidth(f"${tick._2}%1.2f")).toInt, verticalTransformation(border2HAxis - 5 - 2 + mapVCoordBD(origin._2) - graphics.getFontMetrics.getHeight))
+        graphics.drawString(f"${tick._2}%1.2f", border2VAxis + tick._1 - scala.math.floor(0.5 * graphics.getFontMetrics.stringWidth(f"${tick._2}%1.2f")).toInt, verticalTransformation(border2HAxis - 5 - 2 + mapVCoordBD(origin._2) - graphics.getFontMetrics.getHeight))
       })
     }
 
@@ -157,7 +154,7 @@ abstract class DrawingComponents(val border2HAxis: Int, val border2VAxis: Int, v
       // draws y ticks
       posYTicks.foreach(tick => {
         graphics.drawLine(border2VAxis - 5 + mapHCoordBD(origin._1), verticalTransformation(border2HAxis + tick._1), border2VAxis + 5 + mapHCoordBD(origin._1), verticalTransformation(border2HAxis + tick._1))
-        graphics.drawString(f"${tick._2}%1.2f", border2VAxis - 5 - 2 + mapHCoordBD(origin._1) - graphics.getFontMetrics.stringWidth(f"${tick._2}%1.2f"), verticalTransformation(border2HAxis + tick._1 - floor(0.33 * graphics.getFontMetrics.getHeight).toInt))
+        graphics.drawString(f"${tick._2}%1.2f", border2VAxis - 5 - 2 + mapHCoordBD(origin._1) - graphics.getFontMetrics.stringWidth(f"${tick._2}%1.2f"), verticalTransformation(border2HAxis + tick._1 - scala.math.floor(0.33 * graphics.getFontMetrics.getHeight).toInt))
       })
 
     }
@@ -184,7 +181,7 @@ abstract class DrawingComponents(val border2HAxis: Int, val border2VAxis: Int, v
       val c: (Int, Int, Int) =
       //if (newZ(i) > half) { (((255 * (newZ(i) + min - half)) / half).toInt, (255-(255 * (newZ(i) + min - half)) / half).toInt, 0) }
       //else { (0, (255 - (255 * (half - newZ(i) + min)) / half).toInt, ((255 * (half - newZ(i) + min)) / half).toInt) }
-        (min(255, (200 * newZ(i) / (maxV - minV)).toInt), min(255, (200 * newZ(i) / (maxV - minV)).toInt), min(255, (200 * newZ(i) / (maxV - minV)).toInt))
+        (scala.math.min(255, (200 * newZ(i) / (maxV - minV)).toInt), scala.math.min(255, (200 * newZ(i) / (maxV - minV)).toInt), scala.math.min(255, (200 * newZ(i) / (maxV - minV)).toInt))
       //println(colorMapFunction(z(i)), c)
       graphics.setColor(new Color(c._1, c._2, c._3))
       graphics.fill(new Ellipse2D.Double(border2VAxis + mapHCoord(x(i)) - 0.5 * dotSize, verticalTransformation(mapVCoord(y(i))) - border2HAxis - 0.5 * dotSize, dotSize, dotSize))
@@ -206,13 +203,13 @@ abstract class DrawingComponents(val border2HAxis: Int, val border2VAxis: Int, v
 
     intervals2Show.foreach(pair => {
       val str: String = "(" + "%1.2f".format(pair._1) + ", " + "%1.2f".format(pair._2) + "]"
-      graphics.drawString(str, border2VAxis + mapHCoord(0.5*pair._1+0.5*pair._2)-floor(0.5*graphics.getFontMetrics.stringWidth(str)).toInt, verticalTransformation(border2HAxis-5-2 + mapVCoord(0.0)-graphics.getFontMetrics.getHeight))
+      graphics.drawString(str, border2VAxis + mapHCoord(0.5*pair._1+0.5*pair._2)-scala.math.floor(0.5*graphics.getFontMetrics.stringWidth(str)).toInt, verticalTransformation(border2HAxis-5-2 + mapVCoord(0.0)-graphics.getFontMetrics.getHeight))
     })*/
 
 
     val values2Show: Seq[Double] = filterEveryOtherValue(intervals, 10)
     values2Show.foreach(v => {
-      graphics.drawString("%1.2f".format(v), border2VAxis + mapHCoord(v + 0.5 * (intervals.tail.head - intervals.head)) - floor(0.5 * graphics.getFontMetrics.stringWidth("%1.2f".format(v))).toInt, verticalTransformation(border2HAxis - 5 - 2 + mapVCoord(0.0) - graphics.getFontMetrics.getHeight))
+      graphics.drawString("%1.2f".format(v), border2VAxis + mapHCoord(v + 0.5 * (intervals.tail.head - intervals.head)) - scala.math.floor(0.5 * graphics.getFontMetrics.stringWidth("%1.2f".format(v))).toInt, verticalTransformation(border2HAxis - 5 - 2 + mapVCoord(0.0) - graphics.getFontMetrics.getHeight))
     })
 
 

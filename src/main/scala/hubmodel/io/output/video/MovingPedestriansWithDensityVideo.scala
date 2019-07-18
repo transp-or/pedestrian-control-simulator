@@ -5,7 +5,6 @@ import java.awt.image.BufferedImage
 import java.awt.{BasicStroke, Color, Graphics2D}
 import java.io.File
 
-import breeze.numerics.floor
 import hubmodel.DES.PedestrianDES
 import hubmodel._
 import hubmodel.io.output.createBackgroundFromImage
@@ -143,8 +142,8 @@ class MovingPedestriansWithDensityVideo(outputFile: String,
 
     /** combine images into one */
     def timeReadable(t: Double): String = {
-      val hours: Int = floor(t / 3600.0).toInt
-      val minutes: Int = floor((t - hours * 3600) / 60.0).toInt
+      val hours: Int = scala.math.floor(t / 3600.0).toInt
+      val minutes: Int = scala.math.floor((t - hours * 3600) / 60.0).toInt
       val seconds: Double = t - hours * 3600 - minutes * 60
       hours.toString + ":" + minutes.toString + ":" + seconds.toString
     }

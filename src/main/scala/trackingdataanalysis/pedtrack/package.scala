@@ -1,7 +1,6 @@
 import java.time.format.DateTimeFormatter
 import java.time.{LocalDateTime, ZoneId}
 
-import breeze.linalg.DenseVector
 import myscala.math.stats.Quantiles
 import myscala.output.MapSeqExtensions._
 import myscala.output.SeqExtension.SeqWriter
@@ -68,8 +67,8 @@ package trackingdataanalysis {
 
     type NodeID = Int
 
-    type Position = DenseVector[Double]
-    type Velocity = DenseVector[Double]
+    //type Position = DenseVector[Double]
+    //type Velocity = DenseVector[Double]
 
     /** For converting LocalDateTime object to seconds from Epoch */
     val zoneId: ZoneId = ZoneId.systemDefault(); // or: ZoneId.of("Europe/Oslo");

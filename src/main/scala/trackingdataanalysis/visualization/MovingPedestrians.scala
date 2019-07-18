@@ -5,8 +5,7 @@ import java.awt.image.BufferedImage
 import java.awt.{Color, Graphics2D}
 import java.io.File
 
-import breeze.linalg.DenseVector
-import breeze.numerics.{abs, floor}
+import hubmodel.Position
 import javax.imageio.ImageIO
 import org.jcodec.api.awt.AWTSequenceEncoder
 import trackingdataanalysis.pedtrack.Pedestrian
@@ -64,8 +63,8 @@ class MovingPedestrians(outputFile: String,
 
   // formatting of the data: aggregation by times of the positions.
   val population2TimePositionList: Vector[(Double, Vector[Position])] = timeMap.map(l => (l._1, l._2.map(id => {
-    pop(id).h_t.indexWhere(t => abs(t - l._1) < 0.005) match {
-      case i if i >= 0 => DenseVector(pop(id).h_x(i), pop(id).h_y(i))
+    pop(id).h_t.indexWhere(t => scala.math.abs(t - l._1) < 0.005) match {
+      case i if i >= 0 => new Position(pop(id).h_x(i), pop(id).h_y(i))
     }
   }).toVector)).sortWith(_._1 < _._1)
 
@@ -91,8 +90,8 @@ class MovingPedestrians(outputFile: String,
 
     /** combine images into one */
     def timeReadable(t: Int): String = {
-      val hours: Int = floor(t / 3600000.0).toInt
-      val minutes: Int = floor((t - hours * 3600000) / 60000.0).toInt
+      val hours: Int = scala.math.floor(t / 3600000.0).toInt
+      val minutes: Int = scala.math.floor((t - hours * 3600000) / 60000.0).toInt
       val seconds: Double = t - hours * 3600000 - minutes * 60000
       hours.toString + ":" + minutes.toString + ":" + seconds.toString
     }

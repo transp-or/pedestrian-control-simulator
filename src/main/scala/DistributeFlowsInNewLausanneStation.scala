@@ -1,6 +1,5 @@
 import java.io.{BufferedWriter, FileWriter}
 
-import breeze.numerics.pow
 import trackingdataanalysis.pedtrack.NewBetterPosition2D
 import trackingdataanalysis.pedtrack.georeferencing.linearTransformation
 
@@ -44,12 +43,12 @@ object DistributeFlowsInNewLausanneStation extends App {
 
   // UTM 32N WGS 84 (EPSG:32632) mapping for PIW
   val mappingFunctionPIW: NewBetterPosition2D => NewBetterPosition2D = linearTransformation(
-    2.592811416037474 * pow(10.0, -4),
-    1.008975307217177 * pow(10.0, -3),
-    3.180464996409054 * pow(10.0, 5),
-    1.034131970779907 * pow(10.0, -3),
-    -1.995806279935558 * pow(10.0, -4),
-    5.154153277336739 * pow(10.0, 6))
+    2.592811416037474 * scala.math.pow(10.0, -4),
+    1.008975307217177 * scala.math.pow(10.0, -3),
+    3.180464996409054 * scala.math.pow(10.0, 5),
+    1.034131970779907 * scala.math.pow(10.0, -3),
+    -1.995806279935558 * scala.math.pow(10.0, -4),
+    5.154153277336739 * scala.math.pow(10.0, 6))
 
   for (f <- fileNamesPIW) {
 
@@ -76,12 +75,12 @@ object DistributeFlowsInNewLausanneStation extends App {
 
   // UTM 32N WGS 84 (EPSG:32632) mapping for PIE
   val mappingFunctionPIE: NewBetterPosition2D => NewBetterPosition2D = linearTransformation(
-    2.415533110046536 * pow(10.0, -4),
-    9.877355424660701 * pow(10.0, -4),
-    3.181626047096282 * pow(10.0, 5),
-    9.853920924180611 * pow(10.0, -4),
-    -2.368806151087312 * pow(10.0, -4),
-    5.154148566965720 * pow(10.0, 6))
+    2.415533110046536 * scala.math.pow(10.0, -4),
+    9.877355424660701 * scala.math.pow(10.0, -4),
+    3.181626047096282 * scala.math.pow(10.0, 5),
+    9.853920924180611 * scala.math.pow(10.0, -4),
+    -2.368806151087312 * scala.math.pow(10.0, -4),
+    5.154148566965720 * scala.math.pow(10.0, 6))
 
   for (f <- fileNamesPIE) {
 

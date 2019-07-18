@@ -4,8 +4,9 @@ package trackingdataanalysis.pedtrack.visiosafe
 import java.io.{BufferedWriter, File, FileWriter}
 
 import breeze.linalg.{Axis, DenseMatrix, DenseVector}
-import breeze.numerics.abs
 import breeze.stats.regression.{LeastSquaresRegressionResult, leastSquares}
+import hubmodel.Position
+import hubmodel.tools.cells.Rectangle
 import kn.uni.voronoitreemap.datastructure.OpenList
 import kn.uni.voronoitreemap.diagram.PowerDiagram
 import kn.uni.voronoitreemap.j2d.{PolygonSimple, Site}
@@ -49,7 +50,7 @@ class SingleDayAggregateProcessor(fileName: String,
 
   lazy val pedSimplified: Iterable[(Int, Vector[Double], Vector[Double], Vector[Double])] = ped.map(p => (p._2.ID, p._2.h_t.toVector, p._2.h_x.toVector, p._2.h_y.toVector))
 
-  private val voronoiDataStorage: collection.mutable.Map[(NewZone, Seq[Double], PolygonSimple), Vector[(Double, Seq[(DenseVector[Double], PolygonSimple, Site)])]] = collection.mutable.Map()
+  private val voronoiDataStorage: collection.mutable.Map[(Rectangle, Seq[Double], PolygonSimple), Vector[(Double, Seq[(Position, PolygonSimple, Site)])]] = collection.mutable.Map()
 
   val timeMapFuncVal: Seq[Double] => Vector[(Double, Iterable[Int])] = times => collectIDByTime(times, ped.map(p => (p._2.ID, p._2.h_t.toVector, p._2.h_x.toVector, p._2.h_y.toVector)), Vector())
 
@@ -71,7 +72,7 @@ class SingleDayAggregateProcessor(fileName: String,
     * @param voronoiBoundary
     * @return
     */
-  private def computeVoronoiDiagrams(z: NewZone, times: Seq[Double], voronoiBoundary: PolygonSimple): Vector[(Double, Seq[(DenseVector[Double], PolygonSimple, Site)])] = {
+  private def computeVoronoiDiagrams(z: Rectangle, times: Seq[Double], voronoiBoundary: PolygonSimple): Vector[(Double, Seq[(Position, PolygonSimple, Site)])] = {
 
     //val pedSimplified: Iterable[(Int, Vector[Double], Vector[Double], Vector[Double])] = ped.map(p => (p._2.ID, p._2.h_t.toVector, p._2.h_x.toVector, p._2.h_y.toVector))
     val timeMap: Vector[(Double, Iterable[Int])] =
@@ -90,7 +91,7 @@ class SingleDayAggregateProcessor(fileName: String,
               (vidTime, p.ID, linearInterpolationPosition((p.h_x(minSecond._2), p.h_y(minSecond._2)), (p.h_x(minFirst._2), p.h_y(minFirst._2)), p.h_t(minSecond._2), p.h_t(minFirst._2), vidTime))
             }
           }
-        }.filter(tPos => z.isInside(tPos._3))
+        }.filter(tPos => z.isInside(new Position(tPos._3._1, tPos._3._2)))
       }).groupBy(tup => tup._1).map(tup => (tup._1, tup._2.map(_._2))).toVector
     //val timeMap: Vector[(Double, Iterable[Int])] = collectIDByTime(times, this.pedSimplified, Vector())
     val res = timeMap.map(p => {
@@ -101,7 +102,7 @@ class SingleDayAggregateProcessor(fileName: String,
           val idx: Int = ped(id).h_t.indexWhere(t => t >= p._1)
           if (idx >= 0 && idx < ped(id).h_t.size - 1) {
             val pos: (Double, Double) = linearInterpolationPosition((ped(id).h_x(idx), ped(id).h_y(idx)), (ped(id).h_x(idx + 1), ped(id).h_y(idx + 1)), ped(id).h_t(idx), ped(id).h_t(idx + 1), p._1)
-            if (z.isInside(pos)) {
+            if (z.isInside(new Position(pos._1, pos._2))) {
               stupidList.add(new Site(pos._1, pos._2))
             }
           }
@@ -114,7 +115,7 @@ class SingleDayAggregateProcessor(fileName: String,
         if (stupidList.size > 0) {
           voronoi.setSites(stupidList)
           voronoi.setClipPoly(voronoiBoundary)
-          (p._1, voronoi.computeDiagram().filter(s => z.isInside((s.x, s.y))))
+          (p._1, voronoi.computeDiagram().filter(s => z.isInside(new Position(s.x, s.y))))
         }
         else {
           (p._1, Seq())
@@ -123,7 +124,7 @@ class SingleDayAggregateProcessor(fileName: String,
       else {
         (p._1, Seq())
       }
-    }).map(t => (t._1, t._2.map(s => (DenseVector(s.x, s.y), s.getPolygon, s))))
+    }).map(t => (t._1, t._2.map(s => (new Position(s.x, s.y), s.getPolygon, s))))
 
     // as time stamps where no pedestrian is inside the zone are removed, these empty cells must be added again.
     (res ++ (for (t <- times if !res.exists(_._1 == t)) yield {
@@ -132,7 +133,7 @@ class SingleDayAggregateProcessor(fileName: String,
   }
 
 
-  def getVoronoiData(z: NewZone, times: Seq[Double], voronoiBoundary: PolygonSimple): Vector[(Double, Seq[(DenseVector[Double], PolygonSimple, Site)])] = {
+  def getVoronoiData(z: Rectangle, times: Seq[Double], voronoiBoundary: PolygonSimple): Vector[(Double, Seq[(Position, PolygonSimple, Site)])] = {
     this.voronoiDataStorage.getOrElseUpdate((z, times, voronoiBoundary), computeVoronoiDiagrams(z, times, voronoiBoundary))
   }
 
@@ -172,7 +173,7 @@ class SingleDayAggregateProcessor(fileName: String,
     * @param tol
     * @return
     */
-  def computeVoronoiDensity(z: NewZone, times: Seq[Double], voronoiBoundary: PolygonSimple): Vector[(Double, Double)] = {
+  def computeVoronoiDensity(z: Rectangle, times: Seq[Double], voronoiBoundary: PolygonSimple): Vector[(Double, Double)] = {
     getVoronoiData(z, times, voronoiBoundary).map(v => (v._1, v._2.map(_._2).foldLeft(0.0) { (n: Double, m: PolygonSimple) => n + 1.0 / (m.getArea * v._2.size) }))
   }
 
@@ -183,13 +184,13 @@ class SingleDayAggregateProcessor(fileName: String,
     * @param times times at chich to
     * @return
     */
-  def computeAccumulationDensity(z: NewZone, times: Seq[Double]): IndexedSeq[(Double, Double)] = {
+  def computeAccumulationDensity(z: Rectangle, times: Seq[Double]): IndexedSeq[(Double, Double)] = {
     val res = ped.values.flatMap(p => {
       times.collect {
         case vidTime if {
           p.h_t.head <= vidTime && vidTime <= p.h_t.last
         } => {
-          val diff2VidTime: Vector[(Double, Int)] = p.h_t.map(sampleTime => math.abs(sampleTime - vidTime)).zipWithIndex.toVector
+          val diff2VidTime: Vector[(Double, Int)] = p.h_t.map(sampleTime => scala.math.abs(sampleTime - vidTime)).zipWithIndex.toVector
           val minFirst: (Double, Int) = diff2VidTime.minBy(_._1)
           val minSecond: (Double, Int) = diff2VidTime.filterNot(_._2 == minFirst._2).minBy(_._1)
           if (p.h_t(minFirst._2) < p.h_t(minSecond._2)) {
@@ -201,7 +202,7 @@ class SingleDayAggregateProcessor(fileName: String,
           }
         }
       }.filter(tPos => {
-        z.isInside(tPos._2)
+        z.isInside(new Position(tPos._2._1, tPos._2._2))
       })
     }).groupBy(t => t._1).map(d => (d._1, d._2.size / z.area)).toVector
 
@@ -210,7 +211,7 @@ class SingleDayAggregateProcessor(fileName: String,
         case vidTime if {
           p.h_t.head <= vidTime && vidTime <= p.h_t.last
         } => {
-          val diff2VidTime: Vector[(Double, Int)] = p.h_t.map(sampleTime => math.abs(sampleTime - vidTime)).zipWithIndex.toVector
+          val diff2VidTime: Vector[(Double, Int)] = p.h_t.map(sampleTime => scala.math.abs(sampleTime - vidTime)).zipWithIndex.toVector
           val minFirst: (Double, Int) = diff2VidTime.minBy(_._1)
           val minSecond: (Double, Int) = diff2VidTime.filterNot(_._2 == minFirst._2).minBy(_._1)
           if (p.h_t(minFirst._2) < p.h_t(minSecond._2)) {
@@ -222,7 +223,7 @@ class SingleDayAggregateProcessor(fileName: String,
           }
         }
       }.filter(tPos => {
-        z.isInside(tPos._2)
+        z.isInside(new Position(tPos._2._1, tPos._2._2))
       })
     }).groupBy(t => t._1))
     (res ++ (for (t <- times if !res.exists(_._1 == t)) yield {
@@ -308,7 +309,7 @@ class SingleDayAggregateProcessor(fileName: String,
     * @param times    the time intervals to use for aggregation
     * @return Map where the keys are (time interval index, origin zone, destination zone) and the values the number of people
     */
-  def computeFlowsNew(mainZone: Zone, zones: Vector[Zone], times: Vector[Double]): Map[(Int, Int, Int), Int] = {
+  def computeFlowsNew(mainZone: Rectangle, zones: Vector[Rectangle], times: Vector[Double]): Map[(Int, Int, Int), Int] = {
     val numberTimeIntervals = times.size
 
     /** Finds the interval corresponding to a specific time in a recursive way.
@@ -340,8 +341,8 @@ class SingleDayAggregateProcessor(fileName: String,
       * @return id of the zone, -1 if none are found.
       */
     def findZone(x: Double, y: Double): Int = {
-      (mainZone +: zones).find(z => isInRectangle((x, y), z)) match {
-        case Some(z) => z.ID
+      (mainZone +: zones).find(z => z.isInside(new Position(x, y))) match {
+        case Some(z) => z.name.toInt
         case None => -1
       }
     }
@@ -468,7 +469,7 @@ class SingleDayAggregateProcessor(fileName: String,
     helper2(timeMap, Vector())
   }*/
 
-  def computeEdieComponents(z: NewZone, times: Seq[Double]): Vector[((Double, Double), (Double, Double, Double))] = {
+  def computeEdieComponents(z: Rectangle, times: Seq[Double]): Vector[((Double, Double), (Double, Double, Double))] = {
     val pedSimplifiedNew: Map[Int, Vector[(Double, (Double, Double))]] = ped.map(p => p._2.ID -> p._2.h_t.toVector.zip(p._2.h_x.toVector.zip(p._2.h_y.toVector))).toMap
     val timeMap: Vector[(Double, Iterable[Int])] =
       ped.values.flatMap(p => {
@@ -479,7 +480,7 @@ class SingleDayAggregateProcessor(fileName: String,
           val idx: Int = p.h_t.indexWhere(_ > t)
           (t, p.ID, linearInterpolationPosition((p.h_x(idx), p.h_y(idx)), (p.h_x(idx + 1), p.h_y(idx + 1)), p.h_t(idx), p.h_t(idx + 1), t))
         }
-        }.filter(tPos => z.isInside(tPos._3))
+        }.filter(tPos => z.isInside(new Position(tPos._3._1, tPos._3._2)))
       }).groupBy(tup => tup._1).map(tup => (tup._1, tup._2.map(_._2))).toVector.sortBy(_._1)
     //val timeMap: Vector[(Double, Iterable[Int])] = collectIDByTime(times, pedSimplifiedNew, 0.05)
     //println(timeMap)
@@ -489,13 +490,13 @@ class SingleDayAggregateProcessor(fileName: String,
         val t1: Double = times(i)
         val t2: Double = times(i + 1)
         ped.values.flatMap(p => {
-          val txyData = p.getTXYZipped.filter(txy => t1 <= txy._1 && txy._1 < t2 & z.isInside(txy._2))
+          val txyData = p.getTXYZipped.filter(txy => t1 <= txy._1 && txy._1 < t2 & z.isInside(new Position(txy._2._1, txy._2._2)))
           if (txyData.nonEmpty) {
             txyData.dropRight(1).zip(txyData.tail).map(tup => (tup._2._1 - tup._1._1, (tup._2._2._1 - tup._1._2._1, tup._2._2._2 - tup._1._2._2))).toVector
           } else {
             Vector()
           }
-        }).foldLeft(0.0, 0.0, 0.0)((acc: (Double, Double, Double), p: (Double, (Double, Double))) => (acc._1 + p._1, acc._2 + abs(p._2._1), acc._3 + abs(p._2._2)))
+        }).foldLeft(0.0, 0.0, 0.0)((acc: (Double, Double, Double), p: (Double, (Double, Double))) => (acc._1 + p._1, acc._2 + scala.math.abs(p._2._1), acc._3 + scala.math.abs(p._2._2)))
 
       }
     ).toVector

@@ -5,7 +5,6 @@ import java.awt.image.BufferedImage
 import java.awt.{Color, Graphics2D}
 import java.io.File
 
-import breeze.numerics.floor
 import hubmodel.io.output.{mapCoordAffine, verticalMirrorTransformation}
 import hubmodel.tools.Time
 import org.jcodec.api.awt.AWTSequenceEncoder
@@ -64,8 +63,8 @@ class KPIEvolutionOverTime(outputFile: String,
   gCanvas.drawLine(borderSpacing, verticalTransformation(canvas.getHeight - borderSpacing + 20), 35, verticalTransformation(canvas.getHeight - 60 + 30))
 
   // axis labels
-  gCanvas.drawString("time", floor(canvas.getWidth * 0.5).toInt, verticalTransformation(10))
-  drawRotate(gCanvas, 12, verticalTransformation(floor(canvas.getHeight * 0.5).toInt), 270, "density") //, 20, verticalTransformation(200))
+  gCanvas.drawString("time", scala.math.floor(canvas.getWidth * 0.5).toInt, verticalTransformation(10))
+  drawRotate(gCanvas, 12, verticalTransformation(scala.math.floor(canvas.getHeight * 0.5).toInt), 270, "density") //, 20, verticalTransformation(200))
 
   // xticks
   val nXTicks: Int = 5
@@ -77,12 +76,12 @@ class KPIEvolutionOverTime(outputFile: String,
 
   posYTicks.foreach(tick => {
     gCanvas.drawLine(40, verticalTransformation(borderSpacing + tick._1), 45, verticalTransformation(borderSpacing + tick._1))
-    gCanvas.drawString(f"${tick._2}%1.1f", 15, verticalTransformation(borderSpacing + tick._1 - floor(0.33 * gCanvas.getFontMetrics.getHeight).toInt))
+    gCanvas.drawString(f"${tick._2}%1.1f", 15, verticalTransformation(borderSpacing + tick._1 - scala.math.floor(0.33 * gCanvas.getFontMetrics.getHeight).toInt))
   })
 
   posXTicks.foreach(tick => {
     gCanvas.drawLine(borderSpacing + tick._1, verticalTransformation(35), borderSpacing + tick._1, verticalTransformation(45))
-    gCanvas.drawString((tick._2.toString), borderSpacing + tick._1 - floor(0.5 * gCanvas.getFontMetrics.stringWidth((tick._2.toString))).toInt, verticalTransformation(20))
+    gCanvas.drawString((tick._2.toString), borderSpacing + tick._1 - scala.math.floor(0.5 * gCanvas.getFontMetrics.stringWidth((tick._2.toString))).toInt, verticalTransformation(20))
   })
 
   gCanvas.setColor(Color.RED)
