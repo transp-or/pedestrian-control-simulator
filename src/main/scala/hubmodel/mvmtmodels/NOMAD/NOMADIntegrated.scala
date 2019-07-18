@@ -114,8 +114,6 @@ class NOMADIntegrated[T <: PedestrianNOMAD](sim: NOMADGraphSimulator[T]) extends
       //return the isolated type
       p.isolationTypeObs = hubmodel.ISOLATED
     }
-
-
   }
 
 
