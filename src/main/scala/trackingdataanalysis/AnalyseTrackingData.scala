@@ -149,10 +149,10 @@ object AnalyseTrackingData extends App {
       val edieResults = (edieDensity, edieFlow, edieSpeed).zipped.toVector
 
       val box: PolygonSimple = new PolygonSimple
-      box.add(mainZone.A(0), mainZone.A(1))
-      box.add(mainZone.B(0), mainZone.B(1))
-      box.add(mainZone.C(0), mainZone.C(1))
-      box.add(mainZone.D(0), mainZone.D(1))
+      box.add(mainZone.corners(0).X, mainZone.corners(0).Y)
+      box.add(mainZone.corners(1).X, mainZone.corners(1).Y)
+      box.add(mainZone.corners(2).X, mainZone.corners(2).Y)
+      box.add(mainZone.corners(3).X, mainZone.corners(3).Y)
 
 
       val voronoiDensities = data.computeVoronoiDensity(mainZone, timesMiddles, box)

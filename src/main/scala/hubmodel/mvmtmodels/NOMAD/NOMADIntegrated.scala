@@ -147,13 +147,14 @@ class NOMADIntegrated[T <: PedestrianNOMAD](sim: NOMADGraphSimulator[T]) extends
     */
   private def insertPedInMoveList(ped: PedestrianNOMAD): Unit = {
 
-    //if (ped.isVariableStep)
-    /*if (ped.isolationTypePed == hubmodel.IN_COLLISION || ped.isolationTypeObs == hubmodel.IN_COLLISION)*/ this.pedestrianToMoveInCollision.append(ped)
-    /*else if (ped.isolationTypePed == hubmodel.IN_RANGE || ped.isolationTypeObs == hubmodel.IN_RANGE) this.pedestrianToMoveInRange.append(ped)
-    else this.pedestrianToMoveInIsolation.append(ped)*/
-    /*else { // if the time step is constant
+    if (ped.isVariableStep) {
+      if (ped.isolationTypePed == hubmodel.IN_COLLISION || ped.isolationTypeObs == hubmodel.IN_COLLISION) {this.pedestrianToMoveInCollision.append(ped)}
+      else if (ped.isolationTypePed == hubmodel.IN_RANGE || ped.isolationTypeObs == hubmodel.IN_RANGE) {this.pedestrianToMoveInRange.append(ped)}
+      else {this.pedestrianToMoveInIsolation.append(ped)}
+    }
+    else { // if the time step is constant
       this.pedestrianToMoveInCollision.append(ped)
-    }*/
+    }
     //this.pedestrianToMoveInCollision.append(ped)
 
   }
@@ -177,7 +178,7 @@ class NOMADIntegrated[T <: PedestrianNOMAD](sim: NOMADGraphSimulator[T]) extends
     }
 
     sim.population.foreach(ped => {
-      ped.updatePositionHistory(sim.currentTime)
+      ped.updatePositionHistory(sim.currentTime, scala.math.max(ped.isolationTypeObs,ped.isolationTypePed))
 
     })
     sim.population.filterNot(_.isWaiting).foreach(ped => {
@@ -193,7 +194,7 @@ class NOMADIntegrated[T <: PedestrianNOMAD](sim: NOMADGraphSimulator[T]) extends
         // check if it is time for the pedestrian to check his isolation times
 
         ped.updateDesiredSpeed()
-        //this.updateIsolation(sim.currentTime, ped) // NOT CURRENTLY USED TO REMOVED TO SPEED UP
+        this.updateIsolation(sim.currentTime, ped) // NOT CURRENTLY USED TO REMOVED TO SPEED UP
         ped.travelTime = sim.currentTime - ped.entryTime
 
         // the distance travelled could be calculated directly in the move method
@@ -328,7 +329,7 @@ class NOMADIntegrated[T <: PedestrianNOMAD](sim: NOMADGraphSimulator[T]) extends
       //walkPedestrians(this.pedestrianToMoveInRange, this.rangeTimeStepSeconds, currentTime)
       //if (Pedestrian.isParallel) Pedestrian.updateParallel(this.pedestrianToMoveInRange)
 
-      sim.population.foreach(ped => {
+      (this.pedestrianToMoveInRange ++ this.pedestrianToMoveInIsolation).foreach(ped => {
         ped.currentPosition = ped.nextPosition
         ped.currentVelocity = ped.nextVelocity
         ped.travelDistance += (ped.currentPosition - ped.previousPosition).norm
@@ -371,12 +372,14 @@ class NOMADIntegrated[T <: PedestrianNOMAD](sim: NOMADGraphSimulator[T]) extends
       //movePedestriansInQueues(this.collisionTimeStepSeconds, currentTime)
       // ask the in collision pedestrians to perform the activity(walking included)
       this.pedestrianToMoveInCollision.foreach(ped => {
-        walkPedestrian(ped, getPedInLevelVicinity_3D(ped, ped.closePeds /*sim.population.filter(p => (p.currentPosition- ped.currentPosition).norm <= 10)*/), getClosestCoordinates3D(ped), this.collisionTimeStepSeconds)
+        walkPedestrian(ped, getPedInLevelVicinity_3D(ped, ped.closePeds), getClosestCoordinates3D(ped), this.collisionTimeStepSeconds)
       })
       //walkPedestrians(this.pedestrianToMoveInCollision, this.collisionTimeStepSeconds, currentTime)
       // check if the range step is reached
       if (colStep % this.rangeTimeStepSeconds == 0) {
-        this.pedestrianToMoveInRange.foreach(ped => {})
+        this.pedestrianToMoveInRange.foreach(ped => {
+          walkPedestrian(ped, getPedInLevelVicinity_3D(ped, this.pedestrianToMoveInRange), getClosestCoordinates3D(ped), this.rangeTimeStepSeconds)
+        })
         //walkPedestrians(this.pedestrianToMoveInRange, this.rangeTimeStepSeconds, currentTime)
         rangeStep += this.rangeTimeStepSeconds
         //println("range step process in collison", rangeStep)

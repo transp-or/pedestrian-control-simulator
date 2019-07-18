@@ -2,6 +2,7 @@ package hubmodel.ped
 
 import java.util.concurrent.ThreadLocalRandom
 
+import hubmodel.ped.History.{Coordinate, HistoryContainer, PositionIsolation}
 import hubmodel.tools.Time
 import hubmodel.tools.cells.Rectangle
 import hubmodel.{Position, pedestrianWalkingSpeed, _}
@@ -62,7 +63,7 @@ class PedestrianSim(val origin: Rectangle,
   // ******************************************************************************************
 
   /** History of the pedestrians positions */
-  protected var _historyPosition: Vector[(Time, Position)] = Vector((entryTime, currentPosition))
+  protected var _historyPosition: Vector[(Time, HistoryContainer)] = Vector((entryTime, Coordinate(currentPosition)))
 
   var route: List[Rectangle] = List()
 
@@ -137,15 +138,15 @@ class PedestrianSim(val origin: Rectangle,
   // ******************************************************************************************
 
   /** getter method for the history of the positions */
-  def getHistoryPosition: Vector[(Time, Position)] = _historyPosition
+  def getHistoryPosition: Vector[(Time, HistoryContainer)] = _historyPosition
 
 
   /** Adds the current position (currentPosition) to the history */
-  def updatePositionHistory(t: Time): Unit = {
+  def updatePositionHistory(t: Time, isolState: Int): Unit = {
     //if (this.currentPosition != this._historyPosition.last._2) {
     this.previousPosition = this.currentPosition
     if (logFullHistory) {
-      this._historyPosition = this._historyPosition :+ (t, this.currentPosition)
+      this._historyPosition = this._historyPosition :+ (t, PositionIsolation(this.currentPosition, isolState))
     }
     //}
   }
@@ -190,10 +191,10 @@ class PedestrianSim(val origin: Rectangle,
     * @return one row per position in the historyPosition
     */
   def toVisioSafeFormat(refDate: String = "2013,1,1"): String = {
-    def innerPrint(hist: Vector[(Time, Position)], str: String): String = {
+    def innerPrint(hist: Vector[(Time, HistoryContainer)], str: String): String = {
       if (hist.isEmpty) str
-      else if (str.isEmpty) innerPrint(hist.tail, refDate + "," + hist.head._1.asVisioSafe + ",0," + math.round(hist.head._2.X * 1000) + "," + math.round(hist.head._2.Y * 1000) + "," + this.ID)
-      else innerPrint(hist.tail, str + "\n" + refDate + "," + hist.head._1.asVisioSafe + ",0," + math.round(hist.head._2.X * 1000) + "," + math.round(hist.head._2.Y * 1000) + "," + this.ID)
+      else if (str.isEmpty) innerPrint(hist.tail, refDate + "," + hist.head._1.asVisioSafe + ",0," + math.round(hist.head._2.pos.X * 1000) + "," + math.round(hist.head._2.pos.Y * 1000) + "," + this.ID)
+      else innerPrint(hist.tail, str + "\n" + refDate + "," + hist.head._1.asVisioSafe + ",0," + math.round(hist.head._2.pos.X * 1000) + "," + math.round(hist.head._2.pos.Y * 1000) + "," + this.ID)
     }
 
     innerPrint(this._historyPosition, "")

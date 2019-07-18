@@ -10,6 +10,7 @@ import hubmodel._
 import hubmodel.io.output.{createWhiteBackground, getBounds, mapCoordAffine, verticalMirrorTransformation}
 import hubmodel.mgmt.flowgate.BinaryGate
 import hubmodel.mgmt.flowsep.FlowSeparator
+import hubmodel.ped.History.{Coordinate, HistoryContainer, PositionIsolation}
 import hubmodel.ped.PedestrianSim
 import hubmodel.supply.continuous.Wall
 import hubmodel.tools.Time
@@ -82,12 +83,13 @@ class MovingPedestriansWithDensityWithWallVideo(outputFile: String,
   val dotSize: Double = (0.35 / widthMeters) * canvasWidth.toDouble
 
   // formatting of the data: aggregation by times of the positions.
-  val population2TimePositionList: List[(Time, List[Position])] = mergeListsByTime(pop.flatMap(_.getHistoryPosition).toList).sortBy(_._1)
+  val population2TimePositionList: List[(Time, List[HistoryContainer])] = mergeListsByTime(pop.flatMap(_.getHistoryPosition).toList).sortBy(_._1)
   // List of times with corresponding ellipses to draw. For each time, the list of ellipses coreespond to the pedestrians.
 
-  //println(population2TimePositionList.map(_._1).toVector.sorted)
-  var timeEllipses: Vector[(Time, List[Ellipse2D])] = population2TimePositionList.filter(pair => times2Show.exists(t => (t - pair._1).abs.value <= math.pow(10, -5))).map(p => (p._1, p._2.map(createDot))).toVector
-  //println(population2TimePositionList.filter(pair => times2Show.contains(pair._1)).map(_._1).sorted)
+  val timeEllipses: Vector[(Time, List[(Ellipse2D, Option[Int])])] = population2TimePositionList
+    .filter(pair => times2Show.exists(t => (t - pair._1).abs.value <= math.pow(10, -5)))
+    .map(p => (p._1, p._2.map({case p: Coordinate => {(createDot(p.pos), None)} case pi: PositionIsolation => {(createDot(pi.pos), Some(pi.isolationType))}})))
+    .toVector
 
   // Image to use for combining all the different components: the bkgd image, the dots, the monitored areas, the gates, etc.
   val combine: BufferedImage = new BufferedImage(canvasWidth, canvasHeight, BufferedImage.TYPE_4BYTE_ABGR)
@@ -106,9 +108,17 @@ class MovingPedestriansWithDensityWithWallVideo(outputFile: String,
     val points: BufferedImage = new BufferedImage(canvasWidth, canvasHeight, BufferedImage.TYPE_4BYTE_ABGR)
     //if (timeEllipses.head._1 == times2Show(i)) {
     val gPoints: Graphics2D = points.createGraphics()
-    gPoints.setColor(Color.RED)
     timeEllipses.indexWhere(te => (times2Show(i) - te._1).abs.value < math.pow(10, -5)) match {
-      case a if a >= 0 => timeEllipses(a)._2.foreach(p => gPoints.fill(p))
+      case a if a >= 0 => timeEllipses(a)._2.foreach(p => {
+        p._2 match {
+          case Some(IN_COLLISION)=> {gPoints.setColor(Color.RED)}
+          case Some(IN_RANGE) => {gPoints.setColor(Color.YELLOW)}
+          case Some(ISOLATED) => {gPoints.setColor(Color.GREEN)}
+          case None => {gPoints.setColor(Color.BLUE)}
+        }
+        gPoints.fill(p._1)
+      })
+
       case _ => {}
     }
     //timeEllipses = timeEllipses.tail

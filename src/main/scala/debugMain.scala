@@ -181,24 +181,24 @@ object debugMain extends App {
 
 
   val hexagons: IndexedSeq[HexagonPotentialField] = (for (
-    x <- xMin to (xMax + radius) by 2 * radius * cos(30.0 * math.Pi / 180.0);
+    x <- xMin to (xMax + radius) by 2 * radius * scala.math.cos(30.0 * math.Pi / 180.0);
     y <- yMin to (yMax + radius) by 3 * radius)
     yield {
       new HexagonPotentialField(Vector2D(x, y), radius)
     }).filter(h => h.corners.exists(insideSpace)) ++ (for (
-    x <- (xMin + radius * cos(30.0 * math.Pi / 180.0)) to (xMax + radius) by 2 * radius * cos(30.0 * math.Pi / 180.0);
+    x <- (xMin + radius * scala.math.cos(30.0 * math.Pi / 180.0)) to (xMax + radius) by 2 * radius * scala.math.cos(30.0 * math.Pi / 180.0);
     y <- yMin + 1.5 * radius to (yMax + radius) by 3 * radius)
     yield {
       new HexagonPotentialField(Vector2D(x, y), radius)
     }).filter(h => h.corners.exists(insideSpace))
 
 
-  val connections2: Map[HexagonPotentialField, List[HexagonPotentialField]] = hexagons.map(h => h -> hexagons.filter(hin => (h.center - hin.center).norm < 1.01 * 2 * radius * cos(30.0 * math.Pi / 180.0)).filterNot(h == _).toList).toMap
+  val connections2: Map[HexagonPotentialField, List[HexagonPotentialField]] = hexagons.map(h => h -> hexagons.filter(hin => (h.center - hin.center).norm < 1.01 * 2 * radius * scala.math.cos(30.0 * math.Pi / 180.0)).filterNot(h == _).toList).toMap
 
 
-  val doorwayPoints = (9.0 to 11.0 by 0.25).map(y => DenseVector(0.0, y))
+  val doorwayPoints = (9.0 to 11.0 by 0.25).map(y => new Position(0.0, y))
 
-  val finalCells: IndexedSeq[HexagonPotentialField] = hexagons.filter(h => doorwayPoints.exists(p => h.isInside(Vector2D(p(0), p(1)))))
+  val finalCells: IndexedSeq[HexagonPotentialField] = hexagons.filter(h => doorwayPoints.exists(p => h.isInside(p)))
 
 
   /*

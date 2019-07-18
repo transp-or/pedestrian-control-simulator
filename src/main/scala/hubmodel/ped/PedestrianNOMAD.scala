@@ -14,8 +14,8 @@ class PedestrianNOMAD(oZone: Rectangle, dZone: Rectangle, entryTime: Time, posO:
   var closePeds: Iterable[PedestrianNOMAD] = Vector()
 
 
-  var isolationTypePed: Int = 0
-  var isolationTypeObs: Int = 0
+  var isolationTypePed: Int = hubmodel.IN_COLLISION
+  var isolationTypeObs: Int = hubmodel.IN_COLLISION
   val isInvisible: Boolean = false
   var isolationTimeObs: Double = entryTime.value.toDouble
   var isolationTimePed: Double = entryTime.value.toDouble
@@ -34,7 +34,7 @@ class PedestrianNOMAD(oZone: Rectangle, dZone: Rectangle, entryTime: Time, posO:
 
   def isStuck: Boolean = {
     if (this._historyPosition.size > 10) {
-      (this._historyPosition.dropRight(9).last._2 - this._historyPosition.last._2).norm < math.pow(10, -3)
+      (this._historyPosition.dropRight(9).last._2.pos - this._historyPosition.last._2.pos).norm < math.pow(10, -3)
     }
     else false
   }

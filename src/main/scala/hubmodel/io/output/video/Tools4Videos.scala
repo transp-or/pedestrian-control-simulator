@@ -4,6 +4,7 @@ import java.awt.Graphics2D
 import java.awt.geom.Ellipse2D
 
 import hubmodel.Position
+import hubmodel.ped.History.{Coordinate, HistoryContainer}
 import hubmodel.tools.Time
 
 /**
@@ -18,7 +19,7 @@ trait Tools4Videos {
     * @param hist original data formatted as List[(Time, Position)]
     * @return reformating of data as List[(Time, List[Position])]
     */
-  def mergeListsByTime(hist: List[(Time, Position)]): List[(Time, List[Position])] = {
+  def mergeListsByTime(hist: List[(Time, HistoryContainer)]): List[(Time, List[HistoryContainer])] = {
     hist.groupBy(_._1).map { case (k, v) => (k, v.map(_._2)) }.toList
   }
 

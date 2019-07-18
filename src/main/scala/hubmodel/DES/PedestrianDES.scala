@@ -187,7 +187,7 @@ abstract class PedestrianDES[T <: PedestrianNOMAD](val startTime: Time,
   def processCompletedPedestrian(condition: T => Boolean): Unit = {
     val completedPeds: Map[String, T] = this._populationNew.filter(kv => condition(kv._2)).toMap
     completedPeds.values.foreach(p => {
-      p.updatePositionHistory(this.currentTime)
+      p.updatePositionHistory(this.currentTime, scala.math.max(p.isolationTypePed, p.isolationTypeObs))
       p.reachedDestination = true
       p.exitTime = this.currentTime
     })

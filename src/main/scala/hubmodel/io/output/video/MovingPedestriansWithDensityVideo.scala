@@ -9,6 +9,7 @@ import hubmodel.DES.PedestrianDES
 import hubmodel._
 import hubmodel.io.output.createBackgroundFromImage
 import hubmodel.mgmt.flowgate.BinaryGate
+import hubmodel.ped.History.HistoryContainer
 import hubmodel.ped.PedestrianSim
 import hubmodel.tools.Time
 import hubmodel.tools.cells.Rectangle
@@ -32,6 +33,7 @@ import org.jcodec.api.awt.AWTSequenceEncoder
   * @param densityMeasurements Density values inside the critical zone.
   * @param times2Show          The set of times to show.
   */
+@deprecated
 class MovingPedestriansWithDensityVideo(outputFile: String,
                                         bkgdImage: Option[String],
                                         bkgdImageSizeMeters: (Double, Double),
@@ -78,11 +80,11 @@ class MovingPedestriansWithDensityVideo(outputFile: String,
   def mapVcoord: Double => Int = mapCoordLinear(bkgdImageSizeMeters._2, canvasHeight)
 
   // formatting of the data: aggregation by times of the positions.
-  val population2TimePositionList: List[(Time, List[Position])] = mergeListsByTime(pop.flatMap(_.getHistoryPosition).toList).sortBy(_._1)
+  val population2TimePositionList: List[(Time, List[HistoryContainer])] = mergeListsByTime(pop.flatMap(_.getHistoryPosition).toList).sortBy(_._1)
   // List of times with corresponding ellipses to draw. For each time, the list of ellipses coreespond to the pedestrians.
 
   //println(population2TimePositionList.map(_._1).toVector.sorted)
-  var timeEllipses: Vector[(Time, List[Ellipse2D])] = population2TimePositionList.filter(pair => times2Show.exists(t => (t - pair._1.value).abs.toDouble <= math.pow(10, -5))).map(p => (p._1, p._2.map(createDot))).toVector
+  var timeEllipses: Vector[(Time, List[Ellipse2D])] = population2TimePositionList.filter(pair => times2Show.exists(t => (t - pair._1.value).abs.toDouble <= math.pow(10, -5))).map(p => (p._1, p._2.map(a => createDot(a.pos)))).toVector
   //println(population2TimePositionList.filter(pair => times2Show.contains(pair._1)).map(_._1).sorted)
 
   // Image to use for combining all the different components: the bkgd image, the dots, the monitored areas, the gates, etc.

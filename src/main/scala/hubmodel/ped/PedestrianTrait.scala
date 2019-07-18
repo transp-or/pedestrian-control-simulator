@@ -72,7 +72,7 @@ trait PedestrianTrait {
     else desiredVel * ((1.3 * 1.34) / desiredVel.norm)
   }
 
-  def updatePositionHistory(t: Time): Unit
+  def updatePositionHistory(t: Time, isolState: Int): Unit
 
   // ******************************************************************************************
   //                    FUNCTIONS FOR PRINTING THE PEDESTRIAN

@@ -9,6 +9,7 @@ import hubmodel.io.output.image.{DrawControlDevicesAndWalls, DrawGraph, DrawWall
 import hubmodel.io.output.video.MovingPedestriansWithDensityWithWallVideo
 import hubmodel.mgmt.ControlDevices
 import hubmodel.mgmt.flowgate.BinaryGate
+import hubmodel.ped.History.HistoryContainer
 import hubmodel.ped.{PedestrianNOMAD, PedestrianSim, PedestrianTrait}
 import hubmodel.results.{ResultsContainerFromSimulation, collectResults, writeResults}
 import hubmodel.supply.NodeParent
@@ -152,10 +153,16 @@ package object hubmodel {
   }
 
 
+  /** Write the trajectories as a JSON format.
+    *
+    * @param pop
+    * @param file
+    * @param times
+    */
   def writePopulationTrajectoriesJSON(pop: Iterable[PedestrianSim], file: String, times: NumericRange[BigDecimal]): Unit = {
 
     // collects the traj data
-    val trajDataByTime: Map[Time, Iterable[(Time, Position, String)]] = pop.flatMap(p => p.getHistoryPosition.map(r => (r._1, r._2, p.ID))).groupBy(_._1).filter(t => times.contains(t._1.value))
+    val trajDataByTime: Map[Time, Iterable[(Time, HistoryContainer, String)]] = pop.flatMap(p => p.getHistoryPosition.map(r => (r._1, r._2, p.ID))).groupBy(_._1).filter(t => times.contains(t._1.value))
 
     val sortedKeys: Vector[Time] = trajDataByTime.keys.toVector.sorted
 
@@ -165,12 +172,12 @@ package object hubmodel {
     bw.write("[")
     // write first value separately to deal with commas seperating
     bw.write("{\"time\":" + sortedKeys.head.toString + ",")
-    bw.write("\"data\":[" + trajDataByTime(sortedKeys.head).map(d => "{\"id\":\"" + d._3 + "\",\"x\":" + d._2.X.toString + ",\"y\":" + d._2.Y.toString + "}").mkString(","))
+    bw.write("\"data\":[" + trajDataByTime(sortedKeys.head).map(d => "{\"id\":\"" + d._3 + "," + d._2.toJSON + "}").mkString(","))
     bw.write("]}")
     for (t <- sortedKeys.tail) {
       bw.write(",{\"time\":" + t.toString + ",")
       bw.write("\"data\":[")
-      bw.write(trajDataByTime(t).map(d => "{\"id\":\"" + d._3 + "\",\"x\":" + d._2.X.toString + ",\"y\":" + d._2.Y.toString + "}").mkString(","))
+      bw.write(trajDataByTime(t).map(d => "{\"id\":\"" + d._3 + "," + d._2.toJSON + "}").mkString(","))
       bw.write("]}")
     }
 
