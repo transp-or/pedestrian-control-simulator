@@ -1,6 +1,7 @@
 package trackingdataanalysis.pedtrack.visiosafe
 
-import breeze.linalg.DenseVector
+import hubmodel.Position
+import hubmodel.tools.cells.Rectangle
 import trackingdataanalysis.pedtrack.{Pedestrian, time2Seconds}
 
 /** Container for the procssing methods common to both single day and multi day processing
@@ -10,7 +11,7 @@ import trackingdataanalysis.pedtrack.{Pedestrian, time2Seconds}
 abstract class DataProcessor(zoneFile: String, tolerance: Double) {
 
   /** Map from zone_ID to Zone. */
-  val zones: Map[Int, Zone] = (for (l <- io.Source.fromFile(zoneFile).getLines.drop(1)) yield l.split(",").map(_.trim.toInt).head -> new Zone(l.split(",").map(_.trim.toDouble / 1000.0))).toMap
+  val zones: Map[Int, Rectangle] = (for (l <- io.Source.fromFile(zoneFile).getLines.drop(1)) yield l.split(",").map(_.trim.toInt).head -> new Rectangle(l.split(",").map(_.trim.toDouble / 1000.0))).toMap
   //println(zones.values.map(z => (z.A, z.B, z.C, z.D).toString).mkString("\n"))
   /** Takes as input the file containing the data and returns the data aggregated by pedestrian. The aggregation takes
     * process is done by matching the ID to already existing processed IDs and then updates the variables.
@@ -33,32 +34,17 @@ abstract class DataProcessor(zoneFile: String, tolerance: Double) {
   }
 
 
-  /** Returns boolean indicating whether point is in rectangle. Requires the breeze.linalg package.
-    *
-    * @param pos  point to check
-    * @param rect coordinates of rectangle
-    * @return boolean indicating if point is inside rectangle
-    */
-  protected def isInRectangle(pos: (Double, Double), rect: Zone): Boolean = {
-    val AB = rect.B - rect.A
-    val BC = rect.C - rect.B
-    val AP = DenseVector(pos._1, pos._2) - rect.A
-    val BP = DenseVector(pos._1, pos._2) - rect.B
-    if (0 <= (AB dot AP) && (AB dot AP) <= (AB dot AB) && 0 <= (BC dot BP) && (BC dot BP) <= (BC dot BC)) true
-    else false
-  }
-
   /** Returns the zone in which a point is located
     *
     * @param pos      point to find owernship
     * @param mapZones Map storing the zones
     * @return Int naming the zone, -1 if none found
     */
-  private def findZoneOwnership(pos: (Double, Double), mapZones: Map[Int, Zone]): Int = {
+  private def findZoneOwnership(pos: (Double, Double), mapZones: Map[Int, Rectangle]): Int = {
     if (mapZones.isEmpty) -1
     else {
       val pair = mapZones.head
-      if (isInRectangle(pos, pair._2)) pair._1
+      if (pair._2.isInside(new Position(pos._1, pos._2))) pair._1
       else findZoneOwnership(pos, mapZones.tail)
     }
   }

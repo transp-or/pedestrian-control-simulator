@@ -1,7 +1,5 @@
 package trackingdataanalysis.pedtrack
 
-import breeze.linalg.DenseVector
-
 /** Empirical pedestrian which extends [[trackingdataanalysis.pedtrack.PedestrianTrait]] with some extra members.
   *
   * @param ID              Unique ID (unique for a given day)
@@ -28,7 +26,7 @@ class Pedestrian(val ID: Int, currentPosition: (Double, Double), val entryTime: 
 
   def getTXYZipped = h_t.zip(h_x.zip(h_y))
 
-  def getHistoryPosition: Vector[(Double, DenseVector[Double])] = h_t.zip(h_x.zip(h_y).map(t => DenseVector(t._1, t._2))).toVector
+  def getHistoryPosition: Vector[(Double, Vector2D)] = h_t.zip(h_x.zip(h_y).map(t => new Vector2D(t._1, t._2))).toVector
 
   /* ---------- Methods -----------*/
 

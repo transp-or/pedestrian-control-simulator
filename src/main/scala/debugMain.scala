@@ -1,5 +1,3 @@
-import breeze.linalg.DenseVector
-import breeze.numerics.cos
 import hubmodel.Position
 import hubmodel.io.output.image.DrawCellsAndWalls
 import hubmodel.route.Guo2011.HexagonPotentialField

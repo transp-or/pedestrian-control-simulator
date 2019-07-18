@@ -4,8 +4,6 @@ import java.awt.image.BufferedImage
 import java.awt.{Color, Graphics2D}
 import java.io.File
 
-import breeze.linalg.{max, min}
-import breeze.numerics.round
 import hubmodel.supply.continuous.Wall
 import hubmodel.tools.cells.Vertex
 import javax.imageio.ImageIO
@@ -30,16 +28,16 @@ package object output {
 
     val widthPixel: Int = IMAGE_WIDTH
     val heightPixel: Int = {
-      if ((round(vRange / hRange * widthPixel).toInt % 2) == 0) {
-        round(vRange / hRange * widthPixel).toInt
+      if ((scala.math.round(vRange / hRange * widthPixel).toInt % 2) == 0) {
+        scala.math.round(vRange / hRange * widthPixel).toInt
       }
       else {
-        round(vRange / hRange * widthPixel).toInt + 1
+        scala.math.round(vRange / hRange * widthPixel).toInt + 1
       }
     }
 
-    val hMapping: Double => Int = coordX => 10 + round(((coordX - minX) / hRange) * widthPixel).toInt
-    val vMapping: Double => Int = coordY => 10 + round(((coordY - minY) / vRange) * heightPixel).toInt
+    val hMapping: Double => Int = coordX => 10 + scala.math.round(((coordX - minX) / hRange) * widthPixel).toInt
+    val vMapping: Double => Int = coordY => 10 + scala.math.round(((coordY - minY) / vRange) * heightPixel).toInt
     (hMapping, vMapping)
   }
 
@@ -50,11 +48,11 @@ package object output {
     val maxY = bounds._4
     val hRange: Double = maxX - minX
     val vRange: Double = maxY - minY
-    if ((round(vRange / hRange * IMAGE_WIDTH).toInt % 2) == 0) {
-      border * 2 + round(vRange / hRange * IMAGE_WIDTH).toInt
+    if ((scala.math.round(vRange / hRange * IMAGE_WIDTH).toInt % 2) == 0) {
+      border * 2 + scala.math.round(vRange / hRange * IMAGE_WIDTH).toInt
     }
     else {
-      border * 2 + round(vRange / hRange * IMAGE_WIDTH).toInt + 1
+      border * 2 + scala.math.round(vRange / hRange * IMAGE_WIDTH).toInt + 1
     }
   }
 
@@ -63,18 +61,18 @@ package object output {
   }
 
   def getBounds(walls: Iterable[Wall]): (Double, Double, Double, Double) = {
-    val minX: Double = walls.map(w => min(w.startPoint.X, w.endPoint.X)).min
-    val maxX: Double = walls.map(w => max(w.startPoint.X, w.endPoint.X)).max
-    val minY: Double = walls.map(w => min(w.startPoint.Y, w.endPoint.Y)).min
-    val maxY: Double = walls.map(w => max(w.startPoint.Y, w.endPoint.Y)).max
+    val minX: Double = walls.map(w => scala.math.min(w.startPoint.X, w.endPoint.X)).min
+    val maxX: Double = walls.map(w => scala.math.max(w.startPoint.X, w.endPoint.X)).max
+    val minY: Double = walls.map(w => scala.math.min(w.startPoint.Y, w.endPoint.Y)).min
+    val maxY: Double = walls.map(w => scala.math.max(w.startPoint.Y, w.endPoint.Y)).max
     (minX, minY, maxX, maxY)
   }
 
   def getBounds(edges: Vector[(Vertex, Vertex)]): (Double, Double, Double, Double) = {
-    val minX: Double = min(edges.map(e => min(min(e._1.corners.map(_.X)), min(e._1.corners.map(_.X)))))
-    val minY: Double = min(edges.map(e => min(min(e._1.corners.map(_.Y)), min(e._1.corners.map(_.Y)))))
-    val maxX: Double = max(edges.map(e => max(max(e._1.corners.map(_.X)), max(e._1.corners.map(_.X)))))
-    val maxY: Double = max(edges.map(e => max(max(e._1.corners.map(_.Y)), max(e._1.corners.map(_.Y)))))
+    val minX: Double = edges.map(e => scala.math.min(e._1.corners.map(_.X).min, e._1.corners.map(_.X).min)).min
+    val minY: Double = edges.map(e => scala.math.min(e._1.corners.map(_.Y).min, e._1.corners.map(_.Y).min)).min
+    val maxX: Double = edges.map(e => scala.math.max(e._1.corners.map(_.X).max, e._1.corners.map(_.X).max)).max
+    val maxY: Double = edges.map(e => scala.math.max(e._1.corners.map(_.Y).max, e._1.corners.map(_.Y).max)).max
     (minX, minY, maxX, maxY)
   }
 
@@ -95,7 +93,7 @@ package object output {
     * @return the position in pixels of the original coordinate
     */
   def mapCoordAffine(trueMin: Double, trueMax: Double, pixelWidth: Int)(coord: Double): Int = {
-    math.round((coord - trueMin) * ((pixelWidth - 2 * border) / (trueMax - trueMin)) + border).toInt
+    scala.math.round((coord - trueMin) * ((pixelWidth - 2 * border) / (trueMax - trueMin)) + border).toInt
   }
 
   def createWhiteBackground(bkgdImageSizeMeters: (Double, Double)): BufferedImage = {

@@ -4,7 +4,6 @@ package trackingdataanalysis
   * Created by nicholas on 2/15/17.
   */
 
-import breeze.numerics.{pow, sqrt}
 import com.typesafe.config.Config
 import hubmodel.parseConfigFile
 import kn.uni.voronoitreemap.j2d.PolygonSimple
@@ -143,8 +142,8 @@ object AnalyseTrackingData extends App {
       val edieComponents = data.computeEdieComponents(mainZone, times)
 
       val edieDensity: Vector[Double] = edieComponents.map(r => r._2._1 / (mainZone.area * dt))
-      val edieSpeed: Vector[Double] = edieComponents.map(d => sqrt(pow(d._2._2 / d._2._1, 2) + pow(d._2._3 / d._2._1, 2))) // edieComponents.map(d => d._2._3/d._2._1)
-      val edieFlow: Vector[Double] = edieDensity.zip(edieSpeed).map(d => d._1 * d._2) //edieComponents.map(d => d._2._3) //edieComponents.map(d => sqrt(pow(d._2._2/(mainZone.area * dt),2) + pow(d._2._3/(mainZone.area * dt),2)))
+      val edieSpeed: Vector[Double] = edieComponents.map(d => scala.math.sqrt(scala.math.pow(d._2._2 / d._2._1, 2) + scala.math.pow(d._2._3 / d._2._1, 2))) // edieComponents.map(d => d._2._3/d._2._1)
+      val edieFlow: Vector[Double] = edieDensity.zip(edieSpeed).map(d => d._1 * d._2) //edieComponents.map(d => d._2._3) //edieComponents.map(d => scala.math.sqrt(scala.math.pow(d._2._2/(mainZone.area * dt),2) + scala.math.pow(d._2._3/(mainZone.area * dt),2)))
 
 
       val edieResults = (edieDensity, edieFlow, edieSpeed).zipped.toVector

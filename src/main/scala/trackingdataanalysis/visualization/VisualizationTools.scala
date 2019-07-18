@@ -3,7 +3,7 @@ package trackingdataanalysis.visualization
 import java.awt.Graphics2D
 import java.awt.geom.Ellipse2D
 
-import breeze.linalg.DenseVector
+import hubmodel.Position
 
 import scala.annotation.tailrec
 import scala.collection.IterableLike
@@ -13,7 +13,6 @@ import scala.math.BigDecimal.RoundingMode
 trait VisualizationTools {
 
   type Time = Double
-  type Position = DenseVector[Double]
 
   /** Combines a List of (Time, Position) tuples into a List of (Time, List[Position]) tuples.
     * This makes drawing process easier.
@@ -43,24 +42,18 @@ trait VisualizationTools {
     * @return an ellipse2D object to draw using the fill method from[[Graphics2D]]
     */
   def createDot(hMeters: Double, hPixels: Int, wMeters: Double, wPixels: Int, size: Double)(pos: Position): Ellipse2D = {
-    new Ellipse2D.Double(pos(0) / wMeters * wPixels - 0.5 * size, pos(1) / hMeters * hPixels - 0.5 * size, size, size)
+    new Ellipse2D.Double(pos.X / wMeters * wPixels - 0.5 * size, pos.Y / hMeters * hPixels - 0.5 * size, size, size)
   }
 
   /** Mapping function for horizontal (width) coordinates
     *
-    * @param hMeters height in meters of the image
-    * @param hPixels height in pixels of the image
-    * @param hPos    point to map
-    * @return the position in pixels of the original coordinate
+
     */
   def mapHcoordLinear(trueMin: Double, trueMax: Double, pixelWidth: Int)(x: Double): Int = math.round((x - trueMin) / (trueMax - trueMin) * pixelWidth).toInt
 
   /** Mapping function for vertical (height) coordinates
     *
-    * @param trueWidth  width in meters of the image
-    * @param pixelWidth width in pixels of the image
-    * @param wPos       point to map
-    * @return the position in pixels of the original coordinate
+
     */
   def mapVcoordLinear(trueMin: Double, trueMax: Double, pixelHeight: Int)(y: Double): Int = math.round((y - trueMin) / (trueMax - trueMin) * pixelHeight).toInt
 
@@ -71,10 +64,7 @@ trait VisualizationTools {
 
   /** Mapping function for vertical (height) coordinates
     *
-    * @param trueWidth  width in meters of the image
-    * @param pixelWidth width in pixels of the image
-    * @param wPos       point to map
-    * @return the position in pixels of the original coordinate
+
     */
   def mapVcoordLinearBD(trueMin: BigDecimal, trueMax: BigDecimal, pixelHeight: Int)(y: BigDecimal): Int = ((y - trueMin) / (trueMax - trueMin) * pixelHeight).setScale(0, RoundingMode.HALF_UP).intValue()
 
