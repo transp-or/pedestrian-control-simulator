@@ -23,7 +23,7 @@ abstract class GridSearchNew[T <: ParameterModifications](val config: Config) ex
     Files.createDirectory(outputDir)
   }
 
-  val simulationRunsParameters: GenIterable[T]
+  val simulationRunsParameters: IterableOnce[T]
 
   def getParameters(paramMods: T): SimulatorParameters
 
@@ -96,8 +96,8 @@ abstract class GridSearchNew[T <: ParameterModifications](val config: Config) ex
 
     files.map(ProcessTTFile2Parameters).
       flatMap(tup => tup._3.map(t => (tup._1, tup._2, t._1._1, t._1._2, t._2))).
-      groupBy(tup => (tup._1, tup._2)).
-      mapValues(v => v.flatMap(_._5).stats)
+      groupBy(tup => (tup._1, tup._2)).view.
+      mapValues(v => v.flatMap(_._5).stats).toMap
   }
 
 

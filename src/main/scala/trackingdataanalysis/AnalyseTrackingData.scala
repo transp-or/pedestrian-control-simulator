@@ -76,10 +76,10 @@ object AnalyseTrackingData extends App {
   println("Time interval is: " + dt + " seconds")
 
   // time intevals used to copute time average data
-  val times = startTime to endTime by dt
+  val times = BigDecimal(startTime) to endTime by dt
 
   // intermediate times used to compute fixed-time data (snapshots)
-  val timesMiddles = startTime + 0.5 * dt to endTime by dt
+  val timesMiddles = BigDecimal(startTime + 0.5 * dt) to endTime by dt
 
   // tracking data to process
   val pathToData: String = config.getString("files.data-dir")
@@ -126,7 +126,7 @@ object AnalyseTrackingData extends App {
         flattenTuple(od._1, od._2, data.ped.values.filter(p => p.oZone == od._1 && p.dZone == od._2).map(_.travelTime).stats)
       }).writeToCSV(fileNames.head + "_travel_times_OD_stats.csv", columnNames = Some(Vector("O", "D", "size", "mean", "variance", "median", "min", "max")), rowNames = None)
 
-      val flowsAgain = data.computeFlowsAgain(monitoredZone.flowLines, times.toVector)
+      val flowsAgain = data.computeFlowsAgain(monitoredZone.flowLines, times.toVector.map(_.toDouble))
 
       val lengthControlledInflow: Double = monitoredZone.flowLines.filter(_.inflowType == CONTROLLED).map(fl => norm(fl.line._1, fl.line._2)).sum
       //7.37//1.0/2.0
@@ -139,7 +139,7 @@ object AnalyseTrackingData extends App {
       //flowArray.map(_(1))
       val outflow = flowsAgain._3.toVector.sortBy(_._1).map(_._2 / (dt * lengthTotalFlow)).toArray //flowArray.map(_(0))
 
-      val edieComponents = data.computeEdieComponents(mainZone, times)
+      val edieComponents = data.computeEdieComponents(mainZone, times.toVector.map(_.toDouble))
 
       val edieDensity: Vector[Double] = edieComponents.map(r => r._2._1 / (mainZone.area * dt))
       val edieSpeed: Vector[Double] = edieComponents.map(d => scala.math.sqrt(scala.math.pow(d._2._2 / d._2._1, 2) + scala.math.pow(d._2._3 / d._2._1, 2))) // edieComponents.map(d => d._2._3/d._2._1)
@@ -155,10 +155,10 @@ object AnalyseTrackingData extends App {
       box.add(mainZone.corners(3).X, mainZone.corners(3).Y)
 
 
-      val voronoiDensities = data.computeVoronoiDensity(mainZone, timesMiddles, box)
+      val voronoiDensities = data.computeVoronoiDensity(mainZone, timesMiddles.map(_.toDouble), box)
 
 
-      val accumulationDensities = data.computeAccumulationDensity(mainZone, timesMiddles)
+      val accumulationDensities = data.computeAccumulationDensity(mainZone, timesMiddles.map(_.toDouble))
       //println(mainZone)
       //println(accumulationDensities)
 
@@ -178,7 +178,7 @@ object AnalyseTrackingData extends App {
       // computing metric with starting times in intervals
       def pedData: Pedestrian => Double = ped => ped.meanVelocity
 
-      def pedWindows: Pedestrian => Int = ped => data.findInterval(ped.entryTime, (startTime to endTime by dt).toVector)
+      def pedWindows: Pedestrian => Int = ped => data.findInterval(ped.entryTime, (BigDecimal(startTime) to endTime by dt).toVector.map(_.toDouble))
 
       def meanIterable: Iterable[Double] => (Int, Double, Double, Double, Double, Double) = iterable => iterable.stats
 
@@ -186,7 +186,7 @@ object AnalyseTrackingData extends App {
 
       val speedByEntyTimeMean: Map[Int, (Int, Double, Double, Double, Double, Double)] = data.aggregateMetricByTimeWindow(pedFilter, pedData, pedWindows, meanIterable)
 
-      data.ped.values.filter(pedFilter).groupBy(p => (data.findInterval(p.entryTime, (startTime to endTime by 60.0).toVector), p.oZone, p.dZone)).map(r => r._1 -> r._2.map(_.travelTime)).toVector.sorted.writeToCSV("test.csv")
+      data.ped.values.filter(pedFilter).groupBy(p => (data.findInterval(p.entryTime, (BigDecimal(startTime) to endTime by 60.0).toVector.map(_.toDouble)), p.oZone, p.dZone)).map(r => r._1 -> r._2.map(_.travelTime)).toVector.sorted.writeToCSV("test.csv")
       speedByEntyTimeMean.toVector.sortBy(_._1).writeToCSV(config.getString("output.prefix") + "-TTByEntyTimeMean.csv")
       println("Stats of the speed per time interval:\n" + speedByEntyTimeMean.values.map(_._2).stats)
 

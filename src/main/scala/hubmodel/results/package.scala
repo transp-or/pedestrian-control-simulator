@@ -12,9 +12,10 @@ import myscala.output.SeqOfSeqExtensions.SeqOfSeqWriter
 import myscala.output.SeqTuplesExtensions.SeqTuplesWriter
 import play.api.libs.json.{JsError, JsSuccess, JsValue, Json}
 
-import scala.collection.JavaConversions._
 import scala.io.BufferedSource
 import scala.util.{Failure, Success, Try}
+
+import scala.jdk.CollectionConverters._
 
 package object results {
 
@@ -133,7 +134,7 @@ package object results {
   def readResults(dir: String, prefix: String, demandSets: Seq[String]): Iterable[ResultsContainerReadWithDemandSet] = {
     if (demandSets.isEmpty) {
       val dirContents = Files.newDirectoryStream(Paths.get(dir))
-      val subDirs: Iterable[String] = dirContents.toVector.collect({ case f if Files.isDirectory(f) => f.getFileName.toString })
+      val subDirs: Iterable[String] = dirContents.asScala.toVector.collect({ case f if Files.isDirectory(f) => f.getFileName.toString })
       dirContents.close()
       subDirs.flatMap(ff => readResults(dir + ff, prefix).map(_.addDemandFile(ff)))
     } else {
@@ -227,7 +228,7 @@ package object results {
   def readResultsJson(dir: String, prefix: String, demandSets: Seq[String]): Iterable[ResultsContainerReadWithDemandSetNew] = {
     if (demandSets.isEmpty) {
       val dirContents = Files.newDirectoryStream(Paths.get(dir))
-      val subDirs: Iterable[String] = dirContents.toVector.collect({ case f if Files.isDirectory(f) => f.getFileName.toString })
+      val subDirs: Iterable[String] = dirContents.asScala.toVector.collect({ case f if Files.isDirectory(f) => f.getFileName.toString })
       dirContents.close()
       subDirs.flatMap(ff => readResultsJson(dir + ff, prefix).map(_.addDemandFile(ff)))
     } else {

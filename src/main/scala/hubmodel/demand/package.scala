@@ -14,8 +14,9 @@ import play.api.libs.functional.syntax._
 import play.api.libs.json.Reads._
 import play.api.libs.json._
 
-import scala.collection.JavaConversions._
 import scala.io.BufferedSource
+import scala.jdk.CollectionConverters._
+
 
 /**
   * Created by nicholas on 3/8/17.
@@ -372,7 +373,8 @@ package hubmodel {
 
         val multipleDemandStream: DirectoryStream[Path] = Files.newDirectoryStream(Paths.get(config.getString("files.TF_demand_sets")), "*.json")
 
-        val files: Vector[Path] = multipleDemandStream.toVector
+
+        val files: Vector[Path] = multipleDemandStream.asScala.toVector
 
         multipleDemandStream.close()
 
@@ -405,7 +407,7 @@ package hubmodel {
         }
       } else if (config.getBoolean("sim.read_multiple_demand_sets")) {
         val multipleDemandStream: DirectoryStream[Path] = Files.newDirectoryStream(Paths.get(config.getString("files.TF_demand_sets")), "*.json")
-        val files: Vector[Path] = multipleDemandStream.toVector
+        val files: Vector[Path] = multipleDemandStream.asScala.toVector
         multipleDemandStream.close()
         Some(files.flatMap(f => (1 to config.getInt("sim.nb_runs")).map(n => (f.getFileName.toString, ""))))
       } else {

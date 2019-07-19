@@ -8,7 +8,7 @@ import kn.uni.voronoitreemap.diagram.PowerDiagram
 import kn.uni.voronoitreemap.j2d.{PolygonSimple, Site}
 import myscala.math.vector.Vector2D
 
-import scala.collection.JavaConversions._
+import scala.jdk.CollectionConverters._
 
 /**
   * Created by nicholas on 5/13/17.
@@ -39,7 +39,7 @@ class EvaluateState[T <: PedestrianNOMAD](sim: NOMADGraphSimulator[T]) extends A
           val box: PolygonSimple = new PolygonSimple
           zone.corners.foreach(corner => box.add(corner.X, corner.Y))
           voronoi.setClipPoly(box)
-          val voronoiTessellations: Vector[Site] = voronoi.computeDiagram().toVector
+          val voronoiTessellations: Vector[Site] = voronoi.computeDiagram().asScala.toVector
           zone.densityHistory.append(
             (sim.currentTime, voronoiTessellations.filter(s => isInVertex(zone)(Vector2D(s.x, s.y))).foldLeft(0.0)((acc: Double, n: Site) => acc + 1.0 / (nbrPaxInZone * n.getPolygon.getArea)))
           )

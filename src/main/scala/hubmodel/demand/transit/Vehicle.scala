@@ -5,7 +5,7 @@ import hubmodel.tools.Time
 
 class Vehicle(val ID: TrainID_New, val trainType: String, val stop: StopID_New, val arr: Option[Time], val dep: Option[Time], val capacity: Int) {
 
-  def alightingPassengers: Seq[NodeParent] = this._alightingPassengers
+  def alightingPassengers: scala.collection.Seq[NodeParent] = this._alightingPassengers
 
   private val _alightingPassengers: collection.mutable.ArrayBuffer[NodeParent] = collection.mutable.ArrayBuffer()
 

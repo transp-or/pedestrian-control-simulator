@@ -17,7 +17,6 @@ import myscala.output.SeqTuplesExtensions.SeqTuplesWriter
 import play.api.libs.json.{JsError, JsSuccess, JsValue, Json}
 import trackingdataanalysis.visualization.{Histogram, PlotOptions, ScatterPlot, computeHistogramDataWithXValues}
 
-import scala.collection.GenIterable
 import scala.io.BufferedSource
 
 
@@ -67,7 +66,7 @@ object RunSimulation extends App with StrictLogging {
   }
 
 
-  val range: GenIterable[Int] = getIteratorForSimulations(if (runSimulationsInParallel) {
+  val range: IterableOnce[Int] = getIteratorForSimulations(if (runSimulationsInParallel) {
     Some(config.getInt("execution.threads"))
   } else {
     None
@@ -264,7 +263,7 @@ object RunSimulation extends App with StrictLogging {
 
   // Writes the travel time distribution of each simulation two a csv file.
   if (config.getBoolean("output.travel-time.per-simulation-distributions") && results.nonEmpty) {
-    val r: Seq[Seq[Double]] = (0.0 to 200.0 by 2.0) +: results.map(r => {
+    val r: collection.immutable.Seq[collection.immutable.Seq[Double]] = (BigDecimal(0.0) to BigDecimal(200.0) by BigDecimal(2.0)).map(_.toDouble) +: results.map(r => {
       val data = r.tt.map(_._3) //.cutOfAfterQuantile(99)
       computeHistogramDataWithXValues(data, 2.0, Some(0), Some(200), normalized = false).map(_._2)
     })
@@ -405,7 +404,7 @@ object RunSimulation extends App with StrictLogging {
 
     val resultsByOD = results
       .flatten(_.tt)
-      .computeTT4TRANSFORM(0.0.to(100.0).by(config.getDouble("output.write_tt_4_transform_quantile_interval")), simulationStartTime, simulationEndTime, config.getString("output.write_tt_4_transform_file_name"), stop2Vertex)
+      .computeTT4TRANSFORM(BigDecimal(0.0).to(BigDecimal(100.0)).by(config.getDouble("output.write_tt_4_transform_quantile_interval")), simulationStartTime, simulationEndTime, config.getString("output.write_tt_4_transform_file_name"), stop2Vertex)
 
     resultsByOD.map(r => (r._1 + "->" + r._2, r._3.stats)).toVector.sortBy(_._1).map(v => (v._1, v._2._1, v._2._2, v._2._3, v._2._4, v._2._5, v._2._6)).writeToCSV(config.getString("output.output_prefix") + "_walking_time_distributions_by_OD.csv")
   }

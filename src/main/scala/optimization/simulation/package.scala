@@ -105,7 +105,7 @@ package object simulation {
       computeNumberOfSimulations(config, demandSets)
     }
 
-    val range: GenIterable[Int] = getIteratorForSimulations(if (config.getBoolean("execution.parallel")) {
+    val range: IterableOnce[Int] = getIteratorForSimulations(if (config.getBoolean("execution.parallel")) {
       Some(config.getInt("execution.threads"))
     } else {
       None

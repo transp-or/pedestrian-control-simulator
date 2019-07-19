@@ -70,9 +70,9 @@ class KPIEvolutionOverTime(outputFile: String,
   val nXTicks: Int = 5
   val nYTicks: Int = 5
   val xTicks: Range = times2Show.head to times2Show.end by (times2Show.end - times2Show.head) / nXTicks
-  val yTicks: NumericRange[Double] = 0.0 to 1.5 by (1.5 - 0.0) / nYTicks
+  val yTicks: NumericRange[BigDecimal] = BigDecimal(0.0) to 1.5 by (1.5 - 0.0) / nYTicks
   val posXTicks: IndexedSeq[(Int, Int)] = xTicks map (mapHcoord(_)) zip xTicks
-  val posYTicks: IndexedSeq[(Int, Double)] = yTicks map (mapVcoord(_)) zip yTicks
+  val posYTicks: IndexedSeq[(Int, Double)] = yTicks.map(v => mapVcoord(v.toDouble)) zip yTicks.map(_.toDouble)
 
   posYTicks.foreach(tick => {
     gCanvas.drawLine(40, verticalTransformation(borderSpacing + tick._1), 45, verticalTransformation(borderSpacing + tick._1))

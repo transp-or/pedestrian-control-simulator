@@ -12,9 +12,9 @@ import hubmodel.supply.{NodeID_New, NodeParent, StopID_New, TrainID_New}
 import hubmodel.tools.Time
 import hubmodel.tools.cells.Rectangle
 
-import scala.collection.GenIterable
-import scala.collection.parallel.ForkJoinTaskSupport
 import scala.reflect.ClassTag
+import scala.collection.parallel.CollectionConverters._
+import scala.collection.parallel.ForkJoinTaskSupport
 
 package object DES {
 
@@ -142,14 +142,14 @@ package object DES {
     }
   }
 
-  def getIteratorForSimulations(numberThreads: Option[Int], numberSimulation: Int): GenIterable[Int] = {
+  def getIteratorForSimulations(numberThreads: Option[Int], numberSimulation: Int): IterableOnce[Int] = {
     if (numberThreads.isDefined) {
-      val r = (1 to numberSimulation).par
-      r.tasksupport = new ForkJoinTaskSupport(new scala.concurrent.forkjoin.ForkJoinPool(numberThreads.get))
+      val r = Vector.range(0, numberSimulation).par
+      r.tasksupport = new ForkJoinTaskSupport(new java.util.concurrent.ForkJoinPool(numberThreads.get))
       r
     }
     else {
-      1 to numberSimulation
+      Vector.range(0, numberSimulation)
     }
   }
 

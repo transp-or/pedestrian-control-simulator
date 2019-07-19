@@ -61,9 +61,9 @@ class HeatMap(outputFile: String,
 
   def mapHCoord(x: Double): Int = 0
 
-  def mapHcoordDrawingZone(v: Double): Int = mapHcoordAffine(xMin.doubleValue(), xMax.doubleValue(), border2VAxis, pixelCanvasSize._1 - border2HAxis)(v)
+  def mapHcoordDrawingZone(v: Double): Int = mapHcoordAffine(xMin.doubleValue, xMax.doubleValue, border2VAxis, pixelCanvasSize._1 - border2HAxis)(v)
 
-  def mapVcoordDrawingZone(v: Double): Int = mapHcoordAffine(yMin.doubleValue(), yMax.doubleValue(), border2HAxis, pixelCanvasSize._2 - border2VAxis)(v)
+  def mapVcoordDrawingZone(v: Double): Int = mapHcoordAffine(yMin.doubleValue, yMax.doubleValue, border2HAxis, pixelCanvasSize._2 - border2VAxis)(v)
 
   def mapVCoord(x: Double): Int = 0
 

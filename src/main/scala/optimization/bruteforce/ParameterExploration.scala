@@ -12,7 +12,7 @@ import myscala.math.stats.ComputeStats
 import myscala.output.SeqTuplesExtensions.SeqTuplesWriter
 import trackingdataanalysis.visualization.{HeatMap, PlotOptions}
 
-import scala.collection.GenIterable
+import scala.collection.parallel.CollectionConverters._
 import scala.collection.immutable.NumericRange
 import scala.collection.parallel.ForkJoinTaskSupport
 
@@ -22,9 +22,9 @@ class ParameterExploration(config: Config) extends GridSearch {
 
     val defaultParameters = createSimulation[PedestrianNOMAD](config).getSetupArguments
 
-    val constantRange: NumericRange[Double] = constantBounds._1 to constantBounds._2 by (constantBounds._2 - constantBounds._1) / constantBounds._3
-    val linearRange: NumericRange[Double] = {
-      linearBounds._1 to linearBounds._2 by (linearBounds._2 - linearBounds._1) / linearBounds._3
+    val constantRange: NumericRange[BigDecimal] = BigDecimal(constantBounds._1) to constantBounds._2 by (constantBounds._2 - constantBounds._1) / constantBounds._3
+    val linearRange: NumericRange[BigDecimal] = {
+      BigDecimal(linearBounds._1) to linearBounds._2 by (linearBounds._2 - linearBounds._1) / linearBounds._3
     }
 
     // checks if the output dir exists
@@ -33,11 +33,11 @@ class ParameterExploration(config: Config) extends GridSearch {
       throw new IllegalArgumentException("Output dir for files does not exist ! dir=" + config.getString("output.dir"))
     }
 
-    val range: GenIterable[(Double, Double, Int)] = if (config.getBoolean("execution.parallel")) {
+    val range: IterableOnce[(BigDecimal, BigDecimal, Int)] = if (config.getBoolean("execution.parallel")) {
       val r = (for (i <- constantRange; j <- linearRange; k <- 1 to config.getInt("sim.nb_runs")) yield {
         (i, j, k)
       }).par
-      r.tasksupport = new ForkJoinTaskSupport(new scala.concurrent.forkjoin.ForkJoinPool(config.getInt("execution.threads")))
+      r.tasksupport = new ForkJoinTaskSupport(new java.util.concurrent.ForkJoinPool(config.getInt("execution.threads")))
       r
     }
 
@@ -55,7 +55,7 @@ class ParameterExploration(config: Config) extends GridSearch {
         defaultParameters._11.amws.map(_.clone()),
         if (config.getBoolean("sim.use_flow_gates")) {
           defaultParameters._11.flowGates.map(fg => new FlowGateFunctional(fg.startVertex, fg.endVertex, fg.start, fg.end, fg.monitoredArea, {
-            FunctionalFormGating((x: Density) => Flow(math.max(0.0000001, t._1 + t._2 * x.d)))
+            FunctionalFormGating((x: Density) => Flow(BigDecimal(0.0000001).max(t._1 + t._2 * x.d).toDouble))
           }))
         } else {
           Vector()
@@ -109,8 +109,8 @@ class ParameterExploration(config: Config) extends GridSearch {
 
     val ttResults: Map[(Double, Double), (Int, Double, Double, Double, Double, Double)] = files("tt").map(ProcessTTFile2Parameters).
       flatMap(tup => tup._3.map(t => (tup._1, tup._2, t._1._1, t._1._2, t._2))).
-      groupBy(tup => (tup._1, tup._2)).
-      mapValues(v => v.flatMap(_._5).stats)
+      groupBy(tup => (tup._1, tup._2)).view.
+      mapValues(v => v.flatMap(_._5).stats).toMap
 
     val densityResults: Map[(Double, Double), (Int, Double, Double, Double, Double, Double)] = files("density").map(f => {
       val endParams: Int = f.getName.indexOf("_params_density_")
@@ -148,8 +148,8 @@ class ParameterExploration(config: Config) extends GridSearch {
 
     files("tt").map(ProcessTTFile2Parameters).
       flatMap(tup => tup._3.map(t => (tup._1, tup._2, t._1._1, t._1._2, t._2))).
-      groupBy(tup => (tup._1, tup._2, tup._3, tup._4)).
-      mapValues(v => v.flatMap(_._5).stats)
+      groupBy(tup => (tup._1, tup._2, tup._3, tup._4)).view.
+      mapValues(v => v.flatMap(_._5).stats).toMap
   }
 
   def drawResults(results: Map[(Double, Double), ((Int, Double, Double, Double, Double, Double), (Int, Double, Double, Double, Double, Double))]): Unit = {

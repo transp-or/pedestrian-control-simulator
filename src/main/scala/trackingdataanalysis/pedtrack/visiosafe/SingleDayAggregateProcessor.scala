@@ -3,8 +3,8 @@ package trackingdataanalysis.pedtrack.visiosafe
 
 import java.io.{BufferedWriter, File, FileWriter}
 
-import breeze.linalg.{Axis, DenseMatrix, DenseVector}
-import breeze.stats.regression.{LeastSquaresRegressionResult, leastSquares}
+//import breeze.linalg.{Axis, DenseMatrix, DenseVector}
+//import breeze.stats.regression.{LeastSquaresRegressionResult, leastSquares}
 import hubmodel.Position
 import hubmodel.tools.cells.Rectangle
 import kn.uni.voronoitreemap.datastructure.OpenList
@@ -18,7 +18,7 @@ import trackingdataanalysis.pedtrack.Pedestrian
 import trackingdataanalysis.pedtrack.io.{CONTROLLED, UNCONTROLLED}
 import trackingdataanalysis.visualization.{PlotOptions, ScatterPlot3D}
 
-import scala.collection.JavaConversions._
+import scala.jdk.CollectionConverters._
 
 /** VisioSafe processor for one single file
   *
@@ -72,7 +72,7 @@ class SingleDayAggregateProcessor(fileName: String,
     * @param voronoiBoundary
     * @return
     */
-  private def computeVoronoiDiagrams(z: Rectangle, times: Seq[Double], voronoiBoundary: PolygonSimple): Vector[(Double, Seq[(Position, PolygonSimple, Site)])] = {
+  private def computeVoronoiDiagrams(z: Rectangle, times: scala.collection.immutable.Seq[Double], voronoiBoundary: PolygonSimple): scala.collection.immutable.Vector[(Double, scala.collection.immutable.Seq[(Position, PolygonSimple, Site)])] = {
 
     //val pedSimplified: Iterable[(Int, Vector[Double], Vector[Double], Vector[Double])] = ped.map(p => (p._2.ID, p._2.h_t.toVector, p._2.h_x.toVector, p._2.h_y.toVector))
     val timeMap: Vector[(Double, Iterable[Int])] =
@@ -115,20 +115,20 @@ class SingleDayAggregateProcessor(fileName: String,
         if (stupidList.size > 0) {
           voronoi.setSites(stupidList)
           voronoi.setClipPoly(voronoiBoundary)
-          (p._1, voronoi.computeDiagram().filter(s => z.isInside(new Position(s.x, s.y))))
+          (p._1, voronoi.computeDiagram().asScala.toVector.filter(s => z.isInside(new Position(s.x, s.y))))
         }
         else {
-          (p._1, Seq())
+          (p._1, scala.collection.immutable.Vector())
         }
       }
       else {
-        (p._1, Seq())
+        (p._1, scala.collection.immutable.Vector())
       }
     }).map(t => (t._1, t._2.map(s => (new Position(s.x, s.y), s.getPolygon, s))))
 
     // as time stamps where no pedestrian is inside the zone are removed, these empty cells must be added again.
     (res ++ (for (t <- times if !res.exists(_._1 == t)) yield {
-      (t, Seq())
+      (t, scala.collection.immutable.Vector())
     }).toVector).sortBy(_._1)
   }
 
@@ -513,7 +513,7 @@ class SingleDayAggregateProcessor(fileName: String,
     helper2(timeMap, Vector())*/
   }
 
-  def linearRegressionOutflowFraction(outflow: DenseVector[Double], totalFlow: DenseMatrix[Double]): Double = {
+  /*def linearRegressionOutflowFraction(outflow: DenseVector[Double], totalFlow: DenseMatrix[Double]): Double = {
     val result: LeastSquaresRegressionResult = leastSquares(totalFlow, outflow)
     println(totalFlow, outflow)
     println("Computed linear regression of outflow VS generalized flow:")
@@ -569,7 +569,7 @@ class SingleDayAggregateProcessor(fileName: String,
     println(" * KP=" + mu / ksi + ", KI=" + (1.0 - mu) / ksi)
     new ScatterPlot3D("densityk-vs-inflowk-vs-densitykp1.png", density_k.toScalaVector(), inflow_k.toScalaVector(), density_kp1.toScalaVector(), "delta density_k", "delta inflow_k", opts = PlotOptions(xTickInterval = 0.1, yTickInterval = 0.05))
     (outflowFraction, mu / ksi, (1.0 - mu) / ksi)
-  }
+  }*/
 
   def writePedestriansToJSON(fileName: String): Unit = {
     val file = new File(fileName)
@@ -590,7 +590,7 @@ class SingleDayAggregateProcessor(fileName: String,
     bw.close()
   }
 
-  def countEntriesExitsPerZone(ped: Iterable[Pedestrian])(zones: Iterable[(Int, Int)]): Map[(Int, Int), Int] = {
+  def countEntriesExitsPerZone(ped: Seq[Pedestrian])(zones: Seq[(Int, Int)]): Map[(Int, Int), Int] = {
 
     val oCount: collection.mutable.Map[(Int, Int), Int] = collection.mutable.Map().withDefaultValue(0)
     val dCount: collection.mutable.Map[(Int, Int), Int] = collection.mutable.Map().withDefaultValue(0)
@@ -600,7 +600,7 @@ class SingleDayAggregateProcessor(fileName: String,
     oCount.toMap.filter(kv => zones.contains(kv._1))
   }
 
-  def countEntriesExitsPerZone(zones: Iterable[(Int, Int)]): Map[(Int, Int), Int] = countEntriesExitsPerZone(this.ped.values)(zones)
+  def countEntriesExitsPerZone(zones: Seq[(Int, Int)]): Map[(Int, Int), Int] = countEntriesExitsPerZone(this.ped.values.toSeq)(zones)
 
   /** Based on the functions passed as argument, computes the metrics per time window of all the pedestrians satisfying
     * the predicate "filter".

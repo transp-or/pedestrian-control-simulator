@@ -8,8 +8,9 @@ import myscala.math.stats.{ComputeQuantiles, ComputeStats}
 import myscala.output.SeqTuplesExtensions.SeqTuplesWriter
 import play.api.libs.json.{JsError, JsSuccess, JsValue, Json}
 
-import scala.collection.JavaConversions._
 import scala.io.BufferedSource
+
+import scala.jdk.CollectionConverters._
 
 
 object CompareTravelTimeResultsPIW extends App {
@@ -30,7 +31,7 @@ object CompareTravelTimeResultsPIW extends App {
   def groupsReversed(odPairs: (String, String)): String = odGroups.flatMap(g => g._2.map(t => t -> g._1)).getOrElse(odPairs, "other")
 
   val multipleDemandStream = Files.newDirectoryStream(Paths.get(config.getString("sim.TF_demand_sets")), "*.json")
-  val subFolders: Vector[String] = multipleDemandStream.toVector.map(_.getFileName.toString.split("\\.").head)
+  val subFolders: Vector[String] = multipleDemandStream.asScala.toVector.map(_.getFileName.toString.split("\\.").head)
   multipleDemandStream.close()
 
   val resultsRef: Vector[ResultsContainerReadWithDemandSet] = readResults(config.getString("files_1.dir"), config.getString("files_1.output_prefix"), subFolders).toVector

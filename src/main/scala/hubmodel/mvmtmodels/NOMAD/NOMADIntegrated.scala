@@ -13,7 +13,8 @@ import myscala.math.vector.Vector2D
 import nl.tudelft.pedestrians.agents.WalkingBehavior.{pedestrianPhysical, pedestrianRepellOpposing}
 import nl.tudelft.pedestrians.collection.InfluenceAreaReturnPedData
 import nl.tudelft.pedestrians.utils.GeometryUtils
-//import InfluenceAreaReturnObsData
+
+import scala.jdk.CollectionConverters._
 
 class NOMADIntegrated[T <: PedestrianNOMAD](sim: NOMADGraphSimulator[T]) extends Action {
 
@@ -140,8 +141,6 @@ class NOMADIntegrated[T <: PedestrianNOMAD](sim: NOMADGraphSimulator[T]) extends
   //private val pedestriansToExit = new collection.mutable.ArrayBuffer[PedestrianNOMAD]()
   /**
     * Check if this pedestrian has to be included in the event step array.
-    *
-    * @param pedestrian
     */
   private def insertPedInMoveList(ped: PedestrianNOMAD): Unit = {
 
@@ -464,8 +463,8 @@ class NOMADIntegrated[T <: PedestrianNOMAD](sim: NOMADGraphSimulator[T]) extends
     val kappa = thisPedestrian.kappa
     val k0 = thisPedestrian.k0
     // for each pedestrian distance data
-    import scala.collection.JavaConversions._
-    for (pedDistanceData <- pedsDistanceData) { // check if the pedestrians are touching each other
+
+    for (pedDistanceData <- pedsDistanceData.asScala) { // check if the pedestrians are touching each other
       // (compressing each other)a
       //println("ped interaction")
       if (pedDistanceData.gpq >= 0) { // if they touch then calculate the compressing force in the normal and tangential directions
@@ -498,8 +497,8 @@ class NOMADIntegrated[T <: PedestrianNOMAD](sim: NOMADGraphSimulator[T]) extends
     //double z = position.z;
     val radius = _pedestrian.r
     // for each coordinates
-    import scala.collection.JavaConversions._
-    for (obstacleData <- obstaclesData) {
+
+    for (obstacleData <- obstaclesData.asScala) {
       /*			xobs = REFORM(PEDonOBS[*,pp,*])
            tobs = reform(tPEDonOBS[*,pp,*])
 

@@ -15,7 +15,7 @@ package object TRANSFORM {
 
   implicit class PopulationProcessingTRANSFORM[T <: PedestrianTrait](pop: Iterable[T]) {
 
-    def computeTT4TRANSFORM(quantiles: Seq[Double], startTime: Time, endTime: Time, fileName: String, startDay: String = "1970-01-01", endDay: String = "2100-12-31"): Unit = {
+    def computeTT4TRANSFORM(quantiles: Seq[BigDecimal], startTime: Time, endTime: Time, fileName: String, startDay: String = "1970-01-01", endDay: String = "2100-12-31"): Unit = {
       val res: collection.mutable.Map[(String, String), collection.mutable.ArrayBuffer[Double]] = collection.mutable.Map()
       pop.foreach(p => {
         if (p.entryTime >= startTime || p.exitTime <= endTime) {
@@ -25,7 +25,7 @@ package object TRANSFORM {
       val file = new File(fileName)
       val bw = new BufferedWriter(new FileWriter(file))
       bw.write(Json.prettyPrint(Json.toJson(
-        res.map(kv => ODWithQuantiles(kv._1._1, kv._1._2, startDay + " " + startTime.asReadable, endDay + " " + endTime.asReadable, computeQuantiles(quantiles)(kv._2)))
+        res.map(kv => ODWithQuantiles(kv._1._1, kv._1._2, startDay + " " + startTime.asReadable, endDay + " " + endTime.asReadable, computeQuantiles(quantiles.map(_.toDouble))(kv._2.toVector)))
       )))
       bw.close()
     }
@@ -35,7 +35,7 @@ package object TRANSFORM {
 
     case class ZoneName(hub: VertexID, stop: String, group: Int)
 
-    def computeTT4TRANSFORM(quantiles: Seq[Double], startTime: Time, endTime: Time, fileName: String, stop2Vertex: Stop2Vertex, startDay: String = "1970-01-01", endDay: String = "2100-12-31"): Iterable[(String, String, Iterable[Double])] = {
+    def computeTT4TRANSFORM(quantiles: Seq[BigDecimal], startTime: Time, endTime: Time, fileName: String, stop2Vertex: Stop2Vertex, startDay: String = "1970-01-01", endDay: String = "2100-12-31"): Iterable[(String, String, Iterable[Double])] = {
 
       def stopGrouping(vertexID: VertexID): GroupID = {
         stop2Vertex.grouping4TRANSFORM.indexWhere(groups => groups.contains(vertexID))
@@ -75,7 +75,7 @@ package object TRANSFORM {
       val bw = new BufferedWriter(new FileWriter(file))
       bw.write(Json.prettyPrint(Json.toJson(
         res.map(kv => {
-          ODWithQuantiles(kv._1, kv._2, startDay + " " + startTime.asReadable, endDay + " " + endTime.asReadable, computeQuantiles(quantiles)(kv._3.toSeq))
+          ODWithQuantiles(kv._1, kv._2, startDay + " " + startTime.asReadable, endDay + " " + endTime.asReadable, computeQuantiles(quantiles.map(_.toDouble))(kv._3.toSeq))
         })
       )))
       bw.close()

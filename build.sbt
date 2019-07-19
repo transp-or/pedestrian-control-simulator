@@ -1,7 +1,7 @@
 name := "hub-simulator"
 organization := "ch.epfl.transpor.pedestrians"
 version := "1.0-SNAPSHOT"
-scalaVersion := "2.12.6"
+scalaVersion := "2.13.0"
 fork in run := true
 
 javaOptions in run ++= Seq(
@@ -10,21 +10,19 @@ javaOptions in run ++= Seq(
 
 // Dependencies taken from maven
 libraryDependencies ++= Seq(
-  "com.typesafe.play" %% "play-json" % "2.6.5",
-  "org.scalanlp" %% "breeze" % "0.13",
-  "org.scalanlp" %% "breeze-natives" % "0.13",
+  "com.typesafe.play" %% "play-json" % "2.7.4",
   "org.jgrapht" % "jgrapht-core" % "1.0.1",
-  "com.github.scopt" %% "scopt" % "3.6.0",
+  "com.github.scopt" %% "scopt" % "3.7.1",
   "org.jcodec" % "jcodec-javase" % "0.2.0",
   "com.typesafe" % "config" % "1.3.1",
   "ch.qos.logback" % "logback-classic" % "1.2.3",
-  "com.typesafe.scala-logging" %% "scala-logging" % "3.9.0",
-  "org.scalactic" %% "scalactic" % "3.0.1",
+  "com.typesafe.scala-logging" %% "scala-logging" % "3.9.2",
+  "org.scalactic" %% "scalactic" % "3.0.8",
   "transpor.tools" % "power-voronoi" % "1.0",
-  "com.github.NicholasMolyneaux" %% "scala-custom" % "1.3.1",
+  "com.github.NicholasMolyneaux" %% "scala-custom" % "1.3.3",
   "transpor.tools" % "dxf-parser" % "1.0",
   "nl.tudelft.pedestrians" % "nomad" % "1.0",
-  "org.scala-lang.modules" %% "scala-parser-combinators" % "1.1.1",
+  "org.scala-lang.modules" %% "scala-parser-combinators" % "1.1.2",
   "org.apache.commons" % "commons-lang3" % "3.8",
   "org.apache.commons" % "commons-math3" % "3.6",
   "org.j3d" % "aviatrix3d" % "3.0.0" pomOnly(), // https://mvnrepository.com/artifact/org.j3d/aviatrix3d
@@ -42,6 +40,14 @@ libraryDependencies ++= Seq(
 //resolvers += "Local Maven Repository" at "file://"+Path.userHome.absolutePath+"/.m2/repository"
 libraryDependencies += "transpor.student-projects" % "hub-model-optimization" % "1.0-SNAPSHOT"
 
+libraryDependencies ++= {
+  CrossVersion.partialVersion(scalaVersion.value) match {
+    case Some((2, major)) if major >= 13 =>
+      Seq("org.scala-lang.modules" %% "scala-parallel-collections" % "0.2.0")
+    case _ =>
+      Seq()
+  }
+}
 
 // Extra places to look for libraries  (useful for the scala-custom, avoids waiting for new versions to be copied to maven central
 resolvers ++= Seq(

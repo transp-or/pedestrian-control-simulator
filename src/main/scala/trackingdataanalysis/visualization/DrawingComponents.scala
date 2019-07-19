@@ -79,8 +79,8 @@ abstract class DrawingComponents(val border2HAxis: Int, val border2VAxis: Int, v
 
     // ticks specification
     if (xDataArg.isDefined) {
-      val xTicks: Vector[Double] = filterEveryOtherValue((xDataArg.get._1 to xDataArg.get._2 by xDataArg.get._3).toVector, 7).toVector
-      val posXTicks: IndexedSeq[(Int, Double)] = xTicks map mapHCoord zip xTicks
+      val xTicks: Vector[Double] = filterEveryOtherValue((BigDecimal(xDataArg.get._1) to xDataArg.get._2 by xDataArg.get._3).toVector, 7).toVector.map(_.toDouble)
+      val posXTicks: IndexedSeq[(Int, Double)] = xTicks.map(v => mapHCoord(v)).zip(xTicks)
 
       // draws x ticks
       posXTicks.foreach(tick => {
@@ -90,8 +90,8 @@ abstract class DrawingComponents(val border2HAxis: Int, val border2VAxis: Int, v
     }
 
     if (yDataArg.isDefined) {
-      val yTicks: Vector[Double] = filterEveryOtherValue(yDataArg.get._1 to yDataArg.get._2 by yDataArg.get._3, 7).toVector
-      val posYTicks: IndexedSeq[(Int, Double)] = yTicks map mapVCoord zip yTicks
+      val yTicks: Vector[Double] = filterEveryOtherValue(BigDecimal(yDataArg.get._1) to yDataArg.get._2 by yDataArg.get._3, 7).toVector.map(_.toDouble)
+      val posYTicks: IndexedSeq[(Int, Double)] = yTicks.map(mapVCoord).zip(yTicks)
 
       // draws y ticks
       posYTicks.foreach(tick => {
@@ -255,7 +255,7 @@ abstract class DrawingComponents(val border2HAxis: Int, val border2VAxis: Int, v
       graphics.drawString(label, pixelCanvasSize._1 - 15, 2 * border2VAxis - (0.5 * cellHeight).toInt + 12 * cellHeight)
     }
 
-    (valueMax to valueMin by -(valueMax - valueMin) / 10.0).zipWithIndex.map(v => (v._2, v._1, colorMapFunction(v._1))).foreach(c => {
+    (BigDecimal(valueMax) to valueMin by -(valueMax - valueMin) / 10.0).zipWithIndex.map(v => (v._2, v._1, colorMapFunction(v._1.toDouble))).foreach(c => {
       graphics.setColor(Color.BLACK)
       graphics.drawString(f"${c._2}%1.2f", pixelCanvasSize._1 + cellWidth, 2 * border2VAxis + c._1 * cellHeight)
       graphics.setColor(c._3)

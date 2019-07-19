@@ -159,7 +159,7 @@ package trackingdataanalysis {
       * @param quantilesFun Quantile function
       * @return For each OD pair, the quantiles of the data
       */
-    def getQuantiles(data: Map[(Int, Int), Vector[Double]], quantilesFun: Seq[Double] => Quantiles[Double]): Map[(Int, Int), Quantiles[Double]] = data.mapValues(quantilesFun)
+    def getQuantiles(data: Map[(Int, Int), Vector[Double]], quantilesFun: Seq[Double] => Quantiles[Double]): Map[(Int, Int), Quantiles[Double]] = data.view.mapValues(quantilesFun).toMap
 
 
     /** Methods for filtering vectors of pedestrians
@@ -407,7 +407,7 @@ package trackingdataanalysis {
         * @return filtered data as [[MultiDayPedestrianMap]]
         */
       def filterByTime(start: Long = 0, end: Long = 86400): MultiDayPedestrianMap = {
-        x.mapValues(pedMap => pedMap.filter(p => p._2.entryTime > start && p._2.exitTime < end))
+        x.view.mapValues(pedMap => pedMap.filter(p => p._2.entryTime > start && p._2.exitTime < end)).toMap
       }
 
       /** Returns pedestrians which entered and exited at specific nodes
@@ -415,7 +415,7 @@ package trackingdataanalysis {
         * @return filtered data as [[MultiDayPedestrianMap]]
         */
       def filterByOD(O: Int, D: Int): Map[DataSpecification, PedestrianMap] = {
-        x.mapValues(pedMap => pedMap.filter(p => p._2.oZone == O && p._2.dZone == D))
+        x.view.mapValues(pedMap => pedMap.filter(p => p._2.oZone == O && p._2.dZone == D)).toMap
       }
 
       /** Returns pedestrians which entered or exited in given lists of nodes
@@ -423,7 +423,7 @@ package trackingdataanalysis {
         * @return filtered data as [[MultiDayPedestrianMap]]
         */
       def filterByOD(O: List[Int], D: List[Int]): Map[DataSpecification, PedestrianMap] = {
-        x.mapValues(pedMap => pedMap.filter(p => O.contains(p._2.oZone) && D.contains(p._2.dZone)))
+        x.view.mapValues(pedMap => pedMap.filter(p => O.contains(p._2.oZone) && D.contains(p._2.dZone))).toMap
       }
 
       /** Returns the pedestrians which entered in O and exit in a list of exit nodes
@@ -431,7 +431,7 @@ package trackingdataanalysis {
         * @return filtered data as [[MultiDayPedestrianMap]]
         */
       def filterByOD(O: Int, D: List[Int]): Map[DataSpecification, PedestrianMap] = {
-        x.mapValues(pedMap => pedMap.filter(p => p._2.oZone == O && D.contains(p._2.dZone)))
+        x.view.mapValues(pedMap => pedMap.filter(p => p._2.oZone == O && D.contains(p._2.dZone))).toMap
       }
 
       /** Returns the pedestrians which entered via the list O and exited at D
@@ -439,7 +439,7 @@ package trackingdataanalysis {
         * @return filtered data as [[MultiDayPedestrianMap]]
         */
       def filterByOD(O: List[Int], D: Int): Map[DataSpecification, PedestrianMap] = {
-        x.mapValues(pedMap => pedMap.filter(p => O.contains(p._2.oZone) && p._2.dZone == D))
+        x.view.mapValues(pedMap => pedMap.filter(p => O.contains(p._2.oZone) && p._2.dZone == D)).toMap
       }
 
       /** Returns the pedestrians entering via a single node
@@ -447,7 +447,7 @@ package trackingdataanalysis {
         * @return filtered data as [[MultiDayPedestrianMap]]
         */
       def filterByOrigin(O: Int): Map[DataSpecification, PedestrianMap] = {
-        x.mapValues(pedMap => pedMap.filter(p => p._2.oZone == O))
+        x.view.mapValues(pedMap => pedMap.filter(p => p._2.oZone == O)).toMap
       }
 
       /** Returns the pedetrians who entered in a list of node
@@ -455,7 +455,7 @@ package trackingdataanalysis {
         * @return filtered data as [[MultiDayPedestrianMap]]
         */
       def filterByOrigin(O: List[Int]): Map[DataSpecification, PedestrianMap] = {
-        x.mapValues(pedMap => pedMap.filter(p => O.contains(p._2.oZone)))
+        x.view.mapValues(pedMap => pedMap.filter(p => O.contains(p._2.oZone))).toMap
       }
 
       /** Returns the pedestrians who exited via a list of nodes
@@ -463,7 +463,7 @@ package trackingdataanalysis {
         * @return filtered data as [[MultiDayPedestrianMap]]
         */
       def filterByDestination(D: Int): Map[DataSpecification, PedestrianMap] = {
-        x.mapValues(pedMap => pedMap.filter(p => p._2.dZone == D))
+        x.view.mapValues(pedMap => pedMap.filter(p => p._2.dZone == D)).toMap
       }
 
       /** Returns the pedestrians who exited via a list of nodes
@@ -471,7 +471,7 @@ package trackingdataanalysis {
         * @return filtered data as [[MultiDayPedestrianMap]]
         */
       def filterByDestination(D: List[Int]): Map[DataSpecification, PedestrianMap] = {
-        x.mapValues(pedMap => pedMap.filter(p => D.contains(p._2.dZone)))
+        x.view.mapValues(pedMap => pedMap.filter(p => D.contains(p._2.dZone))).toMap
       }
 
       /** Returns pedestrians who accomplished specfiic OD pairs
@@ -479,7 +479,7 @@ package trackingdataanalysis {
         * @return filtered data as [[MultiDayPedestrianMap]]
         */
       def filterByODPairs(OD: List[(Int, Int)]): Map[DataSpecification, PedestrianMap] = {
-        x.mapValues(pedMap => pedMap.filter(p => OD.contains((p._2.oZone, p._2.dZone))))
+        x.view.mapValues(pedMap => pedMap.filter(p => OD.contains((p._2.oZone, p._2.dZone)))).toMap
       }
 
       def mapQuantityToVector(data: String): Vector[Double] = {
@@ -498,9 +498,9 @@ package trackingdataanalysis {
         */
       def mapToVectorByDay(data: String): Map[DataSpecification, Vector[Double]] = {
         data match {
-          case "travelDistance" => x.mapValues(pedMap => pedMap.map(p => p._2.travelDistance).toVector)
-          case "travelTime" => x.mapValues(pedMap => pedMap.map(p => p._2.travelTime).toVector)
-          case "meanVelocity" => x.mapValues(pedMap => pedMap.map(p => p._2.meanVelocity).toVector)
+          case "travelDistance" => x.view.mapValues(pedMap => pedMap.map(p => p._2.travelDistance).toVector).toMap
+          case "travelTime" => x.view.mapValues(pedMap => pedMap.map(p => p._2.travelTime).toVector).toMap
+          case "meanVelocity" => x.view.mapValues(pedMap => pedMap.map(p => p._2.meanVelocity).toVector).toMap
           case other => throw new IllegalArgumentException("choice is not valid")
         }
       }

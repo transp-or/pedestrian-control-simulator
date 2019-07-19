@@ -155,10 +155,10 @@ object debugMain extends App {
   //  def insideSpace: Position =>  Boolean = i => true
 
 
-  val xMin = infraSF.continuousSpace.walls.map(w => Math.min(w.startPoint.X, w.endPoint.X)).min
-  val xMax = infraSF.continuousSpace.walls.map(w => Math.max(w.startPoint.X, w.endPoint.X)).max
-  val yMin = infraSF.continuousSpace.walls.map(w => Math.min(w.startPoint.Y, w.endPoint.Y)).min
-  val yMax = infraSF.continuousSpace.walls.map(w => Math.max(w.startPoint.Y, w.endPoint.Y)).max
+  val xMin: BigDecimal = infraSF.continuousSpace.walls.map(w => Math.min(w.startPoint.X, w.endPoint.X)).min
+  val xMax: BigDecimal = infraSF.continuousSpace.walls.map(w => Math.max(w.startPoint.X, w.endPoint.X)).max
+  val yMin: BigDecimal = infraSF.continuousSpace.walls.map(w => Math.min(w.startPoint.Y, w.endPoint.Y)).min
+  val yMax: BigDecimal = infraSF.continuousSpace.walls.map(w => Math.max(w.startPoint.Y, w.endPoint.Y)).max
   val radius: Double = 1.5
 
 
@@ -184,19 +184,19 @@ object debugMain extends App {
     x <- xMin to (xMax + radius) by 2 * radius * scala.math.cos(30.0 * math.Pi / 180.0);
     y <- yMin to (yMax + radius) by 3 * radius)
     yield {
-      new HexagonPotentialField(Vector2D(x, y), radius)
+      new HexagonPotentialField(Vector2D(x.toDouble, y.toDouble), radius)
     }).filter(h => h.corners.exists(insideSpace)) ++ (for (
     x <- (xMin + radius * scala.math.cos(30.0 * math.Pi / 180.0)) to (xMax + radius) by 2 * radius * scala.math.cos(30.0 * math.Pi / 180.0);
     y <- yMin + 1.5 * radius to (yMax + radius) by 3 * radius)
     yield {
-      new HexagonPotentialField(Vector2D(x, y), radius)
+      new HexagonPotentialField(Vector2D(x.toDouble, y.toDouble), radius)
     }).filter(h => h.corners.exists(insideSpace))
 
 
   val connections2: Map[HexagonPotentialField, List[HexagonPotentialField]] = hexagons.map(h => h -> hexagons.filter(hin => (h.center - hin.center).norm < 1.01 * 2 * radius * scala.math.cos(30.0 * math.Pi / 180.0)).filterNot(h == _).toList).toMap
 
 
-  val doorwayPoints = (9.0 to 11.0 by 0.25).map(y => new Position(0.0, y))
+  val doorwayPoints = (BigDecimal(9.0) to 11.0 by 0.25).map(y => new Position(0.0, y.toDouble))
 
   val finalCells: IndexedSeq[HexagonPotentialField] = hexagons.filter(h => doorwayPoints.exists(p => h.isInside(p)))
 

@@ -22,7 +22,7 @@ class Histogram(outputFile: String,
   val xmax: Double = if (opts.xmax.isDefined) opts.xmax.get else x.max
 
   // process data
-  val intervals: NumericRange[Double] = xmin.to(xmax).by(binSize)
+  val intervals: NumericRange[BigDecimal] = BigDecimal(xmin).to(xmax).by(binSize)
 
   val binnedData: Vector[(Int, Double)] = computeHistogramData(x, binSize, opts.xmin, opts.xmax)
 
@@ -54,7 +54,7 @@ class Histogram(outputFile: String,
   gCanvas.fillRect(0, 0, canvas.getWidth(), canvas.getHeight())
 
   drawAxis(gCanvas, None, Some((if (opts.ymin.isDefined) opts.ymin.get else 0.0, if (opts.ymax.isDefined) opts.ymax.get else 1.2 * binnedData.map(_._2).max, 0.01, "frequency"))) // 1.2*binnedData.map(_._2).max,1.2*binnedData.map(_._2).max/10.0
-  drawHistogram(gCanvas, binnedData, intervals.toVector, xLabel)
+  drawHistogram(gCanvas, binnedData, intervals.toVector.map(_.toDouble), xLabel)
   drawTitle(gCanvas, title)
 
   // Writes image to file

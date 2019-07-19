@@ -127,7 +127,7 @@ class InfraODModel(infraRaw: InfraODParser, val nameMappings: NameConversions) e
   val nodesWithCapacity: Vector[NodeIDOld] = nodeCapacity.keys.toVector
   val isCapacitated: NodeIDOld => Boolean = node => this.nodesWithCapacity.contains(node)
   val node2Platform: Map[NodeIDOld, TrackIDOld] = infraRaw.nodeToPlatformInput.map(x => x.node -> nameMappings.string2IntMap(x.plat)).toMap
-  val platform2Node: Map[TrackIDOld, Iterable[NodeIDOld]] = node2Platform.groupBy(_._2).mapValues(_.keys)
+  val platform2Node: Map[TrackIDOld, Iterable[NodeIDOld]] = node2Platform.groupBy(_._2).view.mapValues(_.keys).toMap
   val track2platform: Map[Int, Int] = infraRaw.platform2Track.flatMap(p => p.tracks.map(t => t -> nameMappings.string2IntMap(p.platform))).toMap
 
   def isOnSamePlatform(trackA: Int, trackB: Int): Boolean = track2platform(trackA) == track2platform(trackB)

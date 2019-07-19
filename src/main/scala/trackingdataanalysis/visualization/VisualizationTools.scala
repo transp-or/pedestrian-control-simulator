@@ -6,7 +6,6 @@ import java.awt.geom.Ellipse2D
 import hubmodel.Position
 
 import scala.annotation.tailrec
-import scala.collection.IterableLike
 import scala.collection.generic.CanBuildFrom
 import scala.math.BigDecimal.RoundingMode
 
@@ -60,15 +59,15 @@ trait VisualizationTools {
   def mapHcoordAffine(trueMin: Double, trueMax: Double, pixelMin: Int, pixelMax: Int)(x: Double): Int = pixelMin + math.round((x - trueMin) / (trueMax - trueMin) * (pixelMax - pixelMin)).toInt
 
 
-  def mapHcoordLinearBD(trueMin: BigDecimal, trueMax: BigDecimal, pixelWidth: Int)(x: BigDecimal): Int = ((x - trueMin) / (trueMax - trueMin) * pixelWidth).setScale(0, RoundingMode.HALF_UP).intValue() //new MathContext(4, RoundingMode.HALF_UP))
+  def mapHcoordLinearBD(trueMin: BigDecimal, trueMax: BigDecimal, pixelWidth: Int)(x: BigDecimal): Int = ((x - trueMin) / (trueMax - trueMin) * pixelWidth).setScale(0, RoundingMode.HALF_UP).intValue //new MathContext(4, RoundingMode.HALF_UP))
 
   /** Mapping function for vertical (height) coordinates
     *
 
     */
-  def mapVcoordLinearBD(trueMin: BigDecimal, trueMax: BigDecimal, pixelHeight: Int)(y: BigDecimal): Int = ((y - trueMin) / (trueMax - trueMin) * pixelHeight).setScale(0, RoundingMode.HALF_UP).intValue()
+  def mapVcoordLinearBD(trueMin: BigDecimal, trueMax: BigDecimal, pixelHeight: Int)(y: BigDecimal): Int = ((y - trueMin) / (trueMax - trueMin) * pixelHeight).setScale(0, RoundingMode.HALF_UP).intValue
 
-  def mapHcoordAffineBD(trueMin: BigDecimal, trueMax: BigDecimal, pixelMin: Int, pixelMax: Int)(x: BigDecimal): Int = pixelMin + ((x - trueMin) / (trueMax - trueMin) * (pixelMax - pixelMin)).setScale(0, RoundingMode.HALF_UP).intValue()
+  def mapHcoordAffineBD(trueMin: BigDecimal, trueMax: BigDecimal, pixelMin: Int, pixelMax: Int)(x: BigDecimal): Int = pixelMin + ((x - trueMin) / (trueMax - trueMin) * (pixelMax - pixelMin)).setScale(0, RoundingMode.HALF_UP).intValue
 
 
   //def mapVcoordAffine(wTrue: Double, lowerBound: Double, wPixels: Int)(wPos: Double): Int = floor((wPos - lowerBound) / (wTrue - lowerBound) * wPixels).toInt
@@ -101,9 +100,11 @@ trait VisualizationTools {
    }*/
 
 
-  def trimNonWordCharacters[T <: Iterable[String]](items: T with IterableLike[String, T])(implicit cbf: CanBuildFrom[T, String, T]): T =
+
+
+  /*def trimNonWordCharacters[T <: Iterable[String]](items: T)(implicit cbf: scala.collection.BuildFrom[T, String, T]): T =
     items map {
       _.replaceAll("\\W", "")
-    }
+    }*/
 
 }

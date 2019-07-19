@@ -1,11 +1,11 @@
 package trackingdataanalysis.pedtrack.visiosafe
 
-import breeze.linalg.{DenseMatrix, DenseVector}
-import breeze.stats.regression.{LeastSquaresRegressionResult, leastSquares}
+//import breeze.linalg.{DenseMatrix, DenseVector}
+//import breeze.stats.regression.{LeastSquaresRegressionResult, leastSquares}
 
 class CalibratePIController {
 
-  def estimateOutflowFraction(outflow: DenseVector[Double], totalFlow: DenseMatrix[Double]): Double = {
+  /*def estimateOutflowFraction(outflow: DenseVector[Double], totalFlow: DenseMatrix[Double]): Double = {
     val result: LeastSquaresRegressionResult = leastSquares(totalFlow, outflow)
     //assert(result.coefficients.activeSize == 1.0)
     result.coefficients(0)
@@ -28,5 +28,5 @@ class CalibratePIController {
     println("mu=" + mu + ", ksi=" + ksi)
     println("Kp=" + mu / ksi + ", Ki=" + (1.0 - mu) / ksi)
   }
-
+*/
 }
