@@ -4,7 +4,7 @@ import java.io.{BufferedWriter, File, FileWriter}
 
 import myscala.math.stats.ComputeStats
 import myscala.output.SeqTuplesExtensions.SeqTuplesWriter
-import trackingdataanalysis.pedtrack.{DataSpecification, Pedestrian}
+import trackingdataanalysis.pedtrack.{DataSpecification, Pedestrian, TrajectoryProcessing, ZoneProcessing}
 
 
 /** Processor for multiple days of VisioSafe processing
@@ -12,7 +12,7 @@ import trackingdataanalysis.pedtrack.{DataSpecification, Pedestrian}
   * @param files    List of files to process
   * @param zoneFile location of the file specifying the zones
   */
-class MultiDayAggregateProcessor(files: Vector[String], zoneFile: String, tolerance: Double) extends DataProcessor(zoneFile, tolerance) {
+class MultiDayAggregateProcessor(files: Vector[String], zoneFile: String, tolerance: Double) extends ZoneProcessing(zoneFile, tolerance) with TrajectoryProcessing {
 
   //private val bufferedSource: scala.io.BufferedSource = io.Source.fromFile(files.head)
 

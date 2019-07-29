@@ -7,8 +7,21 @@ import myscala.math.vector.Vector2D
 
 class Rectangle(val name: String, C1: Position, C2: Position, C3: Position, C4: Position, val isOD: Boolean, genRate: Option[Double]) extends Vertex {
 
+  /** Constructor with the name as an argument. The name is replaced with the ID
+    *
+    * @param C1 first corner
+    * @param C2 second corner
+    * @param C3 third corner
+    * @param C4 fourth corner
+    * @param isOD origin or destination ?
+    * @param genRate maximal peddestrian generation rate in this cell
+    */
+  def this(C1: Position, C2: Position, C3: Position, C4: Position, isOD: Boolean, genRate: Option[Double] = None) {
+    this("", C1, C2, C3, C4, isOD, genRate)
+  }
+
   @deprecated
-  def this(data: Array[Double]) {
+def this(data: Array[Double]) {
     this(data(0).toString, new Position(data(2), data(3)), new Position(data(4), data(5)), new Position(data(6), data(7)), new Position(data(8), data(9)), false, None)
   }
 
@@ -40,10 +53,16 @@ class Rectangle(val name: String, C1: Position, C2: Position, C3: Position, C4: 
   var center: Position = A + (B - A) * 0.5 + (D - A) * 0.5
 
   // area of the associated zone
-  var area: Double = (B - A).norm * (D - A).norm
+  val area: Double = (B - A).norm * (D - A).norm
 
   // collection of corners
   val corners: Vector[Position] = Vector(A, B, C, D)
+
+  // width
+  val width: Double = (this.B-this.A).norm
+
+  // height
+  val height: Double = (this.C-this.B).norm
 
   // Rate in pedestrians/second at which to generate pedestrians inside this cell.
   val generationRate: Double = if (genRate.isDefined) {
@@ -54,10 +73,10 @@ class Rectangle(val name: String, C1: Position, C2: Position, C3: Position, C4: 
 
 
   /** Is the point inside the vertex ?
-    *
-    * @param pos [[Position]] to check
-    * @return boolean indicating if the point is inside the vertex.
-    */
+  *
+  * @param pos [[Position]] to check
+  * @return boolean indicating if the point is inside the vertex.
+  */
   def isInside(pos: Position): Boolean = {
     val AB: Position = (B + new Position(-0.1, 0.1)) - (A + new Position(0.1, 0.1))
     val BC: Position = (C + new Position(-0.1, -0.1)) - (B + new Position(-0.1, 0.1))
@@ -68,10 +87,10 @@ class Rectangle(val name: String, C1: Position, C2: Position, C3: Position, C4: 
   }
 
   /**
-    * Generate a point inside the rectangle with uniform probabilities in both directions
-    *
-    * @return
-    */
+  * Generate a point inside the rectangle with uniform probabilities in both directions
+  *
+  * @return
+  */
   def uniformSamplePointInside: Position = {
     Vector2D(ThreadLocalRandom.current.nextDouble(A.X + 0.1, B.X - 0.1), ThreadLocalRandom.current.nextDouble(A.Y + 0.1, D.Y - 0.1))
   }
@@ -81,10 +100,10 @@ class Rectangle(val name: String, C1: Position, C2: Position, C3: Position, C4: 
   }
 
   /** Checks whether another object equals this one by comparing the positions associated to the vertex
-    *
-    * @param other another object to test equality for
-    * @return boolean indicating if the two objects are the same
-    */
+  *
+  * @param other another object to test equality for
+  * @return boolean indicating if the two objects are the same
+  */
   override def equals(other: Any): Boolean =
     other match {
       case that: Rectangle => this.A == that.A && this.B == that.B && this.C == that.C && this.D == that.D
@@ -92,9 +111,9 @@ class Rectangle(val name: String, C1: Position, C2: Position, C3: Position, C4: 
     }
 
   /** Definition of equality.
-    *
-    * @return Int representing the object
-    */
+  *
+  * @return Int representing the object
+  */
   override def hashCode: Int = {
     (this.A, this.B, this.C, this.D).##
   }

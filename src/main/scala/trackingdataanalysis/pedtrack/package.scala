@@ -89,7 +89,7 @@ package trackingdataanalysis {
     def time2Seconds(hmsms: Array[Int]): Double = hmsms(3) * 3600.0 + hmsms(4) * 60.0 + hmsms(5) + hmsms(6) / 1000.0
 
     type PedestrianSeq = Seq[PedestrianTrait]
-    type PedestrianMap = collection.immutable.Map[Int, PedestrianTrait]
+    type PedestrianMap = collection.mutable.Map[Int, Pedestrian]
     type MultiDayPedestrianMap = Map[DataSpecification, PedestrianMap]
 
 

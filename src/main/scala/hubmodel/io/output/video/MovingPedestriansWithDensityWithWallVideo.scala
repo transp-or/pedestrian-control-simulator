@@ -11,7 +11,7 @@ import hubmodel.io.output.{createWhiteBackground, getBounds, mapCoordAffine, ver
 import hubmodel.mgmt.flowgate.BinaryGate
 import hubmodel.mgmt.flowsep.FlowSeparator
 import hubmodel.ped.History.{Coordinate, HistoryContainer, PositionIsolation}
-import hubmodel.ped.PedestrianSim
+import hubmodel.ped.PedestrianTrajectory
 import hubmodel.supply.continuous.Wall
 import hubmodel.tools.Time
 import hubmodel.tools.cells.DensityMeasuredArea
@@ -37,7 +37,7 @@ import org.jcodec.api.awt.AWTSequenceEncoder
 class MovingPedestriansWithDensityWithWallVideo(outputFile: String,
                                                 walls: Iterable[Wall],
                                                 fps: Int,
-                                                pop: Vector[PedestrianSim],
+                                                pop: Vector[PedestrianTrajectory],
                                                 criticalAreaInput: Iterable[DensityMeasuredArea],
                                                 gateCollection: Map[String, BinaryGate],
                                                 var gateHistory: scala.collection.mutable.ArrayBuffer[(Int, List[(String, Boolean)])],
@@ -50,9 +50,15 @@ class MovingPedestriansWithDensityWithWallVideo(outputFile: String,
   println(" * writing " + times2Show.size + " frames at " + fps + " frames per second.")
 
   // boundaries defined by the walls
-  val wallBounds: (Double, Double, Double, Double) = getBounds(walls)
-  val widthMeters: Double = wallBounds._3 - wallBounds._1
-  val heightMeters: Double = wallBounds._4 - wallBounds._2
+  val bounds: (Double, Double, Double, Double) = if (walls.nonEmpty) {
+    getBounds(walls)
+  } else {
+    pop
+      .foldRight((pop.head.getHistoryPosition.head._2.pos.X,pop.head.getHistoryPosition.head._2.pos.Y,pop.head.getHistoryPosition.head._2.pos.X,pop.head.getHistoryPosition.head._2.pos.Y))((ped, accOuter) => ped.getHistoryPosition
+        .foldRight((ped.getHistoryPosition.head._2.pos.X,ped.getHistoryPosition.head._2.pos.Y,ped.getHistoryPosition.head._2.pos.X,ped.getHistoryPosition.head._2.pos.Y))((xyt, acc) => (acc._1.min(xyt._2.pos.X), acc._2.min(xyt._2.pos.Y), acc._3.max(xyt._2.pos.X), acc._4.max(xyt._2.pos.Y)) ))
+  }
+  val widthMeters: Double = bounds._3 - bounds._1
+  val heightMeters: Double = bounds._4 - bounds._2
 
   println(" * real world size: width=" + widthMeters + "m, height=" + heightMeters + "m")
 
@@ -223,13 +229,13 @@ class MovingPedestriansWithDensityWithWallVideo(outputFile: String,
     *
     * @return function taking a horizontal position and returning the position in pixels
     */
-  def mapHcoord: Double => Int = mapCoordAffine(wallBounds._1, wallBounds._3, canvasWidth)
+  def mapHcoord: Double => Int = mapCoordAffine(bounds._1, bounds._3, canvasWidth)
 
   /** Vertical mapping of coordinates
     *
     * @return function taking a vertical position and returning the position in pixels
     */
-  def mapVcoord: Double => Int = mapCoordAffine(wallBounds._2, wallBounds._4, canvasHeight)
+  def mapVcoord: Double => Int = mapCoordAffine(bounds._2, bounds._4, canvasHeight)
 
   /** Function which returns an [[Ellipse2D]] to draw at a specific location
     *

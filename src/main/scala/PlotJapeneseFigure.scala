@@ -5,7 +5,7 @@ import hubmodel.tools.cells.{Square, VertexPlotting}
 import myscala.math.vector.Vector2D
 
 object PlotJapeneseFigure extends App {
-
+/*
   class CellSpeedDev(c: Position, s: Double, v: Double, range: Double) extends Square(c, s, false, None) with VertexPlotting {
 
     val scalarToShow: Double = v
@@ -61,5 +61,5 @@ object PlotJapeneseFigure extends App {
 
   new DrawCells(cells, "celltest.png")
   new DrawCellsOverImage(Some(backgroundImage), (0.0, 28.05, 62.9, 47.5), cells, "cellTestWithB.png")
-
+*/
 }

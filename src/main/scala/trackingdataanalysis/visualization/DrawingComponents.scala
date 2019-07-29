@@ -1,7 +1,10 @@
 package trackingdataanalysis.visualization
 
-import java.awt.geom.Ellipse2D
-import java.awt.{Color, Font, Graphics2D}
+import java.awt.geom.{Ellipse2D, Path2D}
+import java.awt.{AlphaComposite, Color, Font, Graphics2D}
+
+import hubmodel.ped.History.CoordinateGroup
+import hubmodel.ped.Pedestrian
 
 import scala.collection.immutable.NumericRange
 
@@ -268,5 +271,25 @@ abstract class DrawingComponents(val border2HAxis: Int, val border2VAxis: Int, v
     val minRange: Double = 0.0
     val maxRange: Double = maxData - minData
     new Color(math.max(0, math.min(230, (230 * x / (maxRange - minRange)).toInt)), math.max(0, math.min(230, (230 * x / (maxRange - minRange)).toInt)), math.max(0, math.min(230, (230 * x / (maxRange - minRange)).toInt)))
+  }
+
+
+  def drawTrajectories(g: Graphics2D, data: Map[Int, Pedestrian], coloring: Int => Color, color: Color = Color.BLACK, alpha: Double = 0.5): Unit = {
+
+
+    g.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, alpha.toFloat))
+
+    data.foreach(ped => {
+      val path: Path2D = new Path2D.Double
+      path.moveTo(mapHcoordDrawingZone(ped._2.getHistoryPosition.head._2.pos.X), mapVcoordDrawingZone(ped._2.getHistoryPosition.head._2.pos.Y))
+      ped._2.getHistoryPosition.tail.foreach(pos => {
+        pos._2 match {
+          case group: CoordinateGroup => {g.setColor(coloring(group.group))}
+          case _ => {g.setColor(Color.BLACK)}
+        }
+        path.lineTo(mapHcoordDrawingZone(pos._2.pos.X), mapVcoordDrawingZone(pos._2.pos.Y))
+      })
+      g.draw(path)
+    })
   }
 }

@@ -3,6 +3,8 @@ package trackingdataanalysis.pedtrack.visiosafe
 
 import java.io.{BufferedWriter, File, FileWriter}
 
+import trackingdataanalysis.pedtrack.{TrajectoryProcessing, ZoneProcessing}
+
 //import breeze.linalg.{Axis, DenseMatrix, DenseVector}
 //import breeze.stats.regression.{LeastSquaresRegressionResult, leastSquares}
 import hubmodel.Position
@@ -27,7 +29,7 @@ import scala.jdk.CollectionConverters._
   */
 class SingleDayAggregateProcessor(fileName: String,
                                   zoneFile: String,
-                                  tolerance: Double) extends DataProcessor(zoneFile, tolerance) {
+                                  tolerance: Double) extends ZoneProcessing(zoneFile, tolerance) with TrajectoryProcessing {
 
 
   private val strings: Iterator[String] = io.Source.fromFile(fileName).getLines()

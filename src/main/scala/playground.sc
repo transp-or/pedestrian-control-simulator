@@ -1,6 +1,3 @@
-val l = List(1, 2, 3)
-l.last
+1.0 - math.exp(-0.354 * 1.0 * ((1.0/0.01) - 1.0/5.4))
 
-val l2 = List()
-
-l2.last
+math.exp(1.0/0.0)

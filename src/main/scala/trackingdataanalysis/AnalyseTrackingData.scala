@@ -10,8 +10,8 @@ import kn.uni.voronoitreemap.j2d.PolygonSimple
 import myscala.math.stats.ComputeStats
 import myscala.output.SeqTuplesExtensions.SeqTuplesWriter
 import trackingdataanalysis.pedtrack.io.{CONTROLLED, MonitoredAreaReader, UNCONTROLLED}
-import trackingdataanalysis.pedtrack.visiosafe.{DataProcessor, MultiDayAggregateProcessor, SingleDayAggregateProcessor}
-import trackingdataanalysis.pedtrack.{Pedestrian, norm}
+import trackingdataanalysis.pedtrack.visiosafe.{MultiDayAggregateProcessor, SingleDayAggregateProcessor}
+import trackingdataanalysis.pedtrack.{ZoneProcessing, Pedestrian, norm}
 import trackingdataanalysis.visualization.{Histogram, PlotOptions, ScatterPlot}
 
 import scala.collection.JavaConverters._
@@ -91,7 +91,7 @@ object AnalyseTrackingData extends App {
   // ******************************************************************************************
   //                                  Process data
   // ******************************************************************************************
-  val processedData: DataProcessor = if (files.size == 1) {
+  val processedData: ZoneProcessing = if (files.size == 1) {
     new SingleDayAggregateProcessor(
       files.head,
       entryExitZones,

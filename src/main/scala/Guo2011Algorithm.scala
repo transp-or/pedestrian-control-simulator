@@ -1,7 +1,10 @@
 import hubmodel.Position
 import hubmodel.io.output.image.DrawCellsAndWalls
+import hubmodel.route.Flurin2014.PotentialSquareCell
 import hubmodel.route.Guo2011.HexagonPotentialField
 import hubmodel.supply.continuous.ReadContinuousSpace
+import hubmodel.supply.potential.PotentialCell
+import hubmodel.tools.cells.{Square, VertexPlotting}
 import myscala.math.vector.Vector2D
 import myscala.timeBlock
 
@@ -19,7 +22,7 @@ import myscala.timeBlock
   travelTimeQuantilesWithTime.writeToJSON(nameMappings, "test.json")
 */
 
-object debugMain extends App {
+object Guo2011Algorithm extends App {
 
   /*case class MyCell(center: Position, edgeLength: Double){ //}, conn: List[String]) {
     val ID: String = generateUUID
@@ -180,6 +183,57 @@ object debugMain extends App {
     }*/
 
 
+  def paveWalkableSpace(side: BigDecimal): Iterable[PotentialSquareCell] = {
+
+    // creates cells spanning the entire walkable space
+    val majorCells: Iterable[PotentialSquareCell] = (for (
+      x <- xMin to (xMax + side) by side;
+      y <- yMin to (yMax + side) by side)
+      yield {
+        new PotentialSquareCell(new Position(x.toDouble,y.toDouble), side.toDouble)
+      }).filter(c => c.corners.exists(insideSpace))
+
+    // splits the cells into two groups: entirely inside walkable space or on the border.
+    val (in, border) = majorCells.partition(c => c.corners.forall(insideSpace))
+
+    val cells = in ++ border.map(c => {
+      val intervals: Int = 100
+
+      val effectiveArea: Double = (for (
+        x <- BigDecimal(c.corners.head.X) to (c.corners.head.X + c.width) by c.width / intervals;
+        y <- BigDecimal(c.corners.head.Y) to (c.corners.head.Y + c.height) by c.height / intervals)
+        yield {
+          new Square(new Position(x.toDouble,y.toDouble), c.width/intervals)
+        }).filter(c => c.corners.exists(insideSpace)).map(c => c.area).sum
+        new PotentialSquareCell(c.center, side.toDouble, effectiveArea)
+    })
+
+    val innerWalls = infraSF.continuousSpace.walls.filter(_.wallType == hubmodel.supply.continuous.INNERSHELL)
+
+    innerWalls.map(w => w.)
+
+    val (complete, separated) = cells.partition(c => )
+
+
+  }
+
+  val squareCells = paveWalkableSpace(2.0)
+
+  def paveWalkableSpaceHexagons: Seq[HexagonPotentialField] = {
+    (for (
+      x <- xMin to (xMax + radius) by 2 * radius * scala.math.cos(30.0 * math.Pi / 180.0);
+      y <- yMin to (yMax + radius) by 3 * radius)
+      yield {
+        new HexagonPotentialField(Vector2D(x.toDouble, y.toDouble), radius)
+      }).filter(h => h.corners.exists(insideSpace)) ++ (for (
+      x <- (xMin + radius * scala.math.cos(30.0 * math.Pi / 180.0)) to (xMax + radius) by 2 * radius * scala.math.cos(30.0 * math.Pi / 180.0);
+      y <- yMin + 1.5 * radius to (yMax + radius) by 3 * radius)
+      yield {
+        new HexagonPotentialField(Vector2D(x.toDouble, y.toDouble), radius)
+      }).filter(h => h.corners.exists(insideSpace))
+
+  }
+/*
   val hexagons: IndexedSeq[HexagonPotentialField] = (for (
     x <- xMin to (xMax + radius) by 2 * radius * scala.math.cos(30.0 * math.Pi / 180.0);
     y <- yMin to (yMax + radius) by 3 * radius)
@@ -239,7 +293,7 @@ object debugMain extends App {
   var mCounter = finalCells.length
   //var l = 1
   finalCells.foreach(v => {
-    v.updateState = 1;
+    v.updateState = 1
     v.potential = 1
   })
   var lCounter: Int = 1
@@ -279,7 +333,10 @@ object debugMain extends App {
   //println(hexagons.map(_.potential).mkString("\n"))
 
   new DrawCellsAndWalls(hexagons, infraSF.continuousSpace.walls, "celltest.png")
+*/
 
+
+  new DrawCellsAndWalls(squareCells, infraSF.continuousSpace.walls, "celltest.png")
 }
 
 

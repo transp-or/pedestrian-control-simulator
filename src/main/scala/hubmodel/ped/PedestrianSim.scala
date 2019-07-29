@@ -27,7 +27,7 @@ import myscala.math.vector.ZeroVector2D
 class PedestrianSim(val origin: Rectangle,
                     val originalFinalDestination: Rectangle,
                     val entryTime: Time,
-                    val logFullHistory: Boolean = false) extends PedestrianTrait {
+                    val logFullHistory: Boolean = false) extends PedestrianTrait with PedestrianTrajectory {
 
   // The final destination can change if there is an equivalent one which is closer than the original one.
   var finalDestination: Rectangle = originalFinalDestination
@@ -63,7 +63,10 @@ class PedestrianSim(val origin: Rectangle,
   // ******************************************************************************************
 
   /** History of the pedestrians positions */
-  protected var _historyPosition: Vector[(Time, HistoryContainer)] = Vector((entryTime, Coordinate(currentPosition)))
+  protected val _historyPositionUnsorted: collection.mutable.ArrayBuffer[(Time, HistoryContainer)] = collection.mutable.ArrayBuffer((entryTime, Coordinate(currentPosition)))
+
+  protected lazy val _historyPosition: Vector[(Time, HistoryContainer)] = _historyPositionUnsorted.toVector
+
 
   var route: List[Rectangle] = List()
 
@@ -137,18 +140,27 @@ class PedestrianSim(val origin: Rectangle,
   //                              GETTER - SETTER METHODS
   // ******************************************************************************************
 
-  /** getter method for the history of the positions */
-  def getHistoryPosition: Vector[(Time, HistoryContainer)] = _historyPosition
-
+  def updatePositionHistory(t: Time): Unit = {
+    //if (this.currentPosition != this._historyPosition.last._2) {
+    this.previousPosition = this.currentPosition
+    if (logFullHistory) {
+      this._historyPositionUnsorted :+ (t, Coordinate(this.currentPosition))
+    }
+    //}
+  }
 
   /** Adds the current position (currentPosition) to the history */
   def updatePositionHistory(t: Time, isolState: Int): Unit = {
     //if (this.currentPosition != this._historyPosition.last._2) {
     this.previousPosition = this.currentPosition
     if (logFullHistory) {
-      this._historyPosition = this._historyPosition :+ (t, PositionIsolation(this.currentPosition, isolState))
+      this._historyPositionUnsorted :+ (t, PositionIsolation(this.currentPosition, isolState))
     }
     //}
+  }
+
+  def updatePositionHistory(t: tools.Time, pos: Position): Unit = {
+    this._historyPositionUnsorted :+ ((t, Coordinate(pos)))
   }
 
   def setCurrentDestination(pos: Position): Unit = {

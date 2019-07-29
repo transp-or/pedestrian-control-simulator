@@ -1,37 +1,40 @@
-package trackingdataanalysis.pedtrack.visiosafe
+package trackingdataanalysis.pedtrack
 
 import hubmodel.Position
 import hubmodel.tools.cells.Rectangle
-import trackingdataanalysis.pedtrack.{Pedestrian, time2Seconds}
+import trackingdataanalysis.pedtrack.visiosafe.PedestrianMap
+import trackingdataanalysis.{SBBFormat, TrackingDataFormat, VisioSafeNumericFormat}
 
 /** Container for the procssing methods common to both single day and multi day processing
   *
   * @param zoneFile location of the file specifying the zones
   */
-abstract class DataProcessor(zoneFile: String, tolerance: Double) {
+abstract class ZoneProcessing(zoneFile: String, tolerance: Double) {
 
   /** Map from zone_ID to Zone. */
-  val zones: Map[Int, Rectangle] = (for (l <- io.Source.fromFile(zoneFile).getLines.drop(1)) yield l.split(",").map(_.trim.toInt).head -> new Rectangle(l.split(",").map(_.trim.toDouble / 1000.0))).toMap
-  //println(zones.values.map(z => (z.A, z.B, z.C, z.D).toString).mkString("\n"))
+  val zones: Map[Int, Rectangle] = (for (l <- scala.io.Source.fromFile(zoneFile).getLines.drop(1)) yield l.split(",").map(_.trim.toInt).head -> new Rectangle(l.split(",").map(_.trim.toDouble / 1000.0))).toMap
+
   /** Takes as input the file containing the data and returns the data aggregated by pedestrian. The aggregation takes
     * process is done by matching the ID to already existing processed IDs and then updates the variables.
     *
     * @param fileName location of the raw data
     * @return aggregated data
     */
+  @deprecated
   def aggregatePedestrians(fileName: String): PedestrianMap = {
-    val ped: collection.mutable.Map[Int, Pedestrian] = collection.mutable.Map()
-    val bufferedSource: scala.io.BufferedSource = io.Source.fromFile(fileName)
+    val ped: PedestrianMap = collection.mutable.Map()
+    val bufferedSource: scala.io.BufferedSource = scala.io.Source.fromFile(fileName)
     for (l <- bufferedSource.getLines) {
       val cols = l.split(",").map(str => str.toInt)
       if (ped.contains(cols.last)) {
-        ped(cols.last).updatePedestrian(cols(8).toDouble / 1000.0, cols(9).toDouble / 1000.0, time2Seconds(cols))
+        ped(cols.last).updatePedestrian(cols(8).toDouble / 1000.0, cols(9).toDouble / 1000.0, VisioSafeNumericFormat.time2Seconds(cols.map(_.toDouble)).value.toDouble)
       }
       else ped += (cols.last -> new Pedestrian(cols.last, (cols(8).toDouble / 1000.0, cols(9).toDouble / 1000.0), time2Seconds(cols)))
     }
     bufferedSource.close()
     ped
   }
+
 
 
   /** Returns the zone in which a point is located
@@ -74,7 +77,6 @@ abstract class DataProcessor(zoneFile: String, tolerance: Double) {
     * @param times collection of times for which to collect the pedestrian IDs
     * @param pop   pedestrian population
     * @param acc   accumulator
-    * @param tol   tolerance on the times (t +- tol)
     * @return map with the times as keys and the IDs of pedestrians as values
     */
   protected def collectIDByTime(times: Seq[Double], pop: Iterable[(Int, Seq[Double], Seq[Double], Seq[Double])], acc: Vector[(Double, Iterable[Int])]): Vector[(Double, Iterable[Int])] = {
@@ -88,12 +90,15 @@ abstract class DataProcessor(zoneFile: String, tolerance: Double) {
     }
   }
 
-
-  /*protected def collectIDByTime(times: Seq[Double], pop: Map[Int, Vector[(Double, (Double, Double))]]): Vector[(Double, Iterable[Int])] = {
-    val popMod: Iterable[(Int, Seq[Double], Seq[Double], Seq[Double])] = pop.map(p => (p._1, p._2.map(_._1), p._2.map(_._2._1), p._2.map(_._2._2)))
-    collectIDByTime(times, popMod, Vector())
-  }*/
-
+  /** Linear interpolation between points. This is usefull when the timestamps aren't at regular intervals.
+    *
+    * @param x1 first point
+    * @param x2 second point
+    * @param t1 first time
+    * @param t2 second time
+    * @param tDesired desired time
+    * @return point at the desired time using a linear interpolation
+    */
   def linearInterpolationPosition(x1: (Double, Double), x2: (Double, Double), t1: Double, t2: Double, tDesired: Double): (Double, Double) = {
     if (t1 > t2) {
       throw new IllegalArgumentException("t1 is larger than t2 ! t1=" + t1 + ", t2=" + t2)
@@ -114,15 +119,4 @@ abstract class DataProcessor(zoneFile: String, tolerance: Double) {
   def findInterval(t: Double, times: Vector[Double]): Int = {
     times.indexWhere(_ > t)
   }
-
-  /** Based on the functions passed as argument, computes the metrics per time window of all the pedestrians satisfying
-    * the predicate "filter".
-    *
-    * @param filter     predicate used to filter the population
-    * @param pedFunc    extracts the metric from an individual
-    * @param windowFunc computes the index of the window in which the pedestrian belongs
-    * @param metricFunc computes the statistics of the metric
-    * @return map where the keys are the time intervals and the values the statstics of the metric
-    */
-  //def aggregateMetricByTimeWindow(filter: Pedestrian => Boolean, pedFunc: Pedestrian => Double, windowFunc: Pedestrian => Int, metricFunc: Iterable[Double] => (Int, Double, Double, Double, Double, Double)): Map[Int, (Int, Double, Double, Double, Double, Double)]
 }
