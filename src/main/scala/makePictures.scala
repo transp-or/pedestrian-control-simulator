@@ -1,23 +1,25 @@
 import java.io.File
 
+import com.typesafe.config.{Config, ConfigFactory}
 import hubmodel.io.output.image.{DrawGraph, DrawWalls, DrawWallsAndGraph}
 import hubmodel.ped.PedestrianNOMAD
 import hubmodel.supply.continuous.ReadContinuousSpace
 import hubmodel.supply.graph.readGraph
+import hubmodel.io.output.tikz.writeEdgesAsTikz
 
 
 object makePictures extends App {
 
-  case class Config(walls: File = new File("."), graph: File = new File("."), prefix: String = "", showWallNames: Boolean = false)
+  case class CLIConfig(walls: File = new File("."), graph: File = new File("."), prefix: String = "", configFile: File = new File("."), showWallNames: Boolean = false)
 
-  val parser = new scopt.OptionParser[Config]("scopt") {
+  val parser = new scopt.OptionParser[CLIConfig]("scopt") {
     head("scopt", "3.x")
 
-    opt[File]('w', "walls").required().valueName("<file>")
+    opt[File]('w', "walls").optional().valueName("<file>")
       .action((x, c) => c.copy(walls = x))
       .text("required, JSON specification of all the walls building the infrastructure")
 
-    opt[File]('g', "graph").required().valueName("<file>")
+    opt[File]('g', "graph").optional().valueName("<file>")
       .action((x, c) => c.copy(graph = x))
       .text("required, JSON specification of the route choice graph")
 
@@ -28,6 +30,9 @@ object makePictures extends App {
     opt[Unit]('s', "showWallNames").action((_, c) =>
       c.copy(showWallNames = true)).text("showWallNames is a flag: should the names of the walls be printed")
 
+    opt[File]('c', "conf").required().valueName("<file>")
+        .action((x,c) => c.copy(configFile = x))
+        .text("configuration file used for simulations")
 
     //opt[Unit]("verbose").action( (_, c) =>
     //  c.copy(verbose = true) ).text("verbose is a flag")
@@ -39,11 +44,25 @@ object makePictures extends App {
 
   }
 
-  parser.parse(args, Config()) match {
+
+  parser.parse(args, CLIConfig()) match {
 
     case Some(config) =>
-      val infraGraph = readGraph[PedestrianNOMAD](config.graph.toString, false, false, false, false, false, false, false)
-      val parserCont = new ReadContinuousSpace(config.walls.toString)
+
+      val tmpConfig: Config = ConfigFactory.load(ConfigFactory.parseFile(config.configFile))
+
+      val infraGraph = readGraph[PedestrianNOMAD](
+        tmpConfig.getString("files.graph"),
+        tmpConfig.getBoolean("sim.use_flow_gates"),
+        tmpConfig.getBoolean("sim.use_binary_gates"),
+        tmpConfig.getBoolean("sim.use_amw"),
+        tmpConfig.getBoolean("sim.use_flow_sep"),
+        tmpConfig.getBoolean("sim.fixed_flow_sep"),
+        tmpConfig.getBoolean("sim.measure_density"),
+        tmpConfig.getBoolean("sim.use_alternate_graphs")
+      )
+
+      val parserCont = new ReadContinuousSpace(tmpConfig.getString("files.walls"))
       val infraSF = parserCont.continuousSpace
 
       val prefixToAdd: String = {
@@ -61,7 +80,10 @@ object makePictures extends App {
       val graphImage = new DrawGraph(infraGraph._1.edges.map(e => (e.startVertex, e.endVertex)).toVector, prefixToAdd + "graphImage.png", showNames = showNamesOnFigures)
       val fullImage = new DrawWallsAndGraph(infraSF.walls, infraGraph._1.edges.map(e => (e.startVertex, e.endVertex)).toVector, prefixToAdd + "wallAndGraphImage.png", showNames = showNamesOnFigures)
 
+      writeEdgesAsTikz(prefixToAdd + "edges.tex", infraGraph._1.edges, infraGraph._1.vertexMapNew.values, infraSF.walls)
+
     case None => println("Probably an error when passing the parameters, or an unknown parameter was given.")
+
   }
 
 }

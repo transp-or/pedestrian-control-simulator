@@ -358,26 +358,32 @@ package hubmodel {
     // closing Demand package
 
 
+    /** Reads the different files specifying the pedestrian demand
+      *
+      * @param config
+      * @return
+      */
     def readDemandSets(config: Config): Option[Seq[(String, String)]] = {
 
+      // Check if the input parameters makes sense
       if (config.getBoolean("sim.read_multiple_demand_sets") && config.getBoolean("sim.read_multiple_TF_demand_sets")) {
         throw new IllegalSimulationInput("Multiple demand sets for standard and TRANS-FORM cannot be set together !")
       }
 
-      if (config.getBoolean("sim.read_multiple_TF_demand_sets")) {
+      if (config.getBoolean("sim.read_multiple_TF_demand_sets")) { // Reads the data of the TRANS-FORM project
 
+        // Check if the input parameters makes sense
         if (!((Paths.get(config.getString("files.TF_demand_sets")).toString == Paths.get(config.getString("files.flows_TF")).getParent.toString) &&
           (Paths.get(config.getString("files.flows_TF")).getParent.toString == Paths.get(config.getString("files.timetable_TF")).getParent.toString))) {
           throw new IllegalSimulationInput("Directories for multiple demand sets do not match !")
         }
 
+        // Get the list of files which compose the demand sets
         val multipleDemandStream: DirectoryStream[Path] = Files.newDirectoryStream(Paths.get(config.getString("files.TF_demand_sets")), "*.json")
-
-
         val files: Vector[Path] = multipleDemandStream.asScala.toVector
-
         multipleDemandStream.close()
 
+        // get the base name of the scenario
         val flowBaseName: String = Paths.get(config.getString("files.flows_TF")).getFileName.toString.replace(".json", "")
         val timetableBaseName: String = Paths.get(config.getString("files.timetable_TF")).getFileName.toString.replace(".json", "")
 
@@ -405,7 +411,7 @@ package hubmodel {
         } catch {
           case e: Exception => throw e
         }
-      } else if (config.getBoolean("sim.read_multiple_demand_sets")) {
+      } else if (config.getBoolean("sim.read_multiple_demand_sets")) {       // Reads the data for the other cases
         val multipleDemandStream: DirectoryStream[Path] = Files.newDirectoryStream(Paths.get(config.getString("files.TF_demand_sets")), "*.json")
         val files: Vector[Path] = multipleDemandStream.asScala.toVector
         multipleDemandStream.close()

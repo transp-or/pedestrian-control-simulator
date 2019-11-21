@@ -5,7 +5,7 @@ import hubmodel.tools.cells.Rectangle
 import hubmodel.{Acceleration, Direction, Position}
 import myscala.math.vector.{Vector2D, ZeroVector2D}
 
-class PedestrianNOMAD(oZone: Rectangle, dZone: Rectangle, entryTime: Time, posO: Position, logFullHistory: Boolean) extends PedestrianSim(oZone, dZone, entryTime, posO, logFullHistory) with WithGraphID {
+class PedestrianNOMAD(oZone: Rectangle, dZone: Rectangle, entryTime: Time, posO: Position, logFullHistory: Boolean, isTransfer: Boolean) extends PedestrianSim(oZone, dZone, entryTime, posO, logFullHistory, isTransfer) with WithGraphID {
 
   def isVariableStep: Boolean = {
     true
@@ -33,8 +33,8 @@ class PedestrianNOMAD(oZone: Rectangle, dZone: Rectangle, entryTime: Time, posO:
   val getRadius: Double = this.r
 
   def isStuck: Boolean = {
-    if (this._historyPosition.size > 10) {
-      (this._historyPosition.dropRight(9).last._2.pos - this._historyPosition.last._2.pos).norm < math.pow(10, -3)
+    if (this._historyPositionUnsorted.size > 10) {
+      (this._historyPositionUnsorted.dropRight(9).last._2.pos - this._historyPositionUnsorted.last._2.pos).norm < math.pow(10, -3)
     }
     else false
   }

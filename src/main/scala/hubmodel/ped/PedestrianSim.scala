@@ -27,7 +27,8 @@ import myscala.math.vector.ZeroVector2D
 class PedestrianSim(val origin: Rectangle,
                     val originalFinalDestination: Rectangle,
                     val entryTime: Time,
-                    val logFullHistory: Boolean = false) extends PedestrianTrait with PedestrianTrajectory {
+                    val logFullHistory: Boolean = false,
+                    val isTransfer: Boolean) extends PedestrianTrait with PedestrianTrajectory {
 
   // The final destination can change if there is an equivalent one which is closer than the original one.
   var finalDestination: Rectangle = originalFinalDestination
@@ -144,7 +145,7 @@ class PedestrianSim(val origin: Rectangle,
     //if (this.currentPosition != this._historyPosition.last._2) {
     this.previousPosition = this.currentPosition
     if (logFullHistory) {
-      this._historyPositionUnsorted :+ (t, Coordinate(this.currentPosition))
+      this._historyPositionUnsorted += ((t, Coordinate(this.currentPosition)))
     }
     //}
   }
@@ -154,13 +155,13 @@ class PedestrianSim(val origin: Rectangle,
     //if (this.currentPosition != this._historyPosition.last._2) {
     this.previousPosition = this.currentPosition
     if (logFullHistory) {
-      this._historyPositionUnsorted :+ (t, PositionIsolation(this.currentPosition, isolState))
+      this._historyPositionUnsorted += ((t, PositionIsolation(this.currentPosition, isolState)))
     }
     //}
   }
 
   def updatePositionHistory(t: tools.Time, pos: Position): Unit = {
-    this._historyPositionUnsorted :+ ((t, Coordinate(pos)))
+    this._historyPositionUnsorted += ((t, Coordinate(pos)))
   }
 
   def setCurrentDestination(pos: Position): Unit = {
@@ -209,7 +210,7 @@ class PedestrianSim(val origin: Rectangle,
       else innerPrint(hist.tail, str + "\n" + refDate + "," + hist.head._1.asVisioSafe + ",0," + math.round(hist.head._2.pos.X * 1000) + "," + math.round(hist.head._2.pos.Y * 1000) + "," + this.ID)
     }
 
-    innerPrint(this._historyPosition, "")
+    innerPrint(this.getHistoryPosition, "")
   }
 
 
@@ -225,8 +226,8 @@ class PedestrianSim(val origin: Rectangle,
     * @param posO
     * @param logFullHistory
     */
-  def this(oZone: Rectangle, dZone: Rectangle, entryTime: Time, posO: Position, logFullHistory: Boolean) {
-    this(oZone, dZone, entryTime, logFullHistory) // velocity taken from VS data
+  def this(oZone: Rectangle, dZone: Rectangle, entryTime: Time, posO: Position, logFullHistory: Boolean, isTransfer: Boolean) {
+    this(oZone, dZone, entryTime, logFullHistory, isTransfer) // velocity taken from VS data
     this.currentPosition = posO
   }
 
@@ -246,7 +247,8 @@ class PedestrianSim(val origin: Rectangle,
         "null"
       }
     } + "," +
-      "\"td\":" + this.travelDistance + "," +
+      "\"transfer\":" + this.isTransfer + "," +
+    "\"td\":" + this.travelDistance + "," +
       "\"gates\": [" + {
       if (this.freedFrom.nonEmpty) {
         "\"" + this.freedFrom.mkString("\",\"") + "\""

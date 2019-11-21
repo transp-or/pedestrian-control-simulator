@@ -2,7 +2,7 @@ import hubmodel.Position
 import hubmodel.io.output.image.DrawCellsAndWalls
 import hubmodel.route.Flurin2014.PotentialSquareCell
 import hubmodel.route.Guo2011.HexagonPotentialField
-import hubmodel.supply.continuous.ReadContinuousSpace
+import hubmodel.supply.continuous.{ReadContinuousSpace, Wall}
 import hubmodel.supply.potential.PotentialCell
 import hubmodel.tools.cells.{Square, VertexPlotting}
 import myscala.math.vector.Vector2D
@@ -196,8 +196,10 @@ object Guo2011Algorithm extends App {
     // splits the cells into two groups: entirely inside walkable space or on the border.
     val (in, border) = majorCells.partition(c => c.corners.forall(insideSpace))
 
+    // number of intervals to use for discretizing the cells or walls
+    val intervals: Int = 100
+
     val cells = in ++ border.map(c => {
-      val intervals: Int = 100
 
       val effectiveArea: Double = (for (
         x <- BigDecimal(c.corners.head.X) to (c.corners.head.X + c.width) by c.width / intervals;
@@ -208,13 +210,31 @@ object Guo2011Algorithm extends App {
         new PotentialSquareCell(c.center, side.toDouble, effectiveArea)
     })
 
-    val innerWalls = infraSF.continuousSpace.walls.filter(_.wallType == hubmodel.supply.continuous.INNERSHELL)
+    val innerWalls: Iterable[Wall] = infraSF.continuousSpace.walls.filter(_.wallType == hubmodel.supply.continuous.INNERSHELL)
 
-    innerWalls.map(w => w.)
+    val innerWallsPoints: Iterable[(String, Iterable[(Double, Double)])] = innerWalls.map(w => (w.ID, (BigDecimal(w.startPoint.X) to w.endPoint.X by (w.endPoint.X - w.startPoint.X) / intervals).map(_.toDouble).zip((BigDecimal(w.startPoint.Y) to w.endPoint.Y by (w.endPoint.Y - w.startPoint.Y) / intervals).map(_.toDouble))))
 
-    val (complete, separated) = cells.partition(c => )
+    /** Three points are listed in counter clockwise order (ccw).
+      *
+      * @param A
+      * @param B
+      * @param C
+      * @return
+      */
+    def ccw(A: Position, B: Position, C:Position): Boolean = {
+      (C.Y-A.Y)*(B.X-A.X) > (B.Y-A.Y)*(C.X-A.X)
+    }
 
+    def segmentIntersect(s1: (Position, Position), s2: (Position, Position)): Boolean = {
+      ccw(s1._1,s2._1,s2._2) != ccw(s1._2,s2._1,s2._2) && ccw(s1._1,s1._2,s2._1) != ccw(s1._1,s1._2,s2._2)
+    }
 
+    /*val (complete, separated) = cells.map(c => {
+      val edges = c.corners.dropRight(1).zip(c.corners.tail)
+
+    })*/
+
+    cells
   }
 
   val squareCells = paveWalkableSpace(2.0)

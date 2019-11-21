@@ -41,7 +41,7 @@ class CreatePedestrian[T <: PedestrianNOMAD](o: Rectangle, d: Rectangle, val isT
     //tag.runtimeClass.getConstructor(classOf[(Rectangle, Rectangle, Time, Position, List[Rectangle], String)]).newInstance(o, d, sim.currentTime, generationPoint, route, "").asInstanceOf[T]
     // inserts new pedestrian into population
 
-    val newPed: PedestrianNOMAD = new PedestrianNOMAD(o, d, sim.currentTime, generationPoint, sim.logFullPedestrianHistory)
+    val newPed: PedestrianNOMAD = new PedestrianNOMAD(o, d, sim.currentTime, generationPoint, sim.logFullPedestrianHistory, isTransfer)
     sim.setFirstRoute(newPed)
     newPed.updateDesiredSpeed()
     newPed.currentVelocity = newPed.desiredDirection * newPed.desiredWalkingSpeed

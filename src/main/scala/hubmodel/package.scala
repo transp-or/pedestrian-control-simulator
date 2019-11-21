@@ -162,6 +162,9 @@ package object hubmodel {
   def writePopulationTrajectoriesJSON(pop: Iterable[PedestrianSim], file: String, times: NumericRange[BigDecimal]): Unit = {
 
     // collects the traj data
+    val infotrajDataByTime1 = pop.flatMap(p => p.getHistoryPosition.map(r => (r._1, r._2, p.ID)))
+    val trajDataByTime2 = pop.flatMap(p => p.getHistoryPosition.map(r => (r._1, r._2, p.ID))).groupBy(_._1)
+
     val trajDataByTime: Map[Time, Iterable[(Time, HistoryContainer, String)]] = pop.flatMap(p => p.getHistoryPosition.map(r => (r._1, r._2, p.ID))).groupBy(_._1).filter(t => times.contains(t._1.value))
 
     val sortedKeys: Vector[Time] = trajDataByTime.keys.toVector.sorted

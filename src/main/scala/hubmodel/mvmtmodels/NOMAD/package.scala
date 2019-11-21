@@ -30,8 +30,8 @@ package object NOMAD {
     val wallDir: Position = (w.endPoint - w.startPoint).normalized
 
     val proj: Position = {
-      val AP: Position = pos - w.startPoint
-      wallDir * (wallDir dot AP) // + w.startPoint
+      //val AP: Position = pos - w.startPoint
+      wallDir * (wallDir.dot(pos - w.startPoint)) // + w.startPoint
     }
     if (proj.dot(wallDir) > 0.0 && proj.norm <= (w.endPoint - w.startPoint).norm) proj + w.startPoint //computeProjection(pos, w)
     //if (!isOnWall(proj, w)) getClosestEndPoint(pos, w)

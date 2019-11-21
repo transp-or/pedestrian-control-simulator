@@ -32,7 +32,7 @@ class PedestrianGenerationOverInterval[T <: PedestrianNOMAD](o: Rectangle, d: Re
     val rate: Double = numberPeople / duration
     var t: Double = -math.log(ThreadLocalRandom.current.nextDouble(0.0, 1.0) / rate)
     Iterator.continually {
-      t = t - math.log(ThreadLocalRandom.current.nextDouble(0.0, 1.0)) / rate;
+      t = t - math.log(ThreadLocalRandom.current.nextDouble(0.0, 1.0)) / rate
       t
     }.takeWhile(v => v < duration).map(new Time(_))
   }

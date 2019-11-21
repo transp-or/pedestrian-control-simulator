@@ -50,11 +50,17 @@ package object results {
     * @param prefix    prefix to the file name
     * @param path      path where to write the file, default is empty
     */
-  def writeResults[T <: PedestrianNOMAD](simulator: NOMADGraphSimulator[T], prefix: String = "", dir: String, writeTrajectoriesVS: Boolean = false, writeTrajectoriesJSON: Boolean = false, writeTRANSFORMTT: Boolean = false): Unit = {
+  def writeResults[T <: PedestrianNOMAD](simulator: NOMADGraphSimulator[T],
+                                         prefix: String = "",
+                                         dir: String,
+                                         writeTrajectoriesVS: Boolean = false,
+                                         writeTrajectoriesJSON: Boolean = false,
+                                         writeTransfers: Boolean = false
+                                        ): Unit = {
 
     // TODO: check if files exists and remove them if they are inside tmp, and warn about them if they are in output_dir
     if (!Files.exists(Paths.get(dir))) {
-      Files.createDirectory(Paths.get(dir))
+      Files.createDirectories(Paths.get(dir))
     }
     /* else {
           Files.newDirectoryStream(Paths.get(dir)).toVector.foreach(f => Files.delete(f))
@@ -72,14 +78,10 @@ package object results {
       }
     }*/
 
-    if (simulator.exitCode == 0) {
-      if (writeTRANSFORMTT) {
-        simulator.populationCompleted
-          .filter(p => simulator.transferringPassengers.contains(p.ID))
-          .map(p => (p.origin.name, p.finalDestination.name, p.travelTime.value, p.entryTime.value, p.exitTime.value, p.travelDistance))
-          .writeToCSV(prefix + "tt_" + simulator.ID + ".csv", columnNames = Some(Vector("origin", "destination", "travelTime", "entryTime", "exitTime", "travelDistance")), rowNames = None, path = path)
-      } else {
+    // Writes the results to files based on the config file.
+    if (simulator.exitCode == 0) { // only write results if simulation completed successfully.
 
+      // write the data for the other cases
         val file = new File(path + prefix + "tt_" + simulator.ID + ".json")
         val bw = new BufferedWriter(new FileWriter(file))
         bw.write("[")
@@ -103,6 +105,16 @@ package object results {
           )
           .writeToCSV(prefix + "tt_" + simulator.ID + ".csv", columnNames = Some(Vector("origin", "destination", "travelTime", "entryTime", "exitTime", "travelDistance")), rowNames = None, path = path)
       }
+
+    // write only the transferring pedestrians to file.
+    if (writeTransfers) {
+      simulator.populationCompleted
+        .filter(p => simulator.transferringPassengers.contains(p.ID))
+        .map(p => (p.origin.name, p.finalDestination.name, p.travelTime.value, p.entryTime.value, p.exitTime.value, p.travelDistance))
+        .writeToCSV(prefix + "tt_transfers_" + simulator.ID + ".csv", columnNames = Some(Vector("origin", "destination", "travelTime", "entryTime", "exitTime", "travelDistance")), rowNames = None, path = path)
+    }
+
+      // Writes the data for the defined measurement areas.
       Try(
         if (simulator.criticalAreas.nonEmpty) {
           (simulator.criticalAreas.head._2.densityHistory.map(_._1.value).toVector +: simulator.criticalAreas.map(_._2.densityHistory.map(_._2).toVector).toVector).writeToCSV(prefix + "density_" + simulator.ID + ".csv", path)
@@ -116,7 +128,6 @@ package object results {
           println("failed writing criticsl zones")
           throw f
         }
-      }
     }
 
     if (writeTrajectoriesVS) {
@@ -166,6 +177,7 @@ package object results {
         case a if a.contains("_tt_") => "tt"
         case b if b.contains("_density_") => "density"
         case c if c.contains("_individual_densities_") => "individual_densities"
+        case d if d.contains("_tt_transfers_") => "tt_transfers"
         case other => throw new IllegalArgumentException("File should not be present: " + other)
       }
     } -> f
@@ -189,7 +201,6 @@ package object results {
         in.close
         data
       }
-
 
       // process density file
       val density: Option[(Vector[Double], Vector[Vector[Double]])] =

@@ -8,6 +8,7 @@ import hubmodel.DES.{Action, NOMADGraphSimulator}
 import hubmodel.ped.PedestrianNOMAD
 import hubmodel.tools.Time
 import hubmodel.tools.cells.isInVertex
+import hubmodel.{DISTANCE_TO_CLOSE_WALLS, Position}
 import javax.vecmath.Vector3d
 import myscala.math.vector.Vector2D
 import nl.tudelft.pedestrians.agents.WalkingBehavior.{pedestrianPhysical, pedestrianRepellOpposing}
@@ -80,7 +81,7 @@ class NOMADIntegrated[T <: PedestrianNOMAD](sim: NOMADGraphSimulator[T]) extends
     // initialise  the min distance between two pedestrians
     //int isolationInterval;
 
-    val minDistance: Double = sim.walls.map(w => (p.currentPosition - getClosestPoint(p.currentPosition, w)).norm).min
+    val minDistance: Double = (p.closeWalls.map(w => (p.currentPosition - getClosestPoint(p.currentPosition, w)).norm).toVector :+ DISTANCE_TO_CLOSE_WALLS).min
 
     //double nextDistance;
     // calculate the isolated time
@@ -119,16 +120,14 @@ class NOMADIntegrated[T <: PedestrianNOMAD](sim: NOMADGraphSimulator[T]) extends
 
 
   def updateIsolation(time: Time, p: PedestrianNOMAD): Unit = {
-    if (p.isVariableStep) {
-      //if (p.isolationTimePed < time.value) {
+    if (p.isVariableStep && p.isolationTimePed < time.value) {
       updatePedIsolation(time, p)
-      //}
+      }
 
       if (p.isolationTimeObs < time.value) {
         updateObsIsolation(time, p)
       }
     }
-  }
 
 
   /** List with pedestrians that are in isolation in the current simulation step */
@@ -176,8 +175,8 @@ class NOMADIntegrated[T <: PedestrianNOMAD](sim: NOMADGraphSimulator[T]) extends
 
     sim.population.foreach(ped => {
       ped.updatePositionHistory(sim.currentTime, scala.math.max(ped.isolationTypeObs,ped.isolationTypePed))
-
     })
+
     sim.population.filterNot(_.isWaiting).foreach(ped => {
 
       // The pedestrian step function deals with the state of the ped (entering, walking, activity) and is not reauired here.
@@ -791,16 +790,16 @@ class NOMADIntegrated[T <: PedestrianNOMAD](sim: NOMADGraphSimulator[T]) extends
 
 
   def getClosestCoordinates3D(pedestrian: PedestrianNOMAD): util.ArrayList[InfluenceAreaReturnObsData] = { // it has to be with the global coordinate because of the change of levels
-    val obstacles = pedestrian.closeWalls
+    //val obstacles = pedestrian.closeWalls
     val coordinate = new Coordinate(pedestrian.currentPosition.X, pedestrian.currentPosition.Y, 0.0)
     val coordinatesInVicinity = new util.ArrayList[InfluenceAreaReturnObsData]
     var closestPoint: Coordinate = null
-    val radius = pedestrian.r
-    val maxExtension = pedestrian.infAreaMaxExtObs
+    //val radius = pedestrian.r
+    //val maxExtension = pedestrian.infAreaMaxExtObs
     // for each obstacle
-    for (obstacle <- obstacles) { // only check this object if it is repealing
+    for (obstacle <- pedestrian.closeWalls) { // only check this object if it is repealing
       //if (obstacle.asInstanceOf[NomadObstacle].isRepel) { // get the closest point // SKIPPED THIS BECAUSE WANT TO SIMPLIFY THINGS NM
-      val closestPointNOMAD = getClosestPoint(Vector2D(coordinate.x, coordinate.y), obstacle)
+      val closestPointNOMAD: Position = getClosestPoint(Vector2D(coordinate.x, coordinate.y), obstacle)
       closestPoint = new Coordinate(closestPointNOMAD.X, closestPointNOMAD.Y)
       // check if the closest point of a obstacle is behind another obstacle
       // if yes it will not be added to the return list.
@@ -809,7 +808,7 @@ class NOMADIntegrated[T <: PedestrianNOMAD](sim: NOMADGraphSimulator[T]) extends
       // We do not check this because in this case the object that is in front must have a closest point
       // that will be more influential for the repel forces. Although this closest point
       // may not lie over the exact line that connects the refused closest point and the pedestrian.
-      if (closestPoint.distance(coordinate) <= 15 && closestPoint.distance(coordinate) - radius <= maxExtension) { // convert back the closest point to the local coordinates
+      if (closestPoint.distance(coordinate) <= DISTANCE_TO_CLOSE_WALLS && closestPoint.distance(coordinate) - pedestrian.r <= pedestrian.infAreaMaxExtObs) { // convert back the closest point to the local coordinates
         //closestPoint = pedestrian.getLevel().makeCoordinate2D(closestPoint);
         coordinatesInVicinity.add(new InfluenceAreaReturnObsData(obstacle, closestPoint))
       }
@@ -904,9 +903,9 @@ class NOMADIntegrated[T <: PedestrianNOMAD](sim: NOMADGraphSimulator[T]) extends
   protected def insertNextEvent(): Unit = sim.insertEventWithDelay(Time(this.isolatedTimeStepSeconds))(new NOMADIntegrated(sim))
 
 
-  def getPedInLevelVicinity_3D(thisPedestrian: PedestrianNOMAD, pedestrians: Iterable[PedestrianNOMAD] /*, obstacles: java.util.ArrayList[InfrastructureObject]*/): java.util.ArrayList[InfluenceAreaReturnPedData] = {
+  def getPedInLevelVicinity_3D(thisPedestrian: PedestrianNOMAD, pedestrians: Iterable[PedestrianNOMAD] /*, obstacles: java.util.ArrayList[InfrastructureObject]*/): java.util.ArrayList[InfluenceAreaReturnPedDataNew] = {
 
-    val tempList = new java.util.ArrayList[InfluenceAreaReturnPedData]
+    val tempList = new java.util.ArrayList[InfluenceAreaReturnPedDataNew]
     // for each pedestrian from the list
     for (otherPedestrian <- pedestrians) { //  check if the pedestrians are different.
       //if (otherPedestrian.getName().compareToIgnoreCase(thisPedestrian.getName())!=0){
@@ -932,14 +931,14 @@ class NOMADIntegrated[T <: PedestrianNOMAD](sim: NOMADGraphSimulator[T]) extends
              ; Bepaal per interacterende voetganger de cpq
              dpq = SQRT(cpq * cpq * TOTAL(dxn * dxn,1) + TOTAL(dxt * dxt,1))*/
         //				calculate the dx
-        val dx = new Vector3d
-        dx.x = otherPedestrian.currentPosition.X - thisPedestrian.currentPosition.X
-        dx.y = otherPedestrian.currentPosition.Y - thisPedestrian.currentPosition.Y
+        val dx = new Vector2D(otherPedestrian.currentPosition.X - thisPedestrian.currentPosition.X, otherPedestrian.currentPosition.Y - thisPedestrian.currentPosition.Y)
+        ///dx.x =
+        ///dx.y =
         //dx.z = otherPedestrian.getPosition().z - thisPedestrian.getPosition().z;
         //	dx.sub(pedestrian.getPosition3d(),_pedestrian.getPosition3d());
-        val dpq = GeometryUtils.lengthxy(dx)
+        val dpq = dx.norm
         // Immediately calculates if they are colliding
-        val gpq = thisPedestrian.getRadius + otherPedestrian.getRadius - GeometryUtils.lengthxy(dx)
+        val gpq = thisPedestrian.getRadius + otherPedestrian.getRadius - dpq
         // check if dpq is smaller then the max extent and
         // if the pedestrian is not behind an obstacle and therefore not visible to _pedestrian
         if (dpq < Math.max(0.0, Math.max(thisPedestrian.ief + 3 * 0.0, thisPedestrian.ieb + 3 * 0.0))) { //	&& !JTSUtils.intersects(obstacles, otherPedestrian.getPosition(), thisPedestrian.getPosition())
@@ -947,10 +946,10 @@ class NOMADIntegrated[T <: PedestrianNOMAD](sim: NOMADGraphSimulator[T]) extends
           // *** these are not necessary for the isotropic influence area but they are needed to make
           // the influence area general
           //					calculate dxAlongEp	the projection of dx in the speed vector
-          val dxn = new Vector3d
+          val dxn = thisPedestrian.currentVelocity
           val dxt = new Vector3d
-          dxn.x = thisPedestrian.currentVelocity.X
-          dxn.y = thisPedestrian.currentVelocity.Y
+          ///dxn.x = thisPedestrian.currentVelocity.X
+          ///dxn.y = thisPedestrian.currentVelocity.Y
           //this.dxn.z = thisPedestrian.getSpeed().z;
           // if dxn is not zero then normalise to make dxn be ep[]
           //if (GeometryUtils.lengthxy(dxn) != 0)
@@ -963,7 +962,7 @@ class NOMADIntegrated[T <: PedestrianNOMAD](sim: NOMADGraphSimulator[T]) extends
           //this.dxt.z = dx.z;
           dxt.sub(dxn)
           // *** these are not necessary for the isotropic influence area
-          tempList.add(new InfluenceAreaReturnPedData(null, new Vector3d(otherPedestrian.currentVelocity.X, otherPedestrian.currentVelocity.Y, 0.0), otherPedestrian.getRadius, dx, dxn, dxt, dpq, gpq, false, -1))
+          tempList.add(new InfluenceAreaReturnPedDataNew(null, new Vector2D(otherPedestrian.currentVelocity.X, otherPedestrian.currentVelocity.Y), otherPedestrian.getRadius, dx, dxn, dxt, dpq, gpq, false, -1))
         }
       }
     }

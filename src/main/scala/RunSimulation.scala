@@ -66,25 +66,26 @@ object RunSimulation extends App with StrictLogging {
   }
 
 
-  val range: IterableOnce[Int] = getIteratorForSimulations(if (runSimulationsInParallel) {
-    Some(config.getInt("execution.threads"))
-  } else {
-    None
-  }, n)
+  val range: IterableOnce[Int] = getIteratorForSimulations(
+    if (runSimulationsInParallel) {
+      Some(config.getInt("execution.threads"))
+    } else {
+      None},
+    n)
 
   if (n > 0) {
     range.foreach(s => {
       val sim =
         if (demandSets.isDefined && config.getBoolean("sim.read_multiple_TF_demand_sets")) {
-          createSimulation[PedestrianNOMAD](config, Some(demandSets.get(s - 1)._1), Some(demandSets.get(s - 1)._2))
+          createSimulation[PedestrianNOMAD](config, Some(demandSets.get(s)._1), Some(demandSets.get(s)._2))
         } else if (demandSets.isDefined && config.getBoolean("sim.read_multiple_demand_sets")) {
-          createSimulation[PedestrianNOMAD](config, Some(demandSets.get(s - 1)._1))
+          createSimulation[PedestrianNOMAD](config, Some(demandSets.get(s)._1))
         } else {
           createSimulation[PedestrianNOMAD](config)
         }
 
       val outputDir: String = if (config.getBoolean("sim.read_multiple_demand_sets") || config.getBoolean("sim.read_multiple_TF_demand_sets")) {
-        config.getString("output.dir") + demandSets.get(s - 1)._1.split("\\.").head + "/"
+        config.getString("output.dir") + demandSets.get(s)._1.split("\\.").head + "/"
       } else {
         config.getString("output.dir")
       }
@@ -105,7 +106,7 @@ object RunSimulation extends App with StrictLogging {
 
 
   // Reads intermediate results
-  val results: Vector[ResultsContainerRead] = if (demandSets.isDefined) {
+  val  results: Vector[ResultsContainerRead] = if (demandSets.isDefined) {
     readResults(config.getString("output.dir"), config.getString("output.output_prefix"), demandSets.get.map(_._1.split("\\.").head)).toVector
   } else {
     readResults(config.getString("output.dir"), config.getString("output.output_prefix")).toVector
@@ -126,16 +127,6 @@ object RunSimulation extends App with StrictLogging {
   // Processing results
   logger.info("Processing results")
 
-  // Collects then writes individual travel times to csv
-  if (config.getBoolean("output.write_travel_times") && results.nonEmpty){
-    results
-      .map(r => r.tt.map(_._3))
-      .writeToCSV(
-        config.getString("output.output_prefix") + "_travel_times.csv",
-        columnNames = Some(Vector.fill(results.size)("r").zipWithIndex.map(t => t._1 + t._2.toString)),
-        rowNames = None
-      )
-  }
 
   // Collects then writes individual travel times with OD to csv
   /*if (config.getBoolean("output.write_travel_times")) results
@@ -252,6 +243,17 @@ object RunSimulation extends App with StrictLogging {
       (i, computeQuantile(quant)(mseResults.map(_.MSE)).value, computeQuantile(quant)(mseResults.map(r => r.MSE / r.parameter)).value)
     }).toVector.writeToCSV(config.getString("output.output_prefix") + "-" + quant.toString + "quant-MSE.csv", rowNames = None, columnNames = Some(Vector("n", "mse", "rmse")))
 
+
+    // Collects then writes individual travel times to csv
+    if (config.getBoolean("output.travel-times.disaggregate") && results.nonEmpty){
+      results
+        .map(r => r.tt.map(_._3))
+        .writeToCSV(
+          config.getString("output.output_prefix") + "_travel_times.csv",
+          columnNames = Some(Vector.fill(results.size)("r").zipWithIndex.map(t => t._1 + t._2.toString)),
+          rowNames = None
+        )
+    }
 
     // creates hist data for all TT aggregated together
     val data: Seq[Double] = results.flatMap(_.tt.map(_._3))
