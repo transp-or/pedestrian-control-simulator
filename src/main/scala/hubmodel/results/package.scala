@@ -6,6 +6,7 @@ import java.nio.file.{Files, Paths}
 import hubmodel.DES.NOMADGraphSimulator
 import hubmodel.io.input.JSONReaders.PedestrianResults_JSON
 import hubmodel.ped.{PedestrianNOMAD, PedestrianSim}
+import hubmodel.results.ResultsContainerReadNew
 import hubmodel.tools.cells.Rectangle
 import myscala.math.stats.{ComputeStats, Statistics}
 import myscala.output.SeqOfSeqExtensions.SeqOfSeqWriter
@@ -14,7 +15,6 @@ import play.api.libs.json.{JsError, JsSuccess, JsValue, Json}
 
 import scala.io.BufferedSource
 import scala.util.{Failure, Success, Try}
-
 import scala.jdk.CollectionConverters._
 
 package object results {
@@ -81,7 +81,7 @@ package object results {
     // Writes the results to files based on the config file.
     if (simulator.exitCode == 0) { // only write results if simulation completed successfully.
 
-      // write the data for the other cases
+      // write the travel time to a JSON file
         val file = new File(path + prefix + "tt_" + simulator.ID + ".json")
         val bw = new BufferedWriter(new FileWriter(file))
         bw.write("[")
@@ -95,6 +95,16 @@ package object results {
         }
         bw.write("]")
         bw.close()
+
+      // write the density measurements to JSON file
+      if (simulator.criticalAreas.nonEmpty) {
+        val file = new File(path + prefix + "density_" + simulator.ID + ".json")
+        val bw = new BufferedWriter(new FileWriter(file))
+        bw.write("[")
+        simulator.criticalAreas.foreach(ca => bw.write(ca._2.toJSON + ",\n"))
+        bw.write("]")
+        bw.close()
+      }
 
         (
           simulator.population
@@ -141,6 +151,10 @@ package object results {
       writeODJSON(simulator.populationCompleted ++ simulator.population, simulator.ODZones.map(_.name), prefix + "_ped_IDS_per_OD_" + simulator.ID + ".json")
     }
   }
+
+
+
+
 
   def readResults(dir: String, prefix: String, demandSets: Seq[String]): Iterable[ResultsContainerReadWithDemandSet] = {
     if (demandSets.isEmpty) {
@@ -232,7 +246,9 @@ package object results {
           None
         }
 
-      ResultsContainerRead(tt, density, densityPerIndividual)
+
+
+      new ResultsContainerRead(tt, density, densityPerIndividual)
     })
   }
 
@@ -274,6 +290,7 @@ package object results {
       )
 
     filesJson.map(str => {
+
       val tt: Vector[PedestrianResults_JSON] = {
         val source: BufferedSource = scala.io.Source.fromFile(str._2("tt"))
         val input: JsValue = Json.parse(try source.mkString finally source.close)
@@ -284,6 +301,9 @@ package object results {
           case e: JsError => throw new Error("Error while parsing results file: " + str + "\nerror: " + JsError.toJson(e).toString())
         }
       }
+
+      // TODO implement reading density results using JSON
+
       new ResultsContainerReadNew(tt, None, None)
     })
   }

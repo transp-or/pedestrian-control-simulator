@@ -1,7 +1,7 @@
 package optimization.bruteforce
 
 import com.typesafe.config.Config
-import hubmodel.DES.getFlows
+import hubmodel.DES.getAggregateFlows
 import hubmodel._
 import hubmodel.demand.{PedestrianFlowFunction_New, PedestrianFlowPT_New, PedestrianFlow_New}
 import hubmodel.tools.Time
@@ -38,7 +38,7 @@ class FlowVariation(flowInterval: Double, config: Config, lowerBoundFlow: Double
   }
 
   def getFlowMods(paramMods: ParameterModificationsFlow): (Iterable[PedestrianFlow_New], Iterable[PedestrianFlowPT_New], Iterable[PedestrianFlowFunction_New]) = {
-    val flows = getFlows(config)
+    val flows = getAggregateFlows(config)
 
     (flows._1.map(flow => {
       if (flow.O.ID == "bottom" && flow.D.ID == "top") {
@@ -111,9 +111,9 @@ class FlowVariation(flowInterval: Double, config: Config, lowerBoundFlow: Double
 
 
         // Loads the pedestrian flows. These are either exogenous to the trains (from outside) or flows originating from trains.
-        val flows: (Iterable[PedestrianFlow_New], Iterable[PedestrianFlowPT_New], Iterable[PedestrianFlowFunction_New]) = if (!config.getIsNull("files.flows") && config.getBoolean("sim.use_flows")) {
+        val flows: (Iterable[PedestrianFlow_New], Iterable[PedestrianFlowPT_New], Iterable[PedestrianFlowFunction_New]) = if (!config.getIsNull("files.flows") && config.getBoolean("sim.use_aggregate_demand")) {
           readPedestrianFlows(config.getString("files.flows"))
-        } else if (!config.getIsNull("files.flows_TF") && config.getBoolean("sim.use_flows")) {
+        } else if (!config.getIsNull("files.flows_TF") && config.getBoolean("sim.use_aggregate_demand")) {
           readPedestrianFlows(config.getString("files.flows_TF"))
         } else {
           println(" * using only disaggregate pedestrian demand")

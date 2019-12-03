@@ -1,7 +1,7 @@
 package hubmodel.mvmtmodels.NOMAD
 
-import com.vividsolutions.jts.geom.Coordinate
 import hubmodel.supply.continuous.Wall
+import myscala.math.vector.Vector2D
 
 /*
 public class InfluenceAreaReturnObsData {
@@ -17,4 +17,4 @@ public class InfluenceAreaReturnObsData {
 }
  */
 
-class InfluenceAreaReturnObsData(val obstacle: Wall, val coordinate: Coordinate)
+class InfluenceAreaReturnObsData(val obstacle: Wall, val coordinate: Vector2D)

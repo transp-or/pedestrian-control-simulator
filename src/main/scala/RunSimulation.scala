@@ -2,10 +2,9 @@
 import com.typesafe.config.Config
 import hubmodel.DES._
 import hubmodel._
-import hubmodel.demand.readDemandSets
+import hubmodel.demand.{DemandData, DemandSet, readDemandSets}
 import hubmodel.io.input.JSONReaders.ODGroup_JSON
 import hubmodel.io.output.TRANSFORM.PopulationSummaryProcessingTRANSFORM
-import hubmodel.ped.PedestrianNOMAD
 import hubmodel.results.{ResultsContainerRead, ResultsContainerReadNew, ResultsContainerReadWithDemandSet, ResultsContainerReadWithDemandSetNew, readResults, readResultsJson}
 import hubmodel.supply.graph.readPTStop2GraphVertexMap
 import hubmodel.tools.Time
@@ -17,6 +16,9 @@ import myscala.output.SeqTuplesExtensions.SeqTuplesWriter
 import play.api.libs.json.{JsError, JsSuccess, JsValue, Json}
 import trackingdataanalysis.visualization.{Histogram, PlotOptions, ScatterPlot, computeHistogramDataWithXValues}
 
+import scala.collection.parallel.immutable.{ParSeq, ParVector}
+import scala.collection.parallel.CollectionConverters._
+import scala.collection.parallel.ForkJoinTaskSupport
 import scala.io.BufferedSource
 
 
@@ -43,77 +45,59 @@ object RunSimulation extends App with StrictLogging {
   //                        Prepare all simulations and runs them
   // ******************************************************************************************
 
-  //
   val simulationStartTime: Time = Time(config.getDouble("sim.start_time"))
   val simulationEndTime: Time = Time(config.getDouble("sim.end_time"))
 
   val runSimulationsInParallel: Boolean = config.getBoolean("execution.parallel")
   val evaluationInterval: Time = Time(config.getDouble("sim.evaluate_dt"))
 
-  val demandSets: Option[Seq[(String, String)]] = readDemandSets(config)
+  val demandSets: Option[Seq[DemandData]] = if (config.getBoolean("files.multiple_demand_sets_TF") || config.getBoolean("files.multiple_demand_sets")) {
+    readDemandSets(config)
+  } else {
+    None
+  }
 
   val n: Int = computeNumberOfSimulations(config, demandSets)
+  val threads: Int = math.min(n, config.getInt("execution.threads"))
 
-  // Runs the simulations in parallel or sequential based on the config file.
 
   if (config.getBoolean("output.make_video")) {
     logger.info("Running simulation for video...")
-    runSimulationWithVideo(config, if (demandSets.isDefined) {
-      Some(demandSets.get.head._1)
-    } else {
-      None
-    })
+    runSimulationWithVideo(config, Some(demandSets.get.head))
   }
 
-
-  val range: IterableOnce[Int] = getIteratorForSimulations(
-    if (runSimulationsInParallel) {
-      Some(config.getInt("execution.threads"))
-    } else {
-      None},
-    n)
-
-  if (n > 0) {
-    range.foreach(s => {
-      val sim =
-        if (demandSets.isDefined && config.getBoolean("sim.read_multiple_TF_demand_sets")) {
-          createSimulation[PedestrianNOMAD](config, Some(demandSets.get(s)._1), Some(demandSets.get(s)._2))
-        } else if (demandSets.isDefined && config.getBoolean("sim.read_multiple_demand_sets")) {
-          createSimulation[PedestrianNOMAD](config, Some(demandSets.get(s)._1))
-        } else {
-          createSimulation[PedestrianNOMAD](config)
-        }
-
-      val outputDir: String = if (config.getBoolean("sim.read_multiple_demand_sets") || config.getBoolean("sim.read_multiple_TF_demand_sets")) {
-        config.getString("output.dir") + demandSets.get(s)._1.split("\\.").head + "/"
-      } else {
-        config.getString("output.dir")
-      }
-
-      runAndWriteResults(
-        sim,
-        config.getString("output.output_prefix") + "_",
-        outputDir,
-        config.getBoolean("output.write_trajectories_as_VS"),
-        config.getBoolean("output.write_trajectories_as_JSON"),
-        config.getBoolean("output.write_tt_4_transform")
-      )
-      System.gc()
-    })
-  } else {
-    logger.warn("No more simulations to run !")
+  // Runs the simulations in parallel or sequential based on the config.
+  demandSets match {
+    case Some(ds) if runSimulationsInParallel => {
+      val parallelRuns: ParSeq[DemandData] = ds.par
+      parallelRuns.tasksupport = new ForkJoinTaskSupport(new java.util.concurrent.ForkJoinPool(math.min(n, threads)))
+      parallelRuns.foreach(s => { createRunWriteSimulation(Some(s), config) })
+    }
+    case Some(ds) if !runSimulationsInParallel => {
+      Vector.range(0, n).foreach(s => {createRunWriteSimulation(Some(demandSets.get(s)), config)})
+    }
+    case None if n > 0 && runSimulationsInParallel => {
+      val parallelRuns: ParVector[Int] = Vector.range(0, n).par
+      parallelRuns.tasksupport = new ForkJoinTaskSupport(new java.util.concurrent.ForkJoinPool(math.min(n, threads)))
+      parallelRuns.foreach(_ => createRunWriteSimulation(None, config))
+    }
+    case None if n > 0 && !runSimulationsInParallel => {
+      Vector.range(0, n).foreach(s => {createRunWriteSimulation(None, config)})
+    }
+    case _ => {
+      logger.warn("No simulations to run !")
+    }
   }
-
 
   // Reads intermediate results
-  val  results: Vector[ResultsContainerRead] = if (demandSets.isDefined) {
-    readResults(config.getString("output.dir"), config.getString("output.output_prefix"), demandSets.get.map(_._1.split("\\.").head)).toVector
+  val results: Vector[ResultsContainerRead] = if (demandSets.isDefined) {
+    readResults(config.getString("output.dir") + demandSets.get.head.dir.getFileName + "/", config.getString("output.output_prefix"), demandSets.get.map(_.flowFile.getFileName.toString.replace(".json", "") + "/")).toVector
   } else {
     readResults(config.getString("output.dir"), config.getString("output.output_prefix")).toVector
   }
 
   val resultsJson: Vector[ResultsContainerReadNew] = if (demandSets.isDefined) {
-    readResultsJson(config.getString("output.dir"), config.getString("output.output_prefix"), demandSets.get.map(_._1.split("\\.").head)).toVector
+    readResultsJson(config.getString("output.dir")+ demandSets.get.head.dir.getFileName + "/", config.getString("output.output_prefix"), demandSets.get.map(_.flowFile.getFileName.toString.replace(".json", "") + "/")).toVector
   } else {
     readResultsJson(config.getString("output.dir"), config.getString("output.output_prefix")).toVector
   }
@@ -220,7 +204,7 @@ object RunSimulation extends App with StrictLogging {
 
     // writes stattistcs about each run
     val statsPerRun = results.map(r => {
-      r.tt.map(_._3)/*.cutOfAfterQuantile(99.9)*/.statistics
+      r.tt.map(_._3) /*.cutOfAfterQuantile(99.9)*/ .statistics
     })
 
     Vector((0.0, computeBoxPlotData(statsPerRun.map(_.median)).toCSV, 0.8)).writeToCSV(config.getString("output.output_prefix") + "-travel-time-median-boxplot.csv", rowNames = None, columnNames = Some(Vector("pos", "mean", "median", "lq", "uq", "lw", "uw", "outliersize", "boxplotwidth")))
@@ -245,7 +229,7 @@ object RunSimulation extends App with StrictLogging {
 
 
     // Collects then writes individual travel times to csv
-    if (config.getBoolean("output.travel-times.disaggregate") && results.nonEmpty){
+    if (config.getBoolean("output.travel-time.disaggregate") && results.nonEmpty) {
       results
         .map(r => r.tt.map(_._3))
         .writeToCSV(

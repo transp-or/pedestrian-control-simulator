@@ -21,7 +21,7 @@ class NOMADGraphSimulator[T <: PedestrianNOMAD](st: Time,
                                                 val rebuildTreeInterval: Option[Time],
                                                 val spaceMicro: ContinuousSpace,
                                                 val graph: GraphContainer,
-                                                val timeTable: PublicTransportSchedule,
+                                                val timeTable: Option[PublicTransportSchedule],
                                                 val stop2Vertices: NodeParent => Iterable[Rectangle],
                                                 val controlDevices: ControlDevices,
                                                 val logFullPedestrianHistory: Boolean = false) extends PedestrianDES[PedestrianNOMAD](st, et) {

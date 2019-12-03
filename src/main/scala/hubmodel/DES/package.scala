@@ -3,8 +3,9 @@ package hubmodel
 import java.util.concurrent.ThreadLocalRandom
 
 import com.typesafe.config.{Config, ConfigFactory}
-import hubmodel.demand.flows.{ProcessDisaggregatePedestrianFlows, ProcessPedestrianFlows}
-import hubmodel.demand.{PedestrianFlowFunction_New, PedestrianFlowPT_New, PedestrianFlow_New, ProcessTimeTable, PublicTransportSchedule, readDisaggDemand, readDisaggDemandTF, readPedestrianFlows, readSchedule, readScheduleTF}
+import hubmodel.demand.flows.{ProcessDisaggregatePedestrianFlows, ProcessDisaggregatePedestrianFlowsWithoutTimeTable, ProcessPedestrianFlows}
+import hubmodel.demand.transit.Vehicle
+import hubmodel.demand.{AggregateFlows, DemandData, DemandSet, PedestrianFlowFunction_New, PedestrianFlowPT_New, PedestrianFlow_New, ProcessTimeTable, PublicTransportSchedule, TRANSFORMDemandSet, readDisaggDemand, readDisaggDemandTF, readPedestrianFlows, readSchedule, readScheduleTF}
 import hubmodel.ped.PedestrianNOMAD
 import hubmodel.supply.continuous.ReadContinuousSpace
 import hubmodel.supply.graph.{Stop2Vertex, readGraph, readPTStop2GraphVertexMap}
@@ -15,14 +16,51 @@ import hubmodel.tools.cells.Rectangle
 import scala.reflect.ClassTag
 import scala.collection.parallel.CollectionConverters._
 import scala.collection.parallel.ForkJoinTaskSupport
+import scala.collection.parallel.immutable.ParVector
 
 package object DES {
+
+
+  /** Creates a simulation, the corresponding output directory if it doesn't exist and the runs and writes the
+    * simulation to the output files.
+    *
+    * @param demand Tuples containing the demand
+    * @param config Config with the simulation parameters
+    */
+  def createRunWriteSimulation(demand: Option[DemandData], config: Config): Unit = {
+
+    // Creates the simulation
+    val sim = demand match {
+      case Some(_) => { createSimulation[PedestrianNOMAD](config, demand) }
+      case None => {createSimulation[PedestrianNOMAD](config)}
+    }
+
+    // Creates the output directory
+    val outputDir: String = if (config.getBoolean("files.multiple_demand_sets") || config.getBoolean("files.multiple_demand_sets_TF")) {
+      config.getString("output.dir") + demand.get.dir.getFileName + "/" + demand.get.flowFile.getFileName.toString.replace(".json", "") + "/"
+    } else {
+      config.getString("output.dir")
+    }
+
+    // Runs the simulation and writes the results to the files
+    runAndWriteResults(
+      sim,
+      config.getString("output.output_prefix") + "_",
+      outputDir,
+      config.getBoolean("output.write_trajectories_as_VS"),
+      config.getBoolean("output.write_trajectories_as_JSON"),
+      config.getBoolean("output.write_tt_4_transform")
+    )
+
+    // Calls the GC to clear memory
+    System.gc()
+  }
 
   /** Creates a simulation, but does not run it
     *
     * @return simulator ready to run
     */
-  def createSimulation[T <: PedestrianNOMAD](config: Config, flows_TF: Option[String] = None, timetable_TF: Option[String] = None)(implicit tag: ClassTag[T]): NOMADGraphSimulator[T] = {
+  def createSimulation[T <: PedestrianNOMAD](config: Config, demandSet: Option[DemandData] = None)(implicit tag: ClassTag[T]): NOMADGraphSimulator[T] = {
 
 
     /*if ((timetable_TF.isEmpty && flows_TF.isDefined) || (timetable_TF.isDefined && flows_TF.isEmpty)) {
@@ -43,7 +81,7 @@ package object DES {
     // Builds the set of walls used by the Social force model
     val infraSF = new ReadContinuousSpace(config.getString("files.walls"))
 
-    // Builds the graph used for route choice. This Graph is coposed of multiple different link types.
+    // Builds the graph used for route choice. This Graph is composed of multiple different link types.
     val (routeGraph, controlDevices) = readGraph[T](
       config.getString("files.graph"),
       config.getBoolean("sim.use_flow_gates"),
@@ -55,33 +93,33 @@ package object DES {
       config.getBoolean("sim.use_alternate_graphs")
     )
 
-    val flows = getFlows(config)
+    // Reads the pedestrian flows which are modelled as flows (i.e. aggregate)
+    val flows = getAggregateFlows(config)
 
-    val (timeTable, stop2Vertex) =
-      if (timetable_TF.isEmpty) {
-        getPTSchedule(flows, config)
-      } else {
-        getPTSchedule(flows, timetable_TF.get, config)
-      }
+    // Reads the PT timetable. The aggregate flows are needed to filter the PT vehicles.
+    val (timeTable, stop2Vertex) = getPTSchedule(config, demandSet, flows._2.nonEmpty)
 
-    val disaggPopulation =
-      if (timetable_TF.isEmpty && flows_TF.isEmpty) { // no
-        getDisaggPopulation(config)
-      } else if (flows_TF.nonEmpty && timetable_TF.isEmpty) {
-        getDisaggPopulation(config, flows_TF.get)
-      } else {
-        getDisaggPopulation(flows_TF.get)
-      }
+
+    val disaggPopulation = getDisaggregateFlows(config, demandSet)
+      /*if (demandSet.isEmpty) { // no
+
+      }/* else if (flows_TF_file.nonEmpty && timetable_TF_file.isEmpty) {
+        getDisaggregateFlows(config, flows_TF_file.get)
+      }*/ else {
+        getDisaggPopulation(demandSet.get._1.name)
+      }*/
 
     /** Takes a conceptual node (train or on foot) and returns the set of "real" nodes (the ones used by the graph)
       * in which the pedestrians must be created.
       *
-      * @param conceptualNode node representing the train or the pedestrian zone
-      * @return iterable in which the pedestrians will be created
+      * @param stop2Vertices mapping from stops to vertices
+      * @param timeTable collection of PT movements
+      * @param conceptualNode Node to map to graph nodes
+      * @return
       */
-    def conceptualNode2GraphNodes(conceptualNode: NodeParent): Iterable[Rectangle] = {
+    def conceptualNode2GraphNodes(stop2Vertices: Map[StopID_New, Vector[VertexID]], timeTable: Map[TrainID_New, Vehicle])(conceptualNode: NodeParent): Iterable[Rectangle] = {
       conceptualNode match {
-        case x: TrainID_New => stop2Vertex.stop2Vertices(timeTable.timeTable(x).stop).map(n => routeGraph.vertexMapNew(n))
+        case x: TrainID_New => stop2Vertices(timeTable(x).stop).map(n => routeGraph.vertexMapNew(n))
         case x: NodeID_New => Iterable(routeGraph.vertexMapNew(x.ID))
         case x: StopID_New => Iterable(routeGraph.vertexMapNew(x.ID.toString))
         case _ => throw new Exception("Track ID should not be there !")
@@ -96,10 +134,7 @@ package object DES {
     val evaluationInterval: Time = Time(config.getDouble("sim.evaluate_dt"))
     val rebuildTreeInterval: Time = Time(config.getDouble("sim.rebuild_tree_dt"))
 
-    // number of simulations to run
-    val n: Int = config.getInt("sim.nb_runs")
-
-
+    // Creation of the simulator
     val sim: NOMADGraphSimulator[T] = new NOMADGraphSimulator[T](
       simulationStartTime,
       simulationEndTime,
@@ -110,27 +145,46 @@ package object DES {
       spaceMicro = infraSF.continuousSpace,
       graph = routeGraph,
       timeTable = timeTable,
-      stop2Vertices = conceptualNode2GraphNodes,
+      stop2Vertices = conceptualNode2GraphNodes(stop2Vertex.stop2Vertices, if (timeTable.isDefined){timeTable.get.timeTable} else {Map()}),
       controlDevices = controlDevices,
       config.getBoolean("output.write_trajectories_as_VS") || config.getBoolean("output.write_trajectories_as_JSON") || config.getBoolean("output.make_video")
     )
 
+    // Insertion of the demand (pedestrian flows and PT vechicles) into the simulator
     insertDemandIntoSimulator[T](sim, disaggPopulation, flows, timeTable)
 
+    // returns the simulator
     sim
   }
 
 
-  def getFlows(config: Config): (Iterable[PedestrianFlow_New], Iterable[PedestrianFlowPT_New], Iterable[PedestrianFlowFunction_New]) = if (!config.getIsNull("files.flows") && config.getBoolean("sim.use_flows")) {
-    readPedestrianFlows(config.getString("files.flows"))
-  } else if (!config.getIsNull("files.flows_TF") && config.getBoolean("sim.use_flows")) {
-    readPedestrianFlows(config.getString("files.flows_TF"))
-  } else {
-    println(" * using only disaggregate pedestrian demand")
-    (Iterable(), Iterable(), Iterable())
+  /** Reads the aggregate pedestrian flows. The [[AggregateFlows]] is a tuple containing
+    *  - the uniform flows
+    *  - the PT induced flows
+    *  - the functional flows
+    *
+    * @param config config file
+    * @return [[AggregateFlows]] tuple with the three kind of flows
+    */
+  def getAggregateFlows(config: Config): AggregateFlows = {
+
+    if (config.getBoolean("sim.use_aggregate_demand")) {
+      readPedestrianFlows(config.getString("files.aggregate_demand"))
+    } else {
+      println(" * not using aggregate pedestrian flows")
+      (Iterable(), Iterable(), Iterable())
+    }
   }
 
-  def computeNumberOfSimulations(config: Config, multipleDemandSets: Option[Seq[(String, String)]]): Int = {
+  /** Determines the number of simulations to run. The number of simulations is either
+    *  - the number of demand sets (one replication each),
+    *  - the number of simulations specified in the config file.
+    *
+    * @param config config file used to read the number of simulations
+    * @param multipleDemandSets demand sets used for simulations
+    * @return total number of simulations to run
+    */
+  def computeNumberOfSimulations(config: Config, multipleDemandSets: Option[Seq[DemandData]]): Int = {
     if (multipleDemandSets.isDefined) {
       println(" * using " + multipleDemandSets.get.length + " different pedestrian demand sets")
       println(" * performing " + config.getInt("sim.nb_runs") + " replication(s) per demand set")
@@ -142,87 +196,86 @@ package object DES {
     }
   }
 
-  def getIteratorForSimulations(numberThreads: Option[Int], numberSimulation: Int): IterableOnce[Int] = {
-    if (numberThreads.isDefined) {
-      val r = Vector.range(0, numberSimulation).par
-      r.tasksupport = new ForkJoinTaskSupport(new java.util.concurrent.ForkJoinPool(numberThreads.get))
-      r
-    }
-    else {
-      Vector.range(0, numberSimulation)
-    }
+  def getParallelVectorForSimulations(numberThreads: Int, numberSimulation: Int): ParVector[Int] = {
+    val range: ParVector[Int] = Vector.range(0, numberSimulation).par
+    range.tasksupport = new ForkJoinTaskSupport(new java.util.concurrent.ForkJoinPool(math.min(numberSimulation, numberThreads)))
+    range
   }
 
 
-  // Loads the train time table used to create demand from trains
-  def getPTSchedule(flows: (Iterable[PedestrianFlow_New], Iterable[PedestrianFlowPT_New], Iterable[PedestrianFlowFunction_New]), config: Config): (PublicTransportSchedule, Stop2Vertex) = {
-    if (!config.getIsNull("files.timetable")) {
-      (
-        readSchedule(config.getString("files.timetable")),
-        readPTStop2GraphVertexMap(config.getString("files.zones_to_vertices_map"))
-      )
-    } else if (config.hasPath("files.timetable_TF") && !config.getIsNull("files.timetable_TF")) {
-      (
-        readScheduleTF(config.getString("files.timetable_TF")),
-        readPTStop2GraphVertexMap(config.getString("files.zones_to_vertices_map"))
-      )
-    } else if (flows._2.isEmpty) {
-      println(" * no time table is required as PT induced flows are empty")
-      (new PublicTransportSchedule("unused", Vector()), new Stop2Vertex(Map(), Vector(Vector())))
-    } else {
-      throw new IllegalArgumentException("both time tables files are set to null in config file")
-    }
-  }
+  /** Reads the public transport schedule based from either the demand set file or the timetable field in the config
+    * file. The mapping from stops to vertices is empty if the schedule is not defined.
+    *
+    * @param config config file
+    * @param demandSet demand set to read PT schedule from
+    * @return tuple containing an optional [[PublicTransportSchedule]] and the [[Stop2Vertex]] object
+    */
+  def getPTSchedule(config: Config, demandSet: Option[DemandData] = None, usePTInducedFlow: Boolean = false): (Option[PublicTransportSchedule], Stop2Vertex) = {
 
-  // Loads the train time table used to create demand from trains
-  def getPTSchedule(flows: (Iterable[PedestrianFlow_New], Iterable[PedestrianFlowPT_New], Iterable[PedestrianFlowFunction_New]),
-                    timetable_TF: String,
-                    config: Config,
-                   ): (PublicTransportSchedule, Stop2Vertex) = {
-    (
-      readScheduleTF(timetable_TF),
-      readPTStop2GraphVertexMap(config.getString("files.zones_to_vertices_map"))
-    )
+    // Reads the schedule.
+    val schedule: Option[PublicTransportSchedule] = {
+      demandSet match {
+        case Some(ds: DemandSet) => {Some(readSchedule(ds.timetableFile.toString))}
+        case Some(tf: TRANSFORMDemandSet) => {Some(readScheduleTF(tf.timetableFile.toString))}
+        case None if usePTInducedFlow => {Some(readSchedule(config.getString("files.timetable")))}
+        case _ => {println(" * no time table is required as PT induced flows are empty"); None}
+      }
+    }
+
+    // Mapping from stops to vertices in the network.
+    val stop2vertexMap = {
+      if (schedule.isDefined) {readPTStop2GraphVertexMap(config.getString("files.zones_to_vertices_map"))}
+      else {new Stop2Vertex(Map(), Vector())}
+    }
+
+    (schedule, stop2vertexMap)
   }
 
 
   // Loads the disaggregate pedestrian demand.
-  def getDisaggPopulation(config: Config): Iterable[(String, String, Option[Time])] = {
-    if (config.getIsNull("files.flows_TF") && !config.getIsNull("files.disaggregate_demand")) { // single disaggregate demand
-      readDisaggDemand(config.getString("files.disaggregate_demand"))
-        .flatMap(p =>
-          if (!config.getIsNull("sim.increase_disaggregate_demand") && ThreadLocalRandom.current().nextDouble() >= (1.0 - config.getDouble("sim.increase_disaggregate_demand") / 100.0)) {
-            Iterable(p, (p._1, p._2, Option(p._3.get.addDouble(ThreadLocalRandom.current().nextDouble(-15, 15)))))
-          } else {
-            Iterable(p)
-          }
-        )
-    } else if (config.getBoolean("sim.read_multiple_demand_sets")) { // multiple disaggregate demand sets
-      readDisaggDemand(config.getString("files.disaggregate_demand"))
-        .flatMap(p =>
-          if (!config.getIsNull("sim.increase_disaggregate_demand") && ThreadLocalRandom.current().nextDouble() >= (1.0 - config.getDouble("sim.increase_disaggregate_demand") / 100.0)) {
-            Iterable(p, (p._1, p._2, Option(p._3.get.addDouble(ThreadLocalRandom.current().nextDouble(-15, 15)))))
-          } else {
-            Iterable(p)
-          }
-        )
-    } else if (config.getIsNull("files.disaggregate_demand") && !config.getIsNull("files.flows_TF")) { // TRANS-FORM disaggregate demand
-      readDisaggDemandTF(config.getString("files.flows_TF"))
+  def getDisaggregateFlows(config: Config, demandSet: Option[DemandData] = None): Vector[(String, String, Option[Time])] = {
+
+    val disaggDemand: Vector[(String, String, Option[Time])] = demandSet match {
+      case Some(ds: DemandSet) => {readDisaggDemand(ds.flowFile.toString)}
+      case Some(tf:TRANSFORMDemandSet) => {readDisaggDemandTF(tf.flowFile.toString)}
+      case None if !config.getIsNull("files.disaggregate_demand") => {readDisaggDemand(config.getString("files.disaggregate_demand"))}
+      case _ => {println(" * not using disaggregate pedestrian flows"); Vector()}
+    }
+
+    if (config.getIsNull("sim.increase_disaggregate_demand")){
+      disaggDemand
     } else {
-      println(" * using only standard pedestrian flows")
-      Iterable()
+      disaggDemand.flatMap(p => increaseDemand(config.getDouble("sim.increase_disaggregate_demand"), p))
     }
   }
 
+  /*@deprecated
   def getDisaggPopulation(config: Config, file: String): Iterable[(String, String, Option[Time])] = {
-    readDisaggDemand(config.getString("files.TF_demand_sets") + file)
-      .flatMap(p =>
+    readDisaggDemand(config.getString("files.demand_sets") + file)
+      /*.flatMap(p =>
         if (!config.getIsNull("sim.increase_disaggregate_demand") && ThreadLocalRandom.current().nextDouble() >= (1.0 - config.getDouble("sim.increase_disaggregate_demand") / 100.0)) {
           Iterable(p, (p._1, p._2, Option(p._3.get.addDouble(ThreadLocalRandom.current().nextDouble(-15, 15)))))
         } else {
           Iterable(p)
         }
-      )
+      )*/
+  }
+*/
+  /** Add a pedestrian with a given probability. This method can only increase the demand, it cannot decrease it.
+    * The input pedestrian will be copied with a given probability. The OD data is identical but the entry time
+    * into the simulation is modified. The entry time of the new pedestrian is between 15  seconds earlier or later
+    * than the original entry time.
+    *
+    * @param ratio percentage increase in demand.
+    * @param pedestrian pedestrian to copy
+    * @return one or two pedestrians depending on whether a pedestrian has been added or not.
+    */
+  def increaseDemand(ratio: Double, pedestrian: (String, String, Option[Time])): Iterable[(String, String, Option[Time])] = {
+    if (ThreadLocalRandom.current().nextDouble() > (1.0 - ratio / 100.0)) {
+      Iterable(pedestrian, (pedestrian._1, pedestrian._2, Option(pedestrian._3.get.addDouble(ThreadLocalRandom.current().nextDouble(-15, 15)))))
+    } else {
+      Iterable(pedestrian)
+    }
   }
 
   // Loads the disaggregate pedestrian demand.
@@ -231,19 +284,40 @@ package object DES {
   }
 
 
+  /** Inserts the demand into the simulator. Four types of pedestrian flows are inserts:
+    *  - disaggregate pedestrian flows
+    *  - uniform pedestrian flows
+    *  - flows originating from PT vehicles
+    *  - non unniform flows
+    *
+    * @param sim simulator into which the demand must be inserted
+    * @param disaggPopulation disaggregate pedestrian flows
+    * @param flows aggregate pedestrian flows
+    * @param timeTable PT schedule
+    * @param tag Pedestrian type
+    * @tparam T Pedestrian type
+    */
   def insertDemandIntoSimulator[T <: PedestrianNOMAD](sim: NOMADGraphSimulator[T],
                                                       disaggPopulation: Iterable[(String, String, Option[Time])],
                                                       flows: (Iterable[PedestrianFlow_New], Iterable[PedestrianFlowPT_New], Iterable[PedestrianFlowFunction_New]),
-                                                      timeTable: PublicTransportSchedule)(implicit tag: ClassTag[T]): Unit = {
+                                                      timeTable: Option[PublicTransportSchedule])(implicit tag: ClassTag[T]): Unit = {
 
+    // inserts disaggregate pedestrian flows.
     if (disaggPopulation.nonEmpty) {
-      val newDisaggPopulation = disaggPopulation /*.groupBy(p => (p._1, p._2)).flatMap(gp => gp._2.take(2))*/
-      sim.insertEventWithZeroDelay(new ProcessDisaggregatePedestrianFlows[T](newDisaggPopulation, sim))
+      timeTable match {
+        case Some(_) => { sim.insertEventWithZeroDelay(new ProcessDisaggregatePedestrianFlows[T](disaggPopulation, sim)) }
+        case None => {sim.insertEventWithZeroDelay(new ProcessDisaggregatePedestrianFlowsWithoutTimeTable[T](disaggPopulation, sim)) }
+      }
     }
 
-    val PTInducedFlows = flows._2.toVector
-    sim.insertEventWithZeroDelay(new ProcessTimeTable[T](timeTable, PTInducedFlows, sim))
-    sim.insertEventWithZeroDelay(new ProcessPedestrianFlows[T](flows._1, flows._3, sim))
+
+    // Inserts PT vehicles and associated pedestrian flows.
+    if (timeTable.isDefined && flows._2.nonEmpty) {
+      sim.insertEventWithZeroDelay(new ProcessTimeTable[T](timeTable.get, flows._2.toVector, sim))
+    }
+
+    // Inserts aggregate pedestrian flows.
+    if (flows._1.nonEmpty || flows._3.nonEmpty) {sim.insertEventWithZeroDelay(new ProcessPedestrianFlows[T](flows._1, flows._3, sim))}
 
   }
 }

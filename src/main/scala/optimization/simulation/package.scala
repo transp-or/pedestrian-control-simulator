@@ -6,7 +6,7 @@ import java.nio.file.{Files, Paths}
 import com.typesafe.config.Config
 import hubmodel.DES.{NOMADGraphSimulator, _}
 import hubmodel._
-import hubmodel.demand.readDemandSets
+import hubmodel.demand.{DemandData, DemandSet, readDemandSets}
 import hubmodel.mgmt._
 import hubmodel.mgmt.flowgate.{FlowGate, FlowGateFunctional}
 import hubmodel.ped.PedestrianNOMAD
@@ -97,7 +97,7 @@ package object simulation {
                                                                   nbrReplications: Option[Int] = None,
                                                                   simDir: Option[String]): (String, Map[String, Double]) = {
 
-    val demandSets: Option[Seq[(String, String)]] = readDemandSets(config)
+    val demandSets: Option[Seq[DemandData]] = readDemandSets(config)
 
     val n: Int = if (nbrReplications.isDefined) {
       nbrReplications.get
@@ -105,11 +105,13 @@ package object simulation {
       computeNumberOfSimulations(config, demandSets)
     }
 
-    val range: IterableOnce[Int] = getIteratorForSimulations(if (config.getBoolean("execution.parallel")) {
-      Some(config.getInt("execution.threads"))
-    } else {
-      None
-    }, n)
+    val range = if (config.getBoolean("execution.parallel")) {
+      getParallelVectorForSimulations(config.getInt("execution.threads"), n)
+    }
+    else {
+      Vector.range(0, n)
+    }
+
 
     val ID: String = if (simDir.isDefined) {
       simDir.get
@@ -129,7 +131,7 @@ package object simulation {
       val sim =
         if (demandSets.isDefined) {
           throw new Exception("Possibility not yet implemented !")
-          createSimulation[PedestrianNOMAD](config, Some(demandSets.get(s - 1)._1), Some(demandSets.get(s - 1)._2))
+          createSimulation[PedestrianNOMAD](config, Some(demandSets.get(s - 1)))
         }
         else {
           val newControlDevices = func match {
@@ -199,12 +201,12 @@ package object simulation {
             defaultParameters.writeTrajectoryData
           )
 
-          val flows = getFlows(config)
+          val flows = getAggregateFlows(config)
 
-          val (timeTable, stop2Vertex) = getPTSchedule(flows, config)
+          val (timeTable, stop2Vertex) = getPTSchedule(config)
 
 
-          val disaggPopulation = getDisaggPopulation(config)
+          val disaggPopulation = getDisaggregateFlows(config)
 
 
           insertDemandIntoSimulator(sim, disaggPopulation, flows, timeTable)

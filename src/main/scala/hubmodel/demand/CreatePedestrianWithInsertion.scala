@@ -21,7 +21,7 @@ class CreatePedestrianWithInsertion[T <: PedestrianNOMAD](o: Rectangle, d: Recta
     * If problems inside zone on creation this is a good place to start.
     */
   override def execute(): Unit = {
-    sim.eventLogger.trace("time=" + sim.currentTime + ": pedestrian created")
+    sim.eventLogger.trace("time=" + sim.currentTime + ": pedestrian creation inserted")
 
     // the shortest path method returns the origin node as the first element of the route.
     //val route = sim.graph.getShortestPath(o, d).tail

@@ -41,4 +41,16 @@ class DensityMeasuredArea(name: String, A: Position, B: Position, C: Position, D
     * @return deep copy of the current monitored area with changed target density
     */
   def deepCopyChangeTargetDensity(rho: Double) = new DensityMeasuredArea(name, A, B, C, D, rho)
+
+
+  def toJSON: String = {
+    "{" +
+      "\"name\":\"" + this.name + "\"," +
+      "\"target-density\":" + this.targetDensity + "," +
+      "\"density-measurements\":[" +
+    this.densityHistory.map(dp => "{\"time\":" + dp._1.toString + ",\"density\":" + dp._2 + "}").mkString(",\n") +
+    "],\n\"density-individual-measurements\":[" + this.paxIndividualDensityHistory.map(d => "{\"time\":" + d._1 + ",\"densities\":[" + d._2.mkString(",")) + "]}"+
+    "]"+
+      "}"
+  }
 }

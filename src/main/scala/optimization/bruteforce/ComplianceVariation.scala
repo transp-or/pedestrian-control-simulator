@@ -1,7 +1,7 @@
 package optimization.bruteforce
 
 import com.typesafe.config.Config
-import hubmodel.DES.getFlows
+import hubmodel.DES.getAggregateFlows
 import hubmodel.SimulatorParameters
 import hubmodel.demand.{PedestrianFlowFunction_New, PedestrianFlowPT_New, PedestrianFlow_New}
 
@@ -46,7 +46,7 @@ class ComplianceVariation(complianceInterval: Double, c: Config, upperBoundCompl
     paramMods.complianceRate.toString + "_params_"
   }
 
-  def getFlowMods(paramMods: ParameterModificationsCompliance): (Iterable[PedestrianFlow_New], Iterable[PedestrianFlowPT_New], Iterable[PedestrianFlowFunction_New]) = getFlows(config)
+  def getFlowMods(paramMods: ParameterModificationsCompliance): (Iterable[PedestrianFlow_New], Iterable[PedestrianFlowPT_New], Iterable[PedestrianFlowFunction_New]) = getAggregateFlows(config)
 
 
   def processWrittenResults(func: Seq[Double] => Double): Map[(Double), (Iterable[Double], Iterable[Iterable[Double]])] = {

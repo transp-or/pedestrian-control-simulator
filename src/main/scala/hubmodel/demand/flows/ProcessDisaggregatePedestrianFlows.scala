@@ -23,10 +23,10 @@ class ProcessDisaggregatePedestrianFlows[T <: PedestrianNOMAD](eventCollection: 
           //errorLogger.warn("Pedestrian dropped since invalid OD: " + ec)
         }
       } else if (ec._1.contains("t_") && ec._2.contains("z_")) {
-        sim.timeTable.timeTable.find(_._1.ID == ec._1.drop(2)).get._2.addAlightingPassenger(StopID_New(ec._2.drop(2), ""))
+        sim.timeTable.get.timeTable.find(_._1.ID == ec._1.drop(2)).get._2.addAlightingPassenger(StopID_New(ec._2.drop(2), ""))
       } else if (ec._1.contains("t_") && ec._2.contains("t_")) {
-        if (sim.timeTable.timeTable.exists(_._1.ID == ec._1.drop(2)) && sim.timeTable.timeTable.exists(_._1.ID == ec._2.drop(2))) {
-          sim.timeTable.timeTable.find(_._1.ID == ec._1.drop(2)).get._2.addAlightingPassenger(TrainID_New(ec._2.drop(2), ""))
+        if (sim.timeTable.get.timeTable.exists(_._1.ID == ec._1.drop(2)) && sim.timeTable.get.timeTable.exists(_._1.ID == ec._2.drop(2))) {
+          sim.timeTable.get.timeTable.find(_._1.ID == ec._1.drop(2)).get._2.addAlightingPassenger(TrainID_New(ec._2.drop(2), ""))
         } else {
           throw new Exception("Pedestrian's vehicle does not exist ! O=" + ec._1 + ", D=" + ec._2)
         }

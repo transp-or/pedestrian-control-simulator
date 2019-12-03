@@ -4,7 +4,7 @@ import java.util.concurrent.ThreadLocalRandom
 
 import com.typesafe.config.{Config, ConfigFactory, ConfigValueFactory}
 import hubmodel.DES.{NOMADGraphSimulator, _}
-import hubmodel.demand.PublicTransportSchedule
+import hubmodel.demand.{DemandData, PublicTransportSchedule}
 import hubmodel.io.output.image.{DrawControlDevicesAndWalls, DrawGraph, DrawWalls, DrawWallsAndGraph}
 import hubmodel.io.output.video.MovingPedestriansWithDensityWithWallVideo
 import hubmodel.mgmt.ControlDevices
@@ -224,7 +224,7 @@ package object hubmodel {
   /** Creates, runs and makes a video from the simulation. No results are processed.
     * Making the video can take some time.
     */
-  def runSimulationWithVideo(config: Config, singleDemandSet: Option[String] = None): Unit = {
+  def runSimulationWithVideo(config: Config, singleDemandSet: Option[DemandData] = None): Unit = {
 
     // create simulation
     val sim = createSimulation[PedestrianNOMAD](config, singleDemandSet)
@@ -309,7 +309,7 @@ package object hubmodel {
       Option[Time],
       ContinuousSpace,
       GraphContainer,
-      PublicTransportSchedule,
+      Option[PublicTransportSchedule],
       NodeParent => Iterable[Rectangle],
       ControlDevices
     )

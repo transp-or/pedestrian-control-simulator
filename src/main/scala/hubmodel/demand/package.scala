@@ -23,6 +23,7 @@ import scala.jdk.CollectionConverters._
   */
 package hubmodel {
 
+  import hubmodel.io.input.JSONReaders.TRANSFORM.Vehicle_JSON_TF
   import hubmodel.tools.exceptions.IllegalSimulationInput
 
 
@@ -225,6 +226,37 @@ package hubmodel {
       ) (Pedestrian_JSON.apply _)
 
 
+    /** Reads the PT schedule which is formatted as:
+      *
+      * {{{
+      *   {
+      *   "location": "lausanne",
+      *   "trains": [
+      *     {
+      *       "id": "12217",
+      *       "type": "S21",
+      *       "track": 3,
+      *       "arrival-time": "25320",
+      *       "departure-time": "25380",
+      *       "capacity": 515
+      *     },
+      *     {
+      *       "id": "12218",
+      *       "type": "S2",
+      *       "track": 4,
+      *       "arrival-time": "25600",
+      *       "departure-time": "25650",
+      *       "capacity": 517
+      *     }
+      *     }
+      * }}}
+      *
+      * The vehicle movements are stored as [[hubmodel.io.input.JSONReaders.Vehicle_JSON]].
+      *
+      *
+      * @param fileName
+      * @return
+      */
     def readSchedule(fileName: String): PublicTransportSchedule = {
 
       val source: BufferedSource = scala.io.Source.fromFile(fileName)
@@ -236,6 +268,32 @@ package hubmodel {
       }
     }
 
+    /** Reads the TRANS-FORM public transport schedule which is formatted as:
+      *
+      * {{{
+      *   {
+      *   "location": "lausanne",
+      *   "trains": [
+      *     {
+      *       "stop_id": "20212022",
+      *       "trip_id": "60101",
+      *       "arrival_time": "1314.12",
+      *       "departure_time": "1339.57"
+      *     },
+      *     {
+      *       "stop_id": "20212022",
+      *       "trip_id": "20101",
+      *       "arrival_time": "1526.64",
+      *       "departure_time": "1555.86"
+      *     }
+      *     }
+      *  }}}
+      *
+      * This format is used for the TRANS-FORM project. The vehicle movements are stored as [[Vehicle_JSON_TF]].
+      *
+      * @param fileName name of the file containing the JSON
+      * @return collection of PT vehicle movements
+      */
     def readScheduleTF(fileName: String): PublicTransportSchedule = {
 
       val source: BufferedSource = scala.io.Source.fromFile(fileName)
@@ -358,67 +416,85 @@ package hubmodel {
     // closing Demand package
 
 
+    /*abstract class InputFile{val name: String}
+    case class TRANSFORMDemandFile(name: String) extends InputFile
+    case class DemandFile(name: String) extends InputFile
+
+    type FlowFile = InputFile
+    type TimeTableFile = InputFile*/
+
+    abstract class DemandData(val dir: Path){
+      val flowFile: Path
+      val timetableFile: Path
+    }
+
+    case class TRANSFORMDemandSet(private val flow: Path, private val timetable: Path, private val directory: String) extends DemandData(Paths.get(directory)) {
+      val flowFile: Path = Paths.get(dir + "/" + flow.getFileName.toString)
+      val timetableFile: Path = Paths.get(dir + "/" + timetable.getFileName.toString)
+    }
+
+    case class DemandSet(private val flow: Path, private val timetable: Path, private val directory: String) extends DemandData(Paths.get(directory)) {
+      val flowFile: Path = Paths.get(dir + "/" + flow.getFileName.toString)
+      val timetableFile: Path = Paths.get(dir + "/" + timetable.getFileName.toString)
+    }
+
+    type AggregateFlows = (Iterable[PedestrianFlow_New], Iterable[PedestrianFlowPT_New], Iterable[PedestrianFlowFunction_New])
+
     /** Reads the different files specifying the pedestrian demand
       *
       * @param config
       * @return
       */
-    def readDemandSets(config: Config): Option[Seq[(String, String)]] = {
+    def readDemandSets(config: Config): Option[Seq[DemandData]] = {
+
+      /** Lists all files from the directory "demand_sets" from the config file.
+        *
+        * @return
+        */
+      def getFilesInDirectory: Vector[Path] = {
+        val multipleDemandStream: DirectoryStream[Path] = Files.newDirectoryStream(Paths.get(config.getString("files.demand_sets")), "*.json")
+        val files: Vector[Path] = multipleDemandStream.asScala.toVector
+        multipleDemandStream.close()
+        files
+      }
+
+      def getMatchingFlowTimeTable(files: Vector[Path]): Seq[(Path, Path)] = {
+
+        // get the base name of the scenarios by removing the extension from the names in the config.
+        val flowBaseName: String = Paths.get(config.getString("files.disaggregate_demand")).getFileName.toString.replace(".json", "")
+        val timetableBaseName: String = Paths.get(config.getString("files.timetable")).getFileName.toString.replace(".json", "")
+
+
+        if (files.size % 2 != 0) {
+          throw new IllegalSimulationInput("Uneven number of files for multiple demand sets ! (" + files.size + " files found)")
+        } else if (files.isEmpty) {
+          throw new IllegalSimulationInput("No files for multiple demand sets !")
+        } else if (files.size == 2) {
+          println("Warning ! Only one set of demands used for the multiple demand inputs. ")
+          Seq((
+            files.find(_.getFileName.toString.contains(flowBaseName)).get,
+            files.find(_.getFileName.toString.contains(timetableBaseName)).get
+          )
+          )
+        } else {
+          files
+            .groupBy(f => f.getFileName.getFileName.toString.split("_").last.replace(".json", ""))
+            .map(grouped => (grouped._2.find(_.getFileName.toString.contains(flowBaseName)).get, grouped._2.find(_.getFileName.toString.contains(timetableBaseName)).get)).toVector
+        }
+      }
+
 
       // Check if the input parameters makes sense
-      if (config.getBoolean("sim.read_multiple_demand_sets") && config.getBoolean("sim.read_multiple_TF_demand_sets")) {
+      if (config.getBoolean("files.multiple_demand_sets") && config.getBoolean("files.multiple_demand_sets_TF")) {
         throw new IllegalSimulationInput("Multiple demand sets for standard and TRANS-FORM cannot be set together !")
       }
 
-      if (config.getBoolean("sim.read_multiple_TF_demand_sets")) { // Reads the data of the TRANS-FORM project
+      val files = getFilesInDirectory
+      val demandFiles: Seq[(Path, Path)] = getMatchingFlowTimeTable(files)
 
-        // Check if the input parameters makes sense
-        if (!((Paths.get(config.getString("files.TF_demand_sets")).toString == Paths.get(config.getString("files.flows_TF")).getParent.toString) &&
-          (Paths.get(config.getString("files.flows_TF")).getParent.toString == Paths.get(config.getString("files.timetable_TF")).getParent.toString))) {
-          throw new IllegalSimulationInput("Directories for multiple demand sets do not match !")
-        }
-
-        // Get the list of files which compose the demand sets
-        val multipleDemandStream: DirectoryStream[Path] = Files.newDirectoryStream(Paths.get(config.getString("files.TF_demand_sets")), "*.json")
-        val files: Vector[Path] = multipleDemandStream.asScala.toVector
-        multipleDemandStream.close()
-
-        // get the base name of the scenario
-        val flowBaseName: String = Paths.get(config.getString("files.flows_TF")).getFileName.toString.replace(".json", "")
-        val timetableBaseName: String = Paths.get(config.getString("files.timetable_TF")).getFileName.toString.replace(".json", "")
-
-        try {
-          if (files.size % 2 != 0) {
-            throw new IllegalSimulationInput("Uneven number of files for multiple demand sets ! (" + files.size + " files found)")
-          } else if (files.isEmpty) {
-            throw new IllegalSimulationInput("No files for multiple demand sets !")
-          } else if (files.size == 2) {
-            println("Warning ! Only one set of demands used for the multiple demand inputs. ")
-            Some(
-              Seq((
-                files.find(_.getFileName.toString.contains(flowBaseName)).get.toString,
-                files.find(_.getFileName.toString.contains(timetableBaseName)).get.toString
-              )
-              )
-            )
-          } else {
-            Some(
-              files
-                .groupBy(f => f.getFileName.getFileName.toString.split("_").last.replace(".json", ""))
-                .map(grouped => (grouped._2.find(_.getFileName.toString.contains(flowBaseName)).get.toString, grouped._2.find(_.getFileName.toString.contains(timetableBaseName)).get.toString)).toVector
-            )
-          }
-        } catch {
-          case e: Exception => throw e
-        }
-      } else if (config.getBoolean("sim.read_multiple_demand_sets")) {       // Reads the data for the other cases
-        val multipleDemandStream: DirectoryStream[Path] = Files.newDirectoryStream(Paths.get(config.getString("files.TF_demand_sets")), "*.json")
-        val files: Vector[Path] = multipleDemandStream.asScala.toVector
-        multipleDemandStream.close()
-        Some(files.flatMap(f => (1 to config.getInt("sim.nb_runs")).map(n => (f.getFileName.toString, ""))))
-      } else {
-        None
-      }
+      if (config.getBoolean("files.multiple_demand_sets_TF")) {Some(demandFiles.map(ss => TRANSFORMDemandSet(ss._1, ss._2, config.getString("files.demand_sets"))))}
+      else if (config.getBoolean("files.multiple_demand_sets")) { Some(demandFiles.map(ss => DemandSet(ss._1, ss._2, config.getString("files.demand_sets"))))}
+      else {None}
     }
 
   } // closing HubModel.HubInput package

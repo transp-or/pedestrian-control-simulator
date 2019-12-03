@@ -1,7 +1,7 @@
 name := "hub-simulator"
 organization := "ch.epfl.transpor.pedestrians"
 version := "1.0-SNAPSHOT"
-scalaVersion := "2.13.0"
+scalaVersion := "2.13.1"
 fork in run := true
 
 javaOptions in run ++= Seq(
@@ -21,19 +21,16 @@ libraryDependencies ++= Seq(
   "transpor.tools" % "power-voronoi" % "1.0",
   "com.github.NicholasMolyneaux" %% "scala-custom" % "1.3.3",
   "transpor.tools" % "dxf-parser" % "1.0",
-  "nl.tudelft.pedestrians" % "nomad" % "1.0",
   "org.scala-lang.modules" %% "scala-parser-combinators" % "1.1.2",
   "org.apache.commons" % "commons-lang3" % "3.8",
   "org.apache.commons" % "commons-math3" % "3.6",
-  "org.j3d" % "aviatrix3d" % "3.0.0" pomOnly(), // https://mvnrepository.com/artifact/org.j3d/aviatrix3d
-  "javax.vecmath" % "vecmath" % "1.5.2"
+  "org.scala-lang.modules" %% "scala-parallel-collections" % "0.2.0"
 )
 
 // Dependencies installed manually with sbt
 libraryDependencies ++= Seq(
   "transpor.tools" % "power-voronoi" % "1.0",
-  "transpor.tools" % "dxf-parser" % "1.0",
-  "nl.tudelft.pedestrians" % "nomad" % "1.0"
+  "transpor.tools" % "dxf-parser" % "1.0"
 )
 
 // Extra places to look for libraries  (useful for the scala-custom, avoids waiting for new versions to be copied to maven central

@@ -16,7 +16,7 @@ class SimulationParametersClass(val start: Time,
                                 val rebuildTreeInterval: Option[Time],
                                 val microSpace: ContinuousSpace,
                                 val graph: GraphContainer,
-                                val timeTable: PublicTransportSchedule,
+                                val timeTable: Option[PublicTransportSchedule],
                                 val stop2Vertex: NodeParent => Iterable[Rectangle],
                                 val controlDevices: ControlDevices,
                                 val writeTrajectoryData: Boolean)

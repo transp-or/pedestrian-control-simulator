@@ -200,7 +200,7 @@ case class PedestrianFlowFunction_New(val O: NodeID_New, val D: NodeParent, val 
 
 case class PedestrianFlowPT_New(override val O: TrainID_New, override val D: NodeParent, override val f: Double) extends PedestrianFlow_New_Parent(O, D, f)
 
-@deprecated
+/*@deprecated
 class ReadPedestrianFlows(file: String, useFlows: Boolean) {
 
   private val _pedestrianFlowData: ODFlowData = if (useFlows) {
@@ -226,7 +226,7 @@ class ReadPedestrianFlows(file: String, useFlows: Boolean) {
   } else {
     Iterable()
   }
-}
+}*/
 
 
 //case class PassengerFlow(O: String, D: String, flow: Double)

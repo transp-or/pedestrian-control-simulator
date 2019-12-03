@@ -6,7 +6,7 @@ import java.nio.file.{Files, Path, Paths}
 import com.typesafe.config.Config
 import hubmodel.DES.{NOMADGraphSimulator, _}
 import hubmodel._
-import hubmodel.demand.{PedestrianFlowFunction_New, PedestrianFlowPT_New, PedestrianFlow_New}
+import hubmodel.demand.{AggregateFlows, PedestrianFlowFunction_New, PedestrianFlowPT_New, PedestrianFlow_New}
 import hubmodel.ped.PedestrianNOMAD
 import myscala.math.stats.ComputeStats
 
@@ -63,11 +63,11 @@ abstract class GridSearchNew[T <: ParameterModifications](val config: Config) ex
 
       ///////////////////////////////////////////////////////////////////////////////////////////////
 
-      val flows: (Iterable[PedestrianFlow_New], Iterable[PedestrianFlowPT_New], Iterable[PedestrianFlowFunction_New]) = getFlowMods(p)
+      val flows: AggregateFlows = getFlowMods(p)
 
-      val (timeTable, stop2Vertex) = getPTSchedule(flows, config)
+      val (timeTable, stop2Vertex) = getPTSchedule(config)
 
-      val disaggPopulation = getDisaggPopulation(config)
+      val disaggPopulation = getDisaggregateFlows(config)
 
       insertDemandIntoSimulator[PedestrianNOMAD](sim, disaggPopulation, flows, timeTable)
 

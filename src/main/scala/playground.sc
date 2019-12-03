@@ -1,3 +1,7 @@
-1.0 - math.exp(-0.354 * 1.0 * ((1.0/0.01) - 1.0/5.4))
+import java.nio.file.{Path, Paths}
 
-math.exp(1.0/0.0)
+val p = Paths.get("/home/ef/gfdgdf/")
+
+p.getFileName
+p.getParent
+p.getRoot
