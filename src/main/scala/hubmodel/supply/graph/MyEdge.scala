@@ -1,7 +1,7 @@
 package hubmodel.supply.graph
 
 import hubmodel.generateUUID
-import hubmodel.tools.cells.Rectangle
+import tools.cells.{Rectangle, Vertex}
 import org.jgrapht.graph.DefaultWeightedEdge
 
 /** Representation of an edge used in the graph structure. Can be used as parent for advanced edges with gates.
@@ -9,7 +9,7 @@ import org.jgrapht.graph.DefaultWeightedEdge
   * @param startVertex vertex at origin
   * @param endVertex   vertex at destination
   */
-class MyEdge(val startVertex: Rectangle, val endVertex: Rectangle) extends DefaultWeightedEdge {
+class MyEdge(val startVertex: Vertex, val endVertex: Vertex) extends DefaultWeightedEdge {
 
   // ID of the edge
   val ID: String = generateUUID
@@ -23,7 +23,7 @@ class MyEdge(val startVertex: Rectangle, val endVertex: Rectangle) extends Defau
   // accessor for the cost
   def cost: Double = _cost
 
-  // setter for the cost. The call to sychronized is to ensure multi-thread correctness
+  // setter for the cost.
   def updateCost(v: Double): Unit = _cost = v
 
 

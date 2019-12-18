@@ -1,6 +1,6 @@
 package hubmodel.demand
 
-import hubmodel.tools.Time
+import tools.Time
 import play.api.libs.json.{JsError, JsSuccess, JsValue, Json}
 
 import scala.io.BufferedSource

@@ -1,7 +1,7 @@
 package trackingdataanalysis.pedtrack.io
 
 import hubmodel.Position
-import hubmodel.tools.cells.Rectangle
+import tools.cells.Rectangle
 import play.api.libs.json.{JsError, JsSuccess, JsValue, Json}
 import trackingdataanalysis.pedtrack.visiosafe.{FlowLineDA}
 

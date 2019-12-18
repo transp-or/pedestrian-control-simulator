@@ -4,8 +4,8 @@ import java.awt.Graphics2D
 import java.awt.geom.Ellipse2D
 
 import hubmodel.Position
-import hubmodel.ped.History.{Coordinate, HistoryContainer}
-import hubmodel.tools.Time
+import hubmodel.ped.History.{CoordinateTracking, HistoryContainer}
+import tools.Time
 
 /**
   * Collection of various tools for formatting data, drawing elements and mapping coordinates.

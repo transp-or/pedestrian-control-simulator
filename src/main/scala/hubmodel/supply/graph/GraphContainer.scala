@@ -1,17 +1,18 @@
 package hubmodel.supply.graph
 
 import hubmodel.mgmt.ControlDevices
+import hubmodel.mgmt.amw.MovingWalkway
 import hubmodel.mgmt.flowgate.{BinaryGate, FlowGate}
 import hubmodel.mgmt.flowsep.FlowSeparator
 import hubmodel.ped.PedestrianNOMAD
-import hubmodel.tools.cells.Rectangle
+import tools.cells.{Rectangle, Vertex}
 
 abstract class GraphContainer(protected val flowGates: Iterable[FlowGate],
                               protected val binaryGates: Iterable[BinaryGate],
                               protected val movingWalkways: Iterable[MovingWalkway],
                               protected val flowSeparators: Iterable[FlowSeparator[_, _]]) {
 
-  def vertexMapNew: Map[String, Rectangle]
+  def vertexMapNew: Map[String, Vertex]
 
   def edges: Set[MyEdge]
 

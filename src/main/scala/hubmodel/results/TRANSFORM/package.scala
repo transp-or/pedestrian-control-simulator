@@ -4,8 +4,8 @@ import java.io.{BufferedWriter, File, FileWriter}
 
 import hubmodel.ped.PedestrianTrait
 import hubmodel.supply.graph.Stop2Vertex
-import hubmodel.tools.Time
-import hubmodel.tools.TimeNumeric.mkOrderingOps
+import tools.Time
+import tools.TimeNumeric.mkOrderingOps
 import hubmodel.{GroupID, VertexID}
 import myscala.math.stats.{Quantiles, computeQuantiles}
 import play.api.libs.json.{JsValue, Json, Writes}

@@ -2,9 +2,9 @@ package hubmodel.ped
 
 import java.util.concurrent.ThreadLocalRandom
 
-import hubmodel.ped.History.{Coordinate, HistoryContainer, PositionIsolation}
-import hubmodel.tools.Time
-import hubmodel.tools.cells.Rectangle
+import hubmodel.ped.History.{CoordinateTracking, HistoryContainer, PositionIsolation}
+import tools.Time
+import tools.cells.{Rectangle, Vertex}
 import hubmodel.{Position, pedestrianWalkingSpeed, _}
 import myscala.math.vector.ZeroVector2D
 
@@ -24,14 +24,14 @@ import myscala.math.vector.ZeroVector2D
   * @param currentDestination intermediate destination point (next target)
   * @param route              initial route
   */
-class PedestrianSim(val origin: Rectangle,
-                    val originalFinalDestination: Rectangle,
+class PedestrianSim(val origin: Vertex,
+                    val originalFinalDestination: Vertex,
                     val entryTime: Time,
                     val logFullHistory: Boolean = false,
                     val isTransfer: Boolean) extends PedestrianTrait with PedestrianTrajectory {
 
   // The final destination can change if there is an equivalent one which is closer than the original one.
-  var finalDestination: Rectangle = originalFinalDestination
+  var finalDestination: Vertex = originalFinalDestination
 
   /** Free flow walking speed of the pedestrian
     *
@@ -64,12 +64,12 @@ class PedestrianSim(val origin: Rectangle,
   // ******************************************************************************************
 
   /** History of the pedestrians positions */
-  protected val _historyPositionUnsorted: collection.mutable.ArrayBuffer[(Time, HistoryContainer)] = collection.mutable.ArrayBuffer((entryTime, Coordinate(currentPosition)))
+  protected val _historyPositionUnsorted: collection.mutable.ArrayBuffer[(Time, HistoryContainer)] = collection.mutable.ArrayBuffer((entryTime, CoordinateTracking(currentPosition)))
 
   protected lazy val _historyPosition: Vector[(Time, HistoryContainer)] = _historyPositionUnsorted.toVector
 
 
-  var route: List[Rectangle] = List()
+  var route: List[Vertex] = List()
 
   /** intermediate destination of the pedestrian */
   var currentDestination: Position = new Position(0, 0) //route.head.uniformSamplePointInside
@@ -78,6 +78,10 @@ class PedestrianSim(val origin: Rectangle,
   if (desiredWalkingSpeed < 0.0 || desiredWalkingSpeed > 4.0) {
     throw new IllegalArgumentException("Unacceptable free flow velocity")
   }
+
+
+  // Base moving speed on top of which the pedestrian moves. This is used to model the effect of moving walkways.
+  var baseVelocity: Velocity = new ZeroVector2D
 
   /** current velocity, initialized to 0.0 */
   var currentVelocity: Velocity = new ZeroVector2D
@@ -101,9 +105,9 @@ class PedestrianSim(val origin: Rectangle,
   val timeInMonitoredAreas: scala.collection.mutable.Map[String, (Time, Time)] = scala.collection.mutable.Map()
 
   /** target zone */
-  var nextZone: Rectangle = finalDestination //route.head
+  var nextZone: Vertex = finalDestination //route.head
 
-  var previousZone: Rectangle = origin //route.head
+  var previousZone: Vertex = origin //route.head
 
   /* Position increment to be added at the next time interval */
   var positionIncrement: Position = new ZeroVector2D
@@ -145,7 +149,7 @@ class PedestrianSim(val origin: Rectangle,
     //if (this.currentPosition != this._historyPosition.last._2) {
     this.previousPosition = this.currentPosition
     if (logFullHistory) {
-      this._historyPositionUnsorted += ((t, Coordinate(this.currentPosition)))
+      this._historyPositionUnsorted += ((t, CoordinateTracking(this.currentPosition)))
     }
     //}
   }
@@ -161,7 +165,7 @@ class PedestrianSim(val origin: Rectangle,
   }
 
   def updatePositionHistory(t: tools.Time, pos: Position): Unit = {
-    this._historyPositionUnsorted += ((t, Coordinate(pos)))
+    this._historyPositionUnsorted += ((t, CoordinateTracking(pos)))
   }
 
   def setCurrentDestination(pos: Position): Unit = {
@@ -175,13 +179,13 @@ class PedestrianSim(val origin: Rectangle,
   /** Moves each pedestrian with the already compuoted increments
     * The increments are set by the [[hubmodel.mvmtmodels.SocialForceESI]] model.
     */
-  def move(): Unit = {
+  /*def move(): Unit = {
     this.travelDistance += positionIncrement.norm
     this.currentPosition = this.currentPosition + positionIncrement
     this.positionIncrement = new ZeroVector2D
     this.currentVelocity = boundVelocity(this.currentVelocity + velocityIncrement)
     this.velocityIncrement = new ZeroVector2D
-  }
+  }*/
 
 
   // ******************************************************************************************
@@ -226,7 +230,7 @@ class PedestrianSim(val origin: Rectangle,
     * @param posO
     * @param logFullHistory
     */
-  def this(oZone: Rectangle, dZone: Rectangle, entryTime: Time, posO: Position, logFullHistory: Boolean, isTransfer: Boolean) {
+  def this(oZone: Vertex, dZone: Vertex, entryTime: Time, posO: Position, logFullHistory: Boolean, isTransfer: Boolean) {
     this(oZone, dZone, entryTime, logFullHistory, isTransfer) // velocity taken from VS data
     this.currentPosition = posO
   }

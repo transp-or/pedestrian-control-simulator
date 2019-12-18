@@ -3,7 +3,7 @@ package hubmodel.mgmt.flowgate
 import hubmodel.Position
 import hubmodel.mgmt.ControlDeviceComponent
 import hubmodel.supply.graph.MyEdgeWithGate
-import hubmodel.tools.cells.Rectangle
+import tools.cells.{Rectangle, Vertex}
 
 /** Object to model gates controlling the flow of pedestrians
   *
@@ -13,8 +13,8 @@ import hubmodel.tools.cells.Rectangle
   * @param end   other end of the gate (used for visualization)
   */
 @deprecated("use flow gates instead")
-class BinaryGate(o: Rectangle,
-                 d: Rectangle,
+class BinaryGate(o: Vertex,
+                 d: Vertex,
                  start: Position,
                  end: Position,
                  ma: String) extends MyEdgeWithGate(o, d, start, end, ma) with ControlDeviceComponent {

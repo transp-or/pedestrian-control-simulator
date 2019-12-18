@@ -6,8 +6,8 @@ import java.util.concurrent.ThreadLocalRandom
 //import com.vividsolutions.jts.geom.Coordinate
 import hubmodel.DES.{Action, NOMADGraphSimulator}
 import hubmodel.ped.PedestrianNOMAD
-import hubmodel.tools.Time
-import hubmodel.tools.cells.isInVertex
+import tools.Time
+import tools.cells.isInVertex
 import hubmodel.{DISTANCE_TO_CLOSE_WALLS, Position}
 //import javax.vecmath.Vector3d
 import myscala.math.vector.{Vector2D, ZeroVector2D}
@@ -885,7 +885,7 @@ class NOMADIntegrated[T <: PedestrianNOMAD](sim: NOMADGraphSimulator[T]) extends
 
     pedestrian.nextVelocity = nextSpeed
     pedestrian.acceleration = (nextSpeed * 2.0 / nextSpeed.norm) -  speed
-    pedestrian.nextPosition = position + nextSpeed*dt
+    pedestrian.nextPosition = position + nextSpeed*dt + pedestrian.baseVelocity*dt
 
 
     /*if (Pedestrian.isParallel) { // if it is parallel update

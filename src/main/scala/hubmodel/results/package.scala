@@ -7,7 +7,7 @@ import hubmodel.DES.NOMADGraphSimulator
 import hubmodel.io.input.JSONReaders.PedestrianResults_JSON
 import hubmodel.ped.{PedestrianNOMAD, PedestrianSim}
 import hubmodel.results.ResultsContainerReadNew
-import hubmodel.tools.cells.Rectangle
+import tools.cells.{Rectangle, Vertex}
 import myscala.math.stats.{ComputeStats, Statistics}
 import myscala.output.SeqOfSeqExtensions.SeqOfSeqWriter
 import myscala.output.SeqTuplesExtensions.SeqTuplesWriter
@@ -336,7 +336,7 @@ package object results {
       * @param pedFunc extracts the KPI from the pedestrian
       * @return [[Statistics]] of the KPI from the pedestrians
       */
-    def aggregateMetricByOD(filter: PedestrianSim => Boolean, pedFunc: PedestrianSim => Double): Map[(Rectangle, Rectangle), Statistics[Double]] = {
+    def aggregateMetricByOD(filter: PedestrianSim => Boolean, pedFunc: PedestrianSim => Double): Map[(Vertex, Vertex), Statistics[Double]] = {
       this.pop.filter(filter).groupBy(p => (p.origin, p.finalDestination)).map(grouped => grouped._1 -> grouped._2.map(pedFunc).statistics)
     }
   }

@@ -5,10 +5,10 @@ import java.awt.{Color, Graphics2D}
 
 import hubmodel.io.output._
 import hubmodel.supply.continuous.Wall
-import hubmodel.tools.cells.Rectangle
+import tools.cells.{Rectangle, Vertex}
 import javax.imageio.ImageIO
 
-class DrawWallsAndGraph(walls: Iterable[Wall], edges: Vector[(Rectangle, Rectangle)], filename: String, showNames: Boolean = true) {
+class DrawWallsAndGraph(walls: Iterable[Wall], edges: Vector[(Vertex, Vertex)], filename: String, showNames: Boolean = true) {
 
   val wallBounds: (Double, Double, Double, Double) = getBounds(walls)
   val graphBounds: (Double, Double, Double, Double) = getBounds(edges)

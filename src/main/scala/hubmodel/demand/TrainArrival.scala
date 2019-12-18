@@ -4,7 +4,7 @@ import hubmodel.DES.{Action, NOMADGraphSimulator}
 import hubmodel.demand.transit.Vehicle
 import hubmodel.ped.PedestrianNOMAD
 import hubmodel.supply.TrainID_New
-import hubmodel.tools.Time
+import tools.Time
 
 import scala.reflect.ClassTag
 
@@ -29,4 +29,5 @@ class TrainArrival[T <: PedestrianNOMAD](train: Vehicle, tinf: Seq[PedestrianFlo
         new PedestrianGenerationTINF(flow._1, flow._2, flow._4, new Time(0.0), math.round(flow._3).toInt, sim)
       })
   }
+
 }

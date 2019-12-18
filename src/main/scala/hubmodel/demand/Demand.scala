@@ -3,7 +3,7 @@ package hubmodel.demand
 import java.time.LocalTime
 
 import hubmodel.supply.{NodeIDOld, NodeID_New, NodeParent, ODIDOld, TrackIDOld, TrainID_New}
-import hubmodel.tools.Time
+import tools.Time
 import play.api.libs.json.{JsError, JsSuccess, JsValue, Json}
 
 import scala.io.BufferedSource
@@ -40,7 +40,7 @@ case class Track2NodeMapping(loc: String, Track2NodeMappingInput: Vector[Stop2Ve
   * @param dep      departure time
   * @param capacity max capacity of the train
   */
-case class Train(ID: String, trainType: String, track: Int, arr: Option[LocalTime], dep: Option[LocalTime], capacity: Int) {
+/*case class Train(ID: String, trainType: String, track: Int, arr: Option[LocalTime], dep: Option[LocalTime], capacity: Int) {
   val IDNew: TrainID_New = TrainID_New(ID, ID)
 
   override def toString: ODIDOld = {
@@ -60,7 +60,7 @@ case class Train(ID: String, trainType: String, track: Int, arr: Option[LocalTim
     }
 
   }
-}
+}*/
 
 
 /** Storage of the train time table

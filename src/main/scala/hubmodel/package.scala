@@ -15,8 +15,8 @@ import hubmodel.results.{ResultsContainerFromSimulation, collectResults, writeRe
 import hubmodel.supply.NodeParent
 import hubmodel.supply.continuous.{ContinuousSpace, MovableWall}
 import hubmodel.supply.graph._
-import hubmodel.tools.Time
-import hubmodel.tools.cells.Rectangle
+import tools.Time
+import tools.cells.{Rectangle, Vertex}
 import myscala.math.vector.{Vector2D, Vector3D}
 import myscala.timeBlock
 import org.apache.commons.lang3.RandomStringUtils
@@ -310,7 +310,7 @@ package object hubmodel {
       ContinuousSpace,
       GraphContainer,
       Option[PublicTransportSchedule],
-      NodeParent => Iterable[Rectangle],
+      NodeParent => Iterable[Vertex],
       ControlDevices
     )
 

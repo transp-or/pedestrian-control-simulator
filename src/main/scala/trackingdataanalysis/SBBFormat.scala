@@ -1,6 +1,6 @@
 package trackingdataanalysis
 
-import hubmodel.tools.Time
+import tools.Time
 
 final case class SBBFormat(f: String, headers: Option[Vector[String]]) extends TrackingDataFormat(f) {
 

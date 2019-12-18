@@ -3,8 +3,8 @@ package hubmodel.ped
 import hubmodel._
 import hubmodel.mvmtmodels.NOMAD.getClosestPoint
 import hubmodel.supply.continuous.Wall
-import hubmodel.tools.Time
-import hubmodel.tools.cells.Rectangle
+import tools.Time
+import tools.cells.{Rectangle, Vertex}
 
 
 /**
@@ -20,10 +20,10 @@ trait PedestrianTrait {
   val ID: String = generateUUID
 
   /** origin zone */
-  def origin: Rectangle
+  def origin: Vertex
 
   /** destination zone */
-  def finalDestination: Rectangle
+  def finalDestination: Vertex
 
   /** current position */
   def currentPosition: Position

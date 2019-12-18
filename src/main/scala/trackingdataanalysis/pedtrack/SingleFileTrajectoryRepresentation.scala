@@ -34,7 +34,7 @@ class SingleFileTrajectoryRepresentation(file: String) extends TrajectoryProcess
     Map(),
     collection.mutable.ArrayBuffer(),
     scala.collection.mutable.ArrayBuffer(),
-    (start to end by BigDecimal(1.0)).map(t => hubmodel.tools.Time(t.toDouble)).toVector,
+    (start to end by BigDecimal(1.0)).map(t => tools.Time(t.toDouble)).toVector,
     Vector()
   )*/
 

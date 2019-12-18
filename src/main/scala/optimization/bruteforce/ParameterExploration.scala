@@ -52,7 +52,7 @@ class ParameterExploration(config: Config) extends GridSearch {
 
       val newDevices: ControlDevices = new ControlDevices(
         defaultParameters._11.monitoredAreas.map(_.deepCopy),
-        defaultParameters._11.amws.map(_.clone()),
+        defaultParameters._11.amws.map(_.deepCopy),
         if (config.getBoolean("sim.use_flow_gates")) {
           defaultParameters._11.flowGates.map(fg => new FlowGateFunctional(fg.startVertex, fg.endVertex, fg.start, fg.end, fg.monitoredArea, {
             FunctionalFormGating((x: Density) => Flow(BigDecimal(0.0000001).max(t._1 + t._2 * x.d).toDouble))

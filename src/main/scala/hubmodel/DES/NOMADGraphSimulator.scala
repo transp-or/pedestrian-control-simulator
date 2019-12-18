@@ -10,8 +10,8 @@ import hubmodel.route.UpdateRoutes
 import hubmodel.supply.NodeParent
 import hubmodel.supply.continuous.{ContinuousSpace, Wall}
 import hubmodel.supply.graph._
-import hubmodel.tools.Time
-import hubmodel.tools.cells.{DensityMeasuredArea, Rectangle, isInVertex}
+import tools.Time
+import tools.cells.{DensityMeasuredArea, Rectangle, Vertex, isInVertex}
 
 class NOMADGraphSimulator[T <: PedestrianNOMAD](st: Time,
                                                 et: Time,
@@ -22,7 +22,7 @@ class NOMADGraphSimulator[T <: PedestrianNOMAD](st: Time,
                                                 val spaceMicro: ContinuousSpace,
                                                 val graph: GraphContainer,
                                                 val timeTable: Option[PublicTransportSchedule],
-                                                val stop2Vertices: NodeParent => Iterable[Rectangle],
+                                                val stop2Vertices: NodeParent => Iterable[Vertex],
                                                 val controlDevices: ControlDevices,
                                                 val logFullPedestrianHistory: Boolean = false) extends PedestrianDES[PedestrianNOMAD](st, et) {
 
@@ -101,9 +101,9 @@ class NOMADGraphSimulator[T <: PedestrianNOMAD](st: Time,
 
   val gatesHistory: collection.mutable.ArrayBuffer[(Time, List[(String, Boolean)])] = collection.mutable.ArrayBuffer()
 
-  val PTInducedFlows: collection.mutable.Map[Rectangle, PTInducedQueue[T]] = collection.mutable.Map()
+  val PTInducedFlows: collection.mutable.Map[Vertex, PTInducedQueue[T]] = collection.mutable.Map()
 
-  val ODZones: Iterable[Rectangle] = this.graph.vertexMapNew.values.filter(_.isOD)
+  val ODZones: Iterable[Vertex] = this.graph.vertexMapNew.values.filter(_.isOD)
 
   var regulatorIntegralAction: Double = 0.0
 

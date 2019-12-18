@@ -1,0 +1,10 @@
+{
+  "location": "lausanne",
+  "stop2nodes": [ ],
+  "zone2nodes": [],
+  "groupingForWalkingTimeDistribution": [],
+  "walkingStops2Nodes": {
+    "defaultDistribution": [ ],
+    "stopSpecificDistribution": [ ]
+  }
+}

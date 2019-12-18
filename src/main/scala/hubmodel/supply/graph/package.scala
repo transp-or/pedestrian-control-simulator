@@ -3,13 +3,15 @@ package hubmodel.supply
 import hubmodel.Position
 import hubmodel.io.input.JSONReaders.{Connectivity_JSON, InfraGraphParser, Track2NodeMapping_JSON}
 import hubmodel.mgmt._
+import hubmodel.mgmt.amw.MovingWalkway
 import hubmodel.mgmt.flowgate.{BinaryGate, FlowGate, FlowGateFunctional}
 import hubmodel.mgmt.flowsep._
 import hubmodel.ped.PedestrianNOMAD
-import hubmodel.tools.cells.{DensityMeasuredArea, Rectangle, RectangleModifiable}
+import tools.cells.{Circle, DensityMeasuredArea, Rectangle, RectangleModifiable, Vertex}
 import myscala.math.vector.Vector2D
 import play.api.libs.json.{JsError, JsSuccess, JsValue, Json}
 
+import scala.collection.mutable.ArrayBuffer
 import scala.io.BufferedSource
 import scala.reflect.ClassTag
 import scala.util.{Failure, Success, Try}
@@ -39,7 +41,8 @@ package object graph {
     input.validate[InfraGraphParser] match {
       case s: JsSuccess[InfraGraphParser] => {
         val v: Vector[Rectangle] = s.get.nodes.map(n => new Rectangle(n.name, Vector2D(n.x1, n.y1), Vector2D(n.x2, n.y2), Vector2D(n.x3, n.y3), Vector2D(n.x4, n.y4), n.OD, n.rate))
-        val vertexMapReader: collection.mutable.Map[String, Rectangle] = collection.mutable.Map() ++ v.map(v => v.name -> v)
+        val vertexMapReader: collection.mutable.Map[String, Vertex] = collection.mutable.Map() ++ v.map(v => v.name -> v)
+        val edgesFromVertexToRemove: ArrayBuffer[String] = ArrayBuffer()
 
         val fg: Iterable[FlowGate] = if (useFlowGates) {
           s.get.flowGates.map(fg => fg.funcForm match {
@@ -55,7 +58,69 @@ package object graph {
           Vector()
         }
         val mv: Iterable[MovingWalkway] = if (useAMWs) {
-          s.get.movingWalkways.map(m => new MovingWalkway(vertexMapReader(m.o), vertexMapReader(m.d), 1.0))
+
+          // remove overriden vertices from map
+          vertexMapReader --= s.get.movingWalkways.flatMap(_.overriden_zones_1.collect({ case oZone if oZone.overridenZone.isDefined => oZone.overridenZone.get }))
+          vertexMapReader --= s.get.movingWalkways.flatMap(_.overriden_zones_2.collect({ case oZone if oZone.overridenZone.isDefined => oZone.overridenZone.get }))
+
+          s.get.movingWalkways.map(m => {
+
+            edgesFromVertexToRemove.appendAll(m.overriden_connections.map(_.node))
+
+            // create new zones from overriden zones
+            val oz_1 = m.overriden_zones_1.map(oz => new Rectangle(
+              oz.name,
+              new Position(oz.x1, oz.y1),
+              new Position(oz.x2, oz.y2),
+              new Position(oz.x3, oz.y3),
+              new Position(oz.x4, oz.y4),
+              oz.isOD,
+              oz.maxRate
+            ))
+
+            val oz_2 = m.overriden_zones_2.map(oz => new Rectangle(
+              oz.name,
+              new Position(oz.x1, oz.y1),
+              new Position(oz.x2, oz.y2),
+              new Position(oz.x3, oz.y3),
+              new Position(oz.x4, oz.y4),
+              oz.isOD,
+              oz.maxRate
+            ))
+
+
+            // create start and end points
+            val start = new Position(m.x1, m.y1)
+            val end = new Position(m.x2, m.y2)
+
+            // create start and end vertices
+            val startCircle: Circle = new Circle( m.name + "1",
+                start + (start - end).normalized * 0.5 * (m.width - 0.2),
+                0.5 * (m.width - 0.2),
+                false,
+                None
+              )
+
+            val endCircle: Circle =  new Circle(                m.name + "2",
+                end + (end - start).normalized * 0.5*(m.width-0.2),
+                0.5*(m.width-0.2),
+                false,
+                None
+              )
+
+            // collect zones which have been removed
+            val oldZones: Vector[String] = m.overriden_zones_1.flatMap(oz => oz.overridenZone) ++ m.overriden_zones_2.flatMap(oz => oz.overridenZone)
+
+            // update the map of vertices with the new ones
+            vertexMapReader ++= oz_1.map(z => z.name -> z)
+            vertexMapReader ++= oz_2.map(z => z.name -> z)
+            vertexMapReader ++= Vector((startCircle.name, startCircle), (endCircle.name, endCircle))
+
+            val newConnections = m.overriden_connections.collect({ case c if vertexMapReader.contains(c.node) => c.conn.collect({ case neigh if vertexMapReader.contains(neigh) => new MyEdge(vertexMapReader(c.node), vertexMapReader(neigh)) }) }).flatten
+
+            // create AMW
+            new MovingWalkway(m.name, startCircle, endCircle, m.width, start, end, oz_1, oz_2, oldZones, newConnections)
+          })
         } else {
           Vector()
         }
@@ -76,7 +141,12 @@ package object graph {
           vertexMapReader --= s.get.flowSeparators.flatMap(_.overZone_1.collect({ case oZone if oZone.overridenZone.isDefined => oZone.overridenZone.get }))
           vertexMapReader --= s.get.flowSeparators.flatMap(_.overZone_2.collect({ case oZone if oZone.overridenZone.isDefined => oZone.overridenZone.get }))
 
+
           s.get.flowSeparators.map(fs => {
+
+            edgesFromVertexToRemove.appendAll(fs.overConn.map(_.node))
+
+
             val oz_1: Iterable[RectangleModifiable] = fs.overZone_1.map(oz => new RectangleModifiable(
               oz.name,
               (Vector2D(oz.x1(0), oz.y1(0)), Vector2D(oz.x1(1), oz.y1(1))),
@@ -166,6 +236,7 @@ package object graph {
           * @tparam U subtype of the [[MyEdge]] to return
           * @return collection of type T tedges
           */
+
         def connections2Edges[U <: MyEdge](edges: Iterable[Connectivity_JSON])(implicit tag: ClassTag[U]): Set[U] = {
           edges
             .flatMap(c => c.conn
@@ -177,7 +248,7 @@ package object graph {
 
         val levelChanges: Vector[MyEdgeLevelChange] = connections2Edges[MyEdgeLevelChange](s.get.levelChanges).toVector
         //.flatMap(c => c.conn.map(neigh => new MyEdgeLevelChange(vertexMap(c.node), vertexMap(neigh))))
-        val baseEdgeCollection: Vector[MyEdge] = (connections2Edges[MyEdge](s.get.standardConnections) ++ levelChanges).toVector //.flatMap(c => c.conn.map(neigh => new MyEdge(vertexMap(c.node), vertexMap(neigh)))) ++ levelChanges
+        val baseEdgeCollection: Vector[MyEdge] = (connections2Edges[MyEdge](s.get.standardConnections) ++ levelChanges).toVector.filterNot(e => edgesFromVertexToRemove.contains(e.startVertex.name)) //.flatMap(c => c.conn.map(neigh => new MyEdge(vertexMap(c.node), vertexMap(neigh)))) ++ levelChanges
 
 
         val graph: Try[GraphContainer] = Try(

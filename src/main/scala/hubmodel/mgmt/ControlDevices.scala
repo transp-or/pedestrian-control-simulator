@@ -1,10 +1,11 @@
 package hubmodel.mgmt
 
+import hubmodel.mgmt.amw.MovingWalkway
 import hubmodel.mgmt.flowgate.{BinaryGate, FlowGate, FlowGateFunctional}
 import hubmodel.mgmt.flowsep.{FlowSeparator, FlowSeparatorParameters}
 import hubmodel.supply.graph._
-import hubmodel.tools.cells.DensityMeasuredArea
-import hubmodel.tools.exceptions.IllegalSimulationInput
+import tools.cells.DensityMeasuredArea
+import tools.exceptions.IllegalSimulationInput
 
 /**
   * Container for all the control devices used in the pedestrian simulator. This makes copying and optimizing the

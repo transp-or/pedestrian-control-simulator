@@ -2,7 +2,7 @@ package hubmodel.ped
 
 import hubmodel.Position
 import hubmodel.ped.History.{HistoryContainer, PositionIsolation}
-import hubmodel.tools.Time
+import tools.Time
 
 /** Enforces the format for storing the trajectory of the pedestrian. This is used in the tracking data analysis
   * AND the simulation. This way, the same visualization tools can be used.
@@ -42,5 +42,5 @@ object HistoryOrdering extends Ordering[(Time, HistoryContainer)] {
     * @param b second element to compare to
     * @return Result of comparing this with operand that. returns x where x < 0 iff a < b x == 0 iff a == b x > 0 iff a > b
     */
-  def compare(a: (Time, HistoryContainer), b:(Time, HistoryContainer)): Int = hubmodel.tools.TimeNumeric.compare(a._1 , b._1)
+  def compare(a: (Time, HistoryContainer), b:(Time, HistoryContainer)): Int = tools.TimeNumeric.compare(a._1 , b._1)
 }

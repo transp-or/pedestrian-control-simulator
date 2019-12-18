@@ -6,12 +6,12 @@ import java.nio.file.Files
 import java.nio.file.Paths
 
 import hubmodel.supply.continuous.Wall
-import hubmodel.tools.cells.{Rectangle, Vertex}
+import tools.cells.{Rectangle, Vertex}
 
 
 package object tikz {
 
-  def writeEdgesAsTikz(file: String, edges: Set[MyEdge], vertices: Iterable[Rectangle], walls: Iterable[Wall]): Unit = {
+  def writeEdgesAsTikz(file: String, edges: Set[MyEdge], vertices: Iterable[Vertex], walls: Iterable[Wall]): Unit = {
 
     // create file for writing
     val writer = Files.newBufferedWriter(Paths.get(file), Charset.forName("UTF-8"))
@@ -42,7 +42,8 @@ package object tikz {
 
 
     // writes vertices to tikz
-    vertices.foreach(v => writer.write(s"\\fill[black!10!white] (${v.xMin}, ${v.yMin}) rectangle (${v.xMax}, ${v.yMax});\n"))
+    // TODO fix this problem for creating tikz data
+    //vertices.foreach(v => writer.write(s"\\fill[black!10!white] (${v.xMin}, ${v.yMin}) rectangle (${v.xMax}, ${v.yMax});\n"))
 
     // writes walls to tikz
     walls.foreach(w =>  writer.write(s"\\draw[line width=0.35cm, cap=rect] (${w.startPoint.X},${w.startPoint.Y}) -- (${w.endPoint.X},${w.endPoint.Y});\n"))

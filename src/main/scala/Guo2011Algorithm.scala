@@ -4,7 +4,7 @@ import hubmodel.route.Flurin2014.PotentialSquareCell
 import hubmodel.route.Guo2011.HexagonPotentialField
 import hubmodel.supply.continuous.{ReadContinuousSpace, Wall}
 import hubmodel.supply.potential.PotentialCell
-import hubmodel.tools.cells.{Square, VertexPlotting}
+import tools.cells.{Square, VertexPlotting}
 import myscala.math.vector.Vector2D
 import myscala.timeBlock
 

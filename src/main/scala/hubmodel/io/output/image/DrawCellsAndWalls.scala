@@ -5,7 +5,7 @@ import java.awt.{Color, Graphics2D}
 
 import hubmodel.io.output._
 import hubmodel.supply.continuous.Wall
-import hubmodel.tools.cells.VertexPlotting
+import tools.cells.VertexPlotting
 import javax.imageio.ImageIO
 
 class DrawCellsAndWalls[T <: VertexPlotting](cells: Iterable[T], walls: Iterable[Wall], fileName: String) {

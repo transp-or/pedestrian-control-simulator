@@ -1,7 +1,7 @@
 package trackingdataanalysis.pedtrack
 
 import hubmodel.Position
-import hubmodel.tools.cells.Rectangle
+import tools.cells.Rectangle
 import trackingdataanalysis.pedtrack.visiosafe.PedestrianMap
 import trackingdataanalysis.{SBBFormat, TrackingDataFormat, VisioSafeNumericFormat}
 

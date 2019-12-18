@@ -1,9 +1,8 @@
 package trackingdataanalysis.pedtrack
 
-import hubmodel.ped.History.{Coordinate, HistoryContainer}
+import hubmodel.ped.History.{CoordinateTracking, HistoryContainer}
 import hubmodel.ped.PedestrianTrajectory
-import hubmodel.tools
-import hubmodel.tools.Time
+import tools.Time
 import hubmodel.Position
 /** Empirical pedestrian which extends [[trackingdataanalysis.pedtrack.PedestrianTrait]] with some extra members.
   *
@@ -52,7 +51,7 @@ class Pedestrian(val ID: Int, currentPosition: (Double, Double), val entryTime: 
     //currentPosition = (x, y)
   }
 
-  protected var _historyPosition: Vector[(Time, HistoryContainer)] = Vector((tools.Time(entryTime), Coordinate(new Position(currentPosition._1, currentPosition._2))))
+  protected var _historyPosition: Vector[(Time, HistoryContainer)] = Vector((tools.Time(entryTime), CoordinateTracking(new Position(currentPosition._1, currentPosition._2))))
 
   def updatePositionHistory(t: tools.Time): Unit = ???
 

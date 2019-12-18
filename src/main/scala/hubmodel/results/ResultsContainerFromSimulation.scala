@@ -1,7 +1,7 @@
 package hubmodel.results
 
 import hubmodel.ped.PedestrianSim
-import hubmodel.tools.cells.DensityMeasuredArea
+import tools.cells.DensityMeasuredArea
 
 /**
   * Container for storing all the results from the simulation. This should be returned from the run method of the

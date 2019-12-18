@@ -1,9 +1,19 @@
 package hubmodel.demand.transit
 
 import hubmodel.supply.{NodeParent, StopID_New, TrainID_New}
-import hubmodel.tools.Time
+import tools.Time
 
-class Vehicle(val ID: TrainID_New, val trainType: String, val stop: StopID_New, val arr: Option[Time], val dep: Option[Time], val capacity: Int) {
+abstract class Vehicle/*(val ID: TrainID_New, val trainType: String, val stop: StopID_New, val arr: Option[Time], val dep: Option[Time])*/ {
+
+  val ID: TrainID_New
+
+  val stop: StopID_New
+
+  val arr: Option[Time]
+
+  val dep: Option[Time]
+
+  val trainType: String
 
   def alightingPassengers: scala.collection.Seq[NodeParent] = this._alightingPassengers
 
@@ -12,7 +22,7 @@ class Vehicle(val ID: TrainID_New, val trainType: String, val stop: StopID_New, 
   def addAlightingPassenger(dZone: NodeParent): Unit = {
     this._alightingPassengers.append(dZone)
   }
-
+/*
   /** Checks whether we are allowed to compare this object to another
     *
     * @param other
@@ -27,7 +37,7 @@ class Vehicle(val ID: TrainID_New, val trainType: String, val stop: StopID_New, 
     */
   override def equals(other: Any): Boolean =
     other match {
-      case that: Train => super.equals() && that.canEqual(this) && this.stop == that.stop && this.arr == that.arr && this.dep == that.dep
+      case that: Vehicle => super.equals() && that.canEqual(this) && this.stop == that.stop && this.arr.get == that.arr.get && this.dep.get == that.dep.get
       case _ => false
     }
 
@@ -37,6 +47,6 @@ class Vehicle(val ID: TrainID_New, val trainType: String, val stop: StopID_New, 
     */
   override def hashCode: Int = {
     (super.hashCode, this.trainType, this.arr, this.dep).##
-  }
+  }*/
 
 }

@@ -11,7 +11,7 @@ import hubmodel.mgmt._
 import hubmodel.mgmt.flowgate.{FlowGate, FlowGateFunctional}
 import hubmodel.ped.PedestrianNOMAD
 import hubmodel.results.{ResultsContainerRead, ResultsContainerReadNew, readResults, readResultsJson}
-import hubmodel.tools.exceptions.{ControlDevicesException, IllegalPhysicalQuantity}
+import tools.exceptions.{ControlDevicesException, IllegalPhysicalQuantity}
 import myscala.math.stats.{ComputeStats, Statistics, computeQuantile}
 import optimization.bruteforce.ParameterModifications
 

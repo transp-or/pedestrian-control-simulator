@@ -9,9 +9,9 @@ import java.util.concurrent.ThreadLocalRandom
 import hubmodel.DES.{Action, NOMADGraphSimulator}
 import hubmodel.demand.{CreatePedestrian, CreatePedestrianWithInsertion}
 import hubmodel.ped.PedestrianNOMAD
-import hubmodel.tools.Time
-import hubmodel.tools.TimeNumeric.mkOrderingOps
-import hubmodel.tools.cells.Rectangle
+import tools.Time
+import tools.TimeNumeric.mkOrderingOps
+import tools.cells.{Rectangle, Vertex}
 
 import scala.reflect.ClassTag
 
@@ -25,7 +25,7 @@ import scala.reflect.ClassTag
   * @param rateFunction non homogenous function
   * @param sim          simulator
   */
-class PedestrianGenerationNonHomogeneousRate[T <: PedestrianNOMAD](o: Rectangle, d: Rectangle, start: Time, end: Time, rateFunction: Time => Double, sim: NOMADGraphSimulator[T])(implicit tag: ClassTag[T]) extends Action {
+class PedestrianGenerationNonHomogeneousRate[T <: PedestrianNOMAD](o: Vertex, d: Vertex, start: Time, end: Time, rateFunction: Time => Double, sim: NOMADGraphSimulator[T])(implicit tag: ClassTag[T]) extends Action {
 
   /** Maximum rate of the pedestrian generation rate, computed by sampling */
   private val rateMax: Double = start.value.to(end.value).by(0.01).map(v => rateFunction(Time(v.toDouble))).max

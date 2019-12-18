@@ -7,7 +7,7 @@ package hubmodel.demand.flows
 import hubmodel.DES.{Action, NOMADGraphSimulator}
 import hubmodel.demand.{PedestrianFlowFunction_New, PedestrianFlow_New, PedestrianGenerationOverInterval, splitFractionsUniform}
 import hubmodel.ped.PedestrianNOMAD
-import hubmodel.tools.Time
+import tools.Time
 
 import scala.reflect.ClassTag
 

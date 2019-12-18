@@ -1,7 +1,7 @@
 
 import hubmodel.Position
 import hubmodel.io.output.image.{DrawCells, DrawCellsOverImage}
-import hubmodel.tools.cells.{Square, VertexPlotting}
+import tools.cells.{Square, VertexPlotting}
 import myscala.math.vector.Vector2D
 
 object PlotJapeneseFigure extends App {

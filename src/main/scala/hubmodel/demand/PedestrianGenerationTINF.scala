@@ -8,8 +8,8 @@ import java.util.concurrent.ThreadLocalRandom
 
 import hubmodel.DES.{Action, NOMADGraphSimulator}
 import hubmodel.ped.PedestrianNOMAD
-import hubmodel.tools.Time
-import hubmodel.tools.cells.Rectangle
+import tools.Time
+import tools.cells.{Rectangle, Vertex}
 
 import scala.reflect.ClassTag
 
@@ -20,7 +20,7 @@ import scala.reflect.ClassTag
   * @param end          end time of the pedestrian creation
   * @param numberPeople number of people to create
   */
-class PedestrianGenerationTINF[T <: PedestrianNOMAD](o: Rectangle, d: Rectangle, isTransfer: Boolean, start: Time, numberPeople: Int, sim: NOMADGraphSimulator[T])(implicit tag: ClassTag[T]) extends Action {
+class PedestrianGenerationTINF[T <: PedestrianNOMAD](o: Vertex, d: Vertex, isTransfer: Boolean, start: Time, numberPeople: Int, sim: NOMADGraphSimulator[T])(implicit tag: ClassTag[T]) extends Action {
 
   /** Poisson distribution
     *

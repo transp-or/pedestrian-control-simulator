@@ -6,7 +6,7 @@ import java.awt.{Color, Graphics2D}
 import java.io.File
 
 import hubmodel.io.output.{mapCoordAffine, verticalMirrorTransformation}
-import hubmodel.tools.Time
+import tools.Time
 import org.jcodec.api.awt.AWTSequenceEncoder
 
 import scala.collection.immutable.NumericRange

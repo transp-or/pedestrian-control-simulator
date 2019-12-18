@@ -7,9 +7,9 @@ import hubmodel.demand.transit.Vehicle
 import hubmodel.io.input.JSONReaders.PublicTransportScheduleReader
 import hubmodel.io.input.JSONReaders.TRANSFORM.{PedestrianCollectionReaderTF, PublicTransportScheduleReaderTF}
 import hubmodel.supply.{NodeID_New, StopID_New, TrainID_New}
-import hubmodel.tools.Time
-import hubmodel.tools.TimeNumeric.mkOrderingOps
-import hubmodel.tools.cells.Rectangle
+import tools.Time
+import tools.TimeNumeric.mkOrderingOps
+import tools.cells.Rectangle
 import play.api.libs.functional.syntax._
 import play.api.libs.json.Reads._
 import play.api.libs.json._
@@ -23,8 +23,10 @@ import scala.jdk.CollectionConverters._
   */
 package hubmodel {
 
+  import hubmodel.demand.transit.{Train, TrainWithExchangeVolumes}
   import hubmodel.io.input.JSONReaders.TRANSFORM.Vehicle_JSON_TF
-  import hubmodel.tools.exceptions.IllegalSimulationInput
+  import tools.cells.Vertex
+  import tools.exceptions.IllegalSimulationInput
 
 
   package object demand {
@@ -182,7 +184,7 @@ package hubmodel {
                                   TRAIN INDUCED FLOWS (TINF)
     -----------------------------------------------------------------------------------*/
     // assuming uniform access distribution
-    def splitFractionsUniform(arrNodes: Iterable[Rectangle], depNodes: Iterable[Rectangle], totalFlow: Double): Iterable[(Rectangle, Rectangle, Double)] = {
+    def splitFractionsUniform(arrNodes: Iterable[Vertex], depNodes: Iterable[Vertex], totalFlow: Double): Iterable[(Vertex, Vertex, Double)] = {
       val perm = for {// all permutations of two lists of nodes
         a <- arrNodes
         b <- depNodes
@@ -193,7 +195,7 @@ package hubmodel {
       perm.map(p => (p._1, p._2, totalFlow / perm.size)) // split fractions over all permutations. Not realistic but a start
     }
 
-    def splitFractionsUniform(arrNodes: Iterable[Rectangle], depNodes: Iterable[Rectangle]): Iterable[(Rectangle, Rectangle, Double)] = {
+    def splitFractionsUniform(arrNodes: Iterable[Vertex], depNodes: Iterable[Vertex]): Iterable[(Vertex, Vertex, Double)] = {
       val perm = for {// all permutations of two lists of nodes
         a <- arrNodes
         b <- depNodes
@@ -202,6 +204,77 @@ package hubmodel {
         (a, b)
       }
       perm.map(p => (p._1, p._2, 1.0 / perm.size)) // split fractions over all permutations. Not realistic but a start
+    }
+
+
+    case class ParameterNormalDistribution(name: String, mu: Double, sigma: Double)
+
+    implicit val ParameterNormalDistributionJSONReads: Reads[ParameterNormalDistribution] = (
+      (JsPath \ "parameter").read[String] and
+        (JsPath \ "mu").read[Double] and
+        (JsPath \ "sigma").read[Double]
+      ) (ParameterNormalDistribution.apply _)
+
+
+    case class ParameterByTrack(track: Int, parameters: Option[Vector[String]])
+
+    implicit val ParameterByTrackJSONReads: Reads[ParameterByTrack] = (
+      (JsPath \ "track").read[Int] and
+        (JsPath \ "parameters").readNullable[Vector[String]]
+      ) (ParameterByTrack.apply _)
+
+
+    case class ParameterByTrainCategory(trainType: String, parametersByTracks: Vector[ParameterByTrack])
+
+    implicit val ParameterByTrainCategoryJSONReads: Reads[ParameterByTrainCategory] = (
+      (JsPath \ "train_category").read[String] and
+        (JsPath \ "parameters_per_track").read[Vector[ParameterByTrack]]
+      ) (ParameterByTrainCategory.apply _)
+
+
+    case class Sectors(track: Int, sectors: Vector[String])
+
+    implicit val SectorsJSONReads: Reads[Sectors] = (
+      (JsPath \ "track").read[Int] and
+        (JsPath \ "sectors").read[Vector[String]]
+      ) (Sectors.apply _)
+
+
+    case class AlphaModel(name: String, a: Double, b: Double, Qc: Double)
+
+    implicit val AlphaModelJSONReads: Reads[AlphaModel] = (
+      (JsPath \ "name").read[String] and
+        (JsPath \ "a").read[Double] and
+        (JsPath \ "b").read[Double] and
+        (JsPath \ "Qc").read[Double]
+      ) (AlphaModel.apply _)
+
+
+    case class StationPTLayout(parameterDistributions: Vector[ParameterNormalDistribution], parametersByTrainCategory: Vector[ParameterByTrainCategory], sectors: Vector[Sectors], alphaModels: Vector[AlphaModel])
+
+    implicit val StationPTLayoutJSONReads: Reads[StationPTLayout] = (
+      (JsPath \ "tinf_parameters").read[Vector[ParameterNormalDistribution]] and
+        (JsPath \ "parameter_mapping").read[Vector[ParameterByTrainCategory]] and
+        (JsPath \ "sectors").read[Vector[Sectors]] and
+        (JsPath \ "alphaModels").read[Vector[AlphaModel]]
+
+      ) (StationPTLayout.apply _)
+
+
+    def readStationPTLayout(fileName: String): (Map[String, (Double, Double)], Map[String, Map[Int, Vector[String]]], Map[Int, Vector[String]], Map[String, Map[String, Double]]) = {
+
+      val source: BufferedSource = scala.io.Source.fromFile(fileName)
+      val input: JsValue = Json.parse(try source.mkString finally source.close)
+
+      input.validate[StationPTLayout] match {
+        case s: JsSuccess[StationPTLayout] => (
+          s.get.parameterDistributions.map(v => v.name -> (v.mu, v.sigma)).toMap,
+          s.get.parametersByTrainCategory.map(v => v.trainType -> v.parametersByTracks.map(t => t.track -> t.parameters.getOrElse(Vector())).toMap).toMap,
+          s.get.sectors.map(v => v.track -> v.sectors).toMap,
+          s.get.alphaModels.map(am => am.name -> Map("a" -> am.a, "b" -> am.b, "Qc" -> am.Qc)).toMap
+        )
+        case e: JsError => throw new Error("Error while parsing station PT data: \r" + JsError.toJson(e).toString())
+      }
     }
 
 
@@ -263,7 +336,13 @@ package hubmodel {
       val input: JsValue = Json.parse(try source.mkString finally source.close)
 
       input.validate[PublicTransportScheduleReader] match {
-        case s: JsSuccess[PublicTransportScheduleReader] => new PublicTransportSchedule(s.get.loc, s.get._timeTableInput.map(v => new Vehicle(TrainID_New(v.ID, ""), v.trainType, StopID_New(v.track, ""), v.arr, v.dep, v.capacity)))
+        case s: JsSuccess[PublicTransportScheduleReader] => new PublicTransportSchedule(s.get.loc, s.get._timeTableInput.map(v => {
+          if (v.arr_FRASY.isEmpty && v.arr_HOP.isEmpty && v.dep_HOP.isEmpty && v.dep_FRASY.isEmpty && v.t_arr_sched.isEmpty && v.t_dep_sched.isEmpty) {
+            Train(TrainID_New(v.ID, ""), v.trainType, StopID_New(v.track.toString, ""), v.arr, v.dep, v.capacity.getOrElse(0))
+          } else {
+            TrainWithExchangeVolumes(TrainID_New(v.ID, ""), v.trainType, StopID_New(v.track.toString, ""), v.arr, v.dep, v.capacity.getOrElse(0), v.track, v.carriages.getOrElse(0), v.arr_HOP, v.dep_HOP, v.arr_FRASY, v.dep_FRASY)
+          }
+        }))
         case e: JsError => throw new Error("Error while parsing train timetable: " + JsError.toJson(e).toString())
       }
     }
@@ -300,7 +379,7 @@ package hubmodel {
       val input: JsValue = Json.parse(try source.mkString finally source.close)
 
       input.validate[PublicTransportScheduleReaderTF] match {
-        case s: JsSuccess[PublicTransportScheduleReaderTF] => new PublicTransportSchedule(s.get.loc, s.get._timeTableInput.map(v => new Vehicle(TrainID_New(v.ID, ""), v.ID, StopID_New(v.stopID, ""), Some(v.arr), Some(v.dep), -1)))
+        case s: JsSuccess[PublicTransportScheduleReaderTF] => new PublicTransportSchedule(s.get.loc, s.get._timeTableInput.map(v => {Train(TrainID_New(v.ID, ""), v.ID, StopID_New(v.stopID, ""), Some(v.arr), Some(v.dep), -1)}))
         case e: JsError => throw new Error("Error while parsing train timetable file: " + fileName + "\n" + JsError.toJson(e).toString())
       }
     }
@@ -347,7 +426,7 @@ package hubmodel {
       abstract class PedestrianFlowFunction(val start: Time, val end: Time)
 
       object PedestrianFlowFunctionOrdering extends Ordering[PedestrianFlowFunction] {
-        def compare(a: PedestrianFlowFunction, b: PedestrianFlowFunction): Int = hubmodel.tools.TimeNumeric.compare(a.start, b.start)
+        def compare(a: PedestrianFlowFunction, b: PedestrianFlowFunction): Int = tools.TimeNumeric.compare(a.start, b.start)
       }
 
       case class SinPedestrianFlow(s: Time, e: Time, periodStretch: Double, periodShift: Double, a: Double, b: Double, c: Double, maxFlow: Double) extends PedestrianFlowFunction(s, e)

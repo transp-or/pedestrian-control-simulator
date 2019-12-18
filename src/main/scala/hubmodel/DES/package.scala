@@ -10,8 +10,8 @@ import hubmodel.ped.PedestrianNOMAD
 import hubmodel.supply.continuous.ReadContinuousSpace
 import hubmodel.supply.graph.{Stop2Vertex, readGraph, readPTStop2GraphVertexMap}
 import hubmodel.supply.{NodeID_New, NodeParent, StopID_New, TrainID_New}
-import hubmodel.tools.Time
-import hubmodel.tools.cells.Rectangle
+import tools.Time
+import tools.cells.{Rectangle, Vertex}
 
 import scala.reflect.ClassTag
 import scala.collection.parallel.CollectionConverters._
@@ -117,7 +117,7 @@ package object DES {
       * @param conceptualNode Node to map to graph nodes
       * @return
       */
-    def conceptualNode2GraphNodes(stop2Vertices: Map[StopID_New, Vector[VertexID]], timeTable: Map[TrainID_New, Vehicle])(conceptualNode: NodeParent): Iterable[Rectangle] = {
+    def conceptualNode2GraphNodes(stop2Vertices: Map[StopID_New, Vector[VertexID]], timeTable: Map[TrainID_New, Vehicle])(conceptualNode: NodeParent): Iterable[Vertex] = {
       conceptualNode match {
         case x: TrainID_New => stop2Vertices(timeTable(x).stop).map(n => routeGraph.vertexMapNew(n))
         case x: NodeID_New => Iterable(routeGraph.vertexMapNew(x.ID))
@@ -142,7 +142,7 @@ package object DES {
       route_dt = routeUpdateInterval,
       evaluate_dt = evaluationInterval,
       rebuildTreeInterval = Some(rebuildTreeInterval),
-      spaceMicro = infraSF.continuousSpace,
+      spaceMicro = infraSF.continuousSpace.addWalls(controlDevices.amws.flatMap(_.walls)),
       graph = routeGraph,
       timeTable = timeTable,
       stop2Vertices = conceptualNode2GraphNodes(stop2Vertex.stop2Vertices, if (timeTable.isDefined){timeTable.get.timeTable} else {Map()}),

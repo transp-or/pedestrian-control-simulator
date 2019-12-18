@@ -2,7 +2,7 @@ package hubmodel.mgmt.flowgate
 
 import hubmodel.Position
 import hubmodel.mgmt.{ControlDeviceComponent, FunctionalForm, Measurement, Output}
-import hubmodel.tools.cells.Rectangle
+import tools.cells.{Rectangle, Vertex}
 
 /** Extension of [[hubmodel.supply.MyEdgeWithGate]] for the usage of "flow gates". The gates control the
   * flow of pedestrians passing through them.
@@ -14,7 +14,7 @@ import hubmodel.tools.cells.Rectangle
   * @param start       one end of the gate
   * @param end         other end of the gate
   */
-class FlowGateFunctional[T <: Measurement, U <: Output](startVertex: Rectangle, endVertex: Rectangle, start: Position, end: Position, ma: String, val functionalForm: FunctionalForm[T, U]) extends FlowGate(startVertex, endVertex, start, end, ma) with ControlDeviceComponent {
+class FlowGateFunctional[T <: Measurement, U <: Output](startVertex: Vertex, endVertex: Vertex, start: Position, end: Position, ma: String, val functionalForm: FunctionalForm[T, U]) extends FlowGate(startVertex, endVertex, start, end, ma) with ControlDeviceComponent {
 
   /** Checks whether another object equals this one
     *

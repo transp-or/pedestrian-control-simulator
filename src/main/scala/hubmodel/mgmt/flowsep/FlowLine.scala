@@ -2,7 +2,7 @@ package hubmodel.mgmt.flowsep
 
 import hubmodel.mgmt.ControlDeviceComponent
 import hubmodel.ped.{PedestrianTrait, Population}
-import hubmodel.tools.cells.Rectangle
+import tools.cells.Rectangle
 import hubmodel.{FLOW_LINE_REGION_EXTENSION, Position, generateUUID}
 
 class FlowLine(val start: Position, val end: Position, private val controlled: Int = 0) extends ControlDeviceComponent {

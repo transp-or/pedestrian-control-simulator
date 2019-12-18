@@ -3,7 +3,7 @@ package hubmodel.mgmt.flowgate
 import hubmodel.Position
 import hubmodel.mgmt.ControlDeviceComponent
 import hubmodel.supply.graph.MyEdgeWithGate
-import hubmodel.tools.cells.Rectangle
+import tools.cells.{Rectangle, Vertex}
 
 /** Extension of [[hubmodel.supply.graph.MyEdgeWithGate]] for the usage of "flow gates". The gates control the
   * flow of pedestrians passing through them.
@@ -15,7 +15,7 @@ import hubmodel.tools.cells.Rectangle
   * @param start       one end of the gate
   * @param end         other end of the gate
   */
-class FlowGate(startVertex: Rectangle, endVertex: Rectangle, start: Position, end: Position, ma: String) extends MyEdgeWithGate(startVertex, endVertex, start, end, ma) with ControlDeviceComponent {
+class FlowGate(startVertex: Vertex, endVertex: Vertex, start: Position, end: Position, ma: String) extends MyEdgeWithGate(startVertex, endVertex, start, end, ma) with ControlDeviceComponent {
 
   /** Checks whether another object equals this one
     *

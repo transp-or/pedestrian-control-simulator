@@ -1,12 +1,15 @@
 package hubmodel.supply.graph
 
 import hubmodel.mgmt.ControlDevices
+import hubmodel.mgmt.amw.{IN, MovingWalkway, OUT}
 import hubmodel.mgmt.flowgate.{BinaryGate, FlowGate}
 import hubmodel.mgmt.flowsep.FlowSeparator
 import hubmodel.ped.PedestrianNOMAD
-import hubmodel.tools.cells.Rectangle
+import myscala.math.vector.ZeroVector2D
+import tools.cells.{Rectangle, Vertex}
 import org.jgrapht.alg.shortestpath.{DijkstraShortestPath, KShortestPaths}
 import org.jgrapht.graph.DefaultDirectedWeightedGraph
+import tools.graph.Graph
 
 import scala.collection.JavaConverters._
 import scala.util.{Failure, Success, Try}
@@ -24,7 +27,7 @@ import scala.util.{Failure, Success, Try}
   * @param movingWalkways collection of moving walkways (not yet implemented)
   * @param flowSeparators collection of flow separators
   */
-class RouteGraph(protected val baseVertices: Iterable[Rectangle],
+class RouteGraph(protected val baseVertices: Iterable[Vertex],
                  protected val standardEdges: Iterable[MyEdge],
                  val levelChanges: Iterable[MyEdgeLevelChange],
                  protected val flowGates: Iterable[FlowGate],
@@ -35,22 +38,26 @@ class RouteGraph(protected val baseVertices: Iterable[Rectangle],
                  val edges2Remove: Set[MyEdge] = Set(),
                  val destinationGroups: Iterable[(String, Vector[String])]) {
 
+  private val movingWalkwayVertices: Map[Vertex, (hubmodel.mgmt.amw.Direction,MovingWalkway)] = movingWalkways.flatMap(amw => Vector(amw.startVertex -> (IN, amw), amw.endVertex -> (OUT, amw))).toMap
+
   // Collection of all vertices in the network. This map can be used to get a vertex based on it's name.
-  val vertexCollection: Map[String, Rectangle] = this.baseVertices.map(v => v.name -> v).toMap ++
-    flowSeparators.flatMap(fs => fs.associatedZonesStart.map(oz => oz.name -> oz)) ++
-    flowSeparators.flatMap(fs => fs.associatedZonesEnd.map(oz => oz.name -> oz)) --
-    flowSeparators.flatMap(fs => fs.overridenZones)
+  val vertexCollection: Map[String, Vertex] = this.baseVertices.map(v => v.name -> v).toMap ++
+    flowSeparators.flatMap(fs => fs.associatedZonesStart.map(oz => oz.name -> oz) ++ fs.associatedZonesEnd.map(oz => oz.name -> oz)) --
+    flowSeparators.flatMap(fs => fs.overridenZones) ++
+  movingWalkways.flatMap(amw => Map(amw.startVertex.name -> amw.startVertex, amw.endVertex.name -> amw.endVertex)) ++
+  movingWalkways.flatMap(amw => amw.associatedZonesStart.map(oz => oz.name -> oz) ++ amw.associatedZonesEnd.map(oz => oz.name -> oz)) --
+  movingWalkways.flatMap(amw => amw.droppedVertices)
 
   // Inverted destination groups which is used to check if alternative equivalent destination are available
   private val destination2EquivalentDestinations: Map[String, Vector[String]] = destinationGroups.flatMap(kv => kv._2.map(r => r -> kv._2)).toMap
 
-  private def destination2EquivalentDestinations(zone: Rectangle): Vector[Rectangle] = destination2EquivalentDestinations.getOrElse(zone.name, Vector(zone.name)).map(zID => this.vertexCollection(zID))
+  private def destination2EquivalentDestinations(zone: Vertex): Vector[Vertex] = destination2EquivalentDestinations.getOrElse(zone.name, Vector(zone.name)).map(zID => this.vertexCollection(zID))
 
 
   //def vertexMapNew: Map[String, Rectangle] = this.vertexCollection
 
   // builds the container for the graph
-  private val network: DefaultDirectedWeightedGraph[Rectangle, MyEdge] = new DefaultDirectedWeightedGraph[Rectangle, MyEdge](classOf[MyEdge])
+  private val network: DefaultDirectedWeightedGraph[Vertex, MyEdge] = new DefaultDirectedWeightedGraph[Vertex, MyEdge](classOf[MyEdge])
 
   // adds the vertices to the graph
   //println(vertexMapNew)
@@ -63,11 +70,14 @@ class RouteGraph(protected val baseVertices: Iterable[Rectangle],
       || flowSeparators.flatMap(_.associatedConnectivity.map(_.startVertex.name)).toVector.contains(e.endVertex.name)
     ) ++ flowSeparators.flatMap(_.associatedConnectivity)) ++ edges2Add) -- edges2Remove*/
 
+
   val edgeCollection: Set[MyEdge] = (((standardEdges ++ flowGates ++ binaryGates ++ movingWalkways ++ levelChanges).toSet
     .filterNot(e =>
       flowSeparators.flatMap(fs => fs.overridenZones).toVector.contains(e.startVertex.name)
         || flowSeparators.flatMap(fs => fs.overridenZones).toVector.contains(e.endVertex.name)
-    ) ++ flowSeparators.flatMap(_.associatedConnectivity)) ++ edges2Add) -- edges2Remove
+      || movingWalkways.flatMap(amw => amw.droppedVertices).toVector.contains(e.startVertex.name)
+        || movingWalkways.flatMap(amw => amw.droppedVertices).toVector.contains(e.endVertex.name)
+    ) ++ flowSeparators.flatMap(_.associatedConnectivity) ++ movingWalkways.flatMap(_.associatedConnectivity)) ++ edges2Add) -- edges2Remove
 
   //def edges: Set[MyEdge] = edgeCollection
 
@@ -75,22 +85,19 @@ class RouteGraph(protected val baseVertices: Iterable[Rectangle],
   this.edgeCollection.foreach(e => {
     network.addEdge(e.startVertex, e.endVertex, e)
     e match {
-      case lv: MyEdgeLevelChange => {
-        network.setEdgeWeight(e, 0.0)
-      }
-      case _ => {
-        network.setEdgeWeight(e, e.length)
-      }
+      case lv: MyEdgeLevelChange => { network.setEdgeWeight(lv, 0.0) }
+      case a: MovingWalkway => {network.setEdgeWeight(a, a.length / (1.34 + a.speed))}
+      case _ => { network.setEdgeWeight(e, e.length / 1.34) }
     }
   })
 
   //def vertices: Iterable[Rectangle] = this.vertexMapNew.values
 
   // object used to get the shortest path in the network
-  private var shortestPathBuilder: DijkstraShortestPath[Rectangle, MyEdge] = new DijkstraShortestPath[Rectangle, MyEdge](network)
+  private var shortestPathBuilder: DijkstraShortestPath[Vertex, MyEdge] = new DijkstraShortestPath[Vertex, MyEdge](network)
 
   // Construction for getting k shortest paths between and origin and a destination in the graph
-  private var multipleShortestPathsBuilder: KShortestPaths[Rectangle, MyEdge] = new KShortestPaths[Rectangle, MyEdge](network, 5)
+  private var multipleShortestPathsBuilder: KShortestPaths[Vertex, MyEdge] = new KShortestPaths[Vertex, MyEdge](network, 5)
 
 
   /**
@@ -100,8 +107,8 @@ class RouteGraph(protected val baseVertices: Iterable[Rectangle],
   private def updateGraph(): Unit = {
     this.edgeCollection.foreach(_.updateCost(1.0))
     this.edgeCollection.foreach(e => network.setEdgeWeight(e, e.cost))
-    this.shortestPathBuilder = new DijkstraShortestPath[Rectangle, MyEdge](network)
-    this.multipleShortestPathsBuilder = new KShortestPaths[Rectangle, MyEdge](network, 5)
+    this.shortestPathBuilder = new DijkstraShortestPath[Vertex, MyEdge](network)
+    this.multipleShortestPathsBuilder = new KShortestPaths[Vertex, MyEdge](network, 5)
   }
 
   /** Uses to shortestPathBuilder to compute the shortest path between two vertices.
@@ -110,7 +117,7 @@ class RouteGraph(protected val baseVertices: Iterable[Rectangle],
     * @param d destination node
     * @return the list if vertices representing the path
     */
-  private def getShortestPath(o: Rectangle, d: Rectangle): (Double, List[Rectangle]) = {
+  private def getShortestPath(o: Vertex, d: Vertex): (Double, List[Vertex]) = {
 
     // Chooses the route between the five shortest ones and selects it using the logit model with equal weights.
     /*val paths: Seq[GraphPath[Rectangle, MyEdge]] = this.multipleShortestPathsBuilder.getPaths(o, d).asScala.toVector
@@ -136,7 +143,7 @@ class RouteGraph(protected val baseVertices: Iterable[Rectangle],
     * Determines whether there is a change in floor level when changing links. This is important as the pedestrians must be
     * "teleported" to the start of the other edge.
     */
-  private def isFloorChange(a: Rectangle, b: Rectangle): Boolean = {
+  private def isFloorChange(a: Vertex, b: Vertex): Boolean = {
     this.levelChanges.map(e => (e.startVertex.ID, e.endVertex.ID)).exists(_ == (a.ID, b.ID))
   }
 
@@ -170,6 +177,12 @@ class RouteGraph(protected val baseVertices: Iterable[Rectangle],
       p.route = p.route.tail
     }
     p.setCurrentDestination(p.nextZone.uniformSamplePointInside)
+
+    // update the base moving spped of pedestrian p if he is entering a or exiting a moving walkway
+    movingWalkwayVertices.get(p.previousZone).collect {
+      case amw if amw._1 == IN => p.baseVelocity = amw._2.movingSpeed
+      case amw if amw._1 == OUT => p.baseVelocity = new ZeroVector2D
+    }
   }
 
 

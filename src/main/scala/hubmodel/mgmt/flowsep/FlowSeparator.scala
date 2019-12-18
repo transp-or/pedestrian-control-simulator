@@ -5,9 +5,9 @@ import hubmodel.mgmt._
 import hubmodel.ped.PedestrianNOMAD
 import hubmodel.supply.continuous.{MovableWall, SINGLELINE, Wall}
 import hubmodel.supply.graph.MyEdge
-import hubmodel.tools.Time
-import hubmodel.tools.cells.RectangleModifiable
-import hubmodel.tools.exceptions.IllegalFlowSeparatorPosition
+import tools.Time
+import tools.cells.RectangleModifiable
+import tools.exceptions.IllegalFlowSeparatorPosition
 import hubmodel.{FLOW_SEPARATOR_SPEED, FLOW_SEPARATOR_UPDATE, Position, generateUUID}
 
 import scala.util.{Failure, Success, Try}

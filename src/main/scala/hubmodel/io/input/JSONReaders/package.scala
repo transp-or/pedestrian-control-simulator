@@ -3,7 +3,7 @@ package hubmodel.io.input
 
 import hubmodel.Position
 import hubmodel.supply.{NodeIDOld, TrackIDOld}
-import hubmodel.tools.Time
+import tools.Time
 import play.api.libs.functional.syntax._
 import play.api.libs.json.Reads.minLength
 import play.api.libs.json._
@@ -24,15 +24,36 @@ package object JSONReaders {
     * @param dep      departure time
     * @param capacity max capacity of the train
     */
-  private[JSONReaders] case class Vehicle_JSON(ID: String, trainType: String, track: String, arr: Option[Time], dep: Option[Time], capacity: Int)
+  private[JSONReaders] case class Vehicle_JSON(ID: String,
+                                               trainType: String,
+                                               track: Int,
+                                               arr: Option[Time],
+                                               dep: Option[Time],
+                                               capacity: Option[Int],
+                                               carriages: Option[Int],
+                                               track_sched: Option[Int],
+                                               t_arr_sched: Option[Time],
+                                               arr_HOP: Option[Double],
+                                               arr_FRASY: Option[Double],
+                                               t_dep_sched: Option[Time],
+                                               dep_HOP: Option[Double],
+                                               dep_FRASY: Option[Double])
 
   implicit val trainReads: Reads[Vehicle_JSON] = (
     (JsPath \ "id").read[String](minLength[String](1)) and
       (JsPath \ "type").read[String] and
-      (JsPath \ "track").read[String] and
+      (JsPath \ "track").read[Int] and
       (JsPath \ "arrival-time").readNullable[Time] and
       (JsPath \ "departure-time").readNullable[Time] and
-      (JsPath \ "capacity").read[Int]
+      (JsPath \ "capacity").readNullable[Int] and
+      (JsPath \ "Nc").readNullable[Int] and
+      (JsPath \ "track_sched").readNullable[Int] and
+      (JsPath \ "t_arr_sched").readNullable[Time] and
+      (JsPath \ "arr_HOP").readNullable[Double] and
+      (JsPath \ "arr_FRASY").readNullable[Double] and
+      (JsPath \ "t_dep_sched").readNullable[Time] and
+      (JsPath \ "dep_HOP").readNullable[Double] and
+      (JsPath \ "dep_FRASY").readNullable[Double]
     ) (Vehicle_JSON.apply _)
 
   /** Pairs of tracks and corresponding nodes
@@ -173,20 +194,69 @@ package object JSONReaders {
       (JsPath \ "functional_parameters").readNullable[Vector[Double]]
     ) (FlowGates_JSON.apply _)
 
+
+  private[JSONReaders] case class RectangleFixedOverride_JSON(name: String,
+                                                      x1: Double,
+                                                      y1: Double,
+                                                      x2: Double,
+                                                      y2: Double,
+                                                      x3: Double,
+                                                      y3: Double,
+                                                      x4: Double,
+                                                      y4: Double,
+                                                      isOD: Boolean,
+                                                      overridenZone: Option[String],
+                                                      maxRate: Option[Double])
+
   /**
-    * Moving walkway object. Currently not used by the simulation.
-    *
-    * @param o origin of the moving walkway
-    * @param d destination of the moving walkway
+    * Reads the JSON structure into a [[RectangleFixedOverride_JSON]] object. No validation on arguments is done.
     */
-  private[JSONReaders] case class MovingWalkways_JSON(o: String, d: String)
+  implicit val RectangleFixedOverride_JSON_JSONReads: Reads[RectangleFixedOverride_JSON] = (
+    (JsPath \ "name").read[String] and
+      (JsPath \ "x1").read[Double] and
+      (JsPath \ "y1").read[Double] and
+      (JsPath \ "x2").read[Double] and
+      (JsPath \ "y2").read[Double] and
+      (JsPath \ "x3").read[Double] and
+      (JsPath \ "y3").read[Double] and
+      (JsPath \ "x4").read[Double] and
+      (JsPath \ "y4").read[Double] and
+      (JsPath \ "OD").read[Boolean] and
+      (JsPath \ "overrides").readNullable[String] and
+      (JsPath \ "maximum_rate").readNullable[Double]
+    ) (RectangleFixedOverride_JSON.apply _)
+
+
+  /** Moving walkway object.
+    *
+    * @param name
+    * @param x1
+    * @param y1
+    * @param x2
+    * @param y2
+    * @param width
+    * @param overriden_zones_1
+    * @param overriden_zones_2
+    * @param overriden_connections
+    */
+  private[JSONReaders] case class MovingWalkways_JSON(name: String, x1: Double, y1:Double, x2:Double, y2:Double, width: Double,
+                                                      overriden_zones_1: Vector[RectangleFixedOverride_JSON],
+                                                      overriden_zones_2: Vector[RectangleFixedOverride_JSON],
+                                                      overriden_connections: Vector[Connectivity_JSON])
 
   /**
     * Reads the JSON structure into a [[MovingWalkways_JSON]] object. No validation on arguments is done.
     */
   implicit val MovingWalkways_JSONReads: Reads[MovingWalkways_JSON] = (
-    (JsPath \ "o").read[String] and
-      (JsPath \ "d").read[String]
+    (JsPath \ "name").read[String] and
+      (JsPath \ "x1").read[Double] and
+      (JsPath \ "y1").read[Double] and
+      (JsPath \ "x2").read[Double] and
+      (JsPath \ "y2").read[Double] and
+      (JsPath \ "width").read[Double] and
+      (JsPath \ "overriden_zones_1").read[Vector[RectangleFixedOverride_JSON]] and
+      (JsPath \ "overriden_zones_2").read[Vector[RectangleFixedOverride_JSON]] and
+      (JsPath \ "overriden_connections").read[Vector[Connectivity_JSON]]
     ) (MovingWalkways_JSON.apply _)
 
   /**

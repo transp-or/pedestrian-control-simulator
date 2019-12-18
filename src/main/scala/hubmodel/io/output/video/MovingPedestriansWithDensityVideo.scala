@@ -11,8 +11,8 @@ import hubmodel.io.output.createBackgroundFromImage
 import hubmodel.mgmt.flowgate.BinaryGate
 import hubmodel.ped.History.HistoryContainer
 import hubmodel.ped.PedestrianSim
-import hubmodel.tools.Time
-import hubmodel.tools.cells.Rectangle
+import tools.Time
+import tools.cells.Rectangle
 import org.jcodec.api.awt.AWTSequenceEncoder
 
 /** Creates a video showing the movement of individual pedestrians with the critical zones in which the density is

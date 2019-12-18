@@ -10,11 +10,11 @@ import hubmodel._
 import hubmodel.io.output.{createWhiteBackground, getBounds, mapCoordAffine, verticalMirrorTransformation}
 import hubmodel.mgmt.flowgate.BinaryGate
 import hubmodel.mgmt.flowsep.FlowSeparator
-import hubmodel.ped.History.{Coordinate, HistoryContainer, PositionIsolation}
+import hubmodel.ped.History.{CoordinateTracking, HistoryContainer, PositionIsolation}
 import hubmodel.ped.PedestrianTrajectory
 import hubmodel.supply.continuous.Wall
-import hubmodel.tools.Time
-import hubmodel.tools.cells.DensityMeasuredArea
+import tools.Time
+import tools.cells.DensityMeasuredArea
 import org.jcodec.api.awt.AWTSequenceEncoder
 
 /** Creates a video showing the movement of individual pedestrians with the critical zones in which the density is
@@ -94,7 +94,7 @@ class MovingPedestriansWithDensityWithWallVideo(outputFile: String,
 
   val timeEllipses: Vector[(Time, List[(Ellipse2D, Option[Int])])] = population2TimePositionList
     .filter(pair => times2Show.exists(t => (t - pair._1).abs.value <= math.pow(10, -5)))
-    .map(p => (p._1, p._2.map({case p: Coordinate => {(createDot(p.pos), None)} case pi: PositionIsolation => {(createDot(pi.pos), Some(pi.isolationType))}})))
+    .map(p => (p._1, p._2.map({case p: CoordinateTracking => {(createDot(p.pos), None)} case pi: PositionIsolation => {(createDot(pi.pos), Some(pi.isolationType))}})))
     .toVector
 
   // Image to use for combining all the different components: the bkgd image, the dots, the monitored areas, the gates, etc.

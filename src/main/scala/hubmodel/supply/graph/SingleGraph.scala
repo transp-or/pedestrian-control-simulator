@@ -1,12 +1,13 @@
 package hubmodel.supply.graph
 
 import hubmodel.mgmt.ControlDevices
+import hubmodel.mgmt.amw.MovingWalkway
 import hubmodel.mgmt.flowgate.{BinaryGate, FlowGate}
 import hubmodel.mgmt.flowsep.FlowSeparator
 import hubmodel.ped.PedestrianNOMAD
-import hubmodel.tools.cells.Rectangle
+import tools.cells.{Rectangle, Vertex}
 
-class SingleGraph(private val baseVertices: Iterable[Rectangle],
+class SingleGraph(private val baseVertices: Iterable[Vertex],
                   private val standardEdges: Iterable[MyEdge],
                   private val levelChanges: Iterable[MyEdgeLevelChange],
                   private val destinationGroups: Iterable[(String, Vector[String])],
@@ -19,7 +20,7 @@ class SingleGraph(private val baseVertices: Iterable[Rectangle],
 
   def edges: Set[MyEdge] = this.graph.edgeCollection
 
-  def vertexMapNew: Map[String, Rectangle] = this.graph.vertexCollection
+  def vertexMapNew: Map[String, Vertex] = this.graph.vertexCollection
 
   /**
     * Changes the pedestrian's intermediat destination when the current intermediat destination is reached.

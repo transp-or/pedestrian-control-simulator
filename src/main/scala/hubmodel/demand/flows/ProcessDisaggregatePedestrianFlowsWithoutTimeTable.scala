@@ -6,7 +6,7 @@ import hubmodel.DES.{Action, NOMADGraphSimulator}
 import hubmodel.demand.CreatePedestrian
 import hubmodel.ped.PedestrianNOMAD
 import hubmodel.supply.{StopID_New, TrainID_New}
-import hubmodel.tools.Time
+import tools.Time
 
 import scala.reflect.ClassTag
 

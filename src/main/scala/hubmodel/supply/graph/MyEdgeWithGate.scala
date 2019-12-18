@@ -2,12 +2,12 @@ package hubmodel.supply.graph
 
 import hubmodel.DES.{Action, NOMADGraphSimulator}
 import hubmodel.ped.{PedestrianNOMAD, PedestrianSim}
-import hubmodel.tools.Time
-import hubmodel.tools.cells.Rectangle
-import hubmodel.tools.exceptions.ControlDevicesException
+import tools.Time
+import tools.cells.{Rectangle, Vertex}
+import tools.exceptions.ControlDevicesException
 import hubmodel.{GATE_MAXIMUM_QUEUE_SIZE, Position}
 
-abstract class MyEdgeWithGate(override val startVertex: Rectangle, override val endVertex: Rectangle, val start: Position, val end: Position, val monitoredArea: String) extends MyEdge(startVertex, endVertex) {
+abstract class MyEdgeWithGate(override val startVertex: Vertex, override val endVertex: Vertex, val start: Position, val end: Position, val monitoredArea: String) extends MyEdge(startVertex, endVertex) {
 
   // self-type allowing access to contents of this class from inner classes.
   gate =>

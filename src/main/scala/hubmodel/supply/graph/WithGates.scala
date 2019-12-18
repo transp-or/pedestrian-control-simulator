@@ -2,7 +2,7 @@ package hubmodel.supply.graph
 
 import hubmodel.mgmt.flowgate.FlowGate
 import hubmodel.ped.{PedestrianNOMAD, PedestrianSim}
-import hubmodel.tools.cells.isInVertex
+import tools.cells.isInVertex
 
 trait WithGates {
 

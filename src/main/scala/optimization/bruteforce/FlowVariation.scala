@@ -4,7 +4,7 @@ import com.typesafe.config.Config
 import hubmodel.DES.getAggregateFlows
 import hubmodel._
 import hubmodel.demand.{PedestrianFlowFunction_New, PedestrianFlowPT_New, PedestrianFlow_New}
-import hubmodel.tools.Time
+import tools.Time
 
 
 

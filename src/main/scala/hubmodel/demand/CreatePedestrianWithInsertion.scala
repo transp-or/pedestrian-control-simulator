@@ -2,15 +2,15 @@ package hubmodel.demand
 
 import hubmodel.DES.{Action, NOMADGraphSimulator}
 import hubmodel.ped.PedestrianNOMAD
-import hubmodel.tools.Time
-import hubmodel.tools.cells.Rectangle
+import tools.Time
+import tools.cells.{Rectangle, Vertex}
 
 import scala.reflect.ClassTag
 
 /**
   * Creates a pedestrian. A new pedestrian will be added when this event is executed.
   */
-class CreatePedestrianWithInsertion[T <: PedestrianNOMAD](o: Rectangle, d: Rectangle, sim: NOMADGraphSimulator[T], timeGenerator: Time => Option[Time])(implicit tag: ClassTag[T]) extends Action {
+class CreatePedestrianWithInsertion[T <: PedestrianNOMAD](o: Vertex, d: Vertex, sim: NOMADGraphSimulator[T], timeGenerator: Time => Option[Time])(implicit tag: ClassTag[T]) extends Action {
 
   /**
     * Inserts a new pedestrian. The characteristics of this pedestrian are sampled on creation.

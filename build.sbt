@@ -5,7 +5,7 @@ scalaVersion := "2.13.1"
 fork in run := true
 
 javaOptions in run ++= Seq(
-  "-Xms1G", "-Xmx12G", "-XX:+UseConcMarkSweepGC"
+  "-Xms2G", "-Xmx14G", "-XX:+UseConcMarkSweepGC"
 )
 
 // Dependencies taken from maven
@@ -24,8 +24,16 @@ libraryDependencies ++= Seq(
   "org.scala-lang.modules" %% "scala-parser-combinators" % "1.1.2",
   "org.apache.commons" % "commons-lang3" % "3.8",
   "org.apache.commons" % "commons-math3" % "3.6",
-  "org.scala-lang.modules" %% "scala-parallel-collections" % "0.2.0"
+  "org.scala-lang.modules" %% "scala-parallel-collections" % "0.2.0",
+  "org.scalanlp" %% "breeze" % "1.0",
+  "org.scalanlp" %% "breeze-natives" % "1.0",
 )
+
+
+libraryDependencies += "org.scalatest" %% "scalatest" % "3.0.8" % "test"
+
+libraryDependencies += "junit" % "junit" % "4.12" % "test"
+
 
 // Dependencies installed manually with sbt
 libraryDependencies ++= Seq(

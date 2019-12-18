@@ -1,6 +1,6 @@
 package hubmodel.mgmt
 
-import hubmodel.tools.exceptions.{IllegalFlowSeparatorPosition, IllegalPhysicalQuantity}
+import tools.exceptions.{IllegalFlowSeparatorPosition, IllegalPhysicalQuantity}
 
 abstract class Measurement
 

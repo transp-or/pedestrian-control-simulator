@@ -4,10 +4,10 @@ import java.util.concurrent.ThreadLocalRandom
 
 import hubmodel.DES.{Action, NOMADGraphSimulator}
 import hubmodel.ped.PedestrianNOMAD
-import hubmodel.tools.Time
-import hubmodel.tools.cells.Rectangle
+import tools.Time
+import tools.cells.{Rectangle, Vertex}
 
-class ReleasePedPTInducedFlow[T <: PedestrianNOMAD](o: Rectangle, sim: NOMADGraphSimulator[T]) extends Action {
+class ReleasePedPTInducedFlow[T <: PedestrianNOMAD](o: Vertex, sim: NOMADGraphSimulator[T]) extends Action {
 
   override def execute(): Unit = {
     if (sim.PTInducedFlows(o).nonEmpty) {

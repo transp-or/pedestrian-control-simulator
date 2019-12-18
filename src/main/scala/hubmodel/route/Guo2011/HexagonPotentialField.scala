@@ -4,9 +4,9 @@ import java.awt.Color
 
 import hubmodel._
 import hubmodel.supply.potential.PotentialCell
-import hubmodel.tools.cells.{Hexagon, VertexPlotting}
+import tools.cells.{Hexagon, VertexPlotting}
 
-class HexagonPotentialField(c: Position, sideLength: Double) extends Hexagon(c, sideLength) with VertexPlotting with PotentialCell{ //}, conn: List[String]) {
+class HexagonPotentialField(c: Position, sideLength: Double) extends Hexagon(c, sideLength) with VertexPlotting with PotentialCell { //}, conn: List[String]) {
   /*val ID: String = generateUUID
   val A: Position = center + edgeLength * DenseVector(-cos(30 * math.Pi / 180.0), sqrt(1 - pow(cos(30 * math.Pi / 180.0), 2)))
   val B: Position = A + edgeLength * DenseVector(0.0, -1.0)
@@ -29,5 +29,20 @@ class HexagonPotentialField(c: Position, sideLength: Double) extends Hexagon(c, 
   }
 
   def horizontalMaxTextWidth: Double = this.sideLength
+
+  override def canEqual(other: Any): Boolean = other.isInstanceOf[HexagonPotentialField]
+
+  /** Checks whether another object equals this one by comparing the positions associated to the vertex
+    *
+    * @param other another object to test equality for
+    * @return boolean indicating if the two objects are the same
+    */
+  override def equals(other: Any): Boolean =
+    other match {
+      case that: HexagonPotentialField if that.canEqual(this) => this.hashCode == that.hashCode
+      case _ => false
+    }
+
+  override def hashCode: Int = (this.c, this.sideLength).##
 
 }

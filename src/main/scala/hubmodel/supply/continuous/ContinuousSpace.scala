@@ -14,4 +14,11 @@ class ContinuousSpace(val walls: Vector[Wall]) extends Infrastructure with Build
 
   override lazy val shellCollection: List[Shell] = buildShells(walls)
   val isInsideWalkableArea: Position => Boolean = pos => super.isInsideWalkableSpace(pos)
+
+  /** Add walls to the existing [[ContinuousSpace]] object.
+    *
+    * @param ws walls to add
+    * @return new [[ContinuousSpace]] object with extra walls
+    */
+  def addWalls(ws: Iterable[Wall]): ContinuousSpace = new ContinuousSpace(this.walls ++ ws)
 }

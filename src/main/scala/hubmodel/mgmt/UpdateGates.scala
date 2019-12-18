@@ -3,8 +3,8 @@ package hubmodel.mgmt
 import hubmodel.DES.{Action, NOMADGraphSimulator}
 import hubmodel.mgmt.flowgate.{FlowGate, FlowGateFunctional}
 import hubmodel.ped.PedestrianNOMAD
-import hubmodel.tools.Time
-import hubmodel.tools.TimeNumeric.mkOrderingOps
+import tools.Time
+import tools.TimeNumeric.mkOrderingOps
 
 import scala.annotation.tailrec
 

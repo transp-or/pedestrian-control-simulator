@@ -1,6 +1,6 @@
 package trackingdataanalysis.pedtrack.visiosafe
 
-import hubmodel.tools.cells.Rectangle
+import tools.cells.Rectangle
 
 class FlowDensityCalculation(zoneFile: String) {
 

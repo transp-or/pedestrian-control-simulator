@@ -8,7 +8,7 @@ import trackingdataanalysis.pedtrack.{TrajectoryProcessing, ZoneProcessing}
 //import breeze.linalg.{Axis, DenseMatrix, DenseVector}
 //import breeze.stats.regression.{LeastSquaresRegressionResult, leastSquares}
 import hubmodel.Position
-import hubmodel.tools.cells.Rectangle
+import tools.cells.Rectangle
 import kn.uni.voronoitreemap.datastructure.OpenList
 import kn.uni.voronoitreemap.diagram.PowerDiagram
 import kn.uni.voronoitreemap.j2d.{PolygonSimple, Site}

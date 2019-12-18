@@ -5,7 +5,7 @@ import java.awt.{Color, Graphics2D}
 import java.io.File
 
 import hubmodel.supply.continuous.Wall
-import hubmodel.tools.cells.Vertex
+import tools.cells.Vertex
 import javax.imageio.ImageIO
 
 /**

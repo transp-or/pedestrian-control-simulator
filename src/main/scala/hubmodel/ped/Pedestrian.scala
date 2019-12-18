@@ -1,9 +1,9 @@
 package hubmodel.ped
 
-import hubmodel.ped.History.{Coordinate, CoordinateGroup, HistoryContainer}
+import hubmodel.ped.History.{CoordinateTracking, CoordinateGroup, HistoryContainer}
 import hubmodel.ped.PedestrianTrajectory
-import hubmodel.{Position, tools}
-import hubmodel.tools.Time
+import hubmodel.{Position}
+import tools.Time
 import myscala.math.vector.ZeroVector2D
 
 import scala.collection.mutable
@@ -57,7 +57,7 @@ class Pedestrian(val ID: Int, val entryTime: Time) extends PedestrianTrajectory 
   /* ---------- Methods -----------*/
 
   def updatePositionHistory(t: tools.Time, pos: Position): Unit = {
-    this._historyPositionUnsorted.append((t, Coordinate(pos)))
+    this._historyPositionUnsorted.append((t, CoordinateTracking(pos)))
   }
 
   def updatePositionHistory(t: tools.Time, pos: Position, group: Int): Unit = {

@@ -1,0 +1,94 @@
+[
+  {
+    "trainNr": "12917"
+  },
+  {
+    "trainNr": "12318"
+  },
+  {
+    "trainNr": "12217"
+  },
+  {
+    "trainNr": "4060"
+  },
+  {
+    "trainNr": "12218"
+  },
+  {
+    "trainNr": "12317"
+  },
+  {
+    "trainNr": "12918",
+    "Nc": 5,
+    "track_sched": 70,
+    "t_arr_sched": "07:36:00",
+    "arr_HOP": 399.9,
+    "arr_FRASY": 511.8,
+    "t_dep_sched": null,
+    "dep_HOP": null,
+    "dep_FRASY": null
+  },
+  {
+    "trainNr": "1712"
+  },
+  {
+    "trainNr": "2607"
+  },
+  {
+    "trainNr": "706"
+  },
+  {
+    "trainNr": "1517"
+  },
+  {
+    "trainNr": "1407"
+  },
+  {
+    "trainNr": "1710"
+  },
+  {
+    "trainNr": "1606"
+  },
+  {
+    "trainNr": "2517"
+  },
+  {
+    "trainNr": "2710"
+  },
+  {
+    "trainNr": "12017",
+    "Nc": 4,
+    "track_sched": 5,
+    "t_arr_sched": "07:49:00",
+    "arr_HOP": 226.5,
+    "arr_FRASY": 216.7,
+    "t_dep_sched": null,
+    "dep_HOP": null,
+    "dep_FRASY": null
+  },
+  {
+    "trainNr": "12820"
+  },
+  {
+    "trainNr": "12119"
+  },
+  {
+    "trainNr": "12420"
+  },
+  {
+    "trainNr": "4024"
+  },
+  {
+    "trainNr": "12120"
+  },
+  {
+    "trainNr": "12419"
+  },
+  {
+    "trainNr": "12819"
+  },
+  {
+    "trainNr": "12014"
+  }
+]
+

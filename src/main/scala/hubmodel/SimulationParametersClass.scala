@@ -5,8 +5,8 @@ import hubmodel.mgmt.ControlDevices
 import hubmodel.supply.NodeParent
 import hubmodel.supply.continuous.ContinuousSpace
 import hubmodel.supply.graph.GraphContainer
-import hubmodel.tools.Time
-import hubmodel.tools.cells.Rectangle
+import tools.Time
+import tools.cells.{Rectangle, Vertex}
 
 class SimulationParametersClass(val start: Time,
                                 val end: Time,
@@ -17,6 +17,6 @@ class SimulationParametersClass(val start: Time,
                                 val microSpace: ContinuousSpace,
                                 val graph: GraphContainer,
                                 val timeTable: Option[PublicTransportSchedule],
-                                val stop2Vertex: NodeParent => Iterable[Rectangle],
+                                val stop2Vertex: NodeParent => Iterable[Vertex],
                                 val controlDevices: ControlDevices,
                                 val writeTrajectoryData: Boolean)

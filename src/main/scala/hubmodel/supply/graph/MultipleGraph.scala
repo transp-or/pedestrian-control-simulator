@@ -3,10 +3,11 @@ package hubmodel.supply.graph
 import java.util.concurrent.ThreadLocalRandom
 
 import hubmodel.mgmt.ControlDevices
+import hubmodel.mgmt.amw.MovingWalkway
 import hubmodel.mgmt.flowgate.{BinaryGate, FlowGate}
 import hubmodel.mgmt.flowsep.FlowSeparator
 import hubmodel.ped.PedestrianNOMAD
-import hubmodel.tools.cells.Rectangle
+import tools.cells.{Rectangle, Vertex}
 
 class MultipleGraph(fg: Iterable[FlowGate],
                     bg: Iterable[BinaryGate],
@@ -39,7 +40,7 @@ class MultipleGraph(fg: Iterable[FlowGate],
    }*/
 
   // Adds a new [[RouteGraph]] object to the collection.
-  def addGraph(id: String, frac: PopulationFraction, vertices: Iterable[Rectangle], edges: Iterable[MyEdge], edges2Add: Set[MyEdge], edges2Remove: Set[MyEdge], lc: Iterable[MyEdgeLevelChange], destinationGroups: Iterable[(String, Vector[String])]): Unit = {
+  def addGraph(id: String, frac: PopulationFraction, vertices: Iterable[Vertex], edges: Iterable[MyEdge], edges2Add: Set[MyEdge], edges2Remove: Set[MyEdge], lc: Iterable[MyEdgeLevelChange], destinationGroups: Iterable[(String, Vector[String])]): Unit = {
     if (this._graphCollection.keySet.contains(id)) {
       throw new Exception("ID is not unique for graph ! " + id)
     }
@@ -53,7 +54,7 @@ class MultipleGraph(fg: Iterable[FlowGate],
   }
 
   // Get the vertex map from all the graphs.
-  def vertexMapNew: Map[String, Rectangle] = this._graphCollection.flatMap(_._2._2.vertexCollection).toMap
+  def vertexMapNew: Map[String, Vertex] = this._graphCollection.flatMap(_._2._2.vertexCollection).toMap
 
   // Get set of all edges
   def edges: Set[MyEdge] = this._graphCollection.flatMap(_._2._2.edgeCollection).toSet
