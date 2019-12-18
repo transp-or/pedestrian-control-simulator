@@ -1,5 +1,6 @@
 package demandestimation
 
+import breeze.linalg.{DenseMatrix, DenseVector}
 import com.typesafe.config.Config
 import demandestimation.assignment.Assignment
 import demandestimation.network.NetworkLausanne
@@ -23,12 +24,8 @@ object Debug extends App {
 
   //println(network.dist_routes_areas((network.positions("NW"), network.positions("SW")), 0))
 
-
-  println(network.routesToFlurinIdx.size)
-  println(network.routes.size)
-
-
   val assignment = new Assignment(parameters, network, config)
+
 
   //println(assignment.accumulation_Gaussian(0, 1, 1)(1.0)) // ok
 
@@ -75,6 +72,30 @@ object Debug extends App {
 
   // println(prior.m_rsplits.filter(_._1 < 5 )) // ok
 
-  println(prior.m_agg_rsplits)
+  // println(prior.m_agg_rsplits)
+
+  // collecting components
+
+  // TINF
+  val tinfData = prior.tinf
+  val tinfAssigMat = assignment.build_flow_assg_mat(network.edges_TINF)
+
+  // data
+  val mData = data.f_hat
+  val mDataAssigMat = assignment.build_flow_assg_mat(network.edges_ASE)
+
+  // historical data
+  val hAggData = prior.vAgg
+  val hAggAssigMat = prior.MAgg
+
+  val mat = DenseMatrix.vertcat(tinfAssigMat,DenseMatrix.vertcat(mDataAssigMat, hAggAssigMat))
+  val vec = DenseVector.vertcat(tinfData,DenseVector.vertcat(mData, hAggData))
+
+  val opt = new breeze.optimize.linear.NNLS()
+  val res = opt.minimizeAndReturnState(mat, vec)
+  println(res.converged)
+  println(res.x)
+  breeze.linalg.csvwrite(new java.io.File("result.csv"), DenseMatrix(res.x))
+
 
 }

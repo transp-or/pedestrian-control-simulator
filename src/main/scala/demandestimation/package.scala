@@ -42,10 +42,6 @@ package object demandestimation {
     val (parameterDistributions, parametersByTrainCategory, sectors, alphaModels): (Map[String, (Double, Double)], Map[String, Map[Int, Vector[String]]], Map[Int, Vector[String]], Map[String, Map[String, Double]]) =
       readStationPTLayout("lausanne-current/lausanne_station.json")
 
-    println(parameterDistributions)
-    println(parametersByTrainCategory)
-    println(sectors)
-    println(alphaModels)
   }
 
 }

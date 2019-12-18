@@ -261,15 +261,20 @@ class Assignment(parameters: DemandEstimationParameters, network: NetworkLausann
     * @param sensor_edge_dict
     * @return
     */
-  def build_flow_assg_mat(linkFlowAss: Map[(Int, Int), Double], sensors: Vector[(Vertex, Vertex)]): Vector[(Int, Int, Double)] = {
+  def build_flow_assg_mat(sensors: Vector[(Vertex, Vertex)]): DenseMatrix[Double] = {
 
-    (for {
+    val linkFlowAssReduced: DenseMatrix[Double] = DenseMatrix.zeros[Double](sensors.size * parameters.intervals.size, network.routes.size * parameters.intervals.size)
+
+    for {
       t <- parameters.intervals.indices
       sensor <- sensors.indices
-    } yield {
-      val secondIdx = linkFlowAss.filter(kv => kv._1._1 == t * network.edgeCollection.size + network.edgeIndices(sensors(sensor))).iterator.map(_._1._2)
+    } {
+      linkFlowAssReduced(t * sensors.size + sensor, ::) := this.assignmentMatrix(t * network.edgeCollection.size + network.edgeIndices(sensors(sensor)), ::)
+      /*val secondIdx = linkFlowAss.filter(kv => kv._1._1 == t * network.edgeCollection.size + network.edgeIndices(sensors(sensor))).iterator.map(_._1._2)
       secondIdx.map(idx => (t * sensors.size + sensor, idx, linkFlowAss(t * network.edgeCollection.size + network.edgeIndices(sensors(sensor)), idx)))
-    }).flatten.toVector
+    }).flatten.foreach(v => linkFlowAssReduced.update(v._1, v._2, v._3))*/
+    }
+    linkFlowAssReduced
     }
 
 
@@ -326,7 +331,7 @@ class Assignment(parameters: DemandEstimationParameters, network: NetworkLausann
 
   val (assignmentMatrix: DenseMatrix[Double], assignmentMatrixAccumulation: DenseMatrix[Double]) = {
 
-    if (config.getBoolean("demandestimation.compute_assignment") || getFilesInDirectory(outputDir, ".csv").isEmpty) {
+    if (config.getBoolean("demandestimation.compute_assignment") || getFilesInDirectory(outputDir, "*.csv").isEmpty) {
 
       println("Computing assignment matrices... ")
 

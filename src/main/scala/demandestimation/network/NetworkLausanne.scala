@@ -190,25 +190,25 @@ class NetworkLausanne {
 
 
   //We create a list of the edges associated to TINF
-  val edges_TINF: Vector[(String, String)] = Vector(
-    ("1D", "1h1"),
-    ("34d", "34w"),
-    ("56d", "56w"),
-    ("78d", "78w"),
-    ("9d", "9h1"),
-    ("1C", "1h4"),
-    ("34c", "34w"),
-    ("56c", "56w"),
-    ("78c", "78w"),
-    ("9c", "9h3"),
-    ("1AB", "1ab"),
-    ("70FE", "70fe"),
-    ("34b", "34e"),
-    ("56b", "56e"),
-    ("78b", "78e"),
-    ("34a", "34e"),
-    ("56a", "56e"),
-    ("78a", "78e"),
+  val edges_TINF: Vector[(Vertex, Vertex)] = Vector(
+    (positions("1D"), positions("1h1")),
+    (positions("34d"), positions("34w")),
+    (positions("56d"), positions("56w")),
+    (positions("78d"), positions("78w")),
+    (positions("9d"), positions("9h1")),
+    (positions("1C"), positions("1h4")),
+    (positions("34c"), positions("34w")),
+    (positions("56c"), positions("56w")),
+    (positions("78c"), positions("78w")),
+    (positions("9c"), positions("9h3")),
+    (positions("1AB"), positions("1ab")),
+    (positions("70FE"), positions("70fe")),
+    (positions("34b"), positions("34e")),
+    (positions("56b"), positions("56e")),
+    (positions("78b"), positions("78e")),
+    (positions("34a"), positions("34e")),
+    (positions("56a"), positions("56e")),
+    (positions("78a"), positions("78e")),
   )
 
   val edges_TINF_origins: Vector[String] = Vector("1D", "34D", "56D", "78D", "9D", "1C", "34C", "56C", "78C", "9C", "1AB", "70FE", "34B", "56B", "78B", "34A", "56A", "78A")
@@ -782,7 +782,7 @@ class NetworkLausanne {
     })
   })
 
-  val TINFEdgesIndices: Map[(Vertex, Vertex), Int] = edges_TINF.zipWithIndex.map(kv => (positions(kv._1._1), positions(kv._1._1)) -> kv._2).toMap
+  val TINFEdgesIndices: Map[(Vertex, Vertex), Int] = edges_TINF.zipWithIndex.map(kv => (kv._1._1, kv._1._2) -> kv._2).toMap
 
 
   def route_orig_idx(route: (Vertex, Vertex)): Int = this.centroids.indexOf(route._1.name)

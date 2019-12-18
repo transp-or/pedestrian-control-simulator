@@ -12,6 +12,9 @@ class Prior(parameters: DemandEstimationParameters, network: NetworkLausanne, co
     TINFEstimates.map(tinf => tinf(d)).statistics
   })
 
+  val tinf: DenseVector[Double] = DenseVector[Double](TINFEstimates.head.toArray)
+
+
   val routeChoice: RouteChoice = new RouteChoice(parameters, network)
   val dest_flows = routeChoice.generate_dest_flows(data, new TINF(parameters, config, network).timetable._1.get.timeTable.values.toVector)
 

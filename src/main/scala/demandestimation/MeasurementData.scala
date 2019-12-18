@@ -1,5 +1,6 @@
 package demandestimation
 
+import breeze.linalg.DenseVector
 import demandestimation.network.NetworkLausanne
 import tools.cells.Vertex
 
@@ -100,12 +101,12 @@ class MeasurementData(parameters: DemandEstimationParameters, network: NetworkLa
 
   val ASEData: Map[(Vertex, Vertex), Vector[Double]] = ASEdataPreprocessing()
 
-  val f_hat: Vector[Double] = (for {
+  val f_hat: DenseVector[Double] = DenseVector((for {
     t <- parameters.intervals.indices
     e <- network.edges_ASE
   } yield {
     ASEData(e)(t)
     //e._2(t)
-  }).toVector
+  }).toArray)
 
 }
