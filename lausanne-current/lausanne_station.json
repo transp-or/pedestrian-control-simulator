@@ -1,0 +1,347 @@
+{
+  "tinf_parameters": [
+    {
+      "parameter": "shortTrainsA",
+      "mu": 7,
+      "sigma": 5
+    },
+    {
+      "parameter": "shortTrainsB",
+      "mu": 50,
+      "sigma": 10
+    },
+    {
+      "parameter": "shortTrainsC",
+      "mu": 40,
+      "sigma": 6
+    },
+    {
+      "parameter": "shortTrainsD",
+      "mu": 4,
+      "sigma": 3
+    },
+    {
+      "parameter": "longTrainsA",
+      "mu": 20,
+      "sigma": 10
+    },
+    {
+      "parameter": "longTrainsB",
+      "mu": 30,
+      "sigma": 10
+    },
+    {
+      "parameter": "longTrainsC",
+      "mu": 30,
+      "sigma": 10
+    },
+    {
+      "parameter": "longTrainsD",
+      "mu": 20,
+      "sigma": 5
+    },
+    {
+      "parameter": "s",
+      "mu": 40,
+      "sigma": 10
+    },
+    {
+      "parameter": "alphaFit",
+      "mu": 0,
+      "sigma": 0.5
+    },
+    {
+      "parameter": "platform1AB",
+      "mu": 0.3,
+      "sigma": 0
+    },
+    {
+      "parameter": "platform1C",
+      "mu": 0.4,
+      "sigma": 0
+    },
+    {
+      "parameter": "platform1D",
+      "mu": 0.4,
+      "sigma": 0
+    },
+    {
+      "parameter": "platform9A",
+      "mu": 0.5,
+      "sigma": 0
+    },
+    {
+      "parameter": "platform9B",
+      "mu": 0.5,
+      "sigma": 0
+    },
+    {
+      "parameter": "noRatio",
+      "mu": 1,
+      "sigma": 0
+    },
+    {
+      "parameter": "shortTrainsARed",
+      "mu": 5,
+      "sigma": 4
+    },
+    {
+      "parameter": "shortTrainsBRed",
+      "mu": 40,
+      "sigma": 8
+    },
+    {
+      "parameter": "shortTrainsCRed",
+      "mu": 40,
+      "sigma": 6
+    },
+    {
+      "parameter": "shortTrainsDRed",
+      "mu": 3,
+      "sigma": 2
+    },
+    {
+      "parameter": "longTrainsARed",
+      "mu": 10,
+      "sigma": 10
+    },
+    {
+      "parameter": "longTrainsBRed",
+      "mu": 20,
+      "sigma": 5
+    },
+    {
+      "parameter": "longTrainsCRed",
+      "mu": 30,
+      "sigma": 10
+    },
+    {
+      "parameter": "longTrainsDRed",
+      "mu": 20,
+      "sigma": 5
+    },
+    {
+      "parameter": "alpha70",
+      "mu": 5,
+      "sigma": 0
+    },
+    {
+      "parameter": "alpha1",
+      "mu": 10,
+      "sigma": 0
+    },
+    {
+      "parameter": "alpha9",
+      "mu": 3,
+      "sigma": 0
+    }
+  ],
+  "parameter_mapping": [
+    {
+      "train_category": "shortTrain",
+      "parameters_per_track": [
+        {
+          "track": 1,
+          "parameters": [
+            "platform1AB",
+            "platform1C",
+            "platform1D"
+          ]
+        },
+        {
+          "track": 3,
+          "parameters": [
+            "shortTrainsA",
+            "shortTrainsB",
+            "shortTrainsC",
+            "shortTrainsD"
+          ]
+        },
+        {
+          "track": 4,
+          "parameters": [
+            "shortTrainsA",
+            "shortTrainsB",
+            "shortTrainsC",
+            "shortTrainsD"
+          ]
+        },
+        {
+          "track": 5,
+          "parameters": [
+            "shortTrainsA",
+            "shortTrainsB",
+            "shortTrainsC",
+            "shortTrainsD"
+          ]
+        },
+        {
+          "track": 6,
+          "parameters": [
+            "shortTrainsA",
+            "shortTrainsB",
+            "shortTrainsC",
+            "shortTrainsD"
+          ]
+        },
+        {
+          "track": 7,
+          "parameters": [
+            "shortTrainsARed",
+            "shortTrainsBRed",
+            "shortTrainsCRed",
+            "shortTrainsDRed"
+          ]
+        },
+        {
+          "track": 8,
+          "parameters": [
+            "shortTrainsARed",
+            "shortTrainsBRed",
+            "shortTrainsCRed",
+            "shortTrainsDRed"
+          ]
+        },
+        {
+          "track": 9,
+          "parameters": [
+            "platform9A",
+            "platform9B"
+          ]
+        },
+        {
+          "track": 70,
+          "parameters": ["noRatio"]
+        }
+      ]
+    },
+    {
+      "train_category": "longTrain",
+      "parameters_per_track": [
+        {
+          "track": 1,
+          "parameters": [
+            "platform1AB",
+            "platform1C",
+            "platform1D"
+          ]
+        },
+        {
+          "track": 3,
+          "parameters": [
+            "longTrainsA",
+            "longTrainsB",
+            "longTrainsC",
+            "longTrainsD"
+          ]
+        },
+        {
+          "track": 4,
+          "parameters": [
+            "longTrainsA",
+            "longTrainsB",
+            "longTrainsC",
+            "longTrainsD"
+          ]
+        },
+        {
+          "track": 5,
+          "parameters": [
+            "longTrainsA",
+            "longTrainsB",
+            "longTrainsC",
+            "longTrainsD"
+          ]
+        },
+        {
+          "track": 6,
+          "parameters": [
+            "longTrainsA",
+            "longTrainsB",
+            "longTrainsC",
+            "longTrainsD"
+          ]
+        },
+        {
+          "track": 7,
+          "parameters": [
+            "longTrainsARed",
+            "longTrainsBRed",
+            "longTrainsCRed",
+            "longTrainsDRed"
+          ]
+        },
+        {
+          "track": 8,
+          "parameters": [
+            "longTrainsARed",
+            "longTrainsBRed",
+            "longTrainsCRed",
+            "longTrainsDRed"
+          ]
+        },
+        {
+          "track": 9,
+          "parameters": [
+            "platform9A",
+            "platform9B"
+          ]
+        },
+        {
+          "track": 70,
+          "parameters": ["noRatio"]
+        }
+      ]
+    }
+  ],
+  "sectors": [
+    {
+      "track": 1,
+      "sectors": ["AB", "C", "D"]
+    },
+    {
+      "track": 3,
+      "sectors": ["A", "B", "C", "D"]
+    },
+    {
+      "track": 4,
+      "sectors": ["A", "B", "C", "D"]
+    },
+    {
+      "track": 5,
+      "sectors": ["A", "B", "C", "D"]
+    },
+    {
+      "track": 6,
+      "sectors": ["A", "B", "C", "D"]
+    },
+    {
+      "track": 7,
+      "sectors": ["A", "B", "C", "D"]
+    },
+    {
+      "track": 8,
+      "sectors": ["A", "B", "C", "D"]
+    },
+    {
+      "track": 9,
+      "sectors": ["C", "D"]
+    },
+    {
+      "track": 70,
+      "sectors": ["E"]
+    }
+  ],
+  "alphaModels": [{
+    "name": "full",
+    "a": 0.01,
+    "b": 1.15,
+    "Qc": 200
+  },{
+    "name": "red",
+    "a": 0.005,
+    "b": 1.0,
+    "Qc": 125
+  }
+    ]
+}
