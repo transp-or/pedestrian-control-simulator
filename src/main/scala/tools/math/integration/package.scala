@@ -11,7 +11,7 @@ package object integration {
     (delta*(BigDecimal(a) until BigDecimal(b) by delta).foldLeft(BigDecimal(0.0))((s,x) => s+m(f, x.toDouble, x.toDouble+delta.toDouble))).toDouble
   }
 
-  def simpsonIntegration(f:Double => Double, a: Double, b: Double, steps: Int): Double = {
+  def simpsonIntegration(f:Double => Double, a: Double, b: Double, steps: Int = 1000): Double = {
     val fBG: Double => BigDecimal = x => BigDecimal(f(x))
     integrate(fBG, a, b, steps, simpson)
   }

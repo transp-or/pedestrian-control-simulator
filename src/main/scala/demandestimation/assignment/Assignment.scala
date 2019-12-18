@@ -12,9 +12,12 @@ import myscala.output.SeqTuplesExtensions.SeqTuplesWriter
 
 import scala.collection.immutable.ListMap
 import scala.collection.mutable.ArrayBuffer
-
 import scala.jdk.CollectionConverters._
 import breeze.linalg.{DenseMatrix, DenseVector}
+
+import scala.collection.parallel.CollectionConverters._
+import scala.collection.parallel.ForkJoinTaskSupport
+import scala.collection.parallel.immutable.{ParMap, ParVector}
 
 class Assignment(parameters: DemandEstimationParameters, network: NetworkLausanne, config: Config) {
 
@@ -83,7 +86,7 @@ class Assignment(parameters: DemandEstimationParameters, network: NetworkLausann
     val gener_tint_minus: Double = delta_tint * parameters.deltaT
     val gener_tint_plus: Double = (delta_tint + 1) * parameters.deltaT
 
-    parameters.walkingSpeedPDF(v) * simpsonIntegration( residence_time_aux(v, dist_in, dist_out, gener_tint_minus, gener_tint_plus), 0, parameters.deltaT,100)
+    parameters.walkingSpeedPDF(v) * simpsonIntegration( residence_time_aux(v, dist_in, dist_out, gener_tint_minus, gener_tint_plus), 0, parameters.deltaT,1000)
   }
 
   /** Helper
@@ -95,7 +98,7 @@ class Assignment(parameters: DemandEstimationParameters, network: NetworkLausann
     * @return
     */
   def accumulation_aux_Gaussian(d_in: Double, d_out: Double, h_minus_t: Double): Double = {
-    (1.0 / (parameters.deltaT * parameters.deltaT)) * simpsonIntegration(accumulation_Gaussian(d_in, d_out, h_minus_t), 0, parameters.speedUpperBound, 100)
+    (1.0 / (parameters.deltaT * parameters.deltaT)) * simpsonIntegration(accumulation_Gaussian(d_in, d_out, h_minus_t), 0, parameters.speedUpperBound, 1000)
   }
 
 
@@ -183,7 +186,7 @@ class Assignment(parameters: DemandEstimationParameters, network: NetworkLausann
     val t_plus = (t + 1) * parameters.deltaT
 
 
-    (1.0 / parameters.deltaT) * simpsonIntegration(Gaussian_aux(d_e_r, h_minus, h_plus), t_minus, t_plus, 100)
+    (1.0 / parameters.deltaT) * simpsonIntegration(Gaussian_aux(d_e_r, h_minus, h_plus), t_minus, t_plus, 1000)
 
 
   }
@@ -202,27 +205,49 @@ class Assignment(parameters: DemandEstimationParameters, network: NetworkLausann
 
     //val D: ArrayBuffer[ArrayBuffer[Double]] = ArrayBuffer.fill(network.edgeCollection.size * parameters.max_TT_int, network.routes.size)(0)
 
-    val D: Map[(Int, Int), Double] = network.routes.flatMap(route => {
-      //println(route)
+    println("Computing static assignment matrix...")
+
+    val range: ParMap[(Vertex, Vertex), Int] = network.routesIndices.par
+    range.tasksupport = new ForkJoinTaskSupport(new java.util.concurrent.ForkJoinPool(math.min(network.routesIndices.size, config.getInt("execution.threads"))))
+
+    val D: ParMap[(Int, Int), Double] = range.flatMap(r => {
+
+      val route = (r._1, network.routes(r._1))
+
       route._2._2.dropRight(1).zip(route._2._2.tail).flatMap(v => {
         //println(v)
         for (h_minus_t <- Vector.range(0, parameters.max_TT_int)) yield {
           //println(network.fullRoutes((route._1._1, v._1)))
-          ((h_minus_t * network.edgeCollection.size + network.edgeIndices(v)), (network.routesIndices(route._1))) ->  compute_a_gaussian(h_minus_t, 0, network.fullRoutes((route._1._1, v._1))._1)
+          (h_minus_t * network.edgeCollection.size + network.edgeIndices(v), network.routesIndices(route._1)) ->  compute_a_gaussian(h_minus_t, 0, network.fullRoutes((route._1._1, v._1))._1)
         }
       })
     })
 
-    (for {
-      r <- network.routesIndices
+
+
+    println("Building dynamic assignment matrix...")
+
+
+    range.flatMap(r => {
+      (for {
+        t <- parameters.intervals.indices
+        e <- network.edgeIndices
+        h <- Vector.range(t, math.min(t + parameters.max_TT_int, parameters.intervals.size))
+        if D.contains(((h-t)*network.edgeCollection.size + e._2, r._2))
+      } yield {
+        (h * network.edgeCollection.size + e._2, t*network.routes.size + r._2, D((h-t)*network.edgeCollection.size + e._2, r._2))
+      }).toVector
+    }).toVector
+
+    /*(for {
+      r <- range
       t <- parameters.intervals.indices
       e <- network.edgeIndices
       h <- Vector.range(t, math.min(t + parameters.max_TT_int, parameters.intervals.size))
       if D.contains(((h-t)*network.edgeCollection.size + e._2, r._2))
     } yield {
       (h * network.edgeCollection.size + e._2, t*network.routes.size + r._2, D((h-t)*network.edgeCollection.size + e._2, r._2))
-    }).toVector
-
+    }).toVector*/
    }
 
 
@@ -299,7 +324,7 @@ class Assignment(parameters: DemandEstimationParameters, network: NetworkLausann
     Files.createDirectory(Paths.get(outputDir))
   }
 
-  /*val (assignmentMatrix: DenseMatrix[Double], assignmentMatrixAccumulation: DenseMatrix[Double]) = {
+  val (assignmentMatrix: DenseMatrix[Double], assignmentMatrixAccumulation: DenseMatrix[Double]) = {
 
     if (config.getBoolean("demandestimation.compute_assignment") || getFilesInDirectory(outputDir, ".csv").isEmpty) {
 
@@ -309,11 +334,15 @@ class Assignment(parameters: DemandEstimationParameters, network: NetworkLausann
 
       this.compute_assg_mat_accumulation.filter(v => math.abs(v._3) > tol).foreach(v => assignmentMatrixAccumulation.update(v._1, v._2, v._3))
 
+      println("Writing accumulation assignment matrix to csv...")
+
       breeze.linalg.csvwrite(new java.io.File(outputDir + "assignment_accumulation_matrix.csv"), assignmentMatrixAccumulation)
 
       val assignmentMatrix: DenseMatrix[Double] = DenseMatrix.zeros[Double](network.edgeCollection.size * parameters.intervals.size, network.routes.size * parameters.intervals.size)
 
       this.compute_assg_mat.filter(v => math.abs(v._3) > tol).foreach(v => assignmentMatrix.update(v._1, v._2, v._3))
+
+      println("Writing assignment matrix to csv...")
 
       breeze.linalg.csvwrite(new java.io.File(outputDir + "assignment_matrix.csv"), assignmentMatrix)
 
@@ -328,6 +357,6 @@ class Assignment(parameters: DemandEstimationParameters, network: NetworkLausann
 
       (assignmentMatrix, assignmentMatrixAccumulation)
     }
-  }*/
+  }
 
 }
