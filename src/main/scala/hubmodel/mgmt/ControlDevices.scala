@@ -49,10 +49,27 @@ class ControlDevices(val monitoredAreas: Iterable[DensityMeasuredArea],
   override def deepCopy: ControlDevices = {
     new ControlDevices(
       monitoredAreas.map(_.deepCopy),
-      amws,
+      amws.map(_.deepCopy),
       flowGates.map(_.deepCopy),
       binaryGates.map(_.deepCopy),
       flowSeparators.map(_.deepCopy),
+      fixedFlowSeparators
+    )
+  }
+
+
+  /**
+    * Copies the container with the control devices and includes the state of the devices
+    *
+    * @return deep copy of the current component
+    */
+  def deepCopyWithState: ControlDevices = {
+    new ControlDevices(
+      monitoredAreas.map(_.deepCopy),
+      amws.map(_.deepCopyWithState),
+      flowGates.map(_.deepCopyWithState),
+      binaryGates.map(_.deepCopy),
+      flowSeparators.map(_.deepCopyWithState),
       fixedFlowSeparators
     )
   }
@@ -68,7 +85,7 @@ class ControlDevices(val monitoredAreas: Iterable[DensityMeasuredArea],
   def deepCopyModifyFlowGates[T <: Measurement, U <: Flow](f: FunctionalForm[T, U]): ControlDevices = {
     new ControlDevices(
       monitoredAreas.map(_.deepCopy),
-      amws,
+      amws.map(_.deepCopy),
       flowGates.map(fg => fg match {
         case fgFunc: FlowGateFunctional[_, _] => {
           fgFunc.deepCopy(f)
@@ -86,7 +103,7 @@ class ControlDevices(val monitoredAreas: Iterable[DensityMeasuredArea],
   def deepCopyModifyMonitoredAreas(rho: Double): ControlDevices = {
     new ControlDevices(
       monitoredAreas.map(_.deepCopyChangeTargetDensity(rho)),
-      amws,
+      amws.map(_.deepCopy),
       flowGates.map(_.deepCopy),
       binaryGates.map(_.deepCopy),
       flowSeparators.map(_.deepCopy),

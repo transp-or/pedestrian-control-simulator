@@ -36,4 +36,8 @@ trait Vertex {
 
   def nameCompare(n: String): Boolean = this.name == n
 
+  type T <: Vertex
+
+  def deepCopy: T
+
 }

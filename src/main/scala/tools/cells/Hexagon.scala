@@ -64,4 +64,8 @@ class Hexagon(val center: Position, edgeLength: Double) extends Vertex {
     }
 
   override def hashCode: Int = (this.center, this.edgeLength).##
+
+  type T =  Hexagon
+
+  override def deepCopy: T = new Hexagon(this.center, this.edgeLength)
 }

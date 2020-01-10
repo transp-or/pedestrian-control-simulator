@@ -86,7 +86,9 @@ class RectangleModifiable(name: String,
   override def toString: String = this.name //+ ", " + this.A + ", " + this.B + ", " + this.C + ", " + this.D
 
 
-  override def deepCopy: RectangleModifiable = new RectangleModifiable(
+  type U =  RectangleModifiable
+
+  override def deepCopy: U = new RectangleModifiable(
     this.name, this.__A, this.__B, this.__C, this.__D, this.isOD, Some(this.generationRate)
   )
 }

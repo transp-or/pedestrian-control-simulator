@@ -19,15 +19,24 @@ class Prior(parameters: DemandEstimationParameters, network: NetworkLausanne, co
   val dest_flows = routeChoice.generate_dest_flows(data, new TINF(parameters, config, network).timetable._1.get.timeTable.values.toVector)
 
   val (m_sales: Vector[(Int, Int, Double)], v_sales: Vector[(Int, Double)]) = routeChoice.sales_data_GLS(dest_flows)
+
   val (m_depflow: Vector[(Int, Int, Double)], v_depflow: Vector[(Int, Double)]) = routeChoice.platform_centroid_dep_flow(dest_flows)
+
   val m_rsplits: Vector[(Int, Int, Double)] = routeChoice.route_split_GLS( dest_flows)
+
   val m_agg_rsplits: Vector[(Int, Int, Double)] = routeChoice.agg_cum_route_split_GLS(dest_flows)
 
-  val MAgg: DenseMatrix[Double] = DenseMatrix.zeros[Double](m_sales.size + m_depflow.size + m_agg_rsplits.size, network.routes.size * parameters.intervals.size)
-  val M: DenseMatrix[Double] = DenseMatrix.zeros[Double](m_sales.size + m_depflow.size + m_rsplits.size, network.routes.size * parameters.intervals.size)
 
-  val v: DenseVector[Double] = DenseVector.zeros[Double](v_sales.size + v_depflow.size + m_rsplits.size)
-  val vAgg: DenseVector[Double] = DenseVector.zeros[Double](v_sales.size + v_depflow.size + m_agg_rsplits.size)
+  val salesDataRows: Int = 2 * network.Centroids_Shop.size
+  val depFlowRows: Int = network.centroid_platform_dict.size
+  val rSplitsRows: Int = network.routes.size * parameters.intervals.size
+  val rAggSplitsRows: Int = network.centroids.size
+
+  val M: DenseMatrix[Double] = DenseMatrix.zeros[Double](salesDataRows + depFlowRows + rSplitsRows, network.routes.size * parameters.intervals.size)
+  val MAgg: DenseMatrix[Double] = DenseMatrix.zeros[Double](salesDataRows + depFlowRows + rAggSplitsRows, network.routes.size * parameters.intervals.size)
+
+  val v: DenseVector[Double] = DenseVector.zeros[Double](salesDataRows + depFlowRows + rSplitsRows)
+  val vAgg: DenseVector[Double] = DenseVector.zeros[Double](salesDataRows + depFlowRows + rAggSplitsRows)
 
   m_sales.foreach(v => {
     M(v._1, v._2) = v._3
@@ -35,16 +44,16 @@ class Prior(parameters: DemandEstimationParameters, network: NetworkLausanne, co
   })
 
   m_depflow.foreach(v => {
-    M(m_sales.size + v._1, v._2) = v._3
-    MAgg(m_sales.size + v._1, v._2) = v._3
+    M(salesDataRows + v._1, v._2) = v._3
+    MAgg(salesDataRows + v._1, v._2) = v._3
   })
 
   m_rsplits.foreach(v => {
-    M(m_sales.size +  + m_depflow.size + v._1, v._2) = v._3
+    M(salesDataRows + depFlowRows + v._1, v._2) = v._3
   })
 
   m_agg_rsplits.foreach(v => {
-    MAgg(m_sales.size +  m_depflow.size + v._1, v._2) = v._3
+    MAgg(salesDataRows +  depFlowRows + v._1, v._2) = v._3
   })
 
   v_sales.foreach(d => {
@@ -53,8 +62,8 @@ class Prior(parameters: DemandEstimationParameters, network: NetworkLausanne, co
   })
 
   v_depflow.foreach(d => {
-    v(m_sales.size +  d._1) = d._2
-    vAgg(m_sales.size +  d._1) = d._2
+    v(salesDataRows +  d._1) = d._2
+    vAgg(salesDataRows +  d._1) = d._2
   })
 
 }

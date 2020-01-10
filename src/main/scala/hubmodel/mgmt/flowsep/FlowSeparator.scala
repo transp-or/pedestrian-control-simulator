@@ -185,6 +185,10 @@ class FlowSeparator[T <: Measurement, U <: SeparatorPositionFraction](val startA
     }
   }
 
+  // ******************************************************************************************
+  //                              METHODS FOR COPYING THE CLASS
+  // ******************************************************************************************
+
   /**
     * Deeply copies this [[FlowSeparator]] to make a new one.
     *
@@ -203,6 +207,31 @@ class FlowSeparator[T <: Measurement, U <: SeparatorPositionFraction](val startA
     this.overridenZones,
     this.function
   )
+
+  /**
+    * Deeply copies this [[FlowSeparator]] to make a new one.
+    *
+    * @return deep copy of the current component
+    */
+  def deepCopyWithState: FlowSeparator[T, U] = {
+    val fs = new FlowSeparator[T, U](
+      this.startA,
+      this.startB,
+      this.endA,
+      this.endB,
+      this.inflowLinesStart.map(_.deepCopy),
+      this.inflowLinesEnd.map(_.deepCopy),
+      this.associatedZonesStart.map(_.deepCopy),
+      this.associatedZonesEnd.map(_.deepCopy),
+      this.associatedConnectivity.map(_.deepCopy),
+      this.overridenZones,
+      this.function
+    )
+    fs.start = this.start
+    fs.end = this.end
+    fs.currentTargetPosition = this.currentTargetPosition
+    return fs
+  }
 
   /**
     *

@@ -60,7 +60,7 @@ class PedestrianSim(val origin: Vertex,
 
 
   // ******************************************************************************************
-  //                                PRIVATE MEMBERS
+  //                                      MEMBERS
   // ******************************************************************************************
 
   /** History of the pedestrians positions */
@@ -217,25 +217,7 @@ class PedestrianSim(val origin: Vertex,
     innerPrint(this.getHistoryPosition, "")
   }
 
-
-  // ******************************************************************************************
-  //                                   ALTERNATIVE CONSTRUCTORS
-  // ******************************************************************************************
-
-  /**
-    *
-    * @param oZone
-    * @param dZone
-    * @param entryTime
-    * @param posO
-    * @param logFullHistory
-    */
-  def this(oZone: Vertex, dZone: Vertex, entryTime: Time, posO: Position, logFullHistory: Boolean, isTransfer: Boolean) {
-    this(oZone, dZone, entryTime, logFullHistory, isTransfer) // velocity taken from VS data
-    this.currentPosition = posO
-  }
-
-  /** Writes the pedestrian to a JSON string.
+  /** Writes the pedestrian to as JSON string.
     *
     * @param completed
     * @return
@@ -252,7 +234,7 @@ class PedestrianSim(val origin: Vertex,
       }
     } + "," +
       "\"transfer\":" + this.isTransfer + "," +
-    "\"td\":" + this.travelDistance + "," +
+      "\"td\":" + this.travelDistance + "," +
       "\"gates\": [" + {
       if (this.freedFrom.nonEmpty) {
         "\"" + this.freedFrom.mkString("\",\"") + "\""
@@ -269,6 +251,56 @@ class PedestrianSim(val origin: Vertex,
     } + "]" +
       "}"
   }
+
+
+  // ******************************************************************************************
+  //                                   ALTERNATIVE CONSTRUCTORS
+  // ******************************************************************************************
+
+  /**
+    *
+    * @param oZone
+    * @param dZone
+    * @param entryTime
+    * @param posO
+    * @param logFullHistory
+    */
+  def this(oZone: Vertex, dZone: Vertex, entryTime: Time, posO: Position, logFullHistory: Boolean, isTransfer: Boolean) {
+    this(oZone, dZone, entryTime, logFullHistory, isTransfer)
+    this.currentPosition = posO
+  }
+
+
+  /** Alternative constructor used to set the current position and velocity
+    *
+    * @param oZone original zone
+    * @param dZone destination zone
+    * @param entryTime entrance time
+    * @param posO current position
+    * @param velO current velocity
+    * @param logFullHistory collect full history
+    * @param isTransfer is the pedestrian a transfering passenger
+    */
+  def this(previousZone: Vertex, nextZone: Vertex, route: List[Vertex], dZone: Vertex, entryTime: Time, posO: Position, velO: Velocity, logFullHistory: Boolean, isTransfer: Boolean) {
+    this(previousZone, dZone, entryTime, logFullHistory, isTransfer)
+    this.currentPosition = posO
+    this.currentVelocity = velO
+    this.route = route
+    this.nextZone = nextZone
+    this.previousZone = previousZone
+  }
+
+  // ******************************************************************************************
+  //                              METHODS FOR COPYING THE CLASS
+  // ******************************************************************************************
+
+  /** Creates a deep copy of the pedestrian. This will drop the previous history of the pedestrian (position, etc)
+    *
+    * @return deep copy of this pedestrian
+    */
+  //def copyState(currentTime: Time, logFullHistory: Boolean): PedestrianSim = {
+  //  new PedestrianSim(this.previousZone, this.nextZone, this.route, this.finalDestination, currentTime, this.currentPosition, this.currentVelocity, logFullHistory, this.isTransfer)
+  //}
 }
 
 

@@ -128,4 +128,7 @@ def this(data: Array[Double]) {
 
   override def toString: String = this.name
 
+  type T =  Rectangle
+
+  override def deepCopy: T = new Rectangle(this.name, this.C1, this.C2, this.C3, this.C4, this.isOD, this.genRate)
 }

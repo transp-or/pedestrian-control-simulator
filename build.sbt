@@ -19,14 +19,15 @@ libraryDependencies ++= Seq(
   "com.typesafe.scala-logging" %% "scala-logging" % "3.9.2",
   "org.scalactic" %% "scalactic" % "3.0.8",
   "transpor.tools" % "power-voronoi" % "1.0",
-  "com.github.NicholasMolyneaux" %% "scala-custom" % "1.3.3",
+  "com.github.NicholasMolyneaux" %% "scala-custom" % "1.3.4",
   "transpor.tools" % "dxf-parser" % "1.0",
   "org.scala-lang.modules" %% "scala-parser-combinators" % "1.1.2",
   "org.apache.commons" % "commons-lang3" % "3.8",
   "org.apache.commons" % "commons-math3" % "3.6",
-  "org.scala-lang.modules" %% "scala-parallel-collections" % "0.2.0",
+  //"org.scala-lang.modules" %% "scala-parallel-collections" % "0.2.0",
   "org.scalanlp" %% "breeze" % "1.0",
   "org.scalanlp" %% "breeze-natives" % "1.0",
+  "com.github.fommil.netlib" % "all" % "1.1.2" pomOnly()
 )
 
 

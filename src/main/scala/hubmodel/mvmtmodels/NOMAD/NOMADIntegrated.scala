@@ -189,7 +189,7 @@ class NOMADIntegrated[T <: PedestrianNOMAD](sim: NOMADGraphSimulator[T]) extends
 
         // check if it is time for the pedestrian to check his isolation times
 
-        ped.updateDesiredSpeed()
+        ped.updateDesiredDirection()
         this.updateIsolation(sim.currentTime, ped) // NOT CURRENTLY USED TO REMOVED TO SPEED UP
         ped.travelTime = sim.currentTime - ped.entryTime
 

@@ -1,12 +1,15 @@
 package demandestimation
 
-import breeze.linalg.{DenseMatrix, DenseVector}
+import breeze.linalg.{DenseMatrix, DenseVector, Transpose}
+import breeze.stats.regression.leastSquares
 import com.typesafe.config.Config
 import demandestimation.assignment.Assignment
 import demandestimation.network.NetworkLausanne
 import hubmodel.parseConfigFile
 import myscala.math.stats.ComputeStats
 import org.jgrapht.alg.interfaces.MinimumVertexCoverAlgorithm.VertexCover
+
+import com.github.fommil.netlib.NativeSystemBLAS
 
 
 object Debug extends App {
@@ -80,6 +83,7 @@ object Debug extends App {
   val tinfData = prior.tinf
   val tinfAssigMat = assignment.build_flow_assg_mat(network.edges_TINF)
 
+
   // data
   val mData = data.f_hat
   val mDataAssigMat = assignment.build_flow_assg_mat(network.edges_ASE)
@@ -88,11 +92,24 @@ object Debug extends App {
   val hAggData = prior.vAgg
   val hAggAssigMat = prior.MAgg
 
+
+  println(tinfData.length, tinfAssigMat.rows, tinfAssigMat.cols)
+  println(mData.length, mDataAssigMat.rows, mDataAssigMat.cols)
+  println(hAggData.length, hAggAssigMat.rows, hAggAssigMat.cols)
+
+
   val mat = DenseMatrix.vertcat(tinfAssigMat,DenseMatrix.vertcat(mDataAssigMat, hAggAssigMat))
   val vec = DenseVector.vertcat(tinfData,DenseVector.vertcat(mData, hAggData))
 
+  println(mat.rows, mat.cols)
+  println(vec.length)
+
+
+
+  //val res = leastSquares(mat.t, vec)
+
   val opt = new breeze.optimize.linear.NNLS()
-  val res = opt.minimizeAndReturnState(mat, vec)
+  val res = opt.minimizeAndReturnState(mat.t*mat, mat.t*vec)
   println(res.converged)
   println(res.x)
   breeze.linalg.csvwrite(new java.io.File("result.csv"), DenseMatrix(res.x))

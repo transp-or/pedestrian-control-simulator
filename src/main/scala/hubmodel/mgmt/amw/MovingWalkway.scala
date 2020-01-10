@@ -43,6 +43,10 @@ class MovingWalkway(val name: String,
     )
   }
 
+  /** create a deep copy of the control device
+    *
+    * @return
+    */
   override def deepCopy: MovingWalkway = new MovingWalkway(
     this.name,
     this.startVertex,
@@ -50,10 +54,27 @@ class MovingWalkway(val name: String,
     this.width,
     this.start,
     this.end,
-    this.associatedZonesStart,
-    this.associatedZonesEnd,
+    this.associatedZonesStart.map(_.deepCopy),
+    this.associatedZonesEnd.map(_.deepCopy),
     this.droppedVertices,
     this.associatedConnectivity
   )
+
+  def deepCopyWithState: MovingWalkway = {
+   val amw = new MovingWalkway(
+      this.name,
+      this.startVertex,
+      this.endVertex,
+      this.width,
+      this.start,
+      this.end,
+      this.associatedZonesStart.map(_.deepCopy),
+      this.associatedZonesEnd.map(_.deepCopy),
+      this.droppedVertices,
+      this.associatedConnectivity
+    )
+    amw.updateSpeed(this.speed)
+    return amw
+  }
 
 }

@@ -29,11 +29,13 @@ class DensityMeasuredArea(name: String, A: Position, B: Position, C: Position, D
 
   //var regulatorIntegralAction: Double = 0.0
 
+  private type U = DensityMeasuredArea
+
   /** Deep copy of this monitored area.
     *
     * @return deep copy of the current component
     */
-  def deepCopy: DensityMeasuredArea = new DensityMeasuredArea(name, A, B, C, D, targetDensity)
+  override def deepCopy: U = new DensityMeasuredArea(name, A, B, C, D, targetDensity)
 
   /** Makes a deep copy of this monitored area but changes the target density to the value passed as a parameter.
     *

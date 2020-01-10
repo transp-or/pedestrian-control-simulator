@@ -3,6 +3,7 @@ package hubmodel.mgmt.flowgate
 import hubmodel.Position
 import hubmodel.mgmt.ControlDeviceComponent
 import hubmodel.supply.graph.MyEdgeWithGate
+import tools.Time
 import tools.cells.{Rectangle, Vertex}
 
 /** Extension of [[hubmodel.supply.graph.MyEdgeWithGate]] for the usage of "flow gates". The gates control the
@@ -49,4 +50,10 @@ class FlowGate(startVertex: Vertex, endVertex: Vertex, start: Position, end: Pos
   override def deepCopy: FlowGate = new FlowGate(
     this.startVertex, this.endVertex, this.start, this.end, this.ma
   )
+
+  def deepCopyWithState(t: Time): FlowGate = {
+    val fg =  new FlowGate( this.startVertex, this.endVertex, this.start, this.end, this.ma )
+    fg.setFlowRate(this.flowRate, t)
+    fg
+  }
 }

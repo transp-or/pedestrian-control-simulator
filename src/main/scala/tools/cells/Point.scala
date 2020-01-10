@@ -41,4 +41,8 @@ class Point(val name: String, coordinate: Position) extends Vertex {
       case that: Point if that.canEqual(this) => this.hashCode == that.hashCode
       case _ => false
     }
+
+  type T = Point
+
+  def deepCopy: T = new Point(this.name, this.coordinate)
 }

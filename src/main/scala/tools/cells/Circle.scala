@@ -59,4 +59,8 @@ class Circle(val name: String, val center: Position, radius: Double, val isOD: B
       case _ => false
     }
 
+  type T =  Circle
+
+  override def deepCopy: T = new Circle(this.name, this.center, this.radius, this.isOD, this.genRate)
+
 }
