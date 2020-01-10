@@ -1,6 +1,7 @@
 package hubmodel.mvmtmodels
 
 import hubmodel.DES.{Action, NOMADGraphSimulator}
+import hubmodel.P
 import hubmodel.ped.PedestrianNOMAD
 
 class UpdateClosestWall[T <: PedestrianNOMAD](sim: NOMADGraphSimulator[T]) extends Action {
@@ -18,6 +19,12 @@ class UpdateClosestWall[T <: PedestrianNOMAD](sim: NOMADGraphSimulator[T]) exten
 
     // inserts new rebuild tree event
     sim.insertEventWithDelay(sim.rebuildTreeInterval.get)(new UpdateClosestWall(sim))
+  }
+
+  type A = UpdateClosestWall[P]
+
+  override def deepCopy(simulator: NOMADGraphSimulator[P]): Option[A] = {
+    Some(new UpdateClosestWall[P](simulator))
   }
 
 }

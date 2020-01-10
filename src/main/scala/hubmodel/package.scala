@@ -79,6 +79,8 @@ package object hubmodel {
   type Acceleration = Vector2D
   type Force = Vector2D
 
+  type P = PedestrianNOMAD
+
   def distance(a: Vector2D, b: Vector2D): Double = scala.math.pow((b.X - a.X) * (b.X - a.X) + (b.Y - a.Y) * (b.Y - a.Y), 0.5)
 
   def distance(a: Vector3D, b: Vector3D): Double = scala.math.pow((b.X - a.X) * (b.X - a.X) + (b.Y - a.Y) * (b.Y - a.Y) + (b.Z - a.Z) * (b.Z - a.Z), 0.5)
@@ -310,7 +312,7 @@ package object hubmodel {
       ContinuousSpace,
       GraphContainer,
       Option[PublicTransportSchedule],
-      NodeParent => Iterable[Vertex],
+      Stop2Vertex,
       ControlDevices
     )
 

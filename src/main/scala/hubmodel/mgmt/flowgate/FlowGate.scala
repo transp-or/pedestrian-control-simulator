@@ -1,10 +1,13 @@
 package hubmodel.mgmt.flowgate
 
-import hubmodel.Position
+import hubmodel.DES.{Action, NOMADGraphSimulator}
+import hubmodel.{P, Position, GATE_MAXIMUM_QUEUE_SIZE}
 import hubmodel.mgmt.ControlDeviceComponent
+import hubmodel.ped.{PedestrianNOMAD, PedestrianSim}
 import hubmodel.supply.graph.MyEdgeWithGate
 import tools.Time
 import tools.cells.{Rectangle, Vertex}
+import tools.exceptions.ControlDevicesException
 
 /** Extension of [[hubmodel.supply.graph.MyEdgeWithGate]] for the usage of "flow gates". The gates control the
   * flow of pedestrians passing through them.
@@ -17,6 +20,9 @@ import tools.cells.{Rectangle, Vertex}
   * @param end         other end of the gate
   */
 class FlowGate(startVertex: Vertex, endVertex: Vertex, start: Position, end: Position, ma: String) extends MyEdgeWithGate(startVertex, endVertex, start, end, ma) with ControlDeviceComponent {
+
+  // self-type allowing access to contents of this class from inner classes.
+  gate =>
 
   /** Checks whether another object equals this one
     *
@@ -51,9 +57,64 @@ class FlowGate(startVertex: Vertex, endVertex: Vertex, start: Position, end: Pos
     this.startVertex, this.endVertex, this.start, this.end, this.ma
   )
 
-  def deepCopyWithState(t: Time): FlowGate = {
-    val fg =  new FlowGate( this.startVertex, this.endVertex, this.start, this.end, this.ma )
-    fg.setFlowRate(this.flowRate, t)
+  def deepCopyWithState(t: Time, pop: Iterable[PedestrianNOMAD]): FlowGate = {
+    val fg = new FlowGate( this.startVertex, this.endVertex, this.start, this.end, this.ma )
+    fg.setFlowRate(this.flowRate, this.positionHistory.last._1)
+    fg.pedestrianQueue.enqueueAll(this.pedestrianQueue.map(p => pop.find(_.ID == p.ID).getOrElse(throw new Exception("Pedestrian missing ! s"))))
     fg
+  }
+
+
+  /** Event for releasing a pedestrian. This allows him to pass the gate. Each pedestrian contains state variables
+    * indicating whether he is waiting or not. These are used by the other classes.
+    *
+    * @param sim simulation environment
+    */
+  class ReleasePedestrian[T <: PedestrianNOMAD](sim: NOMADGraphSimulator[T]) extends Action {
+
+    /** Executes the event.
+      *
+      */
+    override def execute(): Unit = {
+      if (pedestrianQueue.nonEmpty) {
+        pedestrianQueue.head.isWaiting = false
+        pedestrianQueue.head.freedFrom.append(ID)
+        pedestrianQueue.dequeue()
+        sim.eventLogger.trace("sim-time=" + sim.currentTime + ": gate: " + gate.ID + " released pedestrian. Peds in queue=" + pedestrianQueue.size)
+      } else {
+        sim.eventLogger.trace("sim-time=" + sim.currentTime + ": gate: " + gate.ID + ": no one in queue to release")
+      }
+      // inserts new event based on the current flow rate allowed through the gate.
+      //sim.insertEventWithDelay(1.0 / flowRate)(new ReleasePedestrian(sim))
+    }
+
+    type A = ReleasePedestrian[P]
+
+    override def deepCopy(simulator: NOMADGraphSimulator[P]): Option[A] = { ???  }
+
+  }
+
+
+
+  /** Enqueues a pedestrian i the queue for passing through a flow gate.
+    *
+    * @param ped pedestrian to enqueue
+    * @param sim simulator for getting the logger and other elements.
+    */
+  class EnqueuePedestrian[T <: PedestrianNOMAD](ped: PedestrianSim, sim: NOMADGraphSimulator[T]) extends Action {
+
+    override def execute(): Unit = {
+
+      ped.isWaiting = true
+      pedestrianQueue.enqueue(ped)
+      sim.eventLogger.trace("sim-time=" + sim.currentTime + ": enqueued pedestrian in " + gate.ID + ". # peds in queue: " + pedestrianQueue.size)
+      if (gate.pedestrianQueue.size > GATE_MAXIMUM_QUEUE_SIZE) {
+        throw new ControlDevicesException("Too many pedestrians in queue for gate " + gate.ID)
+      }
+    }
+
+    type A = EnqueuePedestrian[P]
+
+    override def deepCopy(simulator: NOMADGraphSimulator[P]): Option[A] = { ???  }
   }
 }

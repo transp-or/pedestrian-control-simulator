@@ -5,6 +5,7 @@ package hubmodel.demand.flows
   */
 
 import hubmodel.DES.{Action, NOMADGraphSimulator}
+import hubmodel.P
 import hubmodel.demand.{PedestrianFlowFunction_New, PedestrianFlow_New, PedestrianGenerationOverInterval, splitFractionsUniform}
 import hubmodel.ped.PedestrianNOMAD
 import tools.Time
@@ -59,6 +60,10 @@ class ProcessPedestrianFlows[T <: PedestrianNOMAD](pedestrianFlows: Iterable[Ped
     * @return string contaiing the name.
     */
   override def toString: String = "ProcessPedestrianFlows"
+
+type A = ProcessPedestrianFlows[P]
+
+  override def deepCopy(simulator: NOMADGraphSimulator[P]): Option[A] = Some(new ProcessPedestrianFlows(this.pedestrianFlows, this.pedestrianFlowsFunction, simulator))
 }
 
 

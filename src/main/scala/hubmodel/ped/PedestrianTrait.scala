@@ -17,7 +17,9 @@ trait PedestrianTrait {
   // ******************************************************************************************
 
   /** unique identifier */
-  val ID: String = generateUUID
+  protected var _ID: String = generateUUID
+
+  val ID: String = this._ID
 
   /** origin zone */
   def origin: Vertex

@@ -1,6 +1,7 @@
 package hubmodel.demand
 
 import hubmodel.DES.{Action, NOMADGraphSimulator}
+import hubmodel.P
 import hubmodel.ped.PedestrianNOMAD
 import tools.Time
 import tools.cells.{Rectangle, Vertex}
@@ -47,4 +48,8 @@ class CreatePedestrianWithInsertion[T <: PedestrianNOMAD](o: Vertex, d: Vertex, 
       }
     }
   }
+
+  type A = CreatePedestrianWithInsertion[P]
+
+  override def deepCopy(simulator: NOMADGraphSimulator[P]): Option[A] = None
 }

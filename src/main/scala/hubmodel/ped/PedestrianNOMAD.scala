@@ -124,7 +124,8 @@ class PedestrianNOMAD(oZone: Vertex, dZone: Vertex, entryTime: Time, posO: Posit
     * @param logFullHistory collect full history
     * @param isTransfer is the pedestrian a transfering passenger
     */
-  def this(previousZone: Vertex,
+  def this(ID: String,
+           previousZone: Vertex,
            nextZone: Vertex,
            route: List[Vertex],
            dZone: Vertex,
@@ -144,6 +145,8 @@ class PedestrianNOMAD(oZone: Vertex, dZone: Vertex, entryTime: Time, posO: Posit
     this.isolationTimePed = isolationData._2
     this.isolationTypeObs = isolationData._3
     this.isolationTimeObs = isolationData._4
+    this._ID = ID
+
   }
 
 
@@ -157,6 +160,7 @@ class PedestrianNOMAD(oZone: Vertex, dZone: Vertex, entryTime: Time, posO: Posit
     */
   def copyState(currentTime: => Time, logFullHistory: Boolean): PedestrianNOMAD = {
     new PedestrianNOMAD(
+      this.ID,
       this.previousZone,
       this.nextZone,
       this.route,

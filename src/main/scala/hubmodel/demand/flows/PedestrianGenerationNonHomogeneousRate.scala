@@ -7,6 +7,7 @@ package hubmodel.demand.flows
 import java.util.concurrent.ThreadLocalRandom
 
 import hubmodel.DES.{Action, NOMADGraphSimulator}
+import hubmodel.P
 import hubmodel.demand.{CreatePedestrian, CreatePedestrianWithInsertion}
 import hubmodel.ped.PedestrianNOMAD
 import tools.Time
@@ -60,7 +61,12 @@ class PedestrianGenerationNonHomogeneousRate[T <: PedestrianNOMAD](o: Vertex, d:
       case t: Time => sim.insertEventAtAbsolute(start + t)(new CreatePedestrianWithInsertion[T](o, d, sim, this.next))
     }
   }
+
+  type A = PedestrianGenerationNonHomogeneousRate[P]
+
+  override def deepCopy(simulator: NOMADGraphSimulator[P]): Option[A] = None
 }
+
 
 
 

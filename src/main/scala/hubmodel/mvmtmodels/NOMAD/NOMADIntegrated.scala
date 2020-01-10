@@ -3,6 +3,8 @@ package hubmodel.mvmtmodels.NOMAD
 import java.util
 import java.util.concurrent.ThreadLocalRandom
 
+import hubmodel.P
+
 //import com.vividsolutions.jts.geom.Coordinate
 import hubmodel.DES.{Action, NOMADGraphSimulator}
 import hubmodel.ped.PedestrianNOMAD
@@ -275,6 +277,13 @@ class NOMADIntegrated[T <: PedestrianNOMAD](sim: NOMADGraphSimulator[T]) extends
     }
 
     insertNextEvent()
+  }
+
+
+  type A = NOMADIntegrated[P]
+
+  override def deepCopy(simulator: NOMADGraphSimulator[P]): Option[A] = {
+    Some(new NOMADIntegrated[P](simulator))
   }
 
   def walkPedestrian(ped: PedestrianNOMAD, pedestrians: util.ArrayList[InfluenceAreaReturnPedDataNew], obstacles: util.ArrayList[InfluenceAreaReturnObsData], dt: Double): Unit = {

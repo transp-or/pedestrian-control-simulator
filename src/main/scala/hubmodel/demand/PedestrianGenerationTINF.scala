@@ -7,6 +7,7 @@ package hubmodel.demand
 import java.util.concurrent.ThreadLocalRandom
 
 import hubmodel.DES.{Action, NOMADGraphSimulator}
+import hubmodel.P
 import hubmodel.ped.PedestrianNOMAD
 import tools.Time
 import tools.cells.{Rectangle, Vertex}
@@ -54,6 +55,10 @@ class PedestrianGenerationTINF[T <: PedestrianNOMAD](o: Vertex, d: Vertex, isTra
       new CreatePedestrian(o, d, isTransfer, sim)
     })
   }
+
+  type A = PedestrianGenerationOverInterval[P]
+
+  override def deepCopy(simulator: NOMADGraphSimulator[P]): Option[A] = None
 }
 
 

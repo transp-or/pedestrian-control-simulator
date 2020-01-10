@@ -51,5 +51,9 @@ class CreatePedestrian[T <: PedestrianNOMAD](o: Vertex, d: Vertex, val isTransfe
 
     newPed.ID
   }
+
+  type A = CreatePedestrian[P]
+
+  override def deepCopy(simulator: NOMADGraphSimulator[P]): Option[A] = Some(new CreatePedestrian[P](this.o, this.d, this.isTransfer, simulator))
 }
 

@@ -1,6 +1,7 @@
 package hubmodel.demand
 
 import hubmodel.DES.{Action, NOMADGraphSimulator}
+import hubmodel.P
 import hubmodel.demand.transit.Vehicle
 import hubmodel.ped.PedestrianNOMAD
 import hubmodel.supply.TrainID_New
@@ -29,5 +30,9 @@ class TrainArrival[T <: PedestrianNOMAD](train: Vehicle, tinf: Seq[PedestrianFlo
         new PedestrianGenerationTINF(flow._1, flow._2, flow._4, new Time(0.0), math.round(flow._3).toInt, sim)
       })
   }
+
+  type A = TrainArrival[P]
+
+  override def deepCopy(simulator: NOMADGraphSimulator[P]): Option[A] = None //Some(new TrainArrival(this.train, ))
 
 }

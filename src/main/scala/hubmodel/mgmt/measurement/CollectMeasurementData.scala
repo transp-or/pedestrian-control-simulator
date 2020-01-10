@@ -1,6 +1,7 @@
 package hubmodel.mgmt.measurement
 
 import hubmodel.DES.{Action, NOMADGraphSimulator}
+import hubmodel.P
 import hubmodel.mgmt.{Controller, UpdateGates}
 import hubmodel.ped.PedestrianNOMAD
 import kn.uni.voronoitreemap.datastructure.OpenList
@@ -95,5 +96,12 @@ class CollectMeasurementData[T <: PedestrianNOMAD](sim: NOMADGraphSimulator[T]) 
     }
     sim.insertEventWithDelay(sim.evaluate_dt)(new CollectMeasurementData(sim))
   }
+
+  type A = CollectMeasurementData[P]
+
+  override def deepCopy(simulator: NOMADGraphSimulator[P]): Option[A] = {
+    Some(new CollectMeasurementData[P](simulator))
+  }
+
 
 }

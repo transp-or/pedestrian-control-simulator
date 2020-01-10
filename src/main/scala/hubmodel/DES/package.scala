@@ -8,7 +8,7 @@ import hubmodel.demand.transit.Vehicle
 import hubmodel.demand.{AggregateFlows, DemandData, DemandSet, PedestrianFlowFunction_New, PedestrianFlowPT_New, PedestrianFlow_New, ProcessTimeTable, PublicTransportSchedule, TRANSFORMDemandSet, readDisaggDemand, readDisaggDemandTF, readPedestrianFlows, readSchedule, readScheduleTF}
 import hubmodel.ped.PedestrianNOMAD
 import hubmodel.supply.continuous.ReadContinuousSpace
-import hubmodel.supply.graph.{Stop2Vertex, readGraph, readPTStop2GraphVertexMap}
+import hubmodel.supply.graph.{GraphContainer, Stop2Vertex, readGraph, readPTStop2GraphVertexMap}
 import hubmodel.supply.{NodeID_New, NodeParent, StopID_New, TrainID_New}
 import tools.Time
 import tools.cells.{Rectangle, Vertex}
@@ -31,8 +31,12 @@ package object DES {
 
     // Creates the simulation
     val sim = demand match {
-      case Some(_) => { createSimulation[PedestrianNOMAD](config, demand) }
-      case None => {createSimulation[PedestrianNOMAD](config)}
+      case Some(_) => {
+        createSimulation[PedestrianNOMAD](config, demand)
+      }
+      case None => {
+        createSimulation[PedestrianNOMAD](config)
+      }
     }
 
     // Creates the output directory
@@ -54,6 +58,24 @@ package object DES {
 
     // Calls the GC to clear memory
     System.gc()
+  }
+
+
+  /** Takes a conceptual node (train or on foot) and returns the set of "real" nodes (the ones used by the graph)
+    * in which the pedestrians must be created.
+    *
+    * @param stop2Vertices  mapping from stops to vertices
+    * @param timeTable      collection of PT movements
+    * @param conceptualNode Node to map to graph nodes
+    * @return
+    */
+  def mappingConceptualNode2GraphNodes(routeGraph: GraphContainer)(stop2Vertices: Map[StopID_New, Vector[VertexID]], timeTable: Map[TrainID_New, Vehicle])(conceptualNode: NodeParent): Iterable[Vertex] = {
+    conceptualNode match {
+      case x: TrainID_New => stop2Vertices(timeTable(x).stop).map(n => routeGraph.vertexMapNew(n))
+      case x: NodeID_New => Iterable(routeGraph.vertexMapNew(x.ID))
+      case x: StopID_New => Iterable(routeGraph.vertexMapNew(x.ID.toString))
+      case _ => throw new Exception("Track ID should not be there !")
+    }
   }
 
   /** Creates a simulation, but does not run it
@@ -101,30 +123,13 @@ package object DES {
 
 
     val disaggPopulation = getDisaggregateFlows(config, demandSet)
-      /*if (demandSet.isEmpty) { // no
+    /*if (demandSet.isEmpty) { // no
 
       }/* else if (flows_TF_file.nonEmpty && timetable_TF_file.isEmpty) {
         getDisaggregateFlows(config, flows_TF_file.get)
       }*/ else {
         getDisaggPopulation(demandSet.get._1.name)
       }*/
-
-    /** Takes a conceptual node (train or on foot) and returns the set of "real" nodes (the ones used by the graph)
-      * in which the pedestrians must be created.
-      *
-      * @param stop2Vertices mapping from stops to vertices
-      * @param timeTable collection of PT movements
-      * @param conceptualNode Node to map to graph nodes
-      * @return
-      */
-    def conceptualNode2GraphNodes(stop2Vertices: Map[StopID_New, Vector[VertexID]], timeTable: Map[TrainID_New, Vehicle])(conceptualNode: NodeParent): Iterable[Vertex] = {
-      conceptualNode match {
-        case x: TrainID_New => stop2Vertices(timeTable(x).stop).map(n => routeGraph.vertexMapNew(n))
-        case x: NodeID_New => Iterable(routeGraph.vertexMapNew(x.ID))
-        case x: StopID_New => Iterable(routeGraph.vertexMapNew(x.ID.toString))
-        case _ => throw new Exception("Track ID should not be there !")
-      }
-    }
 
     // Loads the start time, end time and time intervals
     val simulationStartTime: Time = Time(config.getDouble("sim.start_time"))
@@ -145,7 +150,7 @@ package object DES {
       spaceMicro = infraSF.continuousSpace.addWalls(controlDevices.amws.flatMap(_.walls)),
       graph = routeGraph,
       timeTable = timeTable,
-      stop2Vertices = conceptualNode2GraphNodes(stop2Vertex.stop2Vertices, if (timeTable.isDefined){timeTable.get.timeTable} else {Map()}),
+      stop2Vertex = stop2Vertex,
       controlDevices = controlDevices,
       config.getBoolean("output.write_trajectories_as_VS") || config.getBoolean("output.write_trajectories_as_JSON") || config.getBoolean("output.make_video")
     )
@@ -180,7 +185,7 @@ package object DES {
     *  - the number of demand sets (one replication each),
     *  - the number of simulations specified in the config file.
     *
-    * @param config config file used to read the number of simulations
+    * @param config             config file used to read the number of simulations
     * @param multipleDemandSets demand sets used for simulations
     * @return total number of simulations to run
     */
@@ -206,7 +211,7 @@ package object DES {
   /** Reads the public transport schedule based from either the demand set file or the timetable field in the config
     * file. The mapping from stops to vertices is empty if the schedule is not defined.
     *
-    * @param config config file
+    * @param config    config file
     * @param demandSet demand set to read PT schedule from
     * @return tuple containing an optional [[PublicTransportSchedule]] and the [[Stop2Vertex]] object
     */
@@ -215,17 +220,29 @@ package object DES {
     // Reads the schedule.
     val schedule: Option[PublicTransportSchedule] = {
       demandSet match {
-        case Some(ds: DemandSet) => {Some(readSchedule(ds.timetableFile.toString))}
-        case Some(tf: TRANSFORMDemandSet) => {Some(readScheduleTF(tf.timetableFile.toString))}
-        case None if usePTInducedFlow => {Some(readSchedule(config.getString("files.timetable")))}
-        case _ => {println(" * no time table is required as PT induced flows are empty"); None}
+        case Some(ds: DemandSet) => {
+          Some(readSchedule(ds.timetableFile.toString))
+        }
+        case Some(tf: TRANSFORMDemandSet) => {
+          Some(readScheduleTF(tf.timetableFile.toString))
+        }
+        case None if usePTInducedFlow => {
+          Some(readSchedule(config.getString("files.timetable")))
+        }
+        case _ => {
+          println(" * no time table is required as PT induced flows are empty"); None
+        }
       }
     }
 
     // Mapping from stops to vertices in the network.
     val stop2vertexMap = {
-      if (schedule.isDefined) {readPTStop2GraphVertexMap(config.getString("files.zones_to_vertices_map"))}
-      else {new Stop2Vertex(Map(), Vector())}
+      if (schedule.isDefined) {
+        readPTStop2GraphVertexMap(config.getString("files.zones_to_vertices_map"))
+      }
+      else {
+        new Stop2Vertex(Map(), Vector())
+      }
     }
 
     (schedule, stop2vertexMap)
@@ -236,13 +253,21 @@ package object DES {
   def getDisaggregateFlows(config: Config, demandSet: Option[DemandData] = None): Vector[(String, String, Option[Time])] = {
 
     val disaggDemand: Vector[(String, String, Option[Time])] = demandSet match {
-      case Some(ds: DemandSet) => {readDisaggDemand(ds.flowFile.toString)}
-      case Some(tf:TRANSFORMDemandSet) => {readDisaggDemandTF(tf.flowFile.toString)}
-      case None if !config.getIsNull("files.disaggregate_demand") => {readDisaggDemand(config.getString("files.disaggregate_demand"))}
-      case _ => {println(" * not using disaggregate pedestrian flows"); Vector()}
+      case Some(ds: DemandSet) => {
+        readDisaggDemand(ds.flowFile.toString)
+      }
+      case Some(tf: TRANSFORMDemandSet) => {
+        readDisaggDemandTF(tf.flowFile.toString)
+      }
+      case None if !config.getIsNull("files.disaggregate_demand") => {
+        readDisaggDemand(config.getString("files.disaggregate_demand"))
+      }
+      case _ => {
+        println(" * not using disaggregate pedestrian flows"); Vector()
+      }
     }
 
-    if (config.getIsNull("sim.increase_disaggregate_demand")){
+    if (config.getIsNull("sim.increase_disaggregate_demand")) {
       disaggDemand
     } else {
       disaggDemand.flatMap(p => increaseDemand(config.getDouble("sim.increase_disaggregate_demand"), p))
@@ -266,7 +291,7 @@ package object DES {
     * into the simulation is modified. The entry time of the new pedestrian is between 15  seconds earlier or later
     * than the original entry time.
     *
-    * @param ratio percentage increase in demand.
+    * @param ratio      percentage increase in demand.
     * @param pedestrian pedestrian to copy
     * @return one or two pedestrians depending on whether a pedestrian has been added or not.
     */
@@ -290,11 +315,11 @@ package object DES {
     *  - flows originating from PT vehicles
     *  - non unniform flows
     *
-    * @param sim simulator into which the demand must be inserted
+    * @param sim              simulator into which the demand must be inserted
     * @param disaggPopulation disaggregate pedestrian flows
-    * @param flows aggregate pedestrian flows
-    * @param timeTable PT schedule
-    * @param tag Pedestrian type
+    * @param flows            aggregate pedestrian flows
+    * @param timeTable        PT schedule
+    * @param tag              Pedestrian type
     * @tparam T Pedestrian type
     */
   def insertDemandIntoSimulator[T <: PedestrianNOMAD](sim: NOMADGraphSimulator[T],
@@ -305,8 +330,12 @@ package object DES {
     // inserts disaggregate pedestrian flows.
     if (disaggPopulation.nonEmpty) {
       timeTable match {
-        case Some(_) => { sim.insertEventWithZeroDelay(new ProcessDisaggregatePedestrianFlows[T](disaggPopulation, sim)) }
-        case None => {sim.insertEventWithZeroDelay(new ProcessDisaggregatePedestrianFlowsWithoutTimeTable[T](disaggPopulation, sim)) }
+        case Some(_) => {
+          sim.insertEventWithZeroDelay(new ProcessDisaggregatePedestrianFlows[T](disaggPopulation, sim))
+        }
+        case None => {
+          sim.insertEventWithZeroDelay(new ProcessDisaggregatePedestrianFlowsWithoutTimeTable[T](disaggPopulation, sim))
+        }
       }
     }
 
@@ -317,7 +346,8 @@ package object DES {
     }
 
     // Inserts aggregate pedestrian flows.
-    if (flows._1.nonEmpty || flows._3.nonEmpty) {sim.insertEventWithZeroDelay(new ProcessPedestrianFlows[T](flows._1, flows._3, sim))}
-
+    if (flows._1.nonEmpty || flows._3.nonEmpty) {
+      sim.insertEventWithZeroDelay(new ProcessPedestrianFlows[T](flows._1, flows._3, sim))
+    }
   }
 }

@@ -1,6 +1,7 @@
 package hubmodel.mgmt
 
 import hubmodel.DES.{Action, NOMADGraphSimulator}
+import hubmodel.P
 import hubmodel.ped.PedestrianNOMAD
 import tools.cells.isInVertex
 import kn.uni.voronoitreemap.datastructure.OpenList
@@ -93,6 +94,12 @@ class EvaluateState[T <: PedestrianNOMAD](sim: NOMADGraphSimulator[T]) extends A
       })
     }
     sim.insertEventWithDelay(sim.evaluate_dt)(new EvaluateState(sim))
+  }
+
+  type A = EvaluateState[P]
+
+  override def deepCopy(simulator: NOMADGraphSimulator[P]): Option[A] = {
+    Some(new EvaluateState(simulator))
   }
 
 }

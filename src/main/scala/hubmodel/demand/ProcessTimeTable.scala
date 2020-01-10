@@ -5,6 +5,7 @@ package hubmodel.demand
   */
 
 import hubmodel.DES.{Action, NOMADGraphSimulator}
+import hubmodel.P
 import hubmodel.ped.PedestrianNOMAD
 
 import scala.reflect.ClassTag
@@ -27,6 +28,10 @@ class ProcessTimeTable[T <: PedestrianNOMAD](timeTable: PublicTransportSchedule,
         new TrainArrival(t._2, PTInducedFlows.filter(tinf => tinf.O == t._1), sim)
       })
   }
+
+  type A = ProcessTimeTable[P]
+
+  override def deepCopy(simulator: NOMADGraphSimulator[P]): Option[A] = None //Some(new ProcessTimeTable(timeTable, PTInducedFlows, simulator))
 
   override def toString: String = "ProcessTimeTable"
 }

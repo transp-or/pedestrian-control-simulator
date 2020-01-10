@@ -8,7 +8,7 @@ import hubmodel.supply.graph.MyEdge
 import tools.Time
 import tools.cells.RectangleModifiable
 import tools.exceptions.IllegalFlowSeparatorPosition
-import hubmodel.{FLOW_SEPARATOR_SPEED, FLOW_SEPARATOR_UPDATE, Position, generateUUID}
+import hubmodel.{FLOW_SEPARATOR_SPEED, FLOW_SEPARATOR_UPDATE, P, Position, generateUUID}
 
 import scala.util.{Failure, Success, Try}
 
@@ -183,6 +183,9 @@ class FlowSeparator[T <: Measurement, U <: SeparatorPositionFraction](val startA
         movingWallEventIsInserted = false
       }
     }
+
+    override def deepCopy(simulator: NOMADGraphSimulator[P]): Option[A] = None
+
   }
 
   // ******************************************************************************************

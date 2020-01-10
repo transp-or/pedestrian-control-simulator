@@ -1,6 +1,8 @@
 package hubmodel.DES
 
+import hubmodel.P
 import hubmodel.StrictLogging
+import hubmodel.ped.PedestrianNOMAD
 
 /**
   * Parent to all actions which will appear in the DES.
@@ -21,6 +23,17 @@ abstract class Action extends StrictLogging {
     * The method will modifiy some elements of the simulation.
     */
   def execute(): Any
+
+  type A <: Action
+
+  //type P <: PedestrianNOMAD
+
+
+  /** Creates a deep copy of this action. This is necessary when doing predictions with the ground truth simulator.
+    *
+    * @return this action copied
+    */
+  def deepCopy(simulator: NOMADGraphSimulator[P]): Option[A]
 
   override def toString: String = this.getClass.getSimpleName
 

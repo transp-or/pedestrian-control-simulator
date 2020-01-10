@@ -5,12 +5,11 @@ import hubmodel.ped.{PedestrianNOMAD, PedestrianSim}
 import tools.Time
 import tools.cells.{Rectangle, Vertex}
 import tools.exceptions.ControlDevicesException
-import hubmodel.{GATE_MAXIMUM_QUEUE_SIZE, Position}
+import hubmodel.{GATE_MAXIMUM_QUEUE_SIZE, P, Position}
 
 abstract class MyEdgeWithGate(override val startVertex: Vertex, override val endVertex: Vertex, val start: Position, val end: Position, val monitoredArea: String) extends MyEdge(startVertex, endVertex) {
 
-  // self-type allowing access to contents of this class from inner classes.
-  gate =>
+
 
   // Physical width of the gate. Required to compute the maximum flow.
   val width: Double = (end - start).norm
@@ -43,47 +42,4 @@ abstract class MyEdgeWithGate(override val startVertex: Vertex, override val end
     this._flowRate = newFlowRate
     this.positionHistory.append((currentTime, newFlowRate))
   }
-
-
-  /** Event for releasing a pedestrian. This allows him to pass the gate. Each pedestrian contains state variables
-    * indicating whether he is waiting or not. These are used by the other classes.
-    *
-    * @param sim simulation environment
-    */
-  class ReleasePedestrian[T <: PedestrianNOMAD](sim: NOMADGraphSimulator[T]) extends Action {
-
-    /** Executes the event.
-      *
-      */
-    override def execute(): Unit = {
-      if (pedestrianQueue.nonEmpty) {
-        pedestrianQueue.head.isWaiting = false
-        pedestrianQueue.head.freedFrom.append(ID)
-        pedestrianQueue.dequeue()
-        sim.eventLogger.trace("sim-time=" + sim.currentTime + ": gate: " + gate.ID + " released pedestrian. Peds in queue=" + pedestrianQueue.size)
-      } else {
-        sim.eventLogger.trace("sim-time=" + sim.currentTime + ": gate: " + gate.ID + ": no one in queue to release")
-      }
-      // inserts new event based on the current flow rate allowed through the gate.
-      //sim.insertEventWithDelay(1.0 / flowRate)(new ReleasePedestrian(sim))
-    }
-  }
-
-  /** Enqueues a pedestrian i the queue for passing through a flow gate.
-    *
-    * @param ped pedestrian to enqueue
-    * @param sim simulator for getting the logger and other elements.
-    */
-  class EnqueuePedestrian[T <: PedestrianNOMAD](ped: PedestrianSim, sim: NOMADGraphSimulator[T]) extends Action {
-
-    override def execute(): Unit = {
-      ped.isWaiting = true
-      pedestrianQueue.enqueue(ped)
-      sim.eventLogger.trace("sim-time=" + sim.currentTime + ": enqueued pedestrian in " + gate.ID + ". # peds in queue: " + pedestrianQueue.size)
-      if (gate.pedestrianQueue.size > GATE_MAXIMUM_QUEUE_SIZE) {
-        throw new ControlDevicesException("Too many pedestrians in queue for gate " + gate.ID)
-      }
-    }
-  }
-
 }

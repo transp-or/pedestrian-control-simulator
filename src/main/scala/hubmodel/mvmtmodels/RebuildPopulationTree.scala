@@ -1,6 +1,7 @@
 package hubmodel.mvmtmodels
 
 import hubmodel.DES.{Action, NOMADGraphSimulator}
+import hubmodel.P
 import hubmodel.ped.PedestrianNOMAD
 
 /** Event which trigers the reconstruction from scratch of the m-tree which is used to find the neighbouring
@@ -28,6 +29,13 @@ class RebuildPopulationTree[T <: PedestrianNOMAD](sim: NOMADGraphSimulator[T]) e
 
     // inserts new rebuild tree event
     sim.insertEventWithDelay(sim.rebuildTreeInterval.get)(new RebuildPopulationTree(sim))
+  }
+
+
+  type A = RebuildPopulationTree[P]
+
+  override def deepCopy(simulator: NOMADGraphSimulator[P]): Option[A] = {
+    Some(new RebuildPopulationTree[P](simulator))
   }
 
 

@@ -1,6 +1,7 @@
 package hubmodel.mgmt
 
 import hubmodel.DES.{Action, NOMADGraphSimulator}
+import hubmodel.P
 import hubmodel.mgmt.flowgate.{FlowGate, FlowGateFunctional}
 import hubmodel.ped.PedestrianNOMAD
 import tools.Time
@@ -65,6 +66,12 @@ class UpdateGates[T <: PedestrianNOMAD](sim: NOMADGraphSimulator[T]) extends Act
         computeReleaseTimes(fgGen.flowRate, sim.evaluate_dt).foreach(t => sim.insertEventWithDelay(t)(new fgGen.ReleasePedestrian(sim)))
       }
     })
+  }
+
+  type A = UpdateGates[P]
+
+  override def deepCopy(simulator: NOMADGraphSimulator[P]): Option[A] = {
+    Some(new UpdateGates(simulator))
   }
 }
 

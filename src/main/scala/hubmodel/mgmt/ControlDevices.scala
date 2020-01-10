@@ -3,7 +3,9 @@ package hubmodel.mgmt
 import hubmodel.mgmt.amw.MovingWalkway
 import hubmodel.mgmt.flowgate.{BinaryGate, FlowGate, FlowGateFunctional}
 import hubmodel.mgmt.flowsep.{FlowSeparator, FlowSeparatorParameters}
+import hubmodel.ped.PedestrianNOMAD
 import hubmodel.supply.graph._
+import tools.Time
 import tools.cells.DensityMeasuredArea
 import tools.exceptions.IllegalSimulationInput
 
@@ -63,11 +65,11 @@ class ControlDevices(val monitoredAreas: Iterable[DensityMeasuredArea],
     *
     * @return deep copy of the current component
     */
-  def deepCopyWithState: ControlDevices = {
+  def deepCopyWithState[T <: PedestrianNOMAD](t: => Time, population: Iterable[T]): ControlDevices = {
     new ControlDevices(
       monitoredAreas.map(_.deepCopy),
       amws.map(_.deepCopyWithState),
-      flowGates.map(_.deepCopyWithState),
+      flowGates.map(_.deepCopyWithState(t, population)),
       binaryGates.map(_.deepCopy),
       flowSeparators.map(_.deepCopyWithState),
       fixedFlowSeparators

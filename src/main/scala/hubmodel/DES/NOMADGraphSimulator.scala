@@ -13,7 +13,7 @@ import hubmodel.supply.graph._
 import tools.Time
 import tools.cells.{DensityMeasuredArea, Rectangle, Vertex, isInVertex}
 
-class NOMADGraphSimulator[T <: PedestrianNOMAD](st: Time,
+class NOMADGraphSimulator[T <: P](st: Time,
                                                 et: Time,
                                                 val sf_dt: Time,
                                                 val route_dt: Time,
@@ -22,12 +22,14 @@ class NOMADGraphSimulator[T <: PedestrianNOMAD](st: Time,
                                                 val spaceMicro: ContinuousSpace,
                                                 val graph: GraphContainer,
                                                 val timeTable: Option[PublicTransportSchedule],
-                                                val stop2Vertices: NodeParent => Iterable[Vertex],
+                                                val stop2Vertex: Stop2Vertex,
                                                 val controlDevices: ControlDevices,
                                                 val logFullPedestrianHistory: Boolean = false) extends PedestrianDES[PedestrianNOMAD](st, et) {
 
   // TODO: continue implementing this
   //val flowSeparators: Option[Vector[FlowSeparator[_, _]]] = controlDevices.flowSepParams.flatMap(fsp => )
+
+  def stop2Vertices: NodeParent => Iterable[Vertex] = mappingConceptualNode2GraphNodes(this.graph)(stop2Vertex.stop2Vertices, if (timeTable.isDefined){timeTable.get.timeTable} else {Map()})
 
   /**
     * Access for the wall collection which is mostly contained in the SF infrastructrue file but some movable walls
@@ -105,10 +107,7 @@ class NOMADGraphSimulator[T <: PedestrianNOMAD](st: Time,
 
   val ODZones: Iterable[Vertex] = this.graph.vertexMapNew.values.filter(_.isOD)
 
-  var regulatorIntegralAction: Double = 0.0
-
   val transferringPassengers: collection.mutable.Set[String] = collection.mutable.Set()
-
 
   /**
     * Class to initialize the simulation. The first calls to reccurent events like the [[NOMADIntegrated]]
@@ -116,7 +115,7 @@ class NOMADGraphSimulator[T <: PedestrianNOMAD](st: Time,
     *
     * @param sim simulation object
     */
-  class StartSim(sim: NOMADGraphSimulator[T]) extends super.GenericStartSim(sim) {
+  class StartSim[U<: P](sim: NOMADGraphSimulator[U]) extends super.GenericStartSim(sim) {
     override def execute(): Unit = {
 
       if (sim.useFlowGates) {
@@ -154,19 +153,31 @@ class NOMADGraphSimulator[T <: PedestrianNOMAD](st: Time,
       // Uses the safeguard on pedestrian queues
       sim.insertEventWithZeroDelay(new SafeGuard())
     }
+
+    type A = StartSim[P]
+
+    override def deepCopy(simulator: NOMADGraphSimulator[P]): Option[A] = {
+      Some(new StartSim(simulator))
+    }
   }
 
   /**
     * Class to interrupt the simulation if some criteria is met. The idea is to prevent simulations running for
     * ridiculous times if some unfeasible situation has occured.
     */
-  private class SafeGuard() extends Action {
+  private class SafeGuard extends Action {
     override def execute(): Unit = {
       if (useFlowGates && controlDevices.flowGates.exists(fg => fg.pedestrianQueue.size > 100)) {
         abort(1)
       } else {
         insertEventWithDelay(Time(10))(new SafeGuard())
       }
+    }
+
+    type A = SafeGuard
+
+    override def deepCopy(simulator: NOMADGraphSimulator[P]): Option[A] = {
+      Some(new SafeGuard)
     }
   }
 
@@ -201,7 +212,7 @@ class NOMADGraphSimulator[T <: PedestrianNOMAD](st: Time,
     spaceMicro,
     graph,
     timeTable,
-    stop2Vertices,
+    this.stop2Vertex,
     controlDevices
   )
 
@@ -216,7 +227,7 @@ class NOMADGraphSimulator[T <: PedestrianNOMAD](st: Time,
       spaceMicro,
       graph,
       timeTable,
-      stop2Vertices,
+      this.stop2Vertex,
       controlDevices,
       logFullPedestrianHistory
     )

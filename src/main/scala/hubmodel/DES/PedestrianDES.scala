@@ -6,6 +6,7 @@ package hubmodel.DES
 
 import java.util.concurrent.ThreadLocalRandom
 
+import hubmodel.P
 import hubmodel.ped.PedestrianNOMAD
 import tools.Time
 import tools.TimeNumeric.mkOrderingOps
@@ -29,7 +30,7 @@ import scala.util.Random
   * @tparam T Type of the pedestrian class to use in the simulation
   *
   */
-abstract class PedestrianDES[T <: PedestrianNOMAD](val startTime: Time,
+abstract class PedestrianDES[T <: P](val startTime: Time,
                                                    val finalTime: Time) extends StrictLogging {
 
   ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -140,6 +141,14 @@ abstract class PedestrianDES[T <: PedestrianNOMAD](val startTime: Time,
     */
   def insertEventAtAbsolute[U <: Action](t: Time)(action: U): Unit = {
     if (startTime <= t && t < finalTime) eventList += new MyEvent(t, action)
+  }
+
+  def cloneEventQueue(simulator: NOMADGraphSimulator[P]): collection.mutable.PriorityQueue[MyEvent] = {
+
+    collection.mutable.PriorityQueue.from(this.eventList.collect{
+      case e if e.action.deepCopy(simulator).isDefined => (new MyEvent(e.t, e.action.deepCopy(simulator).get))
+    })
+
   }
 
   ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -261,7 +270,7 @@ abstract class PedestrianDES[T <: PedestrianNOMAD](val startTime: Time,
     * In order to give access to the required data to each Action, the simulation itself is passed
     * as an argument. This makes it very general.
     */
-  abstract class GenericStartSim(sim: PedestrianDES[T]) extends Action
+  abstract class GenericStartSim(sim: PedestrianDES[P]) extends Action
 
   /** Abstract run which must be overriden in implementation.
     * This will call the [[genericRun()]] method and pass the first start as an argument.
