@@ -1,6 +1,6 @@
 package hubmodel.DES
 
-import hubmodel.{B, P, StrictLogging}
+import hubmodel.StrictLogging
 
 /**
   * Parent to all actions which will appear in the DES.
@@ -24,13 +24,11 @@ trait Action extends StrictLogging {
 
   type A <: Action
 
-  type B <: PedestrianDES
-
   /** Creates a deep copy of this action. This is necessary when doing predictions with the ground truth simulator.
     *
     * @return this action copied
     */
-  def deepCopy(simulator: B): Option[A]
+  def deepCopy(simulator: PedestrianPrediction): Option[A]
 
   override def toString: String = this.getClass.getSimpleName
 

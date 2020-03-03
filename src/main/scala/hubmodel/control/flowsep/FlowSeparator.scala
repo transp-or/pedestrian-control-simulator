@@ -1,14 +1,13 @@
 package hubmodel.control.flowsep
 
-import hubmodel.DES.{Action, NOMADGraphSimulator}
+import hubmodel.DES.{Action, NOMADGraphSimulator, PedestrianPrediction}
 import hubmodel.control._
-import hubmodel.ped.PedestrianNOMAD
 import hubmodel.supply.continuous.{MovableWall, SINGLELINE, Wall}
 import hubmodel.supply.graph.MyEdge
+import hubmodel.{FLOW_SEPARATOR_SPEED, FLOW_SEPARATOR_UPDATE, Position, generateUUID}
 import tools.Time
 import tools.cells.RectangleModifiable
 import tools.exceptions.IllegalFlowSeparatorPosition
-import hubmodel.{FLOW_SEPARATOR_SPEED, FLOW_SEPARATOR_UPDATE, P, Position, generateUUID}
 
 import scala.util.{Failure, Success, Try}
 
@@ -184,7 +183,9 @@ class FlowSeparator[T <: Measurement, U <: SeparatorPositionFraction](val startA
       }
     }
 
-    override def deepCopy(simulator: NOMADGraphSimulator): Option[A] = None
+    type B = NOMADGraphSimulator
+
+override def deepCopy(simulator: PedestrianPrediction): Option[A] = None
 
   }
 

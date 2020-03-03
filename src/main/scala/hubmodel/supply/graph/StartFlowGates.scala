@@ -1,8 +1,6 @@
 package hubmodel.supply.graph
 
-import hubmodel.DES.{Action, NOMADGraphSimulator}
-import hubmodel.P
-import hubmodel.ped.PedestrianNOMAD
+import hubmodel.DES.{Action, NOMADGraphSimulator, PedestrianPrediction}
 
 /** Initialisation of the flow gates. The is the event inserted into the [[NOMADGraphSimulator.StartSim]] event.
   * The "first round" of the [[hubmodel.supply.FlowGate.ReleasePedestrian]] events are inserted;
@@ -18,6 +16,8 @@ class StartFlowGates(sim: NOMADGraphSimulator) extends Action {
 
   type A = StartFlowGates
 
-  override def deepCopy(simulator: NOMADGraphSimulator): Option[A] = Some(new StartFlowGates(simulator))
+  type B = NOMADGraphSimulator
+
+override def deepCopy(simulator: PedestrianPrediction): Option[A] = Some(new StartFlowGates(simulator))
 
 }

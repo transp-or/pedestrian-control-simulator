@@ -6,10 +6,9 @@ import hubmodel.control.flowgate.{BinaryGate, FlowGate}
 import hubmodel.control.flowsep.FlowSeparator
 import hubmodel.ped.PedestrianNOMAD
 import myscala.math.vector.ZeroVector2D
-import tools.cells.{Rectangle, Vertex}
 import org.jgrapht.alg.shortestpath.{DijkstraShortestPath, KShortestPaths}
 import org.jgrapht.graph.DefaultDirectedWeightedGraph
-import tools.graph.Graph
+import tools.cells.Vertex
 
 import scala.collection.JavaConverters._
 import scala.util.{Failure, Success, Try}

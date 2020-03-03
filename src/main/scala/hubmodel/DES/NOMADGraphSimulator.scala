@@ -24,8 +24,7 @@ abstract class NOMADGraphSimulator(st: Time,
                                            val timeTable: Option[PublicTransportSchedule],
                                            val stop2Vertex: Stop2Vertex,
                                            val controlDevices: ControlDevices,
-                                           val logFullPedestrianHistory: Boolean = false,
-                                           val isPrediction: Boolean = false) extends PedestrianDES(st, et) {
+                                           val logFullPedestrianHistory: Boolean = false) extends PedestrianDES(st, et) {
 
   // TODO: continue implementing this
   //val flowSeparators: Option[Vector[FlowSeparator[_, _]]] = controlDevices.flowSepParams.flatMap(fsp => )
@@ -138,7 +137,7 @@ abstract class NOMADGraphSimulator(st: Time,
         }
       }
 
-      sim.logger.info("Starting simulation " + sim.ID + " @" + this.sim.currentTime)
+      //sim.logger.info("Starting simulation " + sim.ID + " @" + this.sim.currentTime)
 
       sim.eventLogger.trace("sim-time=" + sim.currentTime + ": simulation started. dt=" + sim.sf_dt)
 
@@ -173,7 +172,9 @@ abstract class NOMADGraphSimulator(st: Time,
 
     type A = StartSim[P]
 
-    override def deepCopy(simulator: NOMADGraphSimulator): Option[A] = {
+    type B = NOMADGraphSimulator
+
+override def deepCopy(simulator: PedestrianPrediction): Option[A] = {
       Some(new StartSim(simulator))
     }
   }
@@ -193,7 +194,9 @@ abstract class NOMADGraphSimulator(st: Time,
 
     type A = SafeGuard
 
-    override def deepCopy(simulator: NOMADGraphSimulator): Option[A] = {
+    type B = NOMADGraphSimulator
+
+override def deepCopy(simulator: PedestrianPrediction): Option[A] = {
       Some(new SafeGuard)
     }
   }

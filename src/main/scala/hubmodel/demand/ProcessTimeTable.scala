@@ -4,8 +4,7 @@ package hubmodel.demand
   * Created by nicholas on 5/12/17.
   */
 
-import hubmodel.DES.{Action, NOMADGraphSimulator}
-import hubmodel.P
+import hubmodel.DES.{Action, NOMADGraphSimulator, PedestrianPrediction}
 import hubmodel.ped.PedestrianNOMAD
 
 import scala.reflect.ClassTag
@@ -31,7 +30,9 @@ class ProcessTimeTable(timeTable: PublicTransportSchedule, PTInducedFlows: Seq[P
 
   type A = ProcessTimeTable
 
-  override def deepCopy(simulator: NOMADGraphSimulator): Option[A] = None //Some(new ProcessTimeTable(timeTable, PTInducedFlows, simulator))
+  type B = NOMADGraphSimulator
+
+override def deepCopy(simulator: PedestrianPrediction): Option[A] = None //Some(new ProcessTimeTable(timeTable, PTInducedFlows, simulator))
 
   override def toString: String = "ProcessTimeTable"
 }

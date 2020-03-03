@@ -2,7 +2,7 @@ package hubmodel.control.flowgate
 
 import hubmodel.Position
 import hubmodel.control.{ControlDeviceComponent, FunctionalForm, Measurement, Output}
-import tools.cells.{Rectangle, Vertex}
+import tools.cells.Vertex
 
 /** Extension of [[hubmodel.supply.MyEdgeWithGate]] for the usage of "flow gates". The gates control the
   * flow of pedestrians passing through them.

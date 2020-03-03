@@ -5,8 +5,8 @@ import java.awt.{Color, Graphics2D}
 
 import hubmodel.io.output._
 import hubmodel.supply.continuous.Wall
-import tools.cells.{Rectangle, Vertex}
 import javax.imageio.ImageIO
+import tools.cells.Vertex
 
 class DrawWallsAndGraph(walls: Iterable[Wall], edges: Vector[(Vertex, Vertex)], filename: String, showNames: Boolean = true) {
 

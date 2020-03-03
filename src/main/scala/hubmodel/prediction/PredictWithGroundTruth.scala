@@ -1,9 +1,7 @@
 package hubmodel.prediction
 
-import hubmodel.DES.{NOMADGraphSimulator, PedestrianPrediction, PedestrianSimulation}
-import hubmodel.P
-import hubmodel.ped.PedestrianSim
-import hubmodel.prediction.state.{CurrentState, StateGroundTruth}
+import hubmodel.DES.{PedestrianPrediction, PedestrianSimulation}
+import hubmodel.prediction.state.StateGroundTruth
 import hubmodel.supply.graph.GraphContainer
 import tools.Time
 
@@ -41,8 +39,7 @@ class PredictWithGroundTruth(sim: PedestrianSimulation) extends StatePrediction 
     stateData.population.foreach(simulator.insertInPopulation)
 
     // clone the event list into the new simulator
-    sim.cloneEventQueue(simulator)
-
+    sim.cloneEventQueueInto(simulator)
 
     simulator
   }

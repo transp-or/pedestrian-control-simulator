@@ -3,7 +3,7 @@ package hubmodel.control.flowgate
 import hubmodel.Position
 import hubmodel.control.ControlDeviceComponent
 import hubmodel.supply.graph.MyEdgeWithGate
-import tools.cells.{Rectangle, Vertex}
+import tools.cells.Vertex
 
 /** Object to model gates controlling the flow of pedestrians
   *

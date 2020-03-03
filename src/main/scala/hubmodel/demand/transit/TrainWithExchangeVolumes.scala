@@ -1,7 +1,5 @@
 package hubmodel.demand.transit
 
-import java.util.concurrent.ThreadLocalRandom
-
 import hubmodel.supply.{ODIDOld, StopID_New, TrainID_New}
 import tools.Time
 

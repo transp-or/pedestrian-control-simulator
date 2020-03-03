@@ -5,8 +5,8 @@ import java.awt.{Color, Font, FontMetrics, Graphics2D}
 
 import hubmodel.io.output._
 import hubmodel.io.output.video.Tools4Videos
-import tools.cells.VertexPlotting
 import javax.imageio.ImageIO
+import tools.cells.VertexPlotting
 
 class DrawCells[T <: VertexPlotting](cells: Iterable[T],
                                      filename: String = "",

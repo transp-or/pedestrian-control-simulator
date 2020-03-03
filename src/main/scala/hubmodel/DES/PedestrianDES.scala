@@ -6,9 +6,8 @@ package hubmodel.DES
 
 import java.util.concurrent.ThreadLocalRandom
 
-import hubmodel.control.StateEvaluationAction
 import hubmodel.ped.PedestrianNOMAD
-import hubmodel.{B, P, Position, StrictLogging, distance}
+import hubmodel.{Position, StrictLogging, distance}
 import myscala.math.algo.MTree
 import myscala.math.vector.{Vector2D, norm}
 import tools.Time
@@ -106,18 +105,6 @@ abstract class PedestrianDES(val startTime: Time,
     */
   protected val eventList: collection.mutable.PriorityQueue[MyEvent] = collection.mutable.PriorityQueue()
 
-  /** Use the new version of this method which uses the [[Time]] class.
-    * Inserts an event into the eventList after a given delay. No need for sorting as the PriorityQueue is always
-    * kept in sorted order. Events are only inserted if the ([[currentTime]] + delay) is
-    * lower than the [[finalTime]] of the simulation.
-    *
-    * @param delay  time after the [[currentTime]] at which the event must take place
-    * @param action the [[Action]] which must take place
-    */
-  @deprecated
-  def insertEventWithDelayOld[U <: Action](delay: Time)(action: U): Unit = {
-    if ((this.currentTime + delay) <= finalTime) eventList += new MyEvent(this.currentTime + delay, action)
-  }
 
   /** Inserts an event into the eventList after a given delay. No need for sorting as the PriorityQueue is always
     * kept in sorted order. Events are only inserted if the ([[currentTime]] + delay) is
@@ -152,13 +139,14 @@ abstract class PedestrianDES(val startTime: Time,
   }
 
 
-  def cloneEventQueue(simulator: PedestrianDES): Unit = {
+  def cloneEventQueueInto(simulator: PedestrianPrediction): Unit = {
 
     this.eventList.collect {
-      case e if e.action.deepCopy(simulator.asInstanceOf[e.action.B]).isDefined => simulator.eventList.enqueue(new simulator.MyEvent(e.t, e.action.deepCopy(simulator.asInstanceOf[e.action.B]).get))
+      case e if e.action.deepCopy(simulator).isDefined => simulator.eventList.enqueue(new simulator.MyEvent(e.t, e.action.deepCopy(simulator).get))
     }
-
   }
+
+
 
   ///////////////////////////////////////////////////////////////////////////////////////////////////
   ////////////////////////////// Population definition and manipulation /////////////////////////////
@@ -281,6 +269,8 @@ abstract class PedestrianDES(val startTime: Time,
   }
 
 
+  val simulationType: String = "Generic"
+
   /**
     * First event to be called by the run method from [[PedestrianDES]]
     * This event is simulation dependent, hence it must be overridden in the implementations of the DES.
@@ -312,7 +302,7 @@ abstract class PedestrianDES(val startTime: Time,
     * until the list is empty.
     */
   def genericRun(startEvent: GenericStartSim): Unit = {
-    this.logger.info("Starting simulation " + this.ID + " @" + this.currentTime)
+    this.logger.info("Starting simulation (" + this.simulationType + ") " + this.ID + " @" + this.currentTime)
 
     insertEventWithZeroDelay{startEvent}
 
@@ -326,9 +316,9 @@ abstract class PedestrianDES(val startTime: Time,
     }
     if (this._exitCode == -1) {
       this._exitCode = 0
-      this.logger.info("simulation " + this.ID + " successfully completed !")
+      this.logger.info("Terminated simulation (" + this.simulationType + ") " + this.ID + " !")
     } else {
-      this.logger.info("simulation " + this.ID + "was terminated with exit code " + this._exitCode)
+      this.logger.info("Terminated simulation (" + this.simulationType + ") " + this.ID + ". Terminated with exit code " + this._exitCode)
     }
   }
 

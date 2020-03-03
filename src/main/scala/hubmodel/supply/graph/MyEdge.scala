@@ -1,8 +1,8 @@
 package hubmodel.supply.graph
 
 import hubmodel.generateUUID
-import tools.cells.{Rectangle, Vertex}
 import org.jgrapht.graph.DefaultWeightedEdge
+import tools.cells.Vertex
 
 /** Representation of an edge used in the graph structure. Can be used as parent for advanced edges with gates.
   *

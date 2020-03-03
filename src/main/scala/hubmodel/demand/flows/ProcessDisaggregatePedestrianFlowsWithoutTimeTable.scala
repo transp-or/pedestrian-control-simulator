@@ -1,12 +1,8 @@
 package hubmodel.demand.flows
 
-import java.util.concurrent.ThreadLocalRandom
-
-import hubmodel.DES.{Action, NOMADGraphSimulator}
-import hubmodel.P
+import hubmodel.DES.{Action, NOMADGraphSimulator, PedestrianPrediction}
 import hubmodel.demand.CreatePedestrian
 import hubmodel.ped.PedestrianNOMAD
-import hubmodel.supply.{StopID_New, TrainID_New}
 import tools.Time
 
 import scala.reflect.ClassTag
@@ -31,7 +27,9 @@ class ProcessDisaggregatePedestrianFlowsWithoutTimeTable(eventCollection: Iterab
 
   type A = ProcessDisaggregatePedestrianFlowsWithoutTimeTable
 
-  override def deepCopy(simulator: NOMADGraphSimulator): Option[A] = {
+  type B = NOMADGraphSimulator
+
+override def deepCopy(simulator: PedestrianPrediction): Option[A] = {
     Some(new ProcessDisaggregatePedestrianFlowsWithoutTimeTable(this.eventCollection, simulator))
   }
 

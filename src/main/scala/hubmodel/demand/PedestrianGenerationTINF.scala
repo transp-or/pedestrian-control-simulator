@@ -6,11 +6,10 @@ package hubmodel.demand
 
 import java.util.concurrent.ThreadLocalRandom
 
-import hubmodel.DES.{Action, NOMADGraphSimulator}
-import hubmodel.P
+import hubmodel.DES.{Action, NOMADGraphSimulator, PedestrianPrediction}
 import hubmodel.ped.PedestrianNOMAD
 import tools.Time
-import tools.cells.{Rectangle, Vertex}
+import tools.cells.Vertex
 
 import scala.reflect.ClassTag
 
@@ -58,7 +57,10 @@ class PedestrianGenerationTINF(o: Vertex, d: Vertex, isTransfer: Boolean, start:
 
   type A = PedestrianGenerationOverInterval
 
-  override def deepCopy(simulator: NOMADGraphSimulator): Option[A] = None
+  type B = NOMADGraphSimulator
+
+
+  override def deepCopy(simulator: PedestrianPrediction): Option[A] = None
 }
 
 

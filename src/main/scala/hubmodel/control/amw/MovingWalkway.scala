@@ -1,9 +1,9 @@
 package hubmodel.control.amw
 
-import hubmodel.{Position, Velocity}
 import hubmodel.supply.continuous.{SINGLELINE, Wall}
 import hubmodel.supply.graph.MyEdge
-import tools.cells.{Circle, Vertex}
+import hubmodel.{Position, Velocity}
+import tools.cells.Vertex
 
 /** Implementation of moving walkways as an edge. This will be used for the route choice aspects.
   *

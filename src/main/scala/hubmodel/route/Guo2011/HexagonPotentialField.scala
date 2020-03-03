@@ -1,7 +1,5 @@
 package hubmodel.route.Guo2011
 
-import java.awt.Color
-
 import hubmodel._
 import hubmodel.supply.potential.PotentialCell
 import tools.cells.{Hexagon, VertexPlotting}

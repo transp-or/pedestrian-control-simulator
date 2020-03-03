@@ -6,13 +6,12 @@ package hubmodel.demand.flows
 
 import java.util.concurrent.ThreadLocalRandom
 
-import hubmodel.DES.{Action, NOMADGraphSimulator}
-import hubmodel.P
+import hubmodel.DES.{Action, NOMADGraphSimulator, PedestrianPrediction}
 import hubmodel.demand.{CreatePedestrian, CreatePedestrianWithInsertion}
 import hubmodel.ped.PedestrianNOMAD
 import tools.Time
 import tools.TimeNumeric.mkOrderingOps
-import tools.cells.{Rectangle, Vertex}
+import tools.cells.Vertex
 
 import scala.reflect.ClassTag
 
@@ -65,7 +64,9 @@ class PedestrianGenerationNonHomogeneousRate(o: Vertex, d: Vertex, start: Time, 
 
   type A = PedestrianGenerationNonHomogeneousRate
 
-  override def deepCopy(simulator: NOMADGraphSimulator): Option[A] = Some(new PedestrianGenerationNonHomogeneousRate(this.o, this.d, this.start, this.end, this.rateFunction, simulator))
+  type B = NOMADGraphSimulator
+
+override def deepCopy(simulator: PedestrianPrediction): Option[A] = Some(new PedestrianGenerationNonHomogeneousRate(this.o, this.d, this.start, this.end, this.rateFunction, simulator))
 }
 
 

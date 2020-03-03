@@ -2,11 +2,9 @@ package hubmodel.demand
 
 import java.util.concurrent.ThreadLocalRandom
 
-import hubmodel.DES.{Action, NOMADGraphSimulator}
-import hubmodel.ped.PedestrianNOMAD
+import hubmodel.DES.{Action, NOMADGraphSimulator, PedestrianPrediction}
 import tools.Time
-import tools.cells.{Rectangle, Vertex}
-import hubmodel.P
+import tools.cells.Vertex
 
 /** Release a pedestrian from a specific queue. The execute method:
   *  - samples the pedestrian to add from the queue and executes the insert action
@@ -40,5 +38,7 @@ class ReleasePedPTInducedFlow(o: Vertex, sim: NOMADGraphSimulator) extends Actio
 
    type A = ReleasePedPTInducedFlow
 
-  override def deepCopy(simulator: NOMADGraphSimulator): Option[A] = Some(new ReleasePedPTInducedFlow(this.o, simulator))
+  type B = NOMADGraphSimulator
+
+override def deepCopy(simulator: PedestrianPrediction): Option[A] = Some(new ReleasePedPTInducedFlow(this.o, simulator))
 }

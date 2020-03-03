@@ -1,8 +1,6 @@
 package hubmodel.mvmtmodels
 
-import hubmodel.DES.{Action, NOMADGraphSimulator}
-import hubmodel.P
-import hubmodel.ped.PedestrianNOMAD
+import hubmodel.DES.{Action, NOMADGraphSimulator, PedestrianPrediction}
 
 class Energize(sim: NOMADGraphSimulator) extends Action {
 
@@ -10,6 +8,8 @@ class Energize(sim: NOMADGraphSimulator) extends Action {
 
   type A = Energize
 
-  override def deepCopy(simulator: NOMADGraphSimulator): Option[A] = ???
+  type B = NOMADGraphSimulator
+
+override def deepCopy(simulator: PedestrianPrediction): Option[A] = ???
 
 }

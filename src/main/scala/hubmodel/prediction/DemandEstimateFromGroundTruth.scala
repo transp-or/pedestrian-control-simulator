@@ -1,6 +1,5 @@
 package hubmodel.prediction
 
-import hubmodel.P
 import hubmodel.control.amw.MovingWalkway
 import hubmodel.ped.PedestrianNOMAD
 import tools.Time

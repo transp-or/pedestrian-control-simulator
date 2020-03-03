@@ -2,7 +2,7 @@ package hubmodel.route.Flurin2014
 
 import hubmodel.Position
 import hubmodel.supply.potential.PotentialCell
-import tools.cells.{Rectangle, Square, VertexPlotting}
+import tools.cells.{Square, VertexPlotting}
 
 class PotentialSquareCell(A: Position, B: Position, C: Position, D: Position, surface: Double) extends Square(A, B, C, D, false, None) with PotentialCell with VertexPlotting {
 

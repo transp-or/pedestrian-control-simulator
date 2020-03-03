@@ -1,15 +1,15 @@
 package hubmodel.supply
 
 import hubmodel.Position
-import hubmodel.io.input.JSONReaders.{Connectivity_JSON, InfraGraphParser, Track2NodeMapping_JSON}
 import hubmodel.control._
 import hubmodel.control.amw.MovingWalkway
 import hubmodel.control.flowgate.{BinaryGate, FlowGate, FlowGateFunctional}
 import hubmodel.control.flowsep._
+import hubmodel.io.input.JSONReaders.{Connectivity_JSON, InfraGraphParser, Track2NodeMapping_JSON}
 import hubmodel.ped.PedestrianNOMAD
-import tools.cells.{Circle, DensityMeasuredArea, Rectangle, RectangleModifiable, Vertex}
 import myscala.math.vector.Vector2D
 import play.api.libs.json.{JsError, JsSuccess, JsValue, Json}
+import tools.cells._
 
 import scala.collection.mutable.ArrayBuffer
 import scala.io.BufferedSource

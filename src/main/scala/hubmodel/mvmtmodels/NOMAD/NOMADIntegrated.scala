@@ -3,14 +3,14 @@ package hubmodel.mvmtmodels.NOMAD
 import java.util
 import java.util.concurrent.ThreadLocalRandom
 
-import hubmodel.P
+import hubmodel.DES.PedestrianPrediction
 
 //import com.vividsolutions.jts.geom.Coordinate
 import hubmodel.DES.{Action, NOMADGraphSimulator}
 import hubmodel.ped.PedestrianNOMAD
+import hubmodel.{DISTANCE_TO_CLOSE_WALLS, Position}
 import tools.Time
 import tools.cells.isInVertex
-import hubmodel.{DISTANCE_TO_CLOSE_WALLS, Position}
 //import javax.vecmath.Vector3d
 import myscala.math.vector.{Vector2D, ZeroVector2D}
 //import nl.tudelft.pedestrians.agents.WalkingBehavior.{pedestrianPhysical, pedestrianRepellOpposing}
@@ -283,7 +283,9 @@ class NOMADIntegrated(sim: NOMADGraphSimulator) extends Action {
 
   type A = NOMADIntegrated
 
-  override def deepCopy(simulator: NOMADGraphSimulator): Option[A] = {
+  type B = NOMADGraphSimulator
+
+override def deepCopy(simulator: PedestrianPrediction): Option[A] = {
     Some(new NOMADIntegrated(simulator))
   }
 

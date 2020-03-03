@@ -1,9 +1,9 @@
 package hubmodel.ped
 
-import tools.Time
-import tools.cells.{Rectangle, Vertex}
 import hubmodel.{Acceleration, Direction, Position, Velocity}
 import myscala.math.vector.{Vector2D, ZeroVector2D}
+import tools.Time
+import tools.cells.Vertex
 
 class PedestrianNOMAD(oZone: Vertex, dZone: Vertex, entryTime: Time, posO: Position, logFullHistory: Boolean, isTransfer: Boolean) extends PedestrianSim(oZone, dZone, entryTime, posO, logFullHistory, isTransfer) with WithGraphID {
 

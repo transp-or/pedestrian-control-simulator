@@ -1,11 +1,9 @@
 package hubmodel.supply.graph
 
-import hubmodel.DES.{Action, NOMADGraphSimulator}
-import hubmodel.ped.{PedestrianNOMAD, PedestrianSim}
+import hubmodel.Position
+import hubmodel.ped.PedestrianSim
 import tools.Time
-import tools.cells.{Rectangle, Vertex}
-import tools.exceptions.ControlDevicesException
-import hubmodel.{GATE_MAXIMUM_QUEUE_SIZE, P, Position}
+import tools.cells.Vertex
 
 abstract class MyEdgeWithGate(override val startVertex: Vertex, override val endVertex: Vertex, val start: Position, val end: Position, val monitoredArea: String) extends MyEdge(startVertex, endVertex) {
 

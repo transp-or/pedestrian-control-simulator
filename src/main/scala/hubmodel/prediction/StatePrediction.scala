@@ -1,8 +1,6 @@
 package hubmodel.prediction
 
-import hubmodel.P
-import hubmodel.ped.PedestrianNOMAD
-import hubmodel.prediction.state.{CurrentState, StateGroundTruth}
+import hubmodel.prediction.state.StateGroundTruth
 
 trait StatePrediction {
 

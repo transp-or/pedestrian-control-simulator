@@ -1,8 +1,6 @@
 package hubmodel.mvmtmodels
 
-import hubmodel.DES.{Action, NOMADGraphSimulator}
-import hubmodel.P
-import hubmodel.ped.PedestrianNOMAD
+import hubmodel.DES.{Action, NOMADGraphSimulator, PedestrianPrediction}
 
 class UpdateClosestWall(sim: NOMADGraphSimulator) extends Action {
 
@@ -23,7 +21,9 @@ class UpdateClosestWall(sim: NOMADGraphSimulator) extends Action {
 
   type A = UpdateClosestWall
 
-  override def deepCopy(simulator: NOMADGraphSimulator): Option[A] = {
+  type B = NOMADGraphSimulator
+
+override def deepCopy(simulator: PedestrianPrediction): Option[A] = {
     Some(new UpdateClosestWall(simulator))
   }
 

@@ -1,7 +1,7 @@
 package hubmodel.ped
 
 import hubmodel.Position
-import hubmodel.ped.History.{HistoryContainer, PositionIsolation}
+import hubmodel.ped.History.HistoryContainer
 import tools.Time
 
 /** Enforces the format for storing the trajectory of the pedestrian. This is used in the tracking data analysis

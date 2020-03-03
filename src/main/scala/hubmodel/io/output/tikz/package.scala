@@ -1,12 +1,11 @@
 package hubmodel.io.output
 
-import hubmodel.supply.graph.MyEdge
 import java.nio.charset.Charset
-import java.nio.file.Files
-import java.nio.file.Paths
+import java.nio.file.{Files, Paths}
 
 import hubmodel.supply.continuous.Wall
-import tools.cells.{Rectangle, Vertex}
+import hubmodel.supply.graph.MyEdge
+import tools.cells.Vertex
 
 
 package object tikz {

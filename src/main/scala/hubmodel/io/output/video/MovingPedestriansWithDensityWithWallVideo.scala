@@ -7,15 +7,15 @@ import java.io.File
 
 import hubmodel.DES.PedestrianDES
 import hubmodel._
-import hubmodel.io.output.{createWhiteBackground, getBounds, mapCoordAffine, verticalMirrorTransformation}
 import hubmodel.control.flowgate.BinaryGate
 import hubmodel.control.flowsep.FlowSeparator
+import hubmodel.io.output.{createWhiteBackground, getBounds, mapCoordAffine, verticalMirrorTransformation}
 import hubmodel.ped.History.{CoordinateTracking, HistoryContainer, PositionIsolation}
 import hubmodel.ped.PedestrianTrajectory
 import hubmodel.supply.continuous.Wall
+import org.jcodec.api.awt.AWTSequenceEncoder
 import tools.Time
 import tools.cells.DensityMeasuredArea
-import org.jcodec.api.awt.AWTSequenceEncoder
 
 /** Creates a video showing the movement of individual pedestrians with the critical zones in which the density is
   * monitored accompanied with the gates. Consider replacing the long list of arguments by the [[PedestrianDES]] object which

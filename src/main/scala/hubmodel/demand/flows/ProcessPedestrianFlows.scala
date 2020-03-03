@@ -4,8 +4,7 @@ package hubmodel.demand.flows
   * Created by nicholas on 5/12/17.
   */
 
-import hubmodel.DES.{Action, NOMADGraphSimulator}
-import hubmodel.P
+import hubmodel.DES.{Action, NOMADGraphSimulator, PedestrianPrediction}
 import hubmodel.demand.{PedestrianFlowFunction_New, PedestrianFlow_New, PedestrianGenerationOverInterval, splitFractionsUniform}
 import hubmodel.ped.PedestrianNOMAD
 import tools.Time
@@ -62,7 +61,9 @@ class ProcessPedestrianFlows(pedestrianFlows: Iterable[PedestrianFlow_New], pede
 
 type A = ProcessPedestrianFlows
 
-  override def deepCopy(simulator: NOMADGraphSimulator): Option[A] = Some(new ProcessPedestrianFlows(this.pedestrianFlows, this.pedestrianFlowsFunction, simulator))
+  type B = NOMADGraphSimulator
+
+override def deepCopy(simulator: PedestrianPrediction): Option[A] = Some(new ProcessPedestrianFlows(this.pedestrianFlows, this.pedestrianFlowsFunction, simulator))
 }
 
 

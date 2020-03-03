@@ -1,9 +1,9 @@
 package hubmodel.demand
 
-import hubmodel.DES.{Action, NOMADGraphSimulator}
+import hubmodel.DES.{Action, NOMADGraphSimulator, PedestrianPrediction}
 import hubmodel._
 import hubmodel.ped.PedestrianNOMAD
-import tools.cells.{Rectangle, Vertex}
+import tools.cells.Vertex
 
 import scala.reflect.ClassTag
 
@@ -54,6 +54,8 @@ class CreatePedestrian(o: Vertex, d: Vertex, val isTransfer: Boolean, sim: NOMAD
 
   type A = CreatePedestrian
 
-  override def deepCopy(simulator: NOMADGraphSimulator): Option[A] = Some(new CreatePedestrian(this.o, this.d, this.isTransfer, simulator))
+  type B = NOMADGraphSimulator
+
+override def deepCopy(simulator: PedestrianPrediction): Option[A] = Some(new CreatePedestrian(this.o, this.d, this.isTransfer, simulator))
 }
 

@@ -1,6 +1,7 @@
 package hubmodel.results
 
 import java.nio.file.{Files, Paths}
+
 import com.typesafe.config.Config
 import hubmodel.io.input.JSONReaders.ODGroup_JSON
 import hubmodel.parseConfigFile
@@ -9,7 +10,6 @@ import myscala.output.SeqTuplesExtensions.SeqTuplesWriter
 import play.api.libs.json.{JsError, JsSuccess, JsValue, Json}
 
 import scala.io.BufferedSource
-
 import scala.jdk.CollectionConverters._
 
 

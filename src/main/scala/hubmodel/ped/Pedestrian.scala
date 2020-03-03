@@ -1,12 +1,9 @@
 package hubmodel.ped
 
-import hubmodel.ped.History.{CoordinateTracking, CoordinateGroup, HistoryContainer}
-import hubmodel.ped.PedestrianTrajectory
-import hubmodel.{Position}
-import tools.Time
+import hubmodel.Position
+import hubmodel.ped.History.{CoordinateGroup, CoordinateTracking, HistoryContainer}
 import myscala.math.vector.ZeroVector2D
-
-import scala.collection.mutable
+import tools.Time
 
 /** Empirical pedestrian which extends [[hubmodel.ped.PedestrianTrajectory]] with some extra members.
   *

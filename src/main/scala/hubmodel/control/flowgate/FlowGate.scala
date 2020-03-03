@@ -1,12 +1,12 @@
 package hubmodel.control.flowgate
 
-import hubmodel.DES.{Action, NOMADGraphSimulator}
-import hubmodel.{P, Position, GATE_MAXIMUM_QUEUE_SIZE}
+import hubmodel.DES.{Action, NOMADGraphSimulator, PedestrianPrediction}
 import hubmodel.control.ControlDeviceComponent
 import hubmodel.ped.{PedestrianNOMAD, PedestrianSim}
 import hubmodel.supply.graph.MyEdgeWithGate
+import hubmodel.{GATE_MAXIMUM_QUEUE_SIZE, Position}
 import tools.Time
-import tools.cells.{Rectangle, Vertex}
+import tools.cells.Vertex
 import tools.exceptions.ControlDevicesException
 
 /** Extension of [[hubmodel.supply.graph.MyEdgeWithGate]] for the usage of "flow gates". The gates control the
@@ -90,7 +90,9 @@ class FlowGate(startVertex: Vertex, endVertex: Vertex, start: Position, end: Pos
 
     type A = ReleasePedestrian
 
-    override def deepCopy(simulator: NOMADGraphSimulator): Option[A] = { ???  }
+    type B = NOMADGraphSimulator
+
+override def deepCopy(simulator: PedestrianPrediction): Option[A] = { ???  }
 
   }
 
@@ -115,6 +117,8 @@ class FlowGate(startVertex: Vertex, endVertex: Vertex, start: Position, end: Pos
 
     type A = EnqueuePedestrian
 
-    override def deepCopy(simulator: NOMADGraphSimulator): Option[A] = { ???  }
+    type B = NOMADGraphSimulator
+
+override def deepCopy(simulator: PedestrianPrediction): Option[A] = { ???  }
   }
 }

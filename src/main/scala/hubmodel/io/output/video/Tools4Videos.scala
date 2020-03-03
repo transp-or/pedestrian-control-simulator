@@ -4,7 +4,7 @@ import java.awt.Graphics2D
 import java.awt.geom.Ellipse2D
 
 import hubmodel.Position
-import hubmodel.ped.History.{CoordinateTracking, HistoryContainer}
+import hubmodel.ped.History.HistoryContainer
 import tools.Time
 
 /**

@@ -1,8 +1,6 @@
 package hubmodel.route.Guo2011
 
-import hubmodel.DES.{Action, NOMADGraphSimulator, PedestrianDES}
-import hubmodel.ped.PedestrianNOMAD
-import hubmodel.P
+import hubmodel.DES.{Action, NOMADGraphSimulator, PedestrianDES, PedestrianPrediction}
 
 class UpdateRoutesGuo(sim: PedestrianDES) extends Action {
 
@@ -11,6 +9,8 @@ class UpdateRoutesGuo(sim: PedestrianDES) extends Action {
 
   type A = UpdateRoutesGuo
 
-  override def deepCopy(simulator: NOMADGraphSimulator): Option[A] = {???}
+  type B = NOMADGraphSimulator
+
+override def deepCopy(simulator: PedestrianPrediction): Option[A] = {???}
 
 }

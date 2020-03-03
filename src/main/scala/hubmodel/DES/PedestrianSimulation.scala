@@ -1,6 +1,5 @@
 package hubmodel.DES
 
-import hubmodel.P
 import hubmodel.control.ControlDevices
 import hubmodel.demand.PublicTransportSchedule
 import hubmodel.supply.continuous.ContinuousSpace
@@ -30,6 +29,9 @@ class PedestrianSimulation(st: Time,
                                                                                                   stop2Vertex,
                                                                                                   controlDevices,
                                                                                                   logFullPedestrianHistory) with IsMainSimulation {
+
+  override val simulationType: String = "main simulation"
+
 
   class StateEvaluation extends super.StateEval(this) with super.StateEvaluationActionDES
 

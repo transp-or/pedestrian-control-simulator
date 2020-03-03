@@ -3,16 +3,14 @@ import java.time.format.DateTimeFormatter
 import java.time.{LocalDateTime, LocalTime}
 
 import com.typesafe.config.Config
-import hubmodel.demand.transit.Vehicle
 import hubmodel.io.input.JSONReaders.PublicTransportScheduleReader
 import hubmodel.io.input.JSONReaders.TRANSFORM.{PedestrianCollectionReaderTF, PublicTransportScheduleReaderTF}
 import hubmodel.supply.{NodeID_New, StopID_New, TrainID_New}
-import tools.Time
-import tools.TimeNumeric.mkOrderingOps
-import tools.cells.Rectangle
 import play.api.libs.functional.syntax._
 import play.api.libs.json.Reads._
 import play.api.libs.json._
+import tools.Time
+import tools.TimeNumeric.mkOrderingOps
 
 import scala.io.BufferedSource
 import scala.jdk.CollectionConverters._

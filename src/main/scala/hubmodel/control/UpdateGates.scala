@@ -1,9 +1,7 @@
 package hubmodel.control
 
-import hubmodel.DES.{Action, NOMADGraphSimulator}
-import hubmodel.P
+import hubmodel.DES.{Action, NOMADGraphSimulator, PedestrianPrediction}
 import hubmodel.control.flowgate.{FlowGate, FlowGateFunctional}
-import hubmodel.ped.PedestrianNOMAD
 import tools.Time
 import tools.TimeNumeric.mkOrderingOps
 
@@ -70,7 +68,9 @@ class UpdateGates(sim: NOMADGraphSimulator) extends Action {
 
   type A = UpdateGates
 
-  override def deepCopy(simulator: NOMADGraphSimulator): Option[A] = {
+  type B = NOMADGraphSimulator
+
+override def deepCopy(simulator: PedestrianPrediction): Option[A] = {
     Some(new UpdateGates(simulator))
   }
 }

@@ -5,8 +5,8 @@ import java.awt.{Color, Font, Graphics2D}
 
 import hubmodel.Position
 import hubmodel.io.output._
-import tools.cells.{Rectangle, Vertex}
 import javax.imageio.ImageIO
+import tools.cells.Vertex
 
 class DrawGraph(edges: Vector[(Vertex, Vertex)],
                 filename: String = "",

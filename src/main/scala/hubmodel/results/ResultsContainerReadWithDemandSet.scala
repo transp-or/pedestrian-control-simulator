@@ -1,7 +1,5 @@
 package hubmodel.results
 
-import hubmodel.io.input.JSONReaders.PedestrianResults_JSON
-
 @deprecatedInheritance
 class ResultsContainerReadWithDemandSet(tt: Vector[(String, String, Double, Double, Double, Double)],
                                         monitoredAreaDensity: Option[(Vector[Double], Vector[Vector[Double]])],

@@ -1,10 +1,6 @@
 package hubmodel.DES
 
-import hubmodel.P
-import hubmodel.control.{EvaluateState, StateEvaluationAction, UpdateGates}
-import hubmodel.ped.PedestrianNOMAD
-import hubmodel.prediction.{DemandEstimateFromGroundTruth, RunPrediction}
-import tools.Time
+import hubmodel.control.{EvaluateState, UpdateGates}
 
 trait IsPrediction {
 
@@ -29,9 +25,7 @@ trait IsPrediction {
 
     type A = StateEval
 
-    override def deepCopy(simulator: PedestrianPrediction): Option[A] = {
-      Some(new StateEval(simulator))
-    }
+    override def deepCopy(simulator: PedestrianPrediction): Option[A] = None
   }
 
 }

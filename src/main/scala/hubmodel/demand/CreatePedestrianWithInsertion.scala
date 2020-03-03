@@ -1,10 +1,9 @@
 package hubmodel.demand
 
-import hubmodel.DES.{Action, NOMADGraphSimulator}
-import hubmodel.P
+import hubmodel.DES.{Action, NOMADGraphSimulator, PedestrianPrediction}
 import hubmodel.ped.PedestrianNOMAD
 import tools.Time
-import tools.cells.{Rectangle, Vertex}
+import tools.cells.Vertex
 
 import scala.reflect.ClassTag
 
@@ -51,5 +50,7 @@ class CreatePedestrianWithInsertion(o: Vertex, d: Vertex, sim: NOMADGraphSimulat
 
   type A = CreatePedestrianWithInsertion
 
-  override def deepCopy(simulator: NOMADGraphSimulator): Option[A] = Some(new CreatePedestrianWithInsertion(this.o, this.d, simulator, this.timeGenerator))
+  type B = NOMADGraphSimulator
+
+override def deepCopy(simulator: PedestrianPrediction): Option[A] = Some(new CreatePedestrianWithInsertion(this.o, this.d, simulator, this.timeGenerator))
 }

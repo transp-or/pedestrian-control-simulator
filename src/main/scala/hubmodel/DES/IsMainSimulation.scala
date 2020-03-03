@@ -1,8 +1,6 @@
 package hubmodel.DES
 
-import hubmodel.P
-import hubmodel.control.{EvaluateState, StateEvaluationAction, UpdateGates}
-import hubmodel.ped.PedestrianNOMAD
+import hubmodel.control.{EvaluateState, UpdateGates}
 import hubmodel.prediction.{DemandEstimateFromGroundTruth, RunPrediction, StatePrediction}
 import tools.Time
 
@@ -33,9 +31,8 @@ trait IsMainSimulation {
         processIncomingFlowsForFS()
       }
 
-      if (! this.sim.isPrediction) {
-        sim.insertEventWithZeroDelay(new RunPrediction(this.sim))
-      }
+      sim.insertEventWithZeroDelay(new RunPrediction(this.sim))
+
 
       val flows: Option[DemandEstimateFromGroundTruth] = sim.prediction.map(pred => {
         new DemandEstimateFromGroundTruth(
@@ -54,11 +51,7 @@ trait IsMainSimulation {
 
     type B = PedestrianSimulation
 
-    override def deepCopy(simulator: B): Option[A] = {
-
-      Some(new StateEval(simulator))
-
-    }
+    override def deepCopy(simulator: PedestrianPrediction): Option[A] = None
 
   }
 }

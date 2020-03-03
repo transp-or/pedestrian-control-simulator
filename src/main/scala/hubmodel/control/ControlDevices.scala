@@ -4,7 +4,6 @@ import hubmodel.control.amw.MovingWalkway
 import hubmodel.control.flowgate.{BinaryGate, FlowGate, FlowGateFunctional}
 import hubmodel.control.flowsep.{FlowSeparator, FlowSeparatorParameters}
 import hubmodel.ped.PedestrianNOMAD
-import hubmodel.supply.graph._
 import tools.Time
 import tools.cells.DensityMeasuredArea
 import tools.exceptions.IllegalSimulationInput

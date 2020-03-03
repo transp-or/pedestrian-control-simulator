@@ -1,7 +1,6 @@
 package hubmodel.prediction.measurement
 
-import hubmodel.DES.{Action, NOMADGraphSimulator}
-import hubmodel.P
+import hubmodel.DES.{Action, NOMADGraphSimulator, PedestrianPrediction}
 
 class GroundTruthStateCopy extends Action {
 
@@ -9,6 +8,8 @@ class GroundTruthStateCopy extends Action {
 
   type A = GroundTruthStateCopy
 
-  override def deepCopy(simulator: NOMADGraphSimulator): Option[A] = ???
+  type B = NOMADGraphSimulator
+
+override def deepCopy(simulator: PedestrianPrediction): Option[A] = ???
 
 }

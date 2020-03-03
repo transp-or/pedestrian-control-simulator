@@ -1,12 +1,10 @@
 package hubmodel
 
-import hubmodel.demand.PublicTransportSchedule
 import hubmodel.control.ControlDevices
-import hubmodel.supply.NodeParent
+import hubmodel.demand.PublicTransportSchedule
 import hubmodel.supply.continuous.ContinuousSpace
 import hubmodel.supply.graph.{GraphContainer, Stop2Vertex}
 import tools.Time
-import tools.cells.{Rectangle, Vertex}
 
 class SimulationParametersClass(val start: Time,
                                 val end: Time,

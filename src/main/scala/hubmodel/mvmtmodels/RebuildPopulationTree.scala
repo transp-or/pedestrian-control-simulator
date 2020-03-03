@@ -1,8 +1,6 @@
 package hubmodel.mvmtmodels
 
-import hubmodel.DES.{Action, NOMADGraphSimulator}
-import hubmodel.P
-import hubmodel.ped.PedestrianNOMAD
+import hubmodel.DES.{Action, NOMADGraphSimulator, PedestrianPrediction}
 
 /** Event which trigers the reconstruction from scratch of the m-tree which is used to find the neighbouring
   * pedestrians. The execute functions calls the method defined in the simulator which rebuilds the tree.
@@ -34,7 +32,9 @@ class RebuildPopulationTree(sim: NOMADGraphSimulator) extends Action {
 
   type A = RebuildPopulationTree
 
-  override def deepCopy(simulator: NOMADGraphSimulator): Option[A] = {
+  type B = NOMADGraphSimulator
+
+override def deepCopy(simulator: PedestrianPrediction): Option[A] = {
     Some(new RebuildPopulationTree(simulator))
   }
 

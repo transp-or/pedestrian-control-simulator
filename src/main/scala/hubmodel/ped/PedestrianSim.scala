@@ -3,10 +3,10 @@ package hubmodel.ped
 import java.util.concurrent.ThreadLocalRandom
 
 import hubmodel.ped.History.{CoordinateTracking, HistoryContainer, PositionIsolation}
-import tools.Time
-import tools.cells.{Rectangle, Vertex}
 import hubmodel.{Position, pedestrianWalkingSpeed, _}
 import myscala.math.vector.ZeroVector2D
+import tools.Time
+import tools.cells.Vertex
 
 
 /**

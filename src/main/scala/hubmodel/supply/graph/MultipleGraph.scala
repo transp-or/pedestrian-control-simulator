@@ -7,7 +7,7 @@ import hubmodel.control.amw.MovingWalkway
 import hubmodel.control.flowgate.{BinaryGate, FlowGate}
 import hubmodel.control.flowsep.FlowSeparator
 import hubmodel.ped.PedestrianNOMAD
-import tools.cells.{Rectangle, Vertex}
+import tools.cells.Vertex
 
 class MultipleGraph(fg: Iterable[FlowGate],
                     bg: Iterable[BinaryGate],

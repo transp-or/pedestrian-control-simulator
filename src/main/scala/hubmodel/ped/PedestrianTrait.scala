@@ -4,7 +4,7 @@ import hubmodel._
 import hubmodel.mvmtmodels.NOMAD.getClosestPoint
 import hubmodel.supply.continuous.Wall
 import tools.Time
-import tools.cells.{Rectangle, Vertex}
+import tools.cells.Vertex
 
 
 /**

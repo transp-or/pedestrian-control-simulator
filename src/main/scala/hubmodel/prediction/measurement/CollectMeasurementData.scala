@@ -1,9 +1,7 @@
 package hubmodel.prediction.measurement
 
-import hubmodel.DES.{Action, NOMADGraphSimulator}
-import hubmodel.P
-import hubmodel.control.{UpdateGates}
-import hubmodel.ped.PedestrianNOMAD
+import hubmodel.DES.{Action, NOMADGraphSimulator, PedestrianPrediction}
+import hubmodel.control.UpdateGates
 import kn.uni.voronoitreemap.datastructure.OpenList
 import kn.uni.voronoitreemap.diagram.PowerDiagram
 import kn.uni.voronoitreemap.j2d.{PolygonSimple, Site}
@@ -101,7 +99,9 @@ class CollectMeasurementData(sim: NOMADGraphSimulator) extends Action {
 
   type A = CollectMeasurementData
 
-  override def deepCopy(simulator: NOMADGraphSimulator): Option[A] = {
+  type B = NOMADGraphSimulator
+
+override def deepCopy(simulator: PedestrianPrediction): Option[A] = {
     Some(new CollectMeasurementData(simulator))
   }
 

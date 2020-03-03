@@ -2,8 +2,6 @@ package hubmodel.demand
 
 import java.util.concurrent.ThreadLocalRandom
 
-import hubmodel.ped.PedestrianNOMAD
-
 class PTInducedQueue() {
 
   private val _queue: collection.mutable.ArrayBuffer[CreatePedestrian] = collection.mutable.ArrayBuffer()

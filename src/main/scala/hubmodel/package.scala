@@ -4,22 +4,20 @@ import java.util.concurrent.ThreadLocalRandom
 
 import com.typesafe.config.{Config, ConfigFactory, ConfigValueFactory}
 import hubmodel.DES.{NOMADGraphSimulator, _}
+import hubmodel.control.ControlDevices
+import hubmodel.control.flowgate.BinaryGate
 import hubmodel.demand.{DemandData, PublicTransportSchedule}
 import hubmodel.io.output.image.{DrawControlDevicesAndWalls, DrawGraph, DrawWalls, DrawWallsAndGraph}
 import hubmodel.io.output.video.MovingPedestriansWithDensityWithWallVideo
-import hubmodel.control.ControlDevices
-import hubmodel.control.flowgate.BinaryGate
 import hubmodel.ped.History.HistoryContainer
 import hubmodel.ped.{PedestrianNOMAD, PedestrianSim, PedestrianTrait}
 import hubmodel.results.{ResultsContainerFromSimulation, collectResults, writeResults}
-import hubmodel.supply.NodeParent
 import hubmodel.supply.continuous.{ContinuousSpace, MovableWall}
 import hubmodel.supply.graph._
-import tools.Time
-import tools.cells.{Rectangle, Vertex}
 import myscala.math.vector.{Vector2D, Vector3D}
 import myscala.timeBlock
 import org.apache.commons.lang3.RandomStringUtils
+import tools.Time
 
 import scala.collection.immutable.NumericRange
 

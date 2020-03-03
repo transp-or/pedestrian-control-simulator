@@ -1,6 +1,5 @@
 package hubmodel.mvmtmodels.NOMAD
 
-import hubmodel.ped.PedestrianNOMAD
 import myscala.math.vector.Vector2D
 
 

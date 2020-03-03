@@ -5,17 +5,16 @@ import java.nio.file.{Files, Paths}
 
 import hubmodel.DES.NOMADGraphSimulator
 import hubmodel.io.input.JSONReaders.PedestrianResults_JSON
-import hubmodel.ped.{PedestrianNOMAD, PedestrianSim}
-import hubmodel.results.ResultsContainerReadNew
-import tools.cells.{Rectangle, Vertex}
+import hubmodel.ped.PedestrianSim
 import myscala.math.stats.{ComputeStats, Statistics}
 import myscala.output.SeqOfSeqExtensions.SeqOfSeqWriter
 import myscala.output.SeqTuplesExtensions.SeqTuplesWriter
 import play.api.libs.json.{JsError, JsSuccess, JsValue, Json}
+import tools.cells.Vertex
 
 import scala.io.BufferedSource
-import scala.util.{Failure, Success, Try}
 import scala.jdk.CollectionConverters._
+import scala.util.{Failure, Success, Try}
 
 package object results {
 

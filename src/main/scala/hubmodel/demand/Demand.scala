@@ -2,11 +2,8 @@ package hubmodel.demand
 
 import java.time.LocalTime
 
-import hubmodel.supply.{NodeIDOld, NodeID_New, NodeParent, ODIDOld, TrackIDOld, TrainID_New}
+import hubmodel.supply.{NodeIDOld, NodeID_New, NodeParent, TrackIDOld, TrainID_New}
 import tools.Time
-import play.api.libs.json.{JsError, JsSuccess, JsValue, Json}
-
-import scala.io.BufferedSource
 
 /* ----------------------------------------------------------------------------------
                                   TRACK TO NODE MAPPING
