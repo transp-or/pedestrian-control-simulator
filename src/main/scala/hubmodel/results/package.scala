@@ -29,7 +29,7 @@ package object results {
     * @param simulator simulator from which to extract the results
     * @return results from the simulation
     */
-  def collectResults[T <: PedestrianNOMAD](simulator: NOMADGraphSimulator[T]): ResultsContainerFromSimulation = {
+  def collectResults(simulator: NOMADGraphSimulator): ResultsContainerFromSimulation = {
     if (simulator.exitCode == 0) {
       ResultsContainerFromSimulation(
         simulator.exitCode,
@@ -50,7 +50,7 @@ package object results {
     * @param prefix    prefix to the file name
     * @param path      path where to write the file, default is empty
     */
-  def writeResults[T <: PedestrianNOMAD](simulator: NOMADGraphSimulator[T],
+  def writeResults(simulator: NOMADGraphSimulator,
                                          prefix: String = "",
                                          dir: String,
                                          writeTrajectoriesVS: Boolean = false,

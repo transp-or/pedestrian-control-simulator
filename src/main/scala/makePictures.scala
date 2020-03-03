@@ -51,7 +51,7 @@ object makePictures extends App {
 
       val tmpConfig: Config = ConfigFactory.load(ConfigFactory.parseFile(config.configFile))
 
-      val infraGraph = readGraph[PedestrianNOMAD](
+      val infraGraph = readGraph(
         tmpConfig.getString("files.graph"),
         tmpConfig.getBoolean("sim.use_flow_gates"),
         tmpConfig.getBoolean("sim.use_binary_gates"),

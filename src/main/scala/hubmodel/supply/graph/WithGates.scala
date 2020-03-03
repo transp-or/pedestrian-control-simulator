@@ -1,6 +1,6 @@
 package hubmodel.supply.graph
 
-import hubmodel.mgmt.flowgate.FlowGate
+import hubmodel.control.flowgate.FlowGate
 import hubmodel.ped.{PedestrianNOMAD, PedestrianSim}
 import tools.cells.isInVertex
 

@@ -8,8 +8,8 @@ import java.io.File
 import hubmodel.DES.PedestrianDES
 import hubmodel._
 import hubmodel.io.output.{createWhiteBackground, getBounds, mapCoordAffine, verticalMirrorTransformation}
-import hubmodel.mgmt.flowgate.BinaryGate
-import hubmodel.mgmt.flowsep.FlowSeparator
+import hubmodel.control.flowgate.BinaryGate
+import hubmodel.control.flowsep.FlowSeparator
 import hubmodel.ped.History.{CoordinateTracking, HistoryContainer, PositionIsolation}
 import hubmodel.ped.PedestrianTrajectory
 import hubmodel.supply.continuous.Wall

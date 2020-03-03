@@ -2,10 +2,10 @@ package hubmodel.supply.graph
 
 import java.util.concurrent.ThreadLocalRandom
 
-import hubmodel.mgmt.ControlDevices
-import hubmodel.mgmt.amw.MovingWalkway
-import hubmodel.mgmt.flowgate.{BinaryGate, FlowGate}
-import hubmodel.mgmt.flowsep.FlowSeparator
+import hubmodel.control.ControlDevices
+import hubmodel.control.amw.MovingWalkway
+import hubmodel.control.flowgate.{BinaryGate, FlowGate}
+import hubmodel.control.flowsep.FlowSeparator
 import hubmodel.ped.PedestrianNOMAD
 import tools.cells.{Rectangle, Vertex}
 

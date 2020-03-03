@@ -4,7 +4,7 @@ import hubmodel.DES.{Action, NOMADGraphSimulator}
 import hubmodel.P
 import hubmodel.ped.PedestrianNOMAD
 
-class UpdateClosestWall[T <: PedestrianNOMAD](sim: NOMADGraphSimulator[T]) extends Action {
+class UpdateClosestWall(sim: NOMADGraphSimulator) extends Action {
 
   /** Updates the list of closest walls for each pedestrian.
     *
@@ -21,10 +21,10 @@ class UpdateClosestWall[T <: PedestrianNOMAD](sim: NOMADGraphSimulator[T]) exten
     sim.insertEventWithDelay(sim.rebuildTreeInterval.get)(new UpdateClosestWall(sim))
   }
 
-  type A = UpdateClosestWall[P]
+  type A = UpdateClosestWall
 
-  override def deepCopy(simulator: NOMADGraphSimulator[P]): Option[A] = {
-    Some(new UpdateClosestWall[P](simulator))
+  override def deepCopy(simulator: NOMADGraphSimulator): Option[A] = {
+    Some(new UpdateClosestWall(simulator))
   }
 
 }

@@ -1,7 +1,7 @@
 package demandestimation
 
 import hubmodel.demand.PublicTransportSchedule
-import hubmodel.mgmt.Measurement
+import hubmodel.control.Measurement
 import hubmodel.supply.graph.GraphContainer
 import tools.Time
 

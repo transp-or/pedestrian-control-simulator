@@ -15,7 +15,7 @@ import scala.collection.GenIterable
 
 abstract class GridSearchNew[T <: ParameterModifications](val config: Config) extends GridSearch {
 
-  val defaultParameters: SimulatorParameters = createSimulation[PedestrianNOMAD](config).getSetupArguments
+  val defaultParameters: SimulatorParameters = createSimulation(config).getSetupArguments
 
   // checks if the output dir exists for writing the results
   val outputDir: Path = Paths.get(config.getString("output.dir"))
@@ -34,7 +34,7 @@ abstract class GridSearchNew[T <: ParameterModifications](val config: Config) ex
   def runSimulations(): Unit = {
     for (p <- simulationRunsParameters) {
       val parameters: SimulatorParameters = getParameters(p)
-      val sim = new NOMADGraphSimulator[PedestrianNOMAD](
+      val sim = new PedestrianSimulation(
         parameters._1,
         parameters._2,
         parameters._3,
@@ -69,7 +69,7 @@ abstract class GridSearchNew[T <: ParameterModifications](val config: Config) ex
 
       val disaggPopulation = getDisaggregateFlows(config)
 
-      insertDemandIntoSimulator[PedestrianNOMAD](sim, disaggPopulation, flows, timeTable)
+      insertDemandIntoSimulator(sim, disaggPopulation, flows, timeTable)
 
       runAndWriteResults(
         sim,

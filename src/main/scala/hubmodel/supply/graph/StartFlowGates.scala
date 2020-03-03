@@ -10,14 +10,14 @@ import hubmodel.ped.PedestrianNOMAD
   *
   * @param sim simulation environment
   */
-class StartFlowGates[T <: PedestrianNOMAD](sim: NOMADGraphSimulator[T]) extends Action {
+class StartFlowGates(sim: NOMADGraphSimulator) extends Action {
   override def execute(): Unit = {
     sim.eventLogger.trace("sim-time=" + sim.currentTime + ": started flow gates")
     sim.controlDevices.flowGates.foreach(fg => sim.insertEventWithZeroDelay(new fg.ReleasePedestrian(sim)))
   }
 
-  type A = StartFlowGates[P]
+  type A = StartFlowGates
 
-  override def deepCopy(simulator: NOMADGraphSimulator[P]): Option[A] = Some(new StartFlowGates[P](simulator))
+  override def deepCopy(simulator: NOMADGraphSimulator): Option[A] = Some(new StartFlowGates(simulator))
 
 }

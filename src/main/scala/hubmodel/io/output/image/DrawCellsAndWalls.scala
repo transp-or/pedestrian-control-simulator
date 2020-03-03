@@ -20,7 +20,7 @@ class DrawCellsAndWalls[T <: VertexPlotting](cells: Iterable[T], walls: Iterable
   )
 
   val wallImage = new DrawWalls(walls, mapFun = Some(mappingFunctions), imHeight = Some(IMAGE_HEIGHT))
-  val cellImage = new DrawCells[T](cells, mapFun = Some(mappingFunctions), imHeight = Some(IMAGE_HEIGHT))
+  val cellImage = new DrawCells(cells, mapFun = Some(mappingFunctions), imHeight = Some(IMAGE_HEIGHT))
 
   val image: BufferedImage = new BufferedImage(IMAGE_WIDTH, wallImage.imageHeight, BufferedImage.TYPE_4BYTE_ABGR)
   val verticalTransformation: Int => Int = verticalMirrorTransformation(image.getHeight)

@@ -4,14 +4,14 @@ public class ProcessDXFForHubModel {
 
 	public static void main(String[] args) {
 
-		String fileName = "den-haag/denhaag_w_network.dxf";
-		String wallLayerID = "walls-all";
+		String fileName = "three-platforms/three-platforms-two-corridors.dxf";
+		String wallLayerID = "walls";
 		String zoneLayerID = "zones";
-		String graphLayerID = "network";
+		String graphLayerID = "graph";
 		Double scalingFactor = 1.0 / 1000.0;
 
 		DXFReaderHubModel dxf = new DXFReaderHubModel(fileName, wallLayerID, zoneLayerID, graphLayerID);
-		dxf.writeWallsToFile("den-haag/walls-test.json", scalingFactor);
-		dxf.writeGraphToFile("den-haag/graph-test.json", scalingFactor);
+		dxf.writeWallsToFile("three-platforms/three-platforms-two-corridors-walls.json", scalingFactor);
+		dxf.writeGraphToFile("three-platforms/three-platforms-two-corridors-graph.json", scalingFactor);
 	}
 }

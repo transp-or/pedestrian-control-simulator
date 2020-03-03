@@ -5,8 +5,8 @@ import java.io.File
 import com.typesafe.config.Config
 import hubmodel.DES.{NOMADGraphSimulator, _}
 import hubmodel._
-import hubmodel.mgmt.flowgate.FlowGateFunctional
-import hubmodel.mgmt.{ControlDevices, Density, Flow, FunctionalFormGating}
+import hubmodel.control.flowgate.FlowGateFunctional
+import hubmodel.control.{ControlDevices, Density, Flow, FunctionalFormGating}
 import hubmodel.ped.PedestrianNOMAD
 import myscala.math.stats.ComputeStats
 import myscala.output.SeqTuplesExtensions.SeqTuplesWriter
@@ -20,7 +20,7 @@ class ParameterExploration(config: Config) extends GridSearch {
 
   def exploreFlowGateFunctionalFormLinear(constantBounds: (Double, Double, Int), linearBounds: (Double, Double, Int)): Unit = {
 
-    val defaultParameters = createSimulation[PedestrianNOMAD](config).getSetupArguments
+    val defaultParameters = createSimulation(config).getSetupArguments
 
     val constantRange: NumericRange[BigDecimal] = BigDecimal(constantBounds._1) to constantBounds._2 by (constantBounds._2 - constantBounds._1) / constantBounds._3
     val linearRange: NumericRange[BigDecimal] = {
@@ -65,7 +65,7 @@ class ParameterExploration(config: Config) extends GridSearch {
         defaultParameters._11.fixedFlowSeparators
       )
 
-      val sim = new NOMADGraphSimulator[PedestrianNOMAD](
+      val sim = new PedestrianSimulation(
         defaultParameters._1,
         defaultParameters._2,
         defaultParameters._3,

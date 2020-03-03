@@ -2,10 +2,10 @@ package hubmodel.supply
 
 import hubmodel.Position
 import hubmodel.io.input.JSONReaders.{Connectivity_JSON, InfraGraphParser, Track2NodeMapping_JSON}
-import hubmodel.mgmt._
-import hubmodel.mgmt.amw.MovingWalkway
-import hubmodel.mgmt.flowgate.{BinaryGate, FlowGate, FlowGateFunctional}
-import hubmodel.mgmt.flowsep._
+import hubmodel.control._
+import hubmodel.control.amw.MovingWalkway
+import hubmodel.control.flowgate.{BinaryGate, FlowGate, FlowGateFunctional}
+import hubmodel.control.flowsep._
 import hubmodel.ped.PedestrianNOMAD
 import tools.cells.{Circle, DensityMeasuredArea, Rectangle, RectangleModifiable, Vertex}
 import myscala.math.vector.Vector2D
@@ -25,14 +25,14 @@ package object graph {
     *
     * @param graphSpecificationFile JSON file containing the graph specification
     */
-  def readGraph[T <: PedestrianNOMAD](graphSpecificationFile: String,
+  def readGraph(graphSpecificationFile: String,
                                       useFlowGates: Boolean,
                                       useBinarygates: Boolean,
                                       useAMWs: Boolean,
                                       useFlowSep: Boolean,
                                       fixedFlowSep: Boolean,
                                       measureDensity: Boolean,
-                                      useAlternatGraphs: Boolean)(implicit tagT: ClassTag[T]): (GraphContainer, ControlDevices) = {
+                                      useAlternatGraphs: Boolean)(implicit tagT: ClassTag[PedestrianNOMAD]): (GraphContainer, ControlDevices) = {
 
 
     val source: BufferedSource = scala.io.Source.fromFile(graphSpecificationFile)
@@ -119,8 +119,9 @@ package object graph {
             val newConnections = m.overriden_connections.collect({ case c if vertexMapReader.contains(c.node) => c.conn.collect({ case neigh if vertexMapReader.contains(neigh) => new MyEdge(vertexMapReader(c.node), vertexMapReader(neigh)) }) }).flatten
 
             // create AMW
-            new MovingWalkway(m.name, startCircle, endCircle, m.width, start, end, oz_1, oz_2, oldZones, newConnections)
+            new MovingWalkway(m.name, startCircle, endCircle, m.width, start, end, oz_1, oz_2, oldZones, newConnections, m.parallel_flows.map(r => r.map(v => vertexMapReader(v))))
           })
+
         } else {
           Vector()
         }

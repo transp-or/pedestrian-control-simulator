@@ -17,7 +17,8 @@ import tools.cells.{Rectangle, Vertex}
 import scala.reflect.ClassTag
 
 /** Extension of [[Action]] which will insert a [[CreatePedestrian]] actions based on the non homogeneous arrival rate
-  * of pedestrians.
+  * of pedestrians. This action inserts only the next [[CreatePedestrianWithInsertion]] event. The insertion time
+  * generator is passed to the avent so it inserts the next one.
   *
   * @param o            origin node
   * @param d            destination node
@@ -26,12 +27,12 @@ import scala.reflect.ClassTag
   * @param rateFunction non homogenous function
   * @param sim          simulator
   */
-class PedestrianGenerationNonHomogeneousRate[T <: PedestrianNOMAD](o: Vertex, d: Vertex, start: Time, end: Time, rateFunction: Time => Double, sim: NOMADGraphSimulator[T])(implicit tag: ClassTag[T]) extends Action {
+class PedestrianGenerationNonHomogeneousRate(o: Vertex, d: Vertex, start: Time, end: Time, rateFunction: Time => Double, sim: NOMADGraphSimulator)(implicit tag: ClassTag[PedestrianNOMAD]) extends Action {
 
   /** Maximum rate of the pedestrian generation rate, computed by sampling */
   private val rateMax: Double = start.value.to(end.value).by(0.01).map(v => rateFunction(Time(v.toDouble))).max
 
-  private var previousGenerationTime: Time = Time(0)
+  //private var previousGenerationTime: Time = Time(0)
 
   def next(currentSimulationTime: Time): Option[Time] = {
     var interval: Time = Time(-math.log(ThreadLocalRandom.current.nextDouble(0.0, 1.0)) / rateMax)
@@ -58,13 +59,13 @@ class PedestrianGenerationNonHomogeneousRate[T <: PedestrianNOMAD](o: Vertex, d:
 
     // Samples all the times and then inserts [[CreatePedestrian]] events at those times.
     this.next(sim.currentTime) collect {
-      case t: Time => sim.insertEventAtAbsolute(start + t)(new CreatePedestrianWithInsertion[T](o, d, sim, this.next))
+      case t: Time => sim.insertEventAtAbsolute(start + t)(new CreatePedestrianWithInsertion(o, d, sim, this.next))
     }
   }
 
-  type A = PedestrianGenerationNonHomogeneousRate[P]
+  type A = PedestrianGenerationNonHomogeneousRate
 
-  override def deepCopy(simulator: NOMADGraphSimulator[P]): Option[A] = None
+  override def deepCopy(simulator: NOMADGraphSimulator): Option[A] = Some(new PedestrianGenerationNonHomogeneousRate(this.o, this.d, this.start, this.end, this.rateFunction, simulator))
 }
 
 

@@ -3,7 +3,7 @@ package tools.cells
 import java.util.concurrent.ThreadLocalRandom
 
 import hubmodel.Position
-import hubmodel.mgmt.ControlDeviceComponent
+import hubmodel.control.ControlDeviceComponent
 import tools.Time
 import myscala.math.vector.Vector2D
 

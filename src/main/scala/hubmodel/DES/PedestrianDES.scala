@@ -6,13 +6,13 @@ package hubmodel.DES
 
 import java.util.concurrent.ThreadLocalRandom
 
-import hubmodel.P
+import hubmodel.control.StateEvaluationAction
 import hubmodel.ped.PedestrianNOMAD
-import tools.Time
-import tools.TimeNumeric.mkOrderingOps
-import hubmodel.{Position, StrictLogging, distance}
+import hubmodel.{B, P, Position, StrictLogging, distance}
 import myscala.math.algo.MTree
 import myscala.math.vector.{Vector2D, norm}
+import tools.Time
+import tools.TimeNumeric.mkOrderingOps
 
 import scala.collection.immutable.HashMap
 import scala.util.Random
@@ -27,11 +27,10 @@ import scala.util.Random
   *
   * @param startTime start time of the simulation
   * @param finalTime end time of the simulation
-  * @tparam T Type of the pedestrian class to use in the simulation
   *
   */
-abstract class PedestrianDES[T <: P](val startTime: Time,
-                                                   val finalTime: Time) extends StrictLogging {
+abstract class PedestrianDES(val startTime: Time,
+                                     val finalTime: Time) extends StrictLogging {
 
   ///////////////////////////////////////////////////////////////////////////////////////////////////
   ////////////////////////////// General parameters /////////////////////////////////////////////////
@@ -46,6 +45,15 @@ abstract class PedestrianDES[T <: P](val startTime: Time,
 
   /** getter method for the current time */
   def currentTime: Time = _currentTime
+
+  /** container for keeping the prediction results */
+  /*private var _prediction: Option[StatePrediction] = None
+
+  def prediction: Option[StatePrediction] = this._prediction
+
+  def updatePrediction(statePrediction: StatePrediction): Unit = {this._prediction = Some(statePrediction)}
+
+  val isPrediction: Boolean*/
 
   ///////////////////////////////////////////////////////////////////////////////////////////////////
   ////////////////////////////// Logging ////////////////////////////////////////////////////////////
@@ -143,11 +151,12 @@ abstract class PedestrianDES[T <: P](val startTime: Time,
     if (startTime <= t && t < finalTime) eventList += new MyEvent(t, action)
   }
 
-  def cloneEventQueue(simulator: NOMADGraphSimulator[P]): collection.mutable.PriorityQueue[MyEvent] = {
 
-    collection.mutable.PriorityQueue.from(this.eventList.collect{
-      case e if e.action.deepCopy(simulator).isDefined => (new MyEvent(e.t, e.action.deepCopy(simulator).get))
-    })
+  def cloneEventQueue(simulator: PedestrianDES): Unit = {
+
+    this.eventList.collect {
+      case e if e.action.deepCopy(simulator.asInstanceOf[e.action.B]).isDefined => simulator.eventList.enqueue(new simulator.MyEvent(e.t, e.action.deepCopy(simulator.asInstanceOf[e.action.B]).get))
+    }
 
   }
 
@@ -157,32 +166,32 @@ abstract class PedestrianDES[T <: P](val startTime: Time,
 
 
   // New population structure using a map where keys are IDs. This makes the usage of a tree for searching neighbours easier
-  private val _populationNew: collection.mutable.Map[String, T] = collection.mutable.Map()
+  private val _populationNew: collection.mutable.Map[String, PedestrianNOMAD] = collection.mutable.Map()
 
   /**
     * Gets the collection of pedestrians inside the simulation
     *
     * @return
     */
-  def population: Iterable[T] = this._populationNew.values
+  def population: Iterable[PedestrianNOMAD] = this._populationNew.values
 
   // Immutable structure for storing the pedestrians who have left the system.
   // The only operation which is allowed is to append another population.
-  private var _populationCompleted: Vector[T] = Vector()
+  private var _populationCompleted: Vector[PedestrianNOMAD] = Vector()
 
   /**
     * Gets the collection of completed pedestrians.
     *
     * @return
     */
-  def populationCompleted: Vector[T] = synchronized(_populationCompleted)
+  def populationCompleted: Vector[PedestrianNOMAD] = synchronized(_populationCompleted)
 
   /**
     * Inserts a pedestrian into the simulation.
     *
     * @param p pedestrian to insert
     */
-  def insertInPopulation(p: T): Unit = {
+  def insertInPopulation(p: PedestrianNOMAD): Unit = {
     _populationNew += (p.ID -> p)
     this.populationMTree.insert(p.ID, p.currentPosition)
     this.ID2Position = this.ID2Position + (p.ID -> p.currentPosition)
@@ -193,8 +202,8 @@ abstract class PedestrianDES[T <: P](val startTime: Time,
     *
     * @param condition criteria for determining whether a pedestrian has reached his final destination
     */
-  def processCompletedPedestrian(condition: T => Boolean): Unit = {
-    val completedPeds: Map[String, T] = this._populationNew.filter(kv => condition(kv._2)).toMap
+  def processCompletedPedestrian(condition: PedestrianNOMAD => Boolean): Unit = {
+    val completedPeds: Map[String, PedestrianNOMAD] = this._populationNew.filter(kv => condition(kv._2)).toMap
     completedPeds.values.foreach(p => {
       p.updatePositionHistory(this.currentTime, scala.math.max(p.isolationTypePed, p.isolationTypeObs))
       p.reachedDestination = true
@@ -227,7 +236,7 @@ abstract class PedestrianDES[T <: P](val startTime: Time,
     * @param r  radius
     * @return collection of pedestrian whithin this range
     */
-  def findNeighbours(id: String, r: Double): Iterable[T] = {
+  def findNeighbours(id: String, r: Double): Iterable[PedestrianNOMAD] = {
     this.populationMTree.findInRange(id, this.ID2Position(id), r).filterNot(p => p == id || !this._populationNew.keySet.contains(p)).map(id => this._populationNew.getOrElse(id, throw new IndexOutOfBoundsException(id))).filterNot(_.reachedDestination)
   }
 
@@ -264,13 +273,21 @@ abstract class PedestrianDES[T <: P](val startTime: Time,
   ////////////////////////////// Initialization & termination of the simulation /////////////////////
   ///////////////////////////////////////////////////////////////////////////////////////////////////
 
+
+  trait StateEvaluationActionDES extends Action
+
+  def insertStateEvaluationStart(stateEval: StateEvaluationActionDES): Unit = {
+    this.insertEventWithZeroDelay(stateEval)
+  }
+
+
   /**
     * First event to be called by the run method from [[PedestrianDES]]
     * This event is simulation dependent, hence it must be overridden in the implementations of the DES.
     * In order to give access to the required data to each Action, the simulation itself is passed
     * as an argument. This makes it very general.
     */
-  abstract class GenericStartSim(sim: PedestrianDES[P]) extends Action
+  abstract class GenericStartSim(sim: PedestrianDES) extends Action
 
   /** Abstract run which must be overriden in implementation.
     * This will call the [[genericRun()]] method and pass the first start as an argument.
@@ -297,9 +314,8 @@ abstract class PedestrianDES[T <: P](val startTime: Time,
   def genericRun(startEvent: GenericStartSim): Unit = {
     this.logger.info("Starting simulation " + this.ID + " @" + this.currentTime)
 
-    insertEventWithDelay(new Time(0.0)) {
-      startEvent
-    }
+    insertEventWithZeroDelay{startEvent}
+
     while (this.eventList.nonEmpty && this._exitCode == -1) {
       val event = eventList.dequeue()
       this._currentTime = event.t

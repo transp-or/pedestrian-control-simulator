@@ -4,12 +4,12 @@ import hubmodel.DES.{Action, NOMADGraphSimulator}
 import hubmodel.P
 import hubmodel.ped.PedestrianNOMAD
 
-class Energize[T <: PedestrianNOMAD](sim: NOMADGraphSimulator[T]) extends Action {
+class Energize(sim: NOMADGraphSimulator) extends Action {
 
   override def execute(): Unit = ???
 
-  type A = Energize[P]
+  type A = Energize
 
-  override def deepCopy(simulator: NOMADGraphSimulator[P]): Option[A] = ???
+  override def deepCopy(simulator: NOMADGraphSimulator): Option[A] = ???
 
 }

@@ -1,15 +1,13 @@
 package hubmodel.DES
 
-import hubmodel.P
-import hubmodel.StrictLogging
-import hubmodel.ped.PedestrianNOMAD
+import hubmodel.{B, P, StrictLogging}
 
 /**
   * Parent to all actions which will appear in the DES.
   * The only method which is mandatory is "execute". To give more control over what data is passed to the events,
   * the Actions which inherent from [[Action]] should take as arguments the simulation.
   */
-abstract class Action extends StrictLogging {
+trait Action extends StrictLogging {
 
 
   /** Relative priority between different classes. The higher the value, the higher the priority. This means
@@ -26,14 +24,13 @@ abstract class Action extends StrictLogging {
 
   type A <: Action
 
-  //type P <: PedestrianNOMAD
-
+  type B <: PedestrianDES
 
   /** Creates a deep copy of this action. This is necessary when doing predictions with the ground truth simulator.
     *
     * @return this action copied
     */
-  def deepCopy(simulator: NOMADGraphSimulator[P]): Option[A]
+  def deepCopy(simulator: B): Option[A]
 
   override def toString: String = this.getClass.getSimpleName
 

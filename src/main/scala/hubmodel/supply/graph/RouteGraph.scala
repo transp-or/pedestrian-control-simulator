@@ -1,9 +1,9 @@
 package hubmodel.supply.graph
 
-import hubmodel.mgmt.ControlDevices
-import hubmodel.mgmt.amw.{IN, MovingWalkway, OUT}
-import hubmodel.mgmt.flowgate.{BinaryGate, FlowGate}
-import hubmodel.mgmt.flowsep.FlowSeparator
+import hubmodel.control.ControlDevices
+import hubmodel.control.amw.{IN, MovingWalkway, OUT}
+import hubmodel.control.flowgate.{BinaryGate, FlowGate}
+import hubmodel.control.flowsep.FlowSeparator
 import hubmodel.ped.PedestrianNOMAD
 import myscala.math.vector.ZeroVector2D
 import tools.cells.{Rectangle, Vertex}
@@ -38,7 +38,7 @@ class RouteGraph(protected val baseVertices: Iterable[Vertex],
                  val edges2Remove: Set[MyEdge] = Set(),
                  val destinationGroups: Iterable[(String, Vector[String])]) {
 
-  private val movingWalkwayVertices: Map[Vertex, (hubmodel.mgmt.amw.Direction,MovingWalkway)] = movingWalkways.flatMap(amw => Vector(amw.startVertex -> (IN, amw), amw.endVertex -> (OUT, amw))).toMap
+  private val movingWalkwayVertices: Map[Vertex, (hubmodel.control.amw.Direction,MovingWalkway)] = movingWalkways.flatMap(amw => Vector(amw.startVertex -> (IN, amw), amw.endVertex -> (OUT, amw))).toMap
 
   // Collection of all vertices in the network. This map can be used to get a vertex based on it's name.
   val vertexCollection: Map[String, Vertex] = this.baseVertices.map(v => v.name -> v).toMap ++
@@ -178,7 +178,7 @@ class RouteGraph(protected val baseVertices: Iterable[Vertex],
     }
     p.setCurrentDestination(p.nextZone.uniformSamplePointInside)
 
-    // update the base moving spped of pedestrian p if he is entering a or exiting a moving walkway
+    // update the base moving speed of pedestrian p if he is entering a or exiting a moving walkway
     movingWalkwayVertices.get(p.previousZone).collect {
       case amw if amw._1 == IN => p.baseVelocity = amw._2.movingSpeed
       case amw if amw._1 == OUT => p.baseVelocity = new ZeroVector2D

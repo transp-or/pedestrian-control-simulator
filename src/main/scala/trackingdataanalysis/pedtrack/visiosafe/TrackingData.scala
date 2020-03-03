@@ -10,7 +10,7 @@ package visiosafe {
    -----------------------------------------------------------------------------------*/
 
   final class FlowLineDA(val name: String, val line: (NewPosition2D, NewPosition2D), val inflowType: InflowType) extends
-    hubmodel.mgmt.flowsep.FlowLine(Vector2D(line._1._1, line._1._2), Vector2D(line._2._1, line._2._2), inflowType) {
+    hubmodel.control.flowsep.FlowLine(Vector2D(line._1._1, line._1._2), Vector2D(line._2._1, line._2._2), inflowType) {
 
     // 1 => from right to left
     // 0 => no side change

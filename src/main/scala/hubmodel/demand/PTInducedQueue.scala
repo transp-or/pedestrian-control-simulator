@@ -4,9 +4,9 @@ import java.util.concurrent.ThreadLocalRandom
 
 import hubmodel.ped.PedestrianNOMAD
 
-class PTInducedQueue[T <: PedestrianNOMAD]() {
+class PTInducedQueue() {
 
-  private val _queue: collection.mutable.ArrayBuffer[CreatePedestrian[T]] = collection.mutable.ArrayBuffer()
+  private val _queue: collection.mutable.ArrayBuffer[CreatePedestrian] = collection.mutable.ArrayBuffer()
 
   var rate: Double = 1.8 // ped/s for a width of 2.7m.
 
@@ -14,10 +14,10 @@ class PTInducedQueue[T <: PedestrianNOMAD]() {
 
   def nonEmpty: Boolean = this._queue.nonEmpty
 
-  def appendPeds(peds: Iterable[CreatePedestrian[T]]): Unit = {
+  def appendPeds(peds: Iterable[CreatePedestrian]): Unit = {
     this._queue.appendAll(peds)
   }
 
-  def samplePed: CreatePedestrian[T] = this._queue.remove(ThreadLocalRandom.current.nextInt(this._queue.size))
+  def samplePed: CreatePedestrian = this._queue.remove(ThreadLocalRandom.current.nextInt(this._queue.size))
 
 }

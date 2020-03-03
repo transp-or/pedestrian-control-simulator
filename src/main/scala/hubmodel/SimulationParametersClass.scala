@@ -1,7 +1,7 @@
 package hubmodel
 
 import hubmodel.demand.PublicTransportSchedule
-import hubmodel.mgmt.ControlDevices
+import hubmodel.control.ControlDevices
 import hubmodel.supply.NodeParent
 import hubmodel.supply.continuous.ContinuousSpace
 import hubmodel.supply.graph.{GraphContainer, Stop2Vertex}

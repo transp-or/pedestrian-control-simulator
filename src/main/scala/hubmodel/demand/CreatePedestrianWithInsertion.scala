@@ -11,7 +11,7 @@ import scala.reflect.ClassTag
 /**
   * Creates a pedestrian. A new pedestrian will be added when this event is executed.
   */
-class CreatePedestrianWithInsertion[T <: PedestrianNOMAD](o: Vertex, d: Vertex, sim: NOMADGraphSimulator[T], timeGenerator: Time => Option[Time])(implicit tag: ClassTag[T]) extends Action {
+class CreatePedestrianWithInsertion(o: Vertex, d: Vertex, sim: NOMADGraphSimulator, timeGenerator: Time => Option[Time])(implicit tag: ClassTag[PedestrianNOMAD]) extends Action {
 
   /**
     * Inserts a new pedestrian. The characteristics of this pedestrian are sampled on creation.
@@ -49,7 +49,7 @@ class CreatePedestrianWithInsertion[T <: PedestrianNOMAD](o: Vertex, d: Vertex, 
     }
   }
 
-  type A = CreatePedestrianWithInsertion[P]
+  type A = CreatePedestrianWithInsertion
 
-  override def deepCopy(simulator: NOMADGraphSimulator[P]): Option[A] = None
+  override def deepCopy(simulator: NOMADGraphSimulator): Option[A] = Some(new CreatePedestrianWithInsertion(this.o, this.d, simulator, this.timeGenerator))
 }

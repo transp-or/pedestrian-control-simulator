@@ -21,7 +21,7 @@ import scala.reflect.ClassTag
   * @param end          end time of the pedestrian creation
   * @param numberPeople number of people to create
   */
-class PedestrianGenerationTINF[T <: PedestrianNOMAD](o: Vertex, d: Vertex, isTransfer: Boolean, start: Time, numberPeople: Int, sim: NOMADGraphSimulator[T])(implicit tag: ClassTag[T]) extends Action {
+class PedestrianGenerationTINF(o: Vertex, d: Vertex, isTransfer: Boolean, start: Time, numberPeople: Int, sim: NOMADGraphSimulator)(implicit tag: ClassTag[PedestrianNOMAD]) extends Action {
 
   /** Poisson distribution
     *
@@ -45,7 +45,7 @@ class PedestrianGenerationTINF[T <: PedestrianNOMAD](o: Vertex, d: Vertex, isTra
     */
   override def execute(): Unit = {
     sim.eventLogger.trace("time=" + sim.currentTime + ": generating " + numberPeople + " pedestrians at " + start)
-    val tinfQueue: PTInducedQueue[T] = sim.PTInducedFlows.getOrElseUpdate(o, new PTInducedQueue)
+    val tinfQueue: PTInducedQueue = sim.PTInducedFlows.getOrElseUpdate(o, new PTInducedQueue)
     if (tinfQueue.isEmpty) {
       sim.insertEventWithDelay(new Time(-math.log(ThreadLocalRandom.current.nextDouble(0.0, 1.0) / sim.PTInducedFlows(o).rate))) {
         new ReleasePedPTInducedFlow(o, sim)
@@ -56,9 +56,9 @@ class PedestrianGenerationTINF[T <: PedestrianNOMAD](o: Vertex, d: Vertex, isTra
     })
   }
 
-  type A = PedestrianGenerationOverInterval[P]
+  type A = PedestrianGenerationOverInterval
 
-  override def deepCopy(simulator: NOMADGraphSimulator[P]): Option[A] = None
+  override def deepCopy(simulator: NOMADGraphSimulator): Option[A] = None
 }
 
 

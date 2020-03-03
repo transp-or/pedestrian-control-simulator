@@ -9,7 +9,7 @@ import hubmodel.ped.PedestrianNOMAD
   *
   * @param sim simulator passed as argument
   */
-class RebuildPopulationTree[T <: PedestrianNOMAD](sim: NOMADGraphSimulator[T]) extends Action {
+class RebuildPopulationTree(sim: NOMADGraphSimulator) extends Action {
 
   /** Triggers the execution of the m-tree by calling the [[NOMADGraphSimulator.rebuildMTree()]] method.
     *
@@ -32,10 +32,10 @@ class RebuildPopulationTree[T <: PedestrianNOMAD](sim: NOMADGraphSimulator[T]) e
   }
 
 
-  type A = RebuildPopulationTree[P]
+  type A = RebuildPopulationTree
 
-  override def deepCopy(simulator: NOMADGraphSimulator[P]): Option[A] = {
-    Some(new RebuildPopulationTree[P](simulator))
+  override def deepCopy(simulator: NOMADGraphSimulator): Option[A] = {
+    Some(new RebuildPopulationTree(simulator))
   }
 
 

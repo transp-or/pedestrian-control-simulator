@@ -7,8 +7,8 @@ import hubmodel.DES.{NOMADGraphSimulator, _}
 import hubmodel.demand.{DemandData, PublicTransportSchedule}
 import hubmodel.io.output.image.{DrawControlDevicesAndWalls, DrawGraph, DrawWalls, DrawWallsAndGraph}
 import hubmodel.io.output.video.MovingPedestriansWithDensityWithWallVideo
-import hubmodel.mgmt.ControlDevices
-import hubmodel.mgmt.flowgate.BinaryGate
+import hubmodel.control.ControlDevices
+import hubmodel.control.flowgate.BinaryGate
 import hubmodel.ped.History.HistoryContainer
 import hubmodel.ped.{PedestrianNOMAD, PedestrianSim, PedestrianTrait}
 import hubmodel.results.{ResultsContainerFromSimulation, collectResults, writeResults}
@@ -80,6 +80,9 @@ package object hubmodel {
   type Force = Vector2D
 
   type P = PedestrianNOMAD
+
+  type B <: PedestrianDES
+
 
   def distance(a: Vector2D, b: Vector2D): Double = scala.math.pow((b.X - a.X) * (b.X - a.X) + (b.Y - a.Y) * (b.Y - a.Y), 0.5)
 
@@ -229,7 +232,7 @@ package object hubmodel {
   def runSimulationWithVideo(config: Config, singleDemandSet: Option[DemandData] = None): Unit = {
 
     // create simulation
-    val sim = createSimulation[PedestrianNOMAD](config, singleDemandSet)
+    val sim = createSimulation(config, singleDemandSet)
 
     // Creates images representing the walls, route graph and both overlaid.
     new DrawWalls(sim.walls, config.getString("output.output_prefix") + "_wallsWithNames.png", showNames = true)
@@ -279,7 +282,7 @@ package object hubmodel {
     * @param simulator simulation to run
     * @return results collected from the simulation
     */
-  def runAndCollect[T <: PedestrianNOMAD](simulator: NOMADGraphSimulator[T]): ResultsContainerFromSimulation = {
+  def runAndCollect(simulator: NOMADGraphSimulator): ResultsContainerFromSimulation = {
     timeBlock(simulator.run())
     collectResults(simulator)
   }
@@ -293,9 +296,8 @@ package object hubmodel {
     * @param writeTrajectoriesVS   should the trajectories be written as VisioSafe format ?
     * @param writeTrajectoriesJSON should the trajectories be written as CSV format ?
     * @param writeTRANSFORMTT      should the outputs for TRANS-FORM be computed and written ?
-    * @tparam T pedestrian type used for the simulation
     */
-  def runAndWriteResults[T <: PedestrianNOMAD](simulator: NOMADGraphSimulator[T], prefix: String = "", dir: String, writeTrajectoriesVS: Boolean = false, writeTrajectoriesJSON: Boolean = false, writeTRANSFORMTT: Boolean = false): Unit = {
+  def runAndWriteResults(simulator: NOMADGraphSimulator, prefix: String = "", dir: String, writeTrajectoriesVS: Boolean = false, writeTrajectoriesJSON: Boolean = false, writeTRANSFORMTT: Boolean = false): Unit = {
     timeBlock(simulator.run())
     writeResults(simulator, prefix, dir, writeTrajectoriesVS, writeTrajectoriesJSON, writeTRANSFORMTT)
   }

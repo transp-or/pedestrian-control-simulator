@@ -8,7 +8,7 @@ import java.io.File
 import hubmodel.DES.PedestrianDES
 import hubmodel._
 import hubmodel.io.output.createBackgroundFromImage
-import hubmodel.mgmt.flowgate.BinaryGate
+import hubmodel.control.flowgate.BinaryGate
 import hubmodel.ped.History.HistoryContainer
 import hubmodel.ped.PedestrianSim
 import tools.Time

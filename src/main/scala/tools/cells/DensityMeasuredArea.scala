@@ -1,7 +1,7 @@
 package tools.cells
 
 import hubmodel.Position
-import hubmodel.mgmt.ControlDeviceComponent
+import hubmodel.control.ControlDeviceComponent
 import tools.Time
 
 class DensityMeasuredArea(name: String, A: Position, B: Position, C: Position, D: Position, val targetDensity: Double) extends Rectangle(name, A, B, C, D, false, Some(0)) with ControlDeviceComponent {

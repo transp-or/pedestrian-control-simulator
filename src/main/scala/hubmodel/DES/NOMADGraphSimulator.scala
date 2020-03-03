@@ -1,8 +1,8 @@
 package hubmodel.DES
 
 import hubmodel._
+import hubmodel.control.{ControlDevices, EvaluateState}
 import hubmodel.demand.{PTInducedQueue, PublicTransportSchedule}
-import hubmodel.mgmt.{ControlDevices, EvaluateState}
 import hubmodel.mvmtmodels.NOMAD.NOMADIntegrated
 import hubmodel.mvmtmodels.{RebuildPopulationTree, UpdateClosestWall}
 import hubmodel.ped.{PedestrianNOMAD, PedestrianSim}
@@ -11,25 +11,30 @@ import hubmodel.supply.NodeParent
 import hubmodel.supply.continuous.{ContinuousSpace, Wall}
 import hubmodel.supply.graph._
 import tools.Time
-import tools.cells.{DensityMeasuredArea, Rectangle, Vertex, isInVertex}
+import tools.cells.{DensityMeasuredArea, Vertex, isInVertex}
 
-class NOMADGraphSimulator[T <: P](st: Time,
-                                                et: Time,
-                                                val sf_dt: Time,
-                                                val route_dt: Time,
-                                                val evaluate_dt: Time,
-                                                val rebuildTreeInterval: Option[Time],
-                                                val spaceMicro: ContinuousSpace,
-                                                val graph: GraphContainer,
-                                                val timeTable: Option[PublicTransportSchedule],
-                                                val stop2Vertex: Stop2Vertex,
-                                                val controlDevices: ControlDevices,
-                                                val logFullPedestrianHistory: Boolean = false) extends PedestrianDES[PedestrianNOMAD](st, et) {
+abstract class NOMADGraphSimulator(st: Time,
+                                           et: Time,
+                                           val sf_dt: Time,
+                                           val route_dt: Time,
+                                           val evaluate_dt: Time,
+                                           val rebuildTreeInterval: Option[Time],
+                                           val spaceMicro: ContinuousSpace,
+                                           val graph: GraphContainer,
+                                           val timeTable: Option[PublicTransportSchedule],
+                                           val stop2Vertex: Stop2Vertex,
+                                           val controlDevices: ControlDevices,
+                                           val logFullPedestrianHistory: Boolean = false,
+                                           val isPrediction: Boolean = false) extends PedestrianDES(st, et) {
 
   // TODO: continue implementing this
   //val flowSeparators: Option[Vector[FlowSeparator[_, _]]] = controlDevices.flowSepParams.flatMap(fsp => )
 
-  def stop2Vertices: NodeParent => Iterable[Vertex] = mappingConceptualNode2GraphNodes(this.graph)(stop2Vertex.stop2Vertices, if (timeTable.isDefined){timeTable.get.timeTable} else {Map()})
+  def stop2Vertices: NodeParent => Iterable[Vertex] = mappingConceptualNode2GraphNodes(this.graph)(stop2Vertex.stop2Vertices, if (timeTable.isDefined) {
+    timeTable.get.timeTable
+  } else {
+    Map()
+  })
 
   /**
     * Access for the wall collection which is mostly contained in the SF infrastructrue file but some movable walls
@@ -97,13 +102,18 @@ class NOMADGraphSimulator[T <: P](st: Time,
     logger.info(" * using static flow separators")
   }
 
+  val useAMWs: Boolean = controlDevices.amws.nonEmpty
+  if (useFlowSep) {
+    logger.info(" * using accelerated moving walkways")
+  }
+
   // Zones where some KPI should be computed. They must be inititialized before they can be used.
   val criticalAreas: Map[String, DensityMeasuredArea] = controlDevices.monitoredAreas.map(zone => zone.name -> zone).toMap
   criticalAreas.values.foreach(_.initializeContainers(this.startTime))
 
   val gatesHistory: collection.mutable.ArrayBuffer[(Time, List[(String, Boolean)])] = collection.mutable.ArrayBuffer()
 
-  val PTInducedFlows: collection.mutable.Map[Vertex, PTInducedQueue[T]] = collection.mutable.Map()
+  val PTInducedFlows: collection.mutable.Map[Vertex, PTInducedQueue] = collection.mutable.Map()
 
   val ODZones: Iterable[Vertex] = this.graph.vertexMapNew.values.filter(_.isOD)
 
@@ -115,7 +125,7 @@ class NOMADGraphSimulator[T <: P](st: Time,
     *
     * @param sim simulation object
     */
-  class StartSim[U<: P](sim: NOMADGraphSimulator[U]) extends super.GenericStartSim(sim) {
+  class StartSim[U <: P](sim: NOMADGraphSimulator) extends super.GenericStartSim(sim) {
     override def execute(): Unit = {
 
       if (sim.useFlowGates) {
@@ -138,14 +148,21 @@ class NOMADGraphSimulator[T <: P](st: Time,
       // Inserts the movement model
       sim.insertEventWithZeroDelay(new NOMADIntegrated(sim))
 
-      // Makes the simulation keep track of the state of the system
-      if (sim.measureDensity || sim.useFlowSep || sim.useBinaryGates || sim.useFlowGates) sim.insertEventWithZeroDelay(new EvaluateState(sim))
+      // Makes the simulation keep track of the state of the system.
+      // THIS IS DONE BY THE SIMULATION AND PREDICITON CLASSED SINCE THE STATE EVALUATION IS DEPENDENT ON THE TYPE OF SIM
+      /*if (sim.measureDensity || sim.useFlowSep || sim.useBinaryGates || sim.useFlowGates || sim.useAMWs) {
+        sim.insertEventWithZeroDelay(new EvaluateState(sim))
+      }*/
 
       // Starts the flow gates
-      if (sim.useFlowGates) sim.insertEventWithZeroDelay(new StartFlowGates(sim))
+      if (sim.useFlowGates) {
+        sim.insertEventWithZeroDelay(new StartFlowGates(sim))
+      }
 
       // Uses the quad-tree for searching neighbours
-      if (sim.useTreeForNeighbourSearch) sim.insertEventWithDelay(new Time(0.0))(new RebuildPopulationTree(sim))
+      if (sim.useTreeForNeighbourSearch) {
+        sim.insertEventWithDelay(new Time(0.0))(new RebuildPopulationTree(sim))
+      }
 
       // start the reccurrent update of walls.
       sim.insertEventWithZeroDelay(new UpdateClosestWall(sim))
@@ -156,7 +173,7 @@ class NOMADGraphSimulator[T <: P](st: Time,
 
     type A = StartSim[P]
 
-    override def deepCopy(simulator: NOMADGraphSimulator[P]): Option[A] = {
+    override def deepCopy(simulator: NOMADGraphSimulator): Option[A] = {
       Some(new StartSim(simulator))
     }
   }
@@ -176,7 +193,7 @@ class NOMADGraphSimulator[T <: P](st: Time,
 
     type A = SafeGuard
 
-    override def deepCopy(simulator: NOMADGraphSimulator[P]): Option[A] = {
+    override def deepCopy(simulator: NOMADGraphSimulator): Option[A] = {
       Some(new SafeGuard)
     }
   }
@@ -184,7 +201,7 @@ class NOMADGraphSimulator[T <: P](st: Time,
   /**
     * Runs the simulation. This should be called after the processing events have been inserted.
     */
-  override def run(): Unit = super.genericRun(new StartSim(this))
+  override def run(): Unit = { super.genericRun(new StartSim(this)) }
 
 
   /**

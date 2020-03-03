@@ -15,13 +15,13 @@ import tools.cells.{Rectangle, Vertex}
 import scala.reflect.ClassTag
 
 /** Extension of [[Action]] which will insert a [[CreatePedestrian]] actions based on a Poisson distribution for
-  * the creation times.
+  * the creation times. This action inserts all [[CreatePedestrian]] events for this flow.
   *
   * @param start        time when pedestrians should start arriving
   * @param end          end time of the pedestrian creation
   * @param numberPeople number of people to create
   */
-class PedestrianGenerationOverInterval[T <: PedestrianNOMAD](o: Vertex, d: Vertex, start: Time, end: Time, numberPeople: Int, sim: NOMADGraphSimulator[T])(implicit tag: ClassTag[T]) extends Action {
+class PedestrianGenerationOverInterval(o: Vertex, d: Vertex, start: Time, end: Time, numberPeople: Int, sim: NOMADGraphSimulator)(implicit tag: ClassTag[PedestrianNOMAD]) extends Action {
 
   /** Poisson distribution
     *
@@ -50,10 +50,15 @@ class PedestrianGenerationOverInterval[T <: PedestrianNOMAD](o: Vertex, d: Verte
     })
   }
 
-  type A = PedestrianGenerationOverInterval[P]
+  type A = PedestrianGenerationOverInterval
 
-  override def deepCopy(simulator: NOMADGraphSimulator[P]): Option[A] = None
-  //override def toString: NodeIDOld = this.o + ", " + this.d + ", " + this.start + ", " + this.end + ", " + this.numberPeople
+  /** Returns [[None]] since this event has already inserted all events into the queue.
+    *
+    * @param simulator new simulator associated with this action
+    * @return this action copied
+    */
+  override def deepCopy(simulator: NOMADGraphSimulator): Option[A] = None
+
 }
 
 

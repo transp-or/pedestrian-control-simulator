@@ -14,9 +14,8 @@ import hubmodel.P
   *
   * @param o vertex from which to release a pedestrian
   * @param sim simulator
-  * @tparam T pedestrian type
   */
-class ReleasePedPTInducedFlow[T <: P](o: Vertex, sim: NOMADGraphSimulator[T]) extends Action {
+class ReleasePedPTInducedFlow(o: Vertex, sim: NOMADGraphSimulator) extends Action {
 
   /** executes the [[ReleasePedPTInducedFlow]] event by adding a pedestrian into the simulator and then
     * adds another [[ReleasePedPTInducedFlow]] event into the DES queue.
@@ -26,7 +25,7 @@ class ReleasePedPTInducedFlow[T <: P](o: Vertex, sim: NOMADGraphSimulator[T]) ex
     if (sim.PTInducedFlows(o).nonEmpty) {
 
       // creation event to execute
-      val pedGen: CreatePedestrian[T] = sim.PTInducedFlows(o).samplePed
+      val pedGen: CreatePedestrian = sim.PTInducedFlows(o).samplePed
       val pedID: String = pedGen.execute()
 
       // stores thes IDs of transferring pedestrians
@@ -39,7 +38,7 @@ class ReleasePedPTInducedFlow[T <: P](o: Vertex, sim: NOMADGraphSimulator[T]) ex
     }
   }
 
-   type A = ReleasePedPTInducedFlow[P]
+   type A = ReleasePedPTInducedFlow
 
-  override def deepCopy(simulator: NOMADGraphSimulator[P]): Option[A] = Some(new ReleasePedPTInducedFlow[P](this.o, simulator))
+  override def deepCopy(simulator: NOMADGraphSimulator): Option[A] = Some(new ReleasePedPTInducedFlow(this.o, simulator))
 }

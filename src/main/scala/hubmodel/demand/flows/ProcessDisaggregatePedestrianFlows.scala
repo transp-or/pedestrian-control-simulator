@@ -11,7 +11,7 @@ import tools.Time
 
 import scala.reflect.ClassTag
 
-class ProcessDisaggregatePedestrianFlows[T <: PedestrianNOMAD](eventCollection: Iterable[(String, String, Option[Time])], sim: NOMADGraphSimulator[T])(implicit tag: ClassTag[T]) extends Action {
+class ProcessDisaggregatePedestrianFlows(eventCollection: Iterable[(String, String, Option[Time])], sim: NOMADGraphSimulator)(implicit tag: ClassTag[PedestrianNOMAD]) extends Action {
 
   def execute(): Unit = {
     eventCollection
@@ -44,8 +44,8 @@ class ProcessDisaggregatePedestrianFlows[T <: PedestrianNOMAD](eventCollection: 
     })
   }
 
-  type A = ProcessDisaggregatePedestrianFlows[P]
+  type A = ProcessDisaggregatePedestrianFlows
 
-  override def deepCopy(simulator: NOMADGraphSimulator[P]): Option[A] = None // Some(new ProcessDisaggregatePedestrianFlows(this.eventCollection, simulator))
+  override def deepCopy(simulator: NOMADGraphSimulator): Option[A] = None // Some(new ProcessDisaggregatePedestrianFlows(this.eventCollection, simulator))
 
 }

@@ -12,12 +12,11 @@ import tools.Time
 
 import scala.reflect.ClassTag
 
-/** Insert the arrivals of all vehicle in the event list. The trains variables stored in the simulation is the
-  * variable which is used.
+/** Insert the events which wil process and insert the pedestrians into the simulator.
   *
   * @param sim simulator containing the data
   */
-class ProcessPedestrianFlows[T <: PedestrianNOMAD](pedestrianFlows: Iterable[PedestrianFlow_New], pedestrianFlowsFunction: Iterable[PedestrianFlowFunction_New], sim: NOMADGraphSimulator[T])(implicit tag: ClassTag[T]) extends Action {
+class ProcessPedestrianFlows(pedestrianFlows: Iterable[PedestrianFlow_New], pedestrianFlowsFunction: Iterable[PedestrianFlowFunction_New], sim: NOMADGraphSimulator)(implicit tag: ClassTag[PedestrianNOMAD]) extends Action {
 
   /**
     * Process the flows defined from zone to zone (not linked to PT). The flows are distributed between the
@@ -30,7 +29,7 @@ class ProcessPedestrianFlows[T <: PedestrianNOMAD](pedestrianFlows: Iterable[Ped
     pedestrianFlows
       .foreach(flow => splitFractionsUniform(sim.stop2Vertices(flow.O), sim.stop2Vertices(flow.D), flow.f)
         .foreach(f => {
-          sim.insertEventWithZeroDelay(new PedestrianGenerationOverInterval[T](
+          sim.insertEventWithZeroDelay(new PedestrianGenerationOverInterval(
             f._1,
             f._2,
             flow.start,
@@ -43,7 +42,7 @@ class ProcessPedestrianFlows[T <: PedestrianNOMAD](pedestrianFlows: Iterable[Ped
     // functional pedestrian flows
     pedestrianFlowsFunction
       .foreach(flow => splitFractionsUniform(sim.stop2Vertices(flow.O), sim.stop2Vertices(flow.D)).foreach(f => {
-        sim.insertEventAtAbsolute(flow.start)(new PedestrianGenerationNonHomogeneousRate[T](
+        sim.insertEventAtAbsolute(flow.start)(new PedestrianGenerationNonHomogeneousRate(
           f._1,
           f._2,
           flow.start,
@@ -61,9 +60,9 @@ class ProcessPedestrianFlows[T <: PedestrianNOMAD](pedestrianFlows: Iterable[Ped
     */
   override def toString: String = "ProcessPedestrianFlows"
 
-type A = ProcessPedestrianFlows[P]
+type A = ProcessPedestrianFlows
 
-  override def deepCopy(simulator: NOMADGraphSimulator[P]): Option[A] = Some(new ProcessPedestrianFlows(this.pedestrianFlows, this.pedestrianFlowsFunction, simulator))
+  override def deepCopy(simulator: NOMADGraphSimulator): Option[A] = Some(new ProcessPedestrianFlows(this.pedestrianFlows, this.pedestrianFlowsFunction, simulator))
 }
 
 

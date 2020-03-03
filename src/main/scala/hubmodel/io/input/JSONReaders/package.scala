@@ -238,11 +238,13 @@ package object JSONReaders {
     * @param overriden_zones_1
     * @param overriden_zones_2
     * @param overriden_connections
+    * @param parallel_flows
     */
   private[JSONReaders] case class MovingWalkways_JSON(name: String, x1: Double, y1:Double, x2:Double, y2:Double, width: Double,
                                                       overriden_zones_1: Vector[RectangleFixedOverride_JSON],
                                                       overriden_zones_2: Vector[RectangleFixedOverride_JSON],
-                                                      overriden_connections: Vector[Connectivity_JSON])
+                                                      overriden_connections: Vector[Connectivity_JSON],
+                                                      parallel_flows: Vector[Vector[String]])
 
   /**
     * Reads the JSON structure into a [[MovingWalkways_JSON]] object. No validation on arguments is done.
@@ -256,7 +258,8 @@ package object JSONReaders {
       (JsPath \ "width").read[Double] and
       (JsPath \ "overriden_zones_1").read[Vector[RectangleFixedOverride_JSON]] and
       (JsPath \ "overriden_zones_2").read[Vector[RectangleFixedOverride_JSON]] and
-      (JsPath \ "overriden_connections").read[Vector[Connectivity_JSON]]
+      (JsPath \ "overriden_connections").read[Vector[Connectivity_JSON]] and
+      (JsPath \ "parallel_flows").read[Vector[Vector[String]]]
     ) (MovingWalkways_JSON.apply _)
 
   /**

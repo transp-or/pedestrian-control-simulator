@@ -11,12 +11,12 @@ import hubmodel.supply.continuous.ReadContinuousSpace
 import hubmodel.supply.graph.{GraphContainer, Stop2Vertex, readGraph, readPTStop2GraphVertexMap}
 import hubmodel.supply.{NodeID_New, NodeParent, StopID_New, TrainID_New}
 import tools.Time
-import tools.cells.{Rectangle, Vertex}
+import tools.cells.Vertex
 
-import scala.reflect.ClassTag
 import scala.collection.parallel.CollectionConverters._
 import scala.collection.parallel.ForkJoinTaskSupport
 import scala.collection.parallel.immutable.ParVector
+import scala.reflect.ClassTag
 
 package object DES {
 
@@ -32,10 +32,10 @@ package object DES {
     // Creates the simulation
     val sim = demand match {
       case Some(_) => {
-        createSimulation[PedestrianNOMAD](config, demand)
+        createSimulation(config, demand)
       }
       case None => {
-        createSimulation[PedestrianNOMAD](config)
+        createSimulation(config)
       }
     }
 
@@ -82,7 +82,7 @@ package object DES {
     *
     * @return simulator ready to run
     */
-  def createSimulation[T <: PedestrianNOMAD](config: Config, demandSet: Option[DemandData] = None)(implicit tag: ClassTag[T]): NOMADGraphSimulator[T] = {
+  def createSimulation(config: Config, demandSet: Option[DemandData] = None)(implicit tag: ClassTag[PedestrianNOMAD]): NOMADGraphSimulator = {
 
 
     /*if ((timetable_TF.isEmpty && flows_TF.isDefined) || (timetable_TF.isDefined && flows_TF.isEmpty)) {
@@ -104,7 +104,7 @@ package object DES {
     val infraSF = new ReadContinuousSpace(config.getString("files.walls"))
 
     // Builds the graph used for route choice. This Graph is composed of multiple different link types.
-    val (routeGraph, controlDevices) = readGraph[T](
+    val (routeGraph, controlDevices) = readGraph(
       config.getString("files.graph"),
       config.getBoolean("sim.use_flow_gates"),
       config.getBoolean("sim.use_binary_gates"),
@@ -140,7 +140,7 @@ package object DES {
     val rebuildTreeInterval: Time = Time(config.getDouble("sim.rebuild_tree_dt"))
 
     // Creation of the simulator
-    val sim: NOMADGraphSimulator[T] = new NOMADGraphSimulator[T](
+    val sim: NOMADGraphSimulator = new PedestrianSimulation(
       simulationStartTime,
       simulationEndTime,
       sf_dt = socialForceInterval,
@@ -156,7 +156,7 @@ package object DES {
     )
 
     // Insertion of the demand (pedestrian flows and PT vechicles) into the simulator
-    insertDemandIntoSimulator[T](sim, disaggPopulation, flows, timeTable)
+    insertDemandIntoSimulator(sim, disaggPopulation, flows, timeTable)
 
     // returns the simulator
     sim
@@ -230,7 +230,8 @@ package object DES {
           Some(readSchedule(config.getString("files.timetable")))
         }
         case _ => {
-          println(" * no time table is required as PT induced flows are empty"); None
+          println(" * no time table is required as PT induced flows are empty");
+          None
         }
       }
     }
@@ -263,7 +264,8 @@ package object DES {
         readDisaggDemand(config.getString("files.disaggregate_demand"))
       }
       case _ => {
-        println(" * not using disaggregate pedestrian flows"); Vector()
+        println(" * not using disaggregate pedestrian flows");
+        Vector()
       }
     }
 
@@ -320,21 +322,20 @@ package object DES {
     * @param flows            aggregate pedestrian flows
     * @param timeTable        PT schedule
     * @param tag              Pedestrian type
-    * @tparam T Pedestrian type
     */
-  def insertDemandIntoSimulator[T <: PedestrianNOMAD](sim: NOMADGraphSimulator[T],
+  def insertDemandIntoSimulator(sim: NOMADGraphSimulator,
                                                       disaggPopulation: Iterable[(String, String, Option[Time])],
                                                       flows: (Iterable[PedestrianFlow_New], Iterable[PedestrianFlowPT_New], Iterable[PedestrianFlowFunction_New]),
-                                                      timeTable: Option[PublicTransportSchedule])(implicit tag: ClassTag[T]): Unit = {
+                                                      timeTable: Option[PublicTransportSchedule])(implicit tag: ClassTag[PedestrianNOMAD]): Unit = {
 
     // inserts disaggregate pedestrian flows.
     if (disaggPopulation.nonEmpty) {
       timeTable match {
         case Some(_) => {
-          sim.insertEventWithZeroDelay(new ProcessDisaggregatePedestrianFlows[T](disaggPopulation, sim))
+          sim.insertEventWithZeroDelay(new ProcessDisaggregatePedestrianFlows(disaggPopulation, sim))
         }
         case None => {
-          sim.insertEventWithZeroDelay(new ProcessDisaggregatePedestrianFlowsWithoutTimeTable[T](disaggPopulation, sim))
+          sim.insertEventWithZeroDelay(new ProcessDisaggregatePedestrianFlowsWithoutTimeTable(disaggPopulation, sim))
         }
       }
     }
@@ -342,12 +343,12 @@ package object DES {
 
     // Inserts PT vehicles and associated pedestrian flows.
     if (timeTable.isDefined && flows._2.nonEmpty) {
-      sim.insertEventWithZeroDelay(new ProcessTimeTable[T](timeTable.get, flows._2.toVector, sim))
+      sim.insertEventWithZeroDelay(new ProcessTimeTable(timeTable.get, flows._2.toVector, sim))
     }
 
     // Inserts aggregate pedestrian flows.
     if (flows._1.nonEmpty || flows._3.nonEmpty) {
-      sim.insertEventWithZeroDelay(new ProcessPedestrianFlows[T](flows._1, flows._3, sim))
+      sim.insertEventWithZeroDelay(new ProcessPedestrianFlows(flows._1, flows._3, sim))
     }
   }
 }

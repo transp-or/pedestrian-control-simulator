@@ -15,7 +15,7 @@ import scala.reflect.ClassTag
   *
   * @param sim simulator containing the data
   */
-class ProcessTimeTable[T <: PedestrianNOMAD](timeTable: PublicTransportSchedule, PTInducedFlows: Seq[PedestrianFlowPT_New], sim: NOMADGraphSimulator[T])(implicit tag: ClassTag[T]) extends Action {
+class ProcessTimeTable(timeTable: PublicTransportSchedule, PTInducedFlows: Seq[PedestrianFlowPT_New], sim: NOMADGraphSimulator)(implicit tag: ClassTag[PedestrianNOMAD]) extends Action {
 
   /**
     * Execution of the event.
@@ -29,9 +29,9 @@ class ProcessTimeTable[T <: PedestrianNOMAD](timeTable: PublicTransportSchedule,
       })
   }
 
-  type A = ProcessTimeTable[P]
+  type A = ProcessTimeTable
 
-  override def deepCopy(simulator: NOMADGraphSimulator[P]): Option[A] = None //Some(new ProcessTimeTable(timeTable, PTInducedFlows, simulator))
+  override def deepCopy(simulator: NOMADGraphSimulator): Option[A] = None //Some(new ProcessTimeTable(timeTable, PTInducedFlows, simulator))
 
   override def toString: String = "ProcessTimeTable"
 }

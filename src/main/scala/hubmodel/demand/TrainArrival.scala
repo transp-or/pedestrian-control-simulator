@@ -9,7 +9,7 @@ import tools.Time
 
 import scala.reflect.ClassTag
 
-class TrainArrival[T <: PedestrianNOMAD](train: Vehicle, tinf: Seq[PedestrianFlowPT_New], sim: NOMADGraphSimulator[T])(implicit tag: ClassTag[T]) extends Action {
+class TrainArrival(train: Vehicle, tinf: Seq[PedestrianFlowPT_New], sim: NOMADGraphSimulator)(implicit tag: ClassTag[PedestrianNOMAD]) extends Action {
 
   override def execute(): Unit = {
     sim.eventLogger.trace("time=" + sim.currentTime + ": train arrival")
@@ -31,8 +31,8 @@ class TrainArrival[T <: PedestrianNOMAD](train: Vehicle, tinf: Seq[PedestrianFlo
       })
   }
 
-  type A = TrainArrival[P]
+  type A = TrainArrival
 
-  override def deepCopy(simulator: NOMADGraphSimulator[P]): Option[A] = None //Some(new TrainArrival(this.train, ))
+  override def deepCopy(simulator: NOMADGraphSimulator): Option[A] = None //Some(new TrainArrival(this.train, ))
 
 }

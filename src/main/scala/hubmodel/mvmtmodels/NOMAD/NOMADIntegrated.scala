@@ -19,7 +19,7 @@ import myscala.math.vector.{Vector2D, ZeroVector2D}
 
 import scala.jdk.CollectionConverters._
 
-class NOMADIntegrated[T <: PedestrianNOMAD](sim: NOMADGraphSimulator[T]) extends Action {
+class NOMADIntegrated(sim: NOMADGraphSimulator) extends Action {
 
   // initialise the in range and in collision time schedule
   //val isolatedTimeStepMillis: Double = 1000.0 * sim.sf_dt.value // NomadModel.model.simTime.getTimeStep
@@ -253,6 +253,7 @@ class NOMADIntegrated[T <: PedestrianNOMAD](sim: NOMADGraphSimulator[T]) extends
 
       // updates the next destination if the current destination is reached
       if (sim.intermediateDestinationReached(ped)) {
+        ped.appendAccomplishedRoute(this.sim.currentTime, ped.nextZone)
         sim.updateIntermediateDestination(ped)
       }
     })
@@ -280,10 +281,10 @@ class NOMADIntegrated[T <: PedestrianNOMAD](sim: NOMADGraphSimulator[T]) extends
   }
 
 
-  type A = NOMADIntegrated[P]
+  type A = NOMADIntegrated
 
-  override def deepCopy(simulator: NOMADGraphSimulator[P]): Option[A] = {
-    Some(new NOMADIntegrated[P](simulator))
+  override def deepCopy(simulator: NOMADGraphSimulator): Option[A] = {
+    Some(new NOMADIntegrated(simulator))
   }
 
   def walkPedestrian(ped: PedestrianNOMAD, pedestrians: util.ArrayList[InfluenceAreaReturnPedDataNew], obstacles: util.ArrayList[InfluenceAreaReturnObsData], dt: Double): Unit = {
