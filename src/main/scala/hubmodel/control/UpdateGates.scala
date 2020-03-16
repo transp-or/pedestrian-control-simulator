@@ -61,7 +61,7 @@ class UpdateGates(sim: NOMADGraphSimulator) extends Action {
       // when execution of release pedestrian takes place, if flow rate is 0 then the event will never happen. Hence manually insert one to restart flow gates.
       if (fgGen.flowRate > 0.0) {
         //sim.errorLogger.error("release times at: " + sim.currentTime + ", rate=" + fgGen.flowRate + ", times=" + computeReleaseTimes(fgGen.flowRate, sim.evaluate_dt))
-        computeReleaseTimes(fgGen.flowRate, sim.evaluate_dt).foreach(t => sim.insertEventWithDelay(t)(new fgGen.ReleasePedestrian(sim)))
+        computeReleaseTimes(fgGen.flowRate, sim.stateEvaluationInterval).foreach(t => sim.insertEventWithDelay(t)(new fgGen.ReleasePedestrian(sim)))
       }
     })
   }

@@ -1,12 +1,10 @@
 package optimization.bruteforce
 
 import com.typesafe.config.Config
-import hubmodel.DES.getAggregateFlows
+import hubmodel.DES.{SimulationInputParameters, getAggregateFlows}
 import hubmodel._
 import hubmodel.demand.{PedestrianFlowFunction_New, PedestrianFlowPT_New, PedestrianFlow_New}
 import tools.Time
-
-
 
 import scala.collection.GenIterable
 import scala.collection.parallel.ForkJoinTaskSupport
@@ -56,10 +54,13 @@ class FlowVariation(flowInterval: Double, config: Config, lowerBoundFlow: Double
     )
   }
 
-  def getParameters(paramMods: ParameterModificationsFlow): SimulatorParameters = {
+  def getParameters(paramMods: ParameterModificationsFlow): SimulationInputParameters = {
 
-    val devices = defaultParameters._11.deepCopy
-    (
+    val devices = defaultParameters.controlDevices.deepCopy
+
+    defaultParameters.deepCopy(defaultParameters.graph.deepCopy2AlternateGraphs(devices, 0.05),devices)
+
+    /*new SimulationInputParameters(
       defaultParameters._1,
       defaultParameters._2,
       defaultParameters._3,
@@ -71,7 +72,7 @@ class FlowVariation(flowInterval: Double, config: Config, lowerBoundFlow: Double
       defaultParameters._9,
       defaultParameters._10,
       devices
-    )
+    )*/
   }
 
   /*

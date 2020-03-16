@@ -1,7 +1,7 @@
 package optimization.bruteforce
 
 import com.typesafe.config.Config
-import hubmodel.DES.getAggregateFlows
+import hubmodel.DES.{SimulationInputParameters, getAggregateFlows}
 import hubmodel.SimulatorParameters
 import hubmodel.demand.{PedestrianFlowFunction_New, PedestrianFlowPT_New, PedestrianFlow_New}
 
@@ -23,11 +23,12 @@ class ComplianceVariation(complianceInterval: Double, c: Config, upperBoundCompl
     }
   }
 
-  def getParameters(paramMods: ParameterModificationsCompliance): SimulatorParameters = {
+  def getParameters(paramMods: ParameterModificationsCompliance): SimulationInputParameters = {
 
-    val devices = defaultParameters._11.deepCopy
+    val devices = defaultParameters.controlDevices.deepCopy
 
-    (
+    defaultParameters.deepCopy(defaultParameters.graph.deepCopy2AlternateGraphs(devices, paramMods.complianceRate), devices)
+    /*new SimulationInputParameters(
       defaultParameters._1,
       defaultParameters._2,
       defaultParameters._3,
@@ -39,7 +40,7 @@ class ComplianceVariation(complianceInterval: Double, c: Config, upperBoundCompl
       defaultParameters._9,
       defaultParameters._10,
       devices
-    )
+    )*/
   }
 
   def getRunPrefix(paramMods: ParameterModificationsCompliance): String = {

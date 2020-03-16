@@ -19,9 +19,8 @@ trait IsPrediction {
         processIncomingFlowsForFS()
       }
 
-      this.sim.insertEventWithDelay(sim.evaluate_dt)(new StateEval(sim))
+      this.sim.insertEventWithDelay(sim.stateEvaluationInterval)(new StateEval(sim))
     }
-
 
     type A = StateEval
 

@@ -38,7 +38,6 @@ class TINF(parameters: DemandEstimationParameters, config: Config, network: Netw
     */
   def unloadingLinkCountEstimate(tint_dicts: Vector[Double], trainParameters: TrainParameters): Map[String, Vector[Double]] = {
 
-
     //println(trainParameters)
 
     // add one time interval to ned of intervals !

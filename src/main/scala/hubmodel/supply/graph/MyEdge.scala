@@ -17,14 +17,17 @@ class MyEdge(val startVertex: Vertex, val endVertex: Vertex) extends DefaultWeig
   // distance between vertices in straight line.
   val length: Double = (startVertex.center - endVertex.center).norm
 
-  // Cost of the edge
-  private var _cost: Double = length
+  // average walking speed
+  private val averageWalkingSpeed: Double = 1.34
+
+  // Cost of the edge in seconds (i.e. travel time)
+  private var _cost: Double = length / averageWalkingSpeed
 
   // accessor for the cost
   def cost: Double = _cost
 
   // setter for the cost.
-  def updateCost(v: Double): Unit = _cost = v
+  def updateCost(v: Double): Unit = {_cost = v}
 
 
   /** Checks whether another object equals this one

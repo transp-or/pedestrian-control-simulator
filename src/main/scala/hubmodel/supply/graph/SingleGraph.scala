@@ -18,6 +18,10 @@ class SingleGraph(private val baseVertices: Iterable[Vertex],
 
   private val graph = new RouteGraph(baseVertices, standardEdges, levelChanges, this.flowGates, this.binaryGates, this.movingWalkways, this.flowSeparators, destinationGroups = destinationGroups)
 
+  def updateGraphCosts(): Unit = {
+    this.graph.updateGraph()
+  }
+
   def edges: Set[MyEdge] = this.graph.edgeCollection
 
   def vertexMapNew: Map[String, Vertex] = this.graph.vertexCollection

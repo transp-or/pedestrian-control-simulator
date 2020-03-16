@@ -4,7 +4,7 @@ import hubmodel.generateUUID
 import org.jgrapht.graph.DefaultWeightedEdge
 import tools.cells.Vertex
 
-class MyRawEdge[T <: Vertex](val startVertex: T, val endVertex: T) extends DefaultWeightedEdge {
+class MyRawEdgeDEMANDESTIMATION[T <: Vertex](val startVertex: T, val endVertex: T) extends DefaultWeightedEdge {
 
 
   // ID of the edge
@@ -52,7 +52,7 @@ class MyRawEdge[T <: Vertex](val startVertex: T, val endVertex: T) extends Defau
 
   override def toString: String = this.ID
 
-  def deepCopy: MyRawEdge[T] = new MyRawEdge[T](
+  def deepCopy: MyRawEdgeDEMANDESTIMATION[T] = new MyRawEdgeDEMANDESTIMATION[T](
     this.startVertex, this.endVertex
   )
 

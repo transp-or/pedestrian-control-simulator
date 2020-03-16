@@ -33,7 +33,7 @@ package object DSA {
 
     println("--------------------- params for optim are: " + p0 + " and " + p1 + " and " + p2 + " and " + rho)
 
-    val defaultParameters: SimulationParametersClass = createSimulation(config).getSetupArgumentsNew
+    val defaultParameters: SimulationInputParameters = createSimulation(config).getSetupArgumentsNew
 
     val func = FunctionalFormGating((d: Density) => Flow(math.max(0.0, p0 + d.d * p1 + d.d * d.d * p2)))
 
@@ -59,7 +59,7 @@ package object DSA {
 
     println("--------------------- params for optim are: " + p0 + " and " + p1 + " and " + p2)
 
-    val defaultParameters: SimulationParametersClass = createSimulation(config).getSetupArgumentsNew
+    val defaultParameters: SimulationInputParameters = createSimulation(config).getSetupArgumentsNew
 
     val func = FunctionalFormGating((d: Density) => Flow(math.max(0.0, p0 + d.d * p1 + d.d * d.d * p2)))
 
@@ -84,7 +84,7 @@ package object DSA {
 
   def runFlowSepFunction(config: Config)(a: Double, b: Double, c: Double): (String, Map[String, Double]) = {
 
-    val defaultParameters: SimulationParametersClass = createSimulation(config).getSetupArgumentsNew
+    val defaultParameters: SimulationInputParameters = createSimulation(config).getSetupArgumentsNew
 
     val func = FunctionalFormFlowSeparator((bf: BidirectionalFlow) => SeparatorPositionFraction((a * math.pow(bf.f2, b)) * math.pow(bf.f1 + bf.f2, c)))
 
@@ -92,7 +92,7 @@ package object DSA {
   }
 
   def simulateWithCustomParameters[T <: Measurement, U <: Output](config: Config,
-                                                                  defaultParameters: SimulationParametersClass,
+                                                                  defaultParameters: SimulationInputParameters,
                                                                   func: ParameterModifications,
                                                                   nbrReplications: Option[Int] = None,
                                                                   simDir: Option[String]): (String, Map[String, Double]) = {
@@ -186,19 +186,9 @@ package object DSA {
             }
           }
 
+
           val sim = new PedestrianSimulation(
-            defaultParameters.start,
-            defaultParameters.end,
-            defaultParameters.mvmtUpdate,
-            defaultParameters.routeUpdate,
-            defaultParameters.evaluateFrequency,
-            defaultParameters.rebuildTreeInterval,
-            defaultParameters.microSpace,
-            defaultParameters.graph.deepCopy(newControlDevices),
-            defaultParameters.timeTable,
-            defaultParameters.stop2Vertex,
-            newControlDevices,
-            defaultParameters.writeTrajectoryData
+            defaultParameters.deepCopy(defaultParameters.graph.deepCopy(newControlDevices), newControlDevices)
           )
 
           val flows = getAggregateFlows(config)

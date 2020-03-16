@@ -23,7 +23,7 @@ class NOMADIntegrated(sim: NOMADGraphSimulator) extends Action {
 
   // initialise the in range and in collision time schedule
   //val isolatedTimeStepMillis: Double = 1000.0 * sim.sf_dt.value // NomadModel.model.simTime.getTimeStep
-  val isolatedTimeStepSeconds: Double = sim.sf_dt.value.toDouble //NomadModel.model.simTime.getTimeStepSeconds
+  val isolatedTimeStepSeconds: Double = sim.motionModelUpdateInterval.value.toDouble //NomadModel.model.simTime.getTimeStepSeconds
 
   //val rangeTimeStepMillis: Double = this.isolatedTimeStepMillis * 0.2 //NOMAD.defaults.IN_RANGE_FRACTION.round
   val rangeTimeStepSeconds: Double = isolatedTimeStepSeconds * 0.2 //isolatedTimeStepSeconds * 0.2 // SimulationTime.convertSimTime(this.rangeTimeStepMillis)
@@ -57,11 +57,11 @@ class NOMADIntegrated(sim: NOMADGraphSimulator) extends Action {
       // PedestrianType.getMaxExtentPed = 3.0 or 0.75
       // PedestrianType.getPedsMaxSpeed =~ 2(1.34+0.25) = 3.2
 
-      if (isolationInterval <= sim.sf_dt.value) {
+      if (isolationInterval <= sim.motionModelUpdateInterval.value) {
 
         isolationInterval = (closestDistance - 2.0 * 0.3) / (2 * 3.2)
         //val closestPed = pedInsideIsoltionDistance.minBy(that => (p.currentPosition - that.currentPosition).norm)
-        if (isolationInterval <= sim.sf_dt.value) {
+        if (isolationInterval <= sim.motionModelUpdateInterval.value) {
           p.isolationTimePed = currentTime.addDouble(3.0 - 2 * 0.3 / (2 * 3.2)).value.toDouble
           p.isolationTypePed = hubmodel.IN_COLLISION
         } else {
@@ -90,11 +90,11 @@ class NOMADIntegrated(sim: NOMADGraphSimulator) extends Action {
     var isolationInterval: Double = (minDistance - 3.0) / 3.2
 
     // if it is negative then check for in-range
-    if (isolationInterval <= sim.sf_dt.value) {
+    if (isolationInterval <= sim.motionModelUpdateInterval.value) {
       // calculate the in-range time
       isolationInterval = (minDistance - 0.3) / 3.2
 
-      if (isolationInterval <= sim.sf_dt.value) {
+      if (isolationInterval <= sim.motionModelUpdateInterval.value) {
         // if the in-range time step is smaller then the time step
         // then the pedestrian should be in collision.
         // Add an extra value to the calculate in collision interval
@@ -242,6 +242,9 @@ class NOMADIntegrated(sim: NOMADGraphSimulator) extends Action {
       })
     }
 
+    // process pedestrians who have reached their final destination
+    sim.processCompletedPedestrian(sim.finalDestinationReached)
+
     // One loop for all the tasks which must be applied to the pedestrians.
     sim.population.foreach(ped => {
 
@@ -258,7 +261,6 @@ class NOMADIntegrated(sim: NOMADGraphSimulator) extends Action {
       }
     })
 
-    sim.processCompletedPedestrian(sim.finalDestinationReached)
 
     //sim.population.filter(sim.intermediateDestinationReached).foreach(p => { sim.updateIntermediateDestination(p) })
 
@@ -305,7 +307,7 @@ override def deepCopy(simulator: PedestrianPrediction): Option[A] = {
             new Vector2D(ped.currentVelocity.X, ped.currentVelocity.Y),
             pedestrians
           )
-        } else {new ZeroVector2D}
+        } else { new ZeroVector2D}
       }
 
     /*infrastructure repulsion */
@@ -1008,72 +1010,7 @@ override def deepCopy(simulator: PedestrianPrediction): Option[A] = {
   }
 
   def pedestrianPhysical(kappa: Double, thisSpeed: Vector2D, k0: Double, pedDistanceData: InfluenceAreaReturnPedDataNew): Vector2D = {
-    /*
-           dx = PEDarr.x - UNIT0 ## PEDarr[pp].x				; verschil vector tussen de voetgangers (bruto)
-           rpq =  PEDarr.r + UNIT0 ## PEDarr[pp].r				; som van de stralen
-           dpq = (SQRT(TOTAL(dx * dx, 1)))						; bruto afstand voetganger p en q
-           spq = (dpq - rpq) > 0D0								; netto afstand voetganger p en q
 
-   ; Bepaal componenten van dx in longitudinale en laterale richting
-           dx_along_ep = TOTAL(dx * (UNIT0 ## ep[*,pp]),1)		; verschil vector langs ep (genormeerde snelheidsrichting)
-           dxn = (UNIT0 ## ep[*,pp]) * (UNIT2 # dx_along_ep)
-           dxt = (dx - dxn)
-
-   ; Bepaal of q voor of achter p zit
-           signpq = 1D0 * (dx_along_ep GT 0D0) - 1D0 * (dx_along_ep LE 0D0)
-
-   ; Bepaal de correcte waarde van cpq
-           cpq = cplus[pp] * (signpq GT 0D0) + cmin[pp] * (signpq LE 0D0)
-
-   ; Wijziging per 20/06/2001: toevoegen anisotropy e.d.
-   ; Bepaal per interacterende voetganger de cpq
-   ; JE HEBT HIER DUS AAN ZITTEN KLOTEN, DUS WEL EVEN TERUGZETTENS ALS JE KLAAR BENT!
-           dpq = SQRT(cpq * cpq * TOTAL(dxn * dxn,1) + TOTAL(dxt * dxt,1))
-           dy = ((UNIT2 # (cpq * cpq)) * dxn + dxt)
-
-   ; Bekijk de mogelijkheid alleen de voetgangers uit de directe omgeving mee te nemen
-           IsNear = (dpq LE 1.0)
-           IsNear[pp] = 0
-           inear = WHERE(IsNear)	; voetgangers binnen een straal van 5m
-
-           IF inear[0] NE -1 THEN BEGIN
-
-             NNEAR = N_ELEMENTS(inear)
-             UNIT = MAKE_ARRAY(NNEAR, /DOUBLE, VALUE = 1D0)
-             dx = dx[*,inear]								; Afstandsvector tussen voetgangers
-             dpq = dpq[inear]								; Absolute afstand
-             npq = dx / (UNIT2 # dpq)						; Genormeerde afstandsvector
-             dv = PEDarr[inear].v - UNIT ## PEDarr[pp].v		; Snelheidsverschil
-             rpq =  PEDarr[inear].r + UNIT ## PEDarr[pp].r	; Som cirkelstralen
-             tpq = [-npq[1,*], npq[0,*]]						; tangential direction
-             gpq = ((rpq - dpq) > 0d0)						; 0 indien afstand groter dan de straal, anders gelijk aan het argument
-             dvtpq = TOTAL(dv * tpq,1)						; Inproduct snelheidsverschil en tangential direction
-
-   ; Bepaal eerste de bijdragen van de normaalkrachten:
-             StimFar = Ai[pp] * (EXP(-(dpq - rpq) / Ri[pp]) < 1D0)
-             StimNear = ki[pp] * gpq
-
-   ; Het is het meest eenvoudig te veronderstellen dat de aantrekking tussen voetangers 'op afstand'
-   ; positief is (negatieve kosten) voor voetgangers die tot dezelfde groep behoren. Dit kun je
-   ; modelleren door een constante negatieve waarde toe te voegen!
-             StimAttract = - dAi[pp] * ((EXP(-(dpq - rpq) / R0i[pp]) < 1D0) - (EXP(-(dpq - rpq) / Ri[pp]) < 1D0))
-             IsGroup = (PEDarr[pp].groupID NE 0)
-             IsSameGroup = (PEDarr[inear].groupID EQ PEDarr[pp].groupID)
-             StimAttract = StimAttract * ((IsGroup * IsSameGroup))
-
-   ; Het totaal wordt dan:
-             Fnorm = - (UNIT2 # (StimFar + StimNear + StimAttract)) * npq
-
-   ; En vervolgens de bijdragen door de tangentiele (wrijvings) krachten:
-             Ftan = kappai[pp] * (UNIT2 # (gpq * dvtpq)) * tpq
-
-   ; Beide bijdragen in Ftot
-             Ftot = (Fnorm + Ftan)
-             IF nnear GT 1 THEN Ftot = TOTAL(Ftot, 2)
-             termII[*,pp] = Ftot
-
-
-        */
     // check if gpq is not zero
     val gpq = Math.max(pedDistanceData.gpq, 0.00001)
     // get the direction vector between the centres of the peds
@@ -1135,7 +1072,6 @@ override def deepCopy(simulator: PedestrianPrediction): Option[A] = {
         //double[] a0 = {2.62,1.96,1.66,2.20,3.52};
         //double[] r0 = {3.0,1.85,3.22,2.47,3.71};
 
-
         int index = Arrays.binarySearch(speeds, thisPedestrian.getSpeed().length());
         index =  Math.max(0,(-(index) - 1));*/
     //pedDistanceData.dx.scale(a0[index]*( - Math.exp( gpq /thisPedestrian.getR0())));// to be used with varying a0
@@ -1145,6 +1081,9 @@ override def deepCopy(simulator: PedestrianPrediction): Option[A] = {
     // add to the normal acceleration
     ////////////////acceleration.add(pedDistanceData.dx)
     // only calculate the lateral movement of the pedestrians in front
+
+    pedDistanceData.dx * a0 * (- math.exp(gpq/r0))
+
     if (pedDistanceData.front && pedDistanceData.vDir < 0) { //if (false){
       // ESTIMATE WHITHOUT THE VDIR RESTRICTION....
       // check the direction of the current ped
@@ -1165,7 +1104,7 @@ override def deepCopy(simulator: PedestrianPrediction): Option[A] = {
         //MARIO2 VERSION //pedDistanceData.dxt.scale(thisPedestrian.getA0()/6*( - Math.exp( dxt /(RV*12))));
         ///////acceleration.add(pedDistanceData.dxt)
 
-        pedDistanceData.dx*a0 * (-Math.exp(gpq / r0)) + pedDistanceData.dxt.normalized * (a1 * -Math.exp(dxt/r1))
+        pedDistanceData.dx*a0 * (-math.exp(gpq / r0)) + pedDistanceData.dxt.normalized * (a1 * -Math.exp(dxt/r1))
       }
       /*			else{
               // if the ped is walking the same direction
@@ -1176,7 +1115,7 @@ override def deepCopy(simulator: PedestrianPrediction): Option[A] = {
               // add to the normal acceleration
               acceleration.add(pedDistanceData.dxt);
             }*/
-    else {new ZeroVector2D}
+    else {pedDistanceData.dx * a0 * (- math.exp(gpq/r0))}
     /*		if (thisPedestrian.getPedId()==107){
           System.out.println("dx: " + pedDistanceData.dx);
           System.out.println("dxt: " + pedDistanceData.dxt);

@@ -252,7 +252,7 @@ package object hubmodel {
 
     if (config.getBoolean("output.write_trajectories_as_JSON")) {
       println("Writing trajectory data as JSON...")
-      writePopulationTrajectoriesJSON(sim.populationCompleted ++ sim.population, config.getString("output.output_prefix") + "_simulation_trajectories_" + sim.ID + ".json", (sim.startTime.value) to (sim.finalTime.value) by (sim.sf_dt.value))
+      writePopulationTrajectoriesJSON(sim.populationCompleted ++ sim.population, config.getString("output.output_prefix") + "_simulation_trajectories_" + sim.ID + ".json", (sim.startTime.value) to (sim.finalTime.value) by (sim.motionModelUpdateInterval.value))
     }
 
     println("Making video of simulation, this can take some time...")

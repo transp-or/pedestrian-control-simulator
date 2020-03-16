@@ -18,6 +18,8 @@ abstract class GraphContainer(protected val flowGates: Iterable[FlowGate],
 
   def processIntermediateArrival(ped: PedestrianNOMAD): Unit
 
+  def updateGraphCosts(): Unit
+
   type T <: GraphContainer
 
   /** Creates a deep copy of the graph to use elsewhere.

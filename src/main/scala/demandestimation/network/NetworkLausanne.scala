@@ -1,7 +1,7 @@
 package demandestimation.network
 
 import hubmodel.Position
-import hubmodel.supply.graph.MyRawEdge
+import hubmodel.supply.graph.MyRawEdgeDEMANDESTIMATION
 import tools.cells.{Point, Vertex}
 import tools.graph.Graph
 
@@ -728,10 +728,10 @@ class NetworkLausanne {
     ("56C","78C") -> 265
   )
 
-  val edgeCollection: ListMap[(Vertex, Vertex), MyRawEdge[Vertex]] = ListMap[(Vertex, Vertex), MyRawEdge[Vertex]]() ++
+  val edgeCollection: ListMap[(Vertex, Vertex), MyRawEdgeDEMANDESTIMATION[Vertex]] = ListMap[(Vertex, Vertex), MyRawEdgeDEMANDESTIMATION[Vertex]]() ++
     (edgesSym ++ edgesSym.map(e => ((e._1._2, e._1._1), e._2)) ++ edgesAsym)
       .map(e => {
-        (positions(e._1._1), positions(e._1._2)) -> new MyRawEdge(positions(e._1._1), positions(e._1._2), e._2)
+        (positions(e._1._1), positions(e._1._2)) -> new MyRawEdgeDEMANDESTIMATION(positions(e._1._1), positions(e._1._2), e._2)
       })
 
   val edgeIndices: ListMap[(Vertex, Vertex), Int] = ListMap[(Vertex, Vertex), Int]() ++ edgeCollection.keys.toVector.zipWithIndex

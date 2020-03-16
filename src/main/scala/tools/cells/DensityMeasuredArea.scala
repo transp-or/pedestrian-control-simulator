@@ -4,6 +4,15 @@ import hubmodel.Position
 import hubmodel.control.ControlDeviceComponent
 import tools.Time
 
+/** Area in which the pedestrian density is computed.
+  *
+  * @param name
+  * @param A
+  * @param B
+  * @param C
+  * @param D
+  * @param targetDensity
+  */
 class DensityMeasuredArea(name: String, A: Position, B: Position, C: Position, D: Position, val targetDensity: Double) extends Rectangle(name, A, B, C, D, false, Some(0)) with ControlDeviceComponent {
 
   // pedestrian density.

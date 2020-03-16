@@ -21,7 +21,8 @@ class RebuildPopulationTree(sim: NOMADGraphSimulator) extends Action {
     sim.rebuildMTree()
 
     sim.population.foreach(ped => {
-      ped.closePeds = sim.findNeighbours(ped.ID, sim.rebuildTreeInterval.get.value.toDouble * 8.0)
+      ped.setClosePeds(sim.findNeighbours(ped.ID, sim.rebuildTreeInterval.get.value.toDouble * 8.0))
+      //ped.closePeds = sim.population
       //  println("pause")
     })
 

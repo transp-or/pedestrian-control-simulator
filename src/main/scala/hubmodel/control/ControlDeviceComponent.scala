@@ -1,9 +1,12 @@
 package hubmodel.control
 
+import tools.Time
+
 /**
   * Parent of all control devices components and control devices themselves. This enforces the definition of a
   * deepCopy method which is required when running simulations in parallel or when doing optimization. Since a new
-  * simulation must be created from the previous one, this method makes this job easier.
+  * simulation must be created from the previous one, this method makes this job easier as this enforces the
+  * creation of the deep copy method.
   */
 trait ControlDeviceComponent {
 
@@ -13,5 +16,37 @@ trait ControlDeviceComponent {
     * @return deep copy of the current component
     */
   def deepCopy: ControlDeviceComponent
-
 }
+
+/** Parent to all control policies. This is used when the policy is fixed from outside the device itself. The main
+  * usage of this class is for the optimization procedure when the contro policy is computed by the optimization
+  * framework.
+  *
+  * @param start start of the control policy
+  */
+abstract class ControlDevicePolicy(val start: Time) {
+
+  /** human readable name of the policy.
+    *
+    * @return
+    */
+  def nameToString: String
+
+  /** Decision variable which is optimized
+    *
+    */
+  val decisionVariable: Double
+}
+
+/** Ordering by start time of the [[ControlDevicePolicy]] classes.
+  *
+  */
+object ControlDevicePolicy {
+
+  // Note that because `Ordering[A]` is not contravariant, the declaration
+  // must be type-parametrized in the event that you want the implicit
+  // ordering to apply to subclasses of `ControlDevicePolicy`.
+  implicit def orderingByStart[A <: ControlDevicePolicy]: Ordering[A] =
+    Ordering.by(e => e.start * -1.0)
+}
+

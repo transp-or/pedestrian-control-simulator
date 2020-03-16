@@ -1,6 +1,6 @@
 package hubmodel.control
 
-import hubmodel.DES.NOMADGraphSimulator
+import hubmodel.DES.{Action, NOMADGraphSimulator, PedestrianPrediction}
 import kn.uni.voronoitreemap.datastructure.OpenList
 import kn.uni.voronoitreemap.diagram.PowerDiagram
 import kn.uni.voronoitreemap.j2d.{PolygonSimple, Site}
@@ -67,13 +67,28 @@ abstract class EvaluateState(sim: NOMADGraphSimulator) {
   def processIncomingFlowsForFS(): Unit = {
     sim.controlDevices.flowSeparators.foreach(fs => {
       fs.updateWallTargetPosition(sim.currentTime)
-      if (!fs.movingWallEventIsInserted && fs.flowSeparatorNeedsToMove(sim.sf_dt)) {
+      if (!fs.movingWallEventIsInserted && fs.flowSeparatorNeedsToMove(sim.motionModelUpdateInterval)) {
         sim.insertEventWithZeroDelay(new fs.MoveFlowSeperator(sim))
       }
       fs.inflowLinesStart.foreach(_.reinitialize())
       fs.inflowLinesEnd.foreach(_.reinitialize())
     })
   }
+}
 
+class computePedestrianDensity(sim: NOMADGraphSimulator) extends EvaluateState(sim) with Action {
 
+  override def execute(): Any = {
+
+    sim.eventLogger.trace("sim-time=" + sim.currentTime + ": density computation")
+
+    computeDensityAtCurrentTime()
+
+    sim.insertEventWithDelay(sim.trackDensityInterval.get)(new computePedestrianDensity(this.sim))
+
+  }
+
+  type A = computePedestrianDensity
+
+  override def deepCopy(simulator: PedestrianPrediction): Option[A] = None
 }

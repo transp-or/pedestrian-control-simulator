@@ -139,21 +139,24 @@ package object DES {
     val evaluationInterval: Time = Time(config.getDouble("sim.evaluate_dt"))
     val rebuildTreeInterval: Time = Time(config.getDouble("sim.rebuild_tree_dt"))
 
-    // Creation of the simulator
-    val sim: NOMADGraphSimulator = new PedestrianSimulation(
+    val simulationParameters: SimulationInputParameters = new SimulationInputParameters(
       simulationStartTime,
       simulationEndTime,
-      sf_dt = socialForceInterval,
-      route_dt = routeUpdateInterval,
-      evaluate_dt = evaluationInterval,
-      rebuildTreeInterval = Some(rebuildTreeInterval),
-      spaceMicro = infraSF.continuousSpace.addWalls(controlDevices.amws.flatMap(_.walls)),
-      graph = routeGraph,
-      timeTable = timeTable,
-      stop2Vertex = stop2Vertex,
-      controlDevices = controlDevices,
-      config.getBoolean("output.write_trajectories_as_VS") || config.getBoolean("output.write_trajectories_as_JSON") || config.getBoolean("output.make_video")
+      socialForceInterval,
+      routeUpdateInterval,
+      infraSF.continuousSpace.addWalls(controlDevices.amws.flatMap(_.walls)),
+      routeGraph,
+      stop2Vertex,
+      controlDevices
     )
+
+    simulationParameters.rebuildTreeInterval = Some(rebuildTreeInterval)
+    simulationParameters.logFullPedestrianHistory = config.getBoolean("output.write_trajectories_as_VS") || config.getBoolean("output.write_trajectories_as_JSON") || config.getBoolean("output.make_video")
+    simulationParameters.timeTable = timeTable
+    simulationParameters.stateEvaluationInterval = Some(evaluationInterval)
+
+    // Creation of the simulator
+    val sim: NOMADGraphSimulator = new PedestrianSimulation(simulationParameters)
 
     // Insertion of the demand (pedestrian flows and PT vechicles) into the simulator
     insertDemandIntoSimulator(sim, disaggPopulation, flows, timeTable)

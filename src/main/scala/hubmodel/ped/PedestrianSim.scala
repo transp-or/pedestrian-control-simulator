@@ -100,7 +100,7 @@ class PedestrianSim(val origin: Vertex,
   var travelDistance: Double = 0.0
 
   /** exit time from the system */
-  var exitTime: Time = Time(0.0)
+  var exitTime: Time = Time(-1.0)
 
   /** is the pedestrian waiting in a zone */
   var isWaiting: Boolean = false

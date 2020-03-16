@@ -49,7 +49,32 @@
   ],
   "connectivity_level_change": [],
   "flow_gates": [],
-  "controlled_areas": [],
+  "controlled_areas": [
+    {
+      "name": "amw_start",
+      "x1": 6.0,
+      "y1": 1.0,
+      "x2": 8.9,
+      "y2": 1.0,
+      "x3": 8.9,
+      "y3": 3.5,
+      "x4": 6.0,
+      "y4": 3.5,
+      "target_density": 1.4
+    },
+    {
+      "name": "amw_end",
+      "x1": 6.0,
+      "y1": 31.0,
+      "x2": 8.9,
+      "y2": 31.0,
+      "x3": 8.9,
+      "y3": 34,
+      "x4": 6.0,
+      "y4": 34,
+      "target_density": 1.4
+    }
+  ],
   "binary_gates": [],
   "moving_walkways": [
     {
@@ -59,6 +84,8 @@
       "x2": 8.3,
       "y2": 31.5,
       "width": 1.2,
+      "start_area": "",
+      "end_area": "",
       "overriden_zones_1": [
         {
           "name": "b1",

@@ -27,6 +27,7 @@ object ExploreSensitivityFlows extends App {
   def variance(data: Seq[Double]): Double = data.stats._3
 
   val flowRatioSensitivity: FlowVariation = new FlowVariation(1.0 / 1.0, config, 1.0, 1.0)
+  
   flowRatioSensitivity.runSimulations()
 
   val results = flowRatioSensitivity.processWrittenResults(median)

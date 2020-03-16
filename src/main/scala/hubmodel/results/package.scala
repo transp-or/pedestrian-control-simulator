@@ -146,7 +146,7 @@ package object results {
 
     if (writeTrajectoriesJSON) {
       println("Writing Trajectories as JSON to file for viz")
-      writePopulationTrajectoriesJSON(simulator.populationCompleted ++ simulator.population, prefix + "_simulation_trajectories_" + simulator.ID + ".json", (simulator.startTime.value) to (simulator.finalTime.value) by (simulator.sf_dt.value))
+      writePopulationTrajectoriesJSON(simulator.populationCompleted ++ simulator.population, prefix + "_simulation_trajectories_" + simulator.ID + ".json", (simulator.startTime.value) to (simulator.finalTime.value) by (simulator.motionModelUpdateInterval.value))
       writeODJSON(simulator.populationCompleted ++ simulator.population, simulator.ODZones.map(_.name), prefix + "_ped_IDS_per_OD_" + simulator.ID + ".json")
     }
   }

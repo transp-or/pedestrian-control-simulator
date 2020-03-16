@@ -1,30 +1,41 @@
 package hubmodel.DES
 
 import hubmodel._
-import hubmodel.control.{ControlDevices, EvaluateState}
+import hubmodel.control.amw.AMWPolicy
+import hubmodel.control.{ControlDevices, EvaluateState, computePedestrianDensity}
 import hubmodel.demand.{PTInducedQueue, PublicTransportSchedule}
 import hubmodel.mvmtmodels.NOMAD.NOMADIntegrated
 import hubmodel.mvmtmodels.{RebuildPopulationTree, UpdateClosestWall}
 import hubmodel.ped.{PedestrianNOMAD, PedestrianSim}
-import hubmodel.route.UpdateRoutes
+import hubmodel.route.UpdatePedestrianRoutes
 import hubmodel.supply.NodeParent
 import hubmodel.supply.continuous.{ContinuousSpace, Wall}
 import hubmodel.supply.graph._
 import tools.Time
 import tools.cells.{DensityMeasuredArea, Vertex, isInVertex}
 
-abstract class NOMADGraphSimulator(st: Time,
-                                           et: Time,
-                                           val sf_dt: Time,
-                                           val route_dt: Time,
-                                           val evaluate_dt: Time,
-                                           val rebuildTreeInterval: Option[Time],
-                                           val spaceMicro: ContinuousSpace,
-                                           val graph: GraphContainer,
-                                           val timeTable: Option[PublicTransportSchedule],
-                                           val stop2Vertex: Stop2Vertex,
-                                           val controlDevices: ControlDevices,
-                                           val logFullPedestrianHistory: Boolean = false) extends PedestrianDES(st, et) {
+abstract class NOMADGraphSimulator(params: SimulationInputParameters) extends PedestrianDES(params.startTime, params.endTime) {
+
+  val motionModelUpdateInterval: Time = params.motionModelUpdateInterval
+  val updateRoutesInterval: Time = params.updateRoutesInterval
+  val stateEvaluationInterval: Time = params.stateEvaluationInterval.get
+  val graph: GraphContainer = params.graph
+  val timeTable: Option[PublicTransportSchedule] = params.timeTable
+  val spaceMicro: ContinuousSpace = params.spaceMicro
+  val controlDevices: ControlDevices = params.controlDevices
+  val logFullPedestrianHistory: Boolean = params.logFullPedestrianHistory
+  val stop2Vertex: Stop2Vertex = params.stop2Vertex
+  val rebuildTreeInterval: Option[Time] = params.rebuildTreeInterval
+  val trackDensityInterval: Option[Time] = params.trackDensityInterval
+
+  /*protected val inputParameters: SimulationInputParameters = {
+    new SimulationInputParameters(st, et, motionModelUpdateInterval, updateRoutesInterval, spaceMicro, graph, stop2Vertex, controlDevices)
+  }
+
+  this.inputParameters.logFullPedestrianHistory = Some(this.logFullPedestrianHistory)
+  this.inputParameters.timeTable = this.timeTable
+  this.inputParameters.rebuildTreeInterval = this.rebuildTreeInterval
+  this.inputParameters.stateEvaluationInterval = Some(this.stateEvaluationInterval)*/
 
   // TODO: continue implementing this
   //val flowSeparators: Option[Vector[FlowSeparator[_, _]]] = controlDevices.flowSepParams.flatMap(fsp => )
@@ -66,45 +77,31 @@ abstract class NOMADGraphSimulator(st: Time,
   /* checks if the pedestrian has reached is final destination */
   def finalDestinationReached: PedestrianSim => Boolean = p => isInVertex(p.finalDestination)(p.currentPosition)
 
-  logger.info("Simulator configuration:")
 
   /** Indicator wether the density should be measured */
   val measureDensity: Boolean = controlDevices.monitoredAreas.nonEmpty && controlDevices.amws.isEmpty && controlDevices.binaryGates.isEmpty && controlDevices.flowGates.isEmpty
-  if (measureDensity) {
-    logger.info(" * measuring density")
-  }
+
 
   /** Indicator whether flow gates are present */
   val useFlowGates: Boolean = controlDevices.flowGates.nonEmpty
-  if (useFlowGates) {
-    logger.info(" * using flow gates")
-  }
+
 
   /** Indicator whether binary gaets are present */
   val useBinaryGates: Boolean = controlDevices.binaryGates.nonEmpty
-  if (useBinaryGates) {
-    logger.info(" * using binary gates")
-  }
+
 
   /** Indicator whether an m-tree is used to perform neighbour search */
   val useTreeForNeighbourSearch: Boolean = rebuildTreeInterval.isDefined
-  if (useTreeForNeighbourSearch) {
-    logger.info(" * using m-tree for neighbour search")
-  }
+
 
 
   /** Indicator whether flow separators are used */
   val useFlowSep: Boolean = controlDevices.flowSeparators.nonEmpty
-  if (useFlowSep && !controlDevices.fixedFlowSeparators) {
-    logger.info(" * using dynamic flow separators")
-  } else {
-    logger.info(" * using static flow separators")
-  }
 
+
+  /** Indicator whether AMW are used */
   val useAMWs: Boolean = controlDevices.amws.nonEmpty
-  if (useFlowSep) {
-    logger.info(" * using accelerated moving walkways")
-  }
+
 
   // Zones where some KPI should be computed. They must be inititialized before they can be used.
   val criticalAreas: Map[String, DensityMeasuredArea] = controlDevices.monitoredAreas.map(zone => zone.name -> zone).toMap
@@ -125,27 +122,26 @@ abstract class NOMADGraphSimulator(st: Time,
     * @param sim simulation object
     */
   class StartSim[U <: P](sim: NOMADGraphSimulator) extends super.GenericStartSim(sim) {
+
     override def execute(): Unit = {
 
-      if (sim.useFlowGates) {
-        sim.logger.info(" * flow gates: " + sim.controlDevices.flowGates.map(_.toString).mkString("\n  * "))
-      }
-
-      if (sim.useFlowSep) {
-        sim.logger.info {
-          " * flow separators: " + sim.controlDevices.flowSeparators.map(_.toString).mkString("\n  * ")
-        }
-      }
-
-      //sim.logger.info("Starting simulation " + sim.ID + " @" + this.sim.currentTime)
-
-      sim.eventLogger.trace("sim-time=" + sim.currentTime + ": simulation started. dt=" + sim.sf_dt)
+      sim.eventLogger.trace("sim-time=" + sim.currentTime + ": simulation started. dt=" + sim.motionModelUpdateInterval)
 
       // Inserts the update routes events in the simulation
-      sim.insertEventWithZeroDelay(new UpdateRoutes(sim))
+      sim.insertEventWithZeroDelay(new UpdatePedestrianRoutes(sim))
 
       // Inserts the movement model
       sim.insertEventWithZeroDelay(new NOMADIntegrated(sim))
+
+      // Inserts the event which computes the pedestrian density at regular intervals.
+      trackDensityInterval.foreach(interval => sim.insertEventWithDelay(interval)(new computePedestrianDensity(sim)))
+
+      // Inserts the events for changing the AMW speeds.
+      sim.controlDevices.amws.filter(_.noControlPolicy).foreach(w => {
+        w.setControlPolicy(Vector(AMWPolicy(w.name, sim.startTime, sim.finalTime, w.speed)))
+        w.insertChangeSpeed(sim)
+      })
+
 
       // Makes the simulation keep track of the state of the system.
       // THIS IS DONE BY THE SIMULATION AND PREDICITON CLASSED SINCE THE STATE EVALUATION IS DEPENDENT ON THE TYPE OF SIM
@@ -167,14 +163,15 @@ abstract class NOMADGraphSimulator(st: Time,
       sim.insertEventWithZeroDelay(new UpdateClosestWall(sim))
 
       // Uses the safeguard on pedestrian queues
-      sim.insertEventWithZeroDelay(new SafeGuard())
+      //sim.insertEventWithZeroDelay(new SafeGuard())
+
     }
 
     type A = StartSim[P]
 
     type B = NOMADGraphSimulator
 
-override def deepCopy(simulator: PedestrianPrediction): Option[A] = {
+    override def deepCopy(simulator: PedestrianPrediction): Option[A] = {
       Some(new StartSim(simulator))
     }
   }
@@ -183,12 +180,16 @@ override def deepCopy(simulator: PedestrianPrediction): Option[A] = {
     * Class to interrupt the simulation if some criteria is met. The idea is to prevent simulations running for
     * ridiculous times if some unfeasible situation has occured.
     */
-  private class SafeGuard extends Action {
+  /*private class SafeGuard extends Action {
+
     override def execute(): Unit = {
+
+      eventLogger.trace("sim-time=" + currentTime + ": safe guard execution")
+
       if (useFlowGates && controlDevices.flowGates.exists(fg => fg.pedestrianQueue.size > 100)) {
         abort(1)
       } else {
-        insertEventWithDelay(Time(10))(new SafeGuard())
+        insertEventWithDelay(Time(30))(new SafeGuard())
       }
     }
 
@@ -196,61 +197,124 @@ override def deepCopy(simulator: PedestrianPrediction): Option[A] = {
 
     type B = NOMADGraphSimulator
 
-override def deepCopy(simulator: PedestrianPrediction): Option[A] = {
+    override def deepCopy(simulator: PedestrianPrediction): Option[A] = {
       Some(new SafeGuard)
     }
-  }
+  }*/
 
   /**
     * Runs the simulation. This should be called after the processing events have been inserted.
     */
-  override def run(): Unit = { super.genericRun(new StartSim(this)) }
-
-
-  /**
-    * Creates a string with the pedestrians who have exited the simulation as csv
-    */
-  @deprecated
-  def printPopulationCompleted(): Option[String] = {
-    if (this.populationCompleted.nonEmpty) Some(this.populationCompleted.tail.foldLeft(this.populationCompleted.head.toVisioSafeFormat()) { (s: String, p: PedestrianSim) => s + "\n" + p.toVisioSafeFormat() })
-    else None
+  override def run(): Unit = {
+    super.genericRun(new StartSim(this))
   }
+
+
+  def printSimulationInformation(): Unit = {
+    logger.info("Simulator configuration:")
+
+
+    if (measureDensity) {
+    logger.info(" * measuring density")
+  }
+
+    if (useFlowSep && !controlDevices.fixedFlowSeparators) {
+      logger.info(" * using dynamic flow separators")
+    } else {
+      logger.info(" * using static flow separators")
+    }
+
+    if (useTreeForNeighbourSearch) {
+      logger.info(" * using m-tree for neighbour search")
+    }
+
+    if (useFlowGates) {
+      logger.info(" * using flow gates")
+    }
+
+    if (useFlowSep) {
+      logger.info(" * using accelerated moving walkways")
+    }
+
+    if (useBinaryGates) {
+      logger.info(" * using binary gates")
+    }
+  }
+
 
   /**
     * Collects the parameters used for creating the simulation. The arguments are passed as a tuple.
     *
     * @return
     */
-  @deprecated
+  /*@deprecated
   def getSetupArguments: SimulatorParameters = (
     startTime,
     finalTime,
-    sf_dt,
-    route_dt,
-    evaluate_dt,
+    motionModelUpdateInterval,
+    updateRoutesInterval,
+    stateEvaluationInterval,
     rebuildTreeInterval,
     spaceMicro,
     graph,
     timeTable,
     this.stop2Vertex,
     controlDevices
-  )
+  )*/
 
-  def getSetupArgumentsNew: SimulationParametersClass = {
-    new SimulationParametersClass(
-      startTime,
-      finalTime,
-      sf_dt,
-      route_dt,
-      evaluate_dt,
-      rebuildTreeInterval,
-      spaceMicro,
-      graph,
-      timeTable,
-      this.stop2Vertex,
-      controlDevices,
-      logFullPedestrianHistory
-    )
+  def getSetupArgumentsNew: SimulationInputParameters = {
+    {
+      val inputParameters: SimulationInputParameters = {
+        new SimulationInputParameters(startTime, finalTime, motionModelUpdateInterval, updateRoutesInterval, spaceMicro, graph, stop2Vertex, controlDevices)
+      }
+
+      inputParameters.logFullPedestrianHistory = logFullPedestrianHistory
+      inputParameters.timeTable = timeTable
+      inputParameters.rebuildTreeInterval = rebuildTreeInterval
+      inputParameters.stateEvaluationInterval = Some(stateEvaluationInterval)
+      inputParameters
+    }
+  }
+
+  /** Constructor which uses the most important parameters separately.
+    *
+    * @param st
+    * @param et
+    * @param motionModelUpdateInterval
+    * @param updateRoutesInterval
+    * @param stateEvaluationInterval
+    * @param rebuildTreeInterval
+    * @param spaceMicro
+    * @param graph
+    * @param timeTable
+    * @param stop2Vertex
+    * @param controlDevices
+    * @param logFullPedestrianHistory
+    */
+  @deprecated
+  def this(st: Time,
+           et: Time,
+           motionModelUpdateInterval: Time,
+           updateRoutesInterval: Time,
+           stateEvaluationInterval: Time,
+           rebuildTreeInterval: Option[Time],
+           spaceMicro: ContinuousSpace,
+           graph: GraphContainer,
+           timeTable: Option[PublicTransportSchedule],
+           stop2Vertex: Stop2Vertex,
+           controlDevices: ControlDevices,
+           logFullPedestrianHistory: Boolean = false) = {
+    this({
+      val inputParameters: SimulationInputParameters = {
+        new SimulationInputParameters(st, et, motionModelUpdateInterval, updateRoutesInterval, spaceMicro, graph, stop2Vertex, controlDevices)
+      }
+
+      inputParameters.logFullPedestrianHistory = logFullPedestrianHistory
+      inputParameters.timeTable = timeTable
+      inputParameters.rebuildTreeInterval = rebuildTreeInterval
+      inputParameters.stateEvaluationInterval = Some(stateEvaluationInterval)
+      inputParameters
+    })
   }
 
 }

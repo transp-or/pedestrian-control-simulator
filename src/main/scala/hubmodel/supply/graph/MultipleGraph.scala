@@ -22,6 +22,10 @@ class MultipleGraph(fg: Iterable[FlowGate],
   // Collection of graphs to choose from
   private val _graphCollection: collection.mutable.Map[String, AlternativeGraph] = collection.mutable.Map()
 
+  def updateGraphCosts(): Unit = {
+    this._graphCollection.foreach(_._2._2.updateGraph())
+  }
+
   def getGraphs: Map[String, AlternativeGraph] = this._graphCollection.toMap
 
   // Accessor to the graph collection

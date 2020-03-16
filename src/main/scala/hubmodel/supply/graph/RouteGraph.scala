@@ -37,7 +37,7 @@ class RouteGraph(protected val baseVertices: Iterable[Vertex],
                  val edges2Remove: Set[MyEdge] = Set(),
                  val destinationGroups: Iterable[(String, Vector[String])]) {
 
-  private val movingWalkwayVertices: Map[Vertex, (hubmodel.control.amw.Direction,MovingWalkway)] = movingWalkways.flatMap(amw => Vector(amw.startVertex -> (IN, amw), amw.endVertex -> (OUT, amw))).toMap
+  private val movingWalkwayVertices: Vector[Vertex] = movingWalkways.flatMap(w => Vector(w.startVertex, w.endVertex)).toVector
 
   // Collection of all vertices in the network. This map can be used to get a vertex based on it's name.
   val vertexCollection: Map[String, Vertex] = this.baseVertices.map(v => v.name -> v).toMap ++
@@ -70,7 +70,7 @@ class RouteGraph(protected val baseVertices: Iterable[Vertex],
     ) ++ flowSeparators.flatMap(_.associatedConnectivity)) ++ edges2Add) -- edges2Remove*/
 
 
-  val edgeCollection: Set[MyEdge] = (((standardEdges ++ flowGates ++ binaryGates ++ movingWalkways ++ levelChanges).toSet
+  val edgeCollection: Set[MyEdge] = (((standardEdges ++ flowGates ++ binaryGates ++ movingWalkways.flatMap(_.graphEdges) ++ levelChanges).toSet
     .filterNot(e =>
       flowSeparators.flatMap(fs => fs.overridenZones).toVector.contains(e.startVertex.name)
         || flowSeparators.flatMap(fs => fs.overridenZones).toVector.contains(e.endVertex.name)
@@ -85,7 +85,7 @@ class RouteGraph(protected val baseVertices: Iterable[Vertex],
     network.addEdge(e.startVertex, e.endVertex, e)
     e match {
       case lv: MyEdgeLevelChange => { network.setEdgeWeight(lv, 0.0) }
-      case a: MovingWalkway => {network.setEdgeWeight(a, a.length / (1.34 + a.speed))}
+      case a: MovingWalkway => {a.graphEdges.foreach(e => network.setEdgeWeight(e, e.cost))}
       case _ => { network.setEdgeWeight(e, e.length / 1.34) }
     }
   })
@@ -103,8 +103,9 @@ class RouteGraph(protected val baseVertices: Iterable[Vertex],
     * Updates the cost of each edge in the graph based on the cost of the edges stored in the "edges" variable.
     * This method updates the cost of the edges before actually updating the graph object itslef.
     */
-  private def updateGraph(): Unit = {
-    this.edgeCollection.foreach(_.updateCost(1.0))
+  def updateGraph(): Unit = {
+    //this.edgeCollection.foreach(e => e.updateCost(e.length))
+    //this.edgeCollection.foreach(e => println(e.startVertex, e.endVertex, e.cost))
     this.edgeCollection.foreach(e => network.setEdgeWeight(e, e.cost))
     this.shortestPathBuilder = new DijkstraShortestPath[Vertex, MyEdge](network)
     this.multipleShortestPathsBuilder = new KShortestPaths[Vertex, MyEdge](network, 5)
@@ -177,11 +178,18 @@ class RouteGraph(protected val baseVertices: Iterable[Vertex],
     }
     p.setCurrentDestination(p.nextZone.uniformSamplePointInside)
 
+    this.edgeCollection
+      .find(e => e.startVertex == p.accomplishedRoute.last._2 &&  e.endVertex == p.accomplishedRoute.dropRight(1).last._2)
+      .get.updateCost((p.accomplishedRoute.last._1 - p.accomplishedRoute.dropRight(1).last._1).value.toDouble)
+
     // update the base moving speed of pedestrian p if he is entering a or exiting a moving walkway
-    movingWalkwayVertices.get(p.previousZone).collect {
-      case amw if amw._1 == IN => p.baseVelocity = amw._2.movingSpeed
-      case amw if amw._1 == OUT => p.baseVelocity = new ZeroVector2D
-    }
+    val nextZoneIsAMW = movingWalkways.find(w => (w.startVertex == p.previousZone && w.endVertex == p.nextZone) || (w.endVertex == p.previousZone && w.startVertex == p.nextZone))
+    val leavingAMW = movingWalkways.find(w => (w.endVertex == p.previousZone && w.startVertex != p.nextZone) || (w.startVertex == p.previousZone && w.endVertex != p.nextZone))
+
+    if (nextZoneIsAMW.isDefined && leavingAMW.isEmpty) {p.baseVelocity = nextZoneIsAMW.get.movingSpeed}
+    else if (nextZoneIsAMW.isEmpty && leavingAMW.isDefined) {p.baseVelocity = new ZeroVector2D}
+    else if (nextZoneIsAMW.isDefined && leavingAMW.isDefined) {throw new Exception("Error with pedestrian leaving AMW. This case should not happen ! ")}
+
   }
 
 

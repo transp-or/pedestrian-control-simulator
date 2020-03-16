@@ -8,7 +8,11 @@ import tools.cells.Vertex
 class PedestrianNOMAD(oZone: Vertex, dZone: Vertex, entryTime: Time, posO: Position, logFullHistory: Boolean, isTransfer: Boolean) extends PedestrianSim(oZone, dZone, entryTime, posO, logFullHistory, isTransfer) with WithGraphID {
 
   // List of pedestrians in the vicinity of this pedestrian
-  var closePeds: Iterable[PedestrianNOMAD] = Vector()
+  private var _closePeds: Iterable[PedestrianNOMAD] = Vector()
+
+  def setClosePeds(peds: Iterable[PedestrianNOMAD]): Unit = {this._closePeds = peds}
+
+  def closePeds: Iterable[PedestrianNOMAD] = this._closePeds.filterNot(_.reachedDestination)
 
   // Ghost pedestrian used to compute the fastest walking time
   val isInvisible: Boolean = false
@@ -101,8 +105,8 @@ class PedestrianNOMAD(oZone: Vertex, dZone: Vertex, entryTime: Time, posO: Posit
   def updateDesiredDirection(): Unit = {
 
     if (this.isStuck) {
-      this.nextZone = this.previousZone
-      this.currentDestination = this.previousZone.uniformSamplePointInside
+      //this.nextZone = this.previousZone
+      //this.currentDestination = this.previousZone.uniformSamplePointInside
     }
 
     this.desiredDirection = computeDesiredDirection(this.currentPosition, this.currentDestination)

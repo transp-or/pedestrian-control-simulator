@@ -1,6 +1,6 @@
 package tools.graph
 
-import hubmodel.supply.graph.{MyRawEdge}
+import hubmodel.supply.graph.{MyRawEdgeDEMANDESTIMATION}
 import org.jgrapht.alg.shortestpath.DijkstraShortestPath
 import org.jgrapht.graph.DefaultDirectedWeightedGraph
 import tools.cells.{Rectangle, Vertex}
@@ -9,13 +9,13 @@ import scala.jdk.CollectionConverters.{ListHasAsScala}
 
 import scala.util.{Failure, Success, Try}
 
-class Graph[T <: Vertex](vertices: Iterable[T], edges: Iterable[MyRawEdge[T]]) {
+class Graph[T <: Vertex](vertices: Iterable[T], edges: Iterable[MyRawEdgeDEMANDESTIMATION[T]]) {
 
   private val vertexCollection: Map[String, T] = vertices.map(v => v.name -> v).toMap
 
-  private val edgeCollection: Map[(T, T), MyRawEdge[T]] = edges.map(e => (e.startVertex, e.endVertex) -> e).toMap
+  private val edgeCollection: Map[(T, T), MyRawEdgeDEMANDESTIMATION[T]] = edges.map(e => (e.startVertex, e.endVertex) -> e).toMap
 
-  private val network: DefaultDirectedWeightedGraph[T, MyRawEdge[T]] = new DefaultDirectedWeightedGraph[T, MyRawEdge[T]](classOf[MyRawEdge[T]])
+  private val network: DefaultDirectedWeightedGraph[T, MyRawEdgeDEMANDESTIMATION[T]] = new DefaultDirectedWeightedGraph[T, MyRawEdgeDEMANDESTIMATION[T]](classOf[MyRawEdgeDEMANDESTIMATION[T]])
 
   this.vertexCollection.values.foreach(network.addVertex)
 
@@ -27,7 +27,7 @@ class Graph[T <: Vertex](vertices: Iterable[T], edges: Iterable[MyRawEdge[T]]) {
 
 
   // object used to get the shortest path in the network
-  private var shortestPathBuilder: DijkstraShortestPath[T, MyRawEdge[T]] = new DijkstraShortestPath[T, MyRawEdge[T]](network)
+  private var shortestPathBuilder: DijkstraShortestPath[T, MyRawEdgeDEMANDESTIMATION[T]] = new DijkstraShortestPath[T, MyRawEdgeDEMANDESTIMATION[T]](network)
 
 
   /** Uses to shortestPathBuilder to compute the shortest path between two vertices.

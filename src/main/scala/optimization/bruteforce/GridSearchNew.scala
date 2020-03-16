@@ -15,7 +15,7 @@ import scala.collection.GenIterable
 
 abstract class GridSearchNew[T <: ParameterModifications](val config: Config) extends GridSearch {
 
-  val defaultParameters: SimulatorParameters = createSimulation(config).getSetupArguments
+  val defaultParameters: SimulationInputParameters = createSimulation(config).getSetupArgumentsNew
 
   // checks if the output dir exists for writing the results
   val outputDir: Path = Paths.get(config.getString("output.dir"))
@@ -25,7 +25,7 @@ abstract class GridSearchNew[T <: ParameterModifications](val config: Config) ex
 
   val simulationRunsParameters: IterableOnce[T]
 
-  def getParameters(paramMods: T): SimulatorParameters
+  def getParameters(paramMods: T): SimulationInputParameters
 
   def getRunPrefix(paramMods: T): String
 
@@ -33,21 +33,9 @@ abstract class GridSearchNew[T <: ParameterModifications](val config: Config) ex
 
   def runSimulations(): Unit = {
     for (p <- simulationRunsParameters) {
-      val parameters: SimulatorParameters = getParameters(p)
-      val sim = new PedestrianSimulation(
-        parameters._1,
-        parameters._2,
-        parameters._3,
-        parameters._4,
-        parameters._5,
-        parameters._6,
-        parameters._7,
-        parameters._8,
-        parameters._9,
-        parameters._10,
-        parameters._11,
-        config.getBoolean("output.write_trajectories_as_VS") || config.getBoolean("output.write_trajectories_as_JSON")
-      )
+      val parameters: SimulationInputParameters = getParameters(p)
+      parameters.logFullPedestrianHistory = config.getBoolean("output.write_trajectories_as_VS") || config.getBoolean("output.write_trajectories_as_JSON")
+      val sim = new PedestrianSimulation(parameters)
 
       ////////////////////////////////////////////////////////////////////////////////////////////////
 

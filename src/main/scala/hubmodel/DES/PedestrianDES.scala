@@ -29,7 +29,7 @@ import scala.util.Random
   *
   */
 abstract class PedestrianDES(val startTime: Time,
-                                     val finalTime: Time) extends StrictLogging {
+                             val finalTime: Time) extends StrictLogging {
 
   ///////////////////////////////////////////////////////////////////////////////////////////////////
   ////////////////////////////// General parameters /////////////////////////////////////////////////
@@ -74,27 +74,6 @@ abstract class PedestrianDES(val startTime: Time,
   ////////////////////////////// Action definition and manipulaiton /////////////////////////////////
   ///////////////////////////////////////////////////////////////////////////////////////////////////
 
-  /** An Action becomes an Event when a time is associated.
-    *
-    * @param t      time at which the action must be performed
-    * @param action the action itself (class with execute method)
-    */
-  class MyEvent(val t: Time, val action: Action) extends Ordered[MyEvent] {
-
-    // return 0 if the same, negative if this < that, positive if this > that (in terms of priority)
-    override def compare(that: MyEvent): Int = {
-      if (this.t > that.t) -1 // this.t is larger than that.t, that should be executed before this, hence that has higher priority
-      else if (this.t < that.t) 1 // this.t is smaller than that.t, this should be executed before that, hence this has higher priority
-      else 0
-    }
-
-    /**
-      * Writes the event as string with the execution time.
-      *
-      * @return string with the name of the event and the execution time.
-      */
-    override def toString: String = action.toString + " @ " + t
-  }
 
   /**
     * Event list which is a PriorityQueue. When inserting a new Event,
@@ -105,7 +84,6 @@ abstract class PedestrianDES(val startTime: Time,
     */
   protected val eventList: collection.mutable.PriorityQueue[MyEvent] = collection.mutable.PriorityQueue()
 
-
   /** Inserts an event into the eventList after a given delay. No need for sorting as the PriorityQueue is always
     * kept in sorted order. Events are only inserted if the ([[currentTime]] + delay) is
     * lower than the [[finalTime]] of the simulation.
@@ -114,7 +92,7 @@ abstract class PedestrianDES(val startTime: Time,
     * @param action the [[Action]] which must take place
     */
   def insertEventWithDelay[U <: Action](delay: Time)(action: U): Unit = {
-    if (this.currentTime + delay <= finalTime) eventList += new MyEvent(this.currentTime + delay, action)
+    if (this.currentTime + delay < finalTime) eventList += new MyEvent(this.currentTime + delay, action)
   }
 
   /** Inserts an event witha zero delaay in time. The action will be executed at the current time of the simulator.
@@ -134,15 +112,21 @@ abstract class PedestrianDES(val startTime: Time,
     * @param t      time after the [[currentTime]] at which the event must take place
     * @param action the [[Action]] which must take place
     */
-  def insertEventAtAbsolute[U <: Action](t: Time)(action: U): Unit = {
-    if (startTime <= t && t < finalTime) eventList += new MyEvent(t, action)
+  def insertEventAtAbsolute[U <: Action](t: Time)(action: U): Option[MyEvent] = {
+    if (startTime <= t && t < finalTime) {
+      val event = new MyEvent(t, action)
+      eventList += event
+      Some(event)
+    } else {
+      None
+    }
   }
 
 
   def cloneEventQueueInto(simulator: PedestrianPrediction): Unit = {
 
     this.eventList.collect {
-      case e if e.action.deepCopy(simulator).isDefined => simulator.eventList.enqueue(new simulator.MyEvent(e.t, e.action.deepCopy(simulator).get))
+      case e if e.action.deepCopy(simulator).isDefined => simulator.eventList.enqueue(new MyEvent(e.t, e.action.deepCopy(simulator).get))
     }
   }
 
@@ -172,7 +156,7 @@ abstract class PedestrianDES(val startTime: Time,
     *
     * @return
     */
-  def populationCompleted: Vector[PedestrianNOMAD] = synchronized(_populationCompleted)
+  def populationCompleted: Vector[PedestrianNOMAD] = _populationCompleted
 
   /**
     * Inserts a pedestrian into the simulation.
@@ -225,7 +209,11 @@ abstract class PedestrianDES(val startTime: Time,
     * @return collection of pedestrian whithin this range
     */
   def findNeighbours(id: String, r: Double): Iterable[PedestrianNOMAD] = {
-    this.populationMTree.findInRange(id, this.ID2Position(id), r).filterNot(p => p == id || !this._populationNew.keySet.contains(p)).map(id => this._populationNew.getOrElse(id, throw new IndexOutOfBoundsException(id))).filterNot(_.reachedDestination)
+    this.populationMTree
+      .findInRange(id, this.ID2Position(id), r)
+      .filterNot(p => p == id || !this._populationNew.keySet.contains(p))
+      .map(id => this._populationNew.getOrElse(id, throw new IndexOutOfBoundsException(id)))
+      .filterNot(_.reachedDestination)
   }
 
   ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -271,6 +259,8 @@ abstract class PedestrianDES(val startTime: Time,
 
   val simulationType: String = "Generic"
 
+  val verbose: Boolean = true
+
   /**
     * First event to be called by the run method from [[PedestrianDES]]
     * This event is simulation dependent, hence it must be overridden in the implementations of the DES.
@@ -302,7 +292,7 @@ abstract class PedestrianDES(val startTime: Time,
     * until the list is empty.
     */
   def genericRun(startEvent: GenericStartSim): Unit = {
-    this.logger.info("Starting simulation (" + this.simulationType + ") " + this.ID + " @" + this.currentTime)
+    if (verbose) {    this.logger.info("Starting simulation (" + this.simulationType + ") " + this.ID + " @" + this.currentTime) }
 
     insertEventWithZeroDelay{startEvent}
 
@@ -312,11 +302,12 @@ abstract class PedestrianDES(val startTime: Time,
       /*if (this._currentTime.value % 5.0 == 0) {
         print(" * simulation at " + this._currentTime + " sec\r")
       }*/
-      event.action.execute()
+      if (!event.skip) { event.action.execute()}
     }
+
     if (this._exitCode == -1) {
       this._exitCode = 0
-      this.logger.info("Terminated simulation (" + this.simulationType + ") " + this.ID + " !")
+      if (verbose) {this.logger.info("Completed simulation (" + this.simulationType + ") " + this.ID + " !")}
     } else {
       this.logger.info("Terminated simulation (" + this.simulationType + ") " + this.ID + ". Terminated with exit code " + this._exitCode)
     }

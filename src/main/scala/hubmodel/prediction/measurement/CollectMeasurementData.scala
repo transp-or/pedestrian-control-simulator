@@ -86,7 +86,7 @@ class CollectMeasurementData(sim: NOMADGraphSimulator) extends Action {
     if (sim.useFlowSep && !sim.controlDevices.fixedFlowSeparators) {
       sim.controlDevices.flowSeparators.foreach(fs => {
         fs.updateWallTargetPosition(sim.currentTime)
-        if (!fs.movingWallEventIsInserted && fs.flowSeparatorNeedsToMove(sim.sf_dt)) {
+        if (!fs.movingWallEventIsInserted && fs.flowSeparatorNeedsToMove(sim.motionModelUpdateInterval)) {
           sim.insertEventWithZeroDelay(new fs.MoveFlowSeperator(sim))
         }
         fs.inflowLinesStart.foreach(_.reinitialize())
@@ -94,7 +94,7 @@ class CollectMeasurementData(sim: NOMADGraphSimulator) extends Action {
       })
     }
 
-    sim.insertEventWithDelay(sim.evaluate_dt)(new CollectMeasurementData(sim))
+    sim.insertEventWithDelay(sim.stateEvaluationInterval)(new CollectMeasurementData(sim))
   }
 
   type A = CollectMeasurementData

@@ -1,11 +1,19 @@
 package hubmodel.prediction
 
-import hubmodel.prediction.state.StateGroundTruth
+import hubmodel.control.ControlDevicePolicy
+import hubmodel.prediction.state.{StateGroundTruth, StateGroundTruthPredicted}
+import tools.Time
 
 trait StatePrediction {
 
-  def getPredictedStateData: StateGroundTruth
+  def getPredictedStateData: StateGroundTruthPredicted
+  def computeObjectives: Map[String, Double]
 
-  protected def predict()
+  def predict(): Unit
+  def predict(decisionVariables: Iterable[ControlDevicePolicy]): Unit
+
+  val predictionStartTime: Time
+  val predictionEndTime: Time
+  val predictionInterval: Time
 
 }

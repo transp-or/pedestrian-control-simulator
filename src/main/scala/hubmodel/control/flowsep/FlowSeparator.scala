@@ -162,19 +162,19 @@ class FlowSeparator[T <: Measurement, U <: SeparatorPositionFraction](val startA
 
     override def execute(): Unit = {
       if ((currentTargetPosition._1 - start).norm > 0.0) {
-        start = start + (currentTargetPosition._1 - start).normalized * (FLOW_SEPARATOR_SPEED * sim.sf_dt.value.toDouble)
-        associatedZonesStart.foreach(_.moveRectangle(sim.sf_dt))
+        start = start + (currentTargetPosition._1 - start).normalized * (FLOW_SEPARATOR_SPEED * sim.motionModelUpdateInterval.value.toDouble)
+        associatedZonesStart.foreach(_.moveRectangle(sim.motionModelUpdateInterval))
       }
 
       if ((currentTargetPosition._2 - end).norm > 0.0) {
-        end = end + (currentTargetPosition._2 - end).normalized * (FLOW_SEPARATOR_SPEED * sim.sf_dt.value.toDouble)
-        associatedZonesEnd.foreach(_.moveRectangle(sim.sf_dt))
+        end = end + (currentTargetPosition._2 - end).normalized * (FLOW_SEPARATOR_SPEED * sim.motionModelUpdateInterval.value.toDouble)
+        associatedZonesEnd.foreach(_.moveRectangle(sim.motionModelUpdateInterval))
       }
 
       positionHistory.append((sim.currentTime, start, end))
 
-      if (flowSeparatorNeedsToMove(sim.sf_dt)) {
-        sim.insertEventWithDelay(sim.sf_dt)(new MoveFlowSeperator(sim))
+      if (flowSeparatorNeedsToMove(sim.motionModelUpdateInterval)) {
+        sim.insertEventWithDelay(sim.motionModelUpdateInterval)(new MoveFlowSeperator(sim))
         movingWallEventIsInserted = true
       } else {
         //start = currentTargetPosition._1

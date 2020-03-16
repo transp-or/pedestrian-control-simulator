@@ -20,7 +20,7 @@ class ParameterExploration(config: Config) extends GridSearch {
 
   def exploreFlowGateFunctionalFormLinear(constantBounds: (Double, Double, Int), linearBounds: (Double, Double, Int)): Unit = {
 
-    val defaultParameters = createSimulation(config).getSetupArguments
+    val defaultParameters: SimulationInputParameters = createSimulation(config).getSetupArgumentsNew
 
     val constantRange: NumericRange[BigDecimal] = BigDecimal(constantBounds._1) to constantBounds._2 by (constantBounds._2 - constantBounds._1) / constantBounds._3
     val linearRange: NumericRange[BigDecimal] = {
@@ -51,33 +51,21 @@ class ParameterExploration(config: Config) extends GridSearch {
     for (t <- range) {
 
       val newDevices: ControlDevices = new ControlDevices(
-        defaultParameters._11.monitoredAreas.map(_.deepCopy),
-        defaultParameters._11.amws.map(_.deepCopy),
+        defaultParameters.controlDevices.monitoredAreas.map(_.deepCopy),
+        defaultParameters.controlDevices.amws.map(_.deepCopy),
         if (config.getBoolean("sim.use_flow_gates")) {
-          defaultParameters._11.flowGates.map(fg => new FlowGateFunctional(fg.startVertex, fg.endVertex, fg.start, fg.end, fg.monitoredArea, {
+          defaultParameters.controlDevices.flowGates.map(fg => new FlowGateFunctional(fg.startVertex, fg.endVertex, fg.start, fg.end, fg.monitoredArea, {
             FunctionalFormGating((x: Density) => Flow(BigDecimal(0.0000001).max(t._1 + t._2 * x.d).toDouble))
           }))
         } else {
           Vector()
         },
-        defaultParameters._11.binaryGates.map(_.deepCopy),
-        defaultParameters._11.flowSeparators.map(_.deepCopy),
-        defaultParameters._11.fixedFlowSeparators
+        defaultParameters.controlDevices.binaryGates.map(_.deepCopy),
+        defaultParameters.controlDevices.flowSeparators.map(_.deepCopy),
+        defaultParameters.controlDevices.fixedFlowSeparators
       )
 
-      val sim = new PedestrianSimulation(
-        defaultParameters._1,
-        defaultParameters._2,
-        defaultParameters._3,
-        defaultParameters._4,
-        defaultParameters._5,
-        defaultParameters._6,
-        defaultParameters._7,
-        defaultParameters._8.deepCopy(newDevices),
-        defaultParameters._9,
-        defaultParameters._10,
-        newDevices
-      )
+      val sim = new PedestrianSimulation(defaultParameters.deepCopy(defaultParameters.graph.deepCopy(newDevices), newDevices))
 
       runAndWriteResults(sim, t._1.toString + "_" + t._2.toString + "_params_", config.getString("output.dir"))
 
