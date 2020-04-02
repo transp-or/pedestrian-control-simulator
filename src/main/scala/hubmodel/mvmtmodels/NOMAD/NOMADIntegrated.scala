@@ -257,7 +257,7 @@ class NOMADIntegrated(sim: NOMADGraphSimulator) extends Action {
       // updates the next destination if the current destination is reached
       if (sim.intermediateDestinationReached(ped)) {
         ped.appendAccomplishedRoute(this.sim.currentTime, ped.nextZone)
-        sim.updateIntermediateDestination(ped)
+        sim.updateIntermediateDestination(this.sim.currentTime, ped)
       }
     })
 

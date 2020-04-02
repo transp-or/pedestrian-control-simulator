@@ -26,7 +26,9 @@ class MovingWalkway(val name: String,
                     val associatedConnectivity: Iterable[MyEdge],
                     val parallelFlows: Vector[Vector[Vertex]],
                     val startArea: String,
-                   val endArea: String) extends MyEdge(startVertex, endVertex) with ControlDeviceComponent {
+                    val endArea: String) extends MyEdge(startVertex, endVertex) with ControlDeviceComponent {
+
+  outer =>
 
   // Direction (considered positive) in which the pedestrians will move when on the moving walkway.
   private val direction: Position = (this.end - this.start).normalized
@@ -71,13 +73,13 @@ class MovingWalkway(val name: String,
   private val positiveEdge: MyEdge = new MyEdge(this.startVertex, this.endVertex)
   private val negativeEdge: MyEdge = new MyEdge(this.endVertex, this.startVertex)
 
-  private def updateCosts(): Unit = {
+  private def updateCosts(t: Time): Unit = {
     if (this._speed >= 0) {
-      this.positiveEdge.updateCost(math.abs(this.length/(this._speed + math.signum(this._speed) * 1.34)))
-      this.negativeEdge.updateCost(Double.MaxValue)
+      this.positiveEdge.updateCost(t, math.abs(this.length/(this._speed + math.signum(this._speed) * 1.34)))
+      this.negativeEdge.updateCost(t, Double.PositiveInfinity)
     } else {
-      this.positiveEdge.updateCost(Double.MaxValue)
-      this.negativeEdge.updateCost(math.abs(this.length/(this._speed + math.signum(this._speed) * 1.34)))
+      this.positiveEdge.updateCost(t, Double.PositiveInfinity)
+      this.negativeEdge.updateCost(t, math.abs(this.length/(this._speed + math.signum(this._speed) * 1.34)))
     }
   }
 
@@ -100,22 +102,23 @@ class MovingWalkway(val name: String,
   }
 
   def insertChangeSpeed(sim: NOMADGraphSimulator): Unit = {
-    this.nextSpeedUpdate = sim.insertEventAtAbsolute(this.controlPolicy.head.start)(new ChangeAMWSeed(sim))
+    this.nextSpeedUpdate = sim.insertEventAtAbsolute(this.controlPolicy.head.start)(new ChangeAMWSpeed(sim))
   }
 
 
 
-  class ChangeAMWSeed(sim: NOMADGraphSimulator) extends Action {
+  class ChangeAMWSpeed(sim: NOMADGraphSimulator) extends Action {
 
     override def execute(): Any = {
 
-      val nextSpeed = controlPolicy.dequeue()
+      if (sim.verbose) {println("old speed @ " + sim.currentTime  + ": " + _speed)}
+      val speedToSet = controlPolicy.dequeue()
 
       // Set the new speed for the walkway
-      updateSpeed(nextSpeed.speed)
+      outer.updateSpeed(speedToSet.speed)
 
       // update the costs of the graph edges for this walkway
-      updateCosts()
+      updateCosts(this.sim.currentTime)
 
       this.sim.graph.updateGraphCosts()
 
@@ -123,17 +126,20 @@ class MovingWalkway(val name: String,
       // change so we must be able to find and remove this event from the event list.
       nextSpeedUpdate = {
         if (controlPolicy.nonEmpty) {
-          sim.insertEventAtAbsolute(controlPolicy.head.start)(new ChangeAMWSeed(sim))
+          sim.insertEventAtAbsolute(controlPolicy.head.start)(new ChangeAMWSpeed(sim))
         }
         else {
           None
         }
       }
 
-
+      if (sim.verbose) {
+        println("new speed @ " + sim.currentTime + ": " + _speed)
+        println(this.sim.graph.edges.filter(e => (e.startVertex.name == "amw1" && e.endVertex.name == "amw2") || (e.startVertex.name == "amw2" && e.endVertex.name == "amw1")).map(e => (e.startVertex.name, e.endVertex.name, e.cost)).mkString("\n"))
+      }
     }
 
-    type A = ChangeAMWSeed
+    type A = ChangeAMWSpeed
 
     override def deepCopy(simulator: PedestrianPrediction): Option[A] = None
   }
@@ -155,7 +161,7 @@ class MovingWalkway(val name: String,
     this.associatedZonesStart.map(_.deepCopy),
     this.associatedZonesEnd.map(_.deepCopy),
     this.droppedVertices,
-    this.associatedConnectivity,
+    this.associatedConnectivity.map(_.deepCopy),
     this.parallelFlows,
     this.startArea,
     this.endArea
@@ -172,7 +178,7 @@ class MovingWalkway(val name: String,
       this.associatedZonesStart.map(_.deepCopy),
       this.associatedZonesEnd.map(_.deepCopy),
       this.droppedVertices,
-      this.associatedConnectivity,
+      this.associatedConnectivity.map(_.deepCopy),
      this.parallelFlows,
      this.startArea,
      this.endArea

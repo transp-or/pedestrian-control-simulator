@@ -126,7 +126,9 @@ abstract class PedestrianDES(val startTime: Time,
   def cloneEventQueueInto(simulator: PedestrianPrediction): Unit = {
 
     this.eventList.collect {
-      case e if e.action.deepCopy(simulator).isDefined => simulator.eventList.enqueue(new MyEvent(e.t, e.action.deepCopy(simulator).get))
+      case e if e.action.deepCopy(simulator).isDefined && e.t < simulator.finalTime => {
+        simulator.eventList.enqueue(new MyEvent(e.t, e.action.deepCopy(simulator).get))
+      }
     }
   }
 
@@ -177,6 +179,7 @@ abstract class PedestrianDES(val startTime: Time,
   def processCompletedPedestrian(condition: PedestrianNOMAD => Boolean): Unit = {
     val completedPeds: Map[String, PedestrianNOMAD] = this._populationNew.filter(kv => condition(kv._2)).toMap
     completedPeds.values.foreach(p => {
+      p.appendAccomplishedRoute(this.currentTime, p.nextZone)
       p.updatePositionHistory(this.currentTime, scala.math.max(p.isolationTypePed, p.isolationTypeObs))
       p.reachedDestination = true
       p.exitTime = this.currentTime
@@ -269,6 +272,8 @@ abstract class PedestrianDES(val startTime: Time,
     */
   abstract class GenericStartSim(sim: PedestrianDES) extends Action
 
+  abstract class GenericFinishSim(sim: PedestrianDES, val finalTime: Time) extends Action
+
   /** Abstract run which must be overriden in implementation.
     * This will call the [[genericRun()]] method and pass the first start as an argument.
     */
@@ -291,17 +296,15 @@ abstract class PedestrianDES(val startTime: Time,
     * Once this is done, it should run through the [[eventList]] and execute all events
     * until the list is empty.
     */
-  def genericRun(startEvent: GenericStartSim): Unit = {
+  def genericRun(startEvent: GenericStartSim, endEvent: GenericFinishSim): Unit = {
     if (verbose) {    this.logger.info("Starting simulation (" + this.simulationType + ") " + this.ID + " @" + this.currentTime) }
 
-    insertEventWithZeroDelay{startEvent}
+    this.insertEventWithZeroDelay{startEvent}
+    this.eventList.addOne(new MyEvent(endEvent.finalTime, endEvent))
 
     while (this.eventList.nonEmpty && this._exitCode == -1) {
       val event = eventList.dequeue()
       this._currentTime = event.t
-      /*if (this._currentTime.value % 5.0 == 0) {
-        print(" * simulation at " + this._currentTime + " sec\r")
-      }*/
       if (!event.skip) { event.action.execute()}
     }
 

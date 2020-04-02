@@ -8,6 +8,8 @@ import tools.Time
 
 class PedestrianSimulation(params: SimulationInputParameters) extends NOMADGraphSimulator(params) with IsMainSimulation {
 
+  val isPrediction: Boolean = false
+
   override val simulationType: String = "main simulation"
 
   class StateEvaluation extends super.StateEval(this) with super.StateEvaluationActionDES

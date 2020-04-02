@@ -2,8 +2,8 @@ package hubmodel.DES
 
 import hubmodel.control.amw.AMWPolicy
 import hubmodel.control.{EvaluateState, UpdateGates}
-import hubmodel.prediction.{AMWFlowsFromGroundTruth, CongestionDataFromGroundTruth, PredictWithGroundTruth, RunPrediction, StatePrediction}
-import optimization.ALNS.{ALNS, CongestionDescreaseSpeed, CongestionIncreaseSpeed, RandomChangeDirection, RandomDecreaseSpeed, RandomIncreaseSpeed, SpeedLowerBound, SpeedUpperBound}
+import hubmodel.prediction.{AMWFlowsFromGroundTruth, CongestionDataFromGroundTruth, PredictWithGroundTruth, StatePrediction}
+import optimization.ALNS.{ALNS, CongestionDescreaseSpeed, CongestionIncreaseSpeed, MinimumDurationSameDirection, RandomChangeDirection, RandomDecreaseSpeed, RandomIncreaseSpeed, SpeedLowerBound, SpeedUpperBound}
 import tools.Time
 
 trait IsMainSimulation {
@@ -40,7 +40,7 @@ trait IsMainSimulation {
         processIncomingFlowsForFS()
       }
 
-      sim.insertEventWithZeroDelay(new RollingHorizonOptimization(this.sim))//, predictionHorizon, predictionInterval, densityUpdateInterval))
+      sim.insertEventWithZeroDelay(new RollingHorizonOptimization(this.sim))
 
       this.sim.insertEventWithDelay(sim.stateEvaluationInterval)(new StateEval(sim))
     }
@@ -67,12 +67,12 @@ trait IsMainSimulation {
       val horizonOptimization: ALNS = new ALNS(
         new PredictWithGroundTruth(sim, predictionHorizon, predictionInterval, densityUpdateInterval),
         initialControlPolicy,
-        Vector(RandomIncreaseSpeed, RandomDecreaseSpeed, RandomChangeDirection),
+        Vector(RandomIncreaseSpeed, RandomDecreaseSpeed, RandomChangeDirection, MinimumDurationSameDirection),
         Vector(SpeedUpperBound, SpeedLowerBound))
 
       horizonOptimization.optimize()
 
-      horizonOptimization.writeSolutionToCSV("NS_points_" + sim.ID + "_" + sim.currentTime + "_" + sim.currentTime + predictionHorizon + "_" + predictionInterval + ".csv" ,"/home/nicholas/PhD/code/hub-simulator/")
+      horizonOptimization.writeSolutionToCSV("NS_points_" + sim.ID + "_" + sim.currentTime + "_" + (sim.currentTime + predictionHorizon) + "_" + predictionInterval + ".csv" ,"/home/nicholas/PhD/code/hub-simulator/")
 
 
       println(horizonOptimization.optimalSolution)
@@ -98,6 +98,7 @@ trait IsMainSimulation {
           w.setControlPolicy(policy)
           w.insertChangeSpeed(this.sim)
         })
+
     }
 
 

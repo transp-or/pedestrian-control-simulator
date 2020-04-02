@@ -42,7 +42,7 @@ class CreatePedestrian(o: Vertex, d: Vertex, val isTransfer: Boolean, sim: NOMAD
     // inserts new pedestrian into population
 
     val newPed: PedestrianNOMAD = new PedestrianNOMAD(o, d, sim.currentTime, generationPoint, sim.logFullPedestrianHistory, isTransfer)
-    sim.setFirstRoute(newPed)
+    sim.setFirstRoute(this.sim.currentTime, newPed)
     newPed.updateDesiredDirection()
     newPed.currentVelocity = newPed.desiredDirection * newPed.desiredWalkingSpeed
     newPed.updateClosestWalls(sim.walls)

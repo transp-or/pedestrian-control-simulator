@@ -16,9 +16,11 @@ import hubmodel.supply.continuous.{ContinuousSpace, MovableWall}
 import hubmodel.supply.graph._
 import myscala.math.vector.{Vector2D, Vector3D}
 import myscala.timeBlock
+import myscala.output.SeqOfSeqExtensions.SeqOfSeqWriter
 import org.apache.commons.lang3.RandomStringUtils
 import tools.Time
 
+import scala.annotation.tailrec
 import scala.collection.immutable.NumericRange
 
 
@@ -90,7 +92,7 @@ package object hubmodel {
     *
     * @return UUID formatted as a String
     */
-  def generateUUID: String = RandomStringUtils.randomAlphabetic(1) + RandomStringUtils.randomAlphanumeric(10) // java.util.UUID.randomUUID.toString
+  def generateUUID: String = RandomStringUtils.randomAlphabetic(1) + RandomStringUtils.randomAlphanumeric(10)
 
 
   // ******************************************************************************************
@@ -212,6 +214,31 @@ package object hubmodel {
     }
     bw.write("}")
     bw.close()
+  }
+
+  def writeEdgesJSON(edges: Iterable[MyEdge], file: String): Unit = {
+    val f = new File(file)
+    val bw = new BufferedWriter(new FileWriter(f))
+    bw.write("[")
+    edges.dropRight(1).foreach(e => bw.write(e.toJSON + ",\n"))
+    bw.write(edges.last.toJSON)
+    bw.write("]")
+    bw.close()
+  }
+
+
+  def writeEdgesCSV(edges: Iterable[MyEdge], file: String): Unit = {
+
+    @tailrec
+    def csvfy(edges: Vector[MyEdge], dataColumns:Vector[Vector[Double]], headers: Vector[String]): (Vector[String], Vector[Vector[Double]]) = {
+      if (edges.isEmpty) {(headers, dataColumns)}
+      else { csvfy(edges.tail, dataColumns :+ edges.head.costHistory.map(tc => tc._1.value.toDouble) :+ edges.head.costHistory.map(tc => tc._2), headers :+ (edges.head.startVertex.name + " -> " + edges.head.endVertex.name) :+ (edges.head.startVertex.name + " -> " + edges.head.endVertex.name))}
+    }
+
+    val (headers, data): (Vector[String], Vector[Vector[Double]]) = csvfy(edges.toVector, Vector(), Vector())
+
+    data.writeToCSV(file, rowNames = None, columnNames = Some(headers))
+
   }
 
   //type T <: PedestrianNOMAD

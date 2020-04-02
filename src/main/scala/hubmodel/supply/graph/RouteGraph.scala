@@ -8,6 +8,7 @@ import hubmodel.ped.PedestrianNOMAD
 import myscala.math.vector.ZeroVector2D
 import org.jgrapht.alg.shortestpath.{DijkstraShortestPath, KShortestPaths}
 import org.jgrapht.graph.DefaultDirectedWeightedGraph
+import tools.Time
 import tools.cells.Vertex
 
 import scala.collection.JavaConverters._
@@ -153,7 +154,7 @@ class RouteGraph(protected val baseVertices: Iterable[Vertex],
     *
     * @param p pedestrian for whom to change destination
     */
-  def processIntermediateArrival(p: PedestrianNOMAD): Unit = {
+  def processIntermediateArrival(t: Time, p: PedestrianNOMAD): Unit = {
     //println(p.route)
     if (p.route.isEmpty) {
       p.route = destination2EquivalentDestinations(p.finalDestination).filter(_ != p.origin).map(d => this.getShortestPath(p.origin, d)).minBy(_._1)._2.tail
@@ -178,11 +179,18 @@ class RouteGraph(protected val baseVertices: Iterable[Vertex],
     }
     p.setCurrentDestination(p.nextZone.uniformSamplePointInside)
 
-    this.edgeCollection
-      .find(e => e.startVertex == p.accomplishedRoute.last._2 &&  e.endVertex == p.accomplishedRoute.dropRight(1).last._2)
-      .get.updateCost((p.accomplishedRoute.last._1 - p.accomplishedRoute.dropRight(1).last._1).value.toDouble)
+    if (p.accomplishedRoute.size >= 2) {
+      this.edgeCollection
+        .find(e => e.startVertex == p.accomplishedRoute.dropRight(1).last._2 && e.endVertex == p.accomplishedRoute.last._2)
+        .foreach(e => {
+          if ((e.startVertex.name == "amw1" && e.endVertex.name == "amw2") || (e.startVertex.name == "amw2" && e.endVertex.name == "amw1")) {
+            //println((p.accomplishedRoute.last._1 - p.accomplishedRoute.dropRight(1).last._1).value.toDouble)
+          }
+          e.updateCost(t, (p.accomplishedRoute.last._1 - p.accomplishedRoute.dropRight(1).last._1).value.toDouble)
+        })
+    }
 
-    // update the base moving speed of pedestrian p if he is entering a or exiting a moving walkway
+    // update the base moving speed of pedestrian p if he is entering or exiting a moving walkway
     val nextZoneIsAMW = movingWalkways.find(w => (w.startVertex == p.previousZone && w.endVertex == p.nextZone) || (w.endVertex == p.previousZone && w.startVertex == p.nextZone))
     val leavingAMW = movingWalkways.find(w => (w.endVertex == p.previousZone && w.startVertex != p.nextZone) || (w.startVertex == p.previousZone && w.endVertex != p.nextZone))
 

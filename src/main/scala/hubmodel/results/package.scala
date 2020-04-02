@@ -134,9 +134,22 @@ package object results {
           println("written critical zone successfully")
         }
         case Failure(f) => {
-          println("failed writing criticsl zones")
+          println("Failed writing critical zones")
           throw f
         }
+    }
+
+    // Writes the data for the defined measurement areas.
+    Try {
+      writeEdgesJSON(simulator.graph.edges,path + prefix + "edges_" + simulator.ID + ".json")
+    } match {
+      case Success(s) => {
+        println("written critical zone successfully")
+      }
+      case Failure(f) => {
+        println("Failed writing critical zones")
+        throw f
+      }
     }
 
     if (writeTrajectoriesVS) {

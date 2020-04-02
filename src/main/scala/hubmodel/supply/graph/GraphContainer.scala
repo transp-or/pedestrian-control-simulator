@@ -5,6 +5,7 @@ import hubmodel.control.amw.MovingWalkway
 import hubmodel.control.flowgate.{BinaryGate, FlowGate}
 import hubmodel.control.flowsep.FlowSeparator
 import hubmodel.ped.PedestrianNOMAD
+import tools.Time
 import tools.cells.Vertex
 
 abstract class GraphContainer(protected val flowGates: Iterable[FlowGate],
@@ -16,7 +17,7 @@ abstract class GraphContainer(protected val flowGates: Iterable[FlowGate],
 
   def edges: Set[MyEdge]
 
-  def processIntermediateArrival(ped: PedestrianNOMAD): Unit
+  def processIntermediateArrival(t: Time, ped: PedestrianNOMAD): Unit
 
   def updateGraphCosts(): Unit
 

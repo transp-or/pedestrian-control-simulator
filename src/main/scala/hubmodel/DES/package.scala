@@ -139,6 +139,16 @@ package object DES {
     val evaluationInterval: Time = Time(config.getDouble("sim.evaluate_dt"))
     val rebuildTreeInterval: Time = Time(config.getDouble("sim.rebuild_tree_dt"))
 
+    // Loads the prediction parameters
+    val predictionParams: PredictionInputParameters = new PredictionInputParameters(
+      Time(config.getDouble("sim.prediction.horizon")),
+      Time(config.getDouble("sim.prediction.update-interval")),
+      Time(config.getDouble("sim.prediction.dv-length")),
+      Time(config.getDouble("sim.prediction.density-msmt-update")),
+      config.getInt("sim.prediction.replications"),
+      config.getInt("sim.prediction.threads")
+    )
+
     val simulationParameters: SimulationInputParameters = new SimulationInputParameters(
       simulationStartTime,
       simulationEndTime,
@@ -147,7 +157,8 @@ package object DES {
       infraSF.continuousSpace.addWalls(controlDevices.amws.flatMap(_.walls)),
       routeGraph,
       stop2Vertex,
-      controlDevices
+      controlDevices,
+      predictionParams
     )
 
     simulationParameters.rebuildTreeInterval = Some(rebuildTreeInterval)

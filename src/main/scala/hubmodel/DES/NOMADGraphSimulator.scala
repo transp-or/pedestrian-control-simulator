@@ -27,6 +27,9 @@ abstract class NOMADGraphSimulator(params: SimulationInputParameters) extends Pe
   val stop2Vertex: Stop2Vertex = params.stop2Vertex
   val rebuildTreeInterval: Option[Time] = params.rebuildTreeInterval
   val trackDensityInterval: Option[Time] = params.trackDensityInterval
+  val predictionInputParameters:PredictionInputParameters = params.predictionParameters
+
+  val isPrediction: Boolean
 
   /*protected val inputParameters: SimulationInputParameters = {
     new SimulationInputParameters(st, et, motionModelUpdateInterval, updateRoutesInterval, spaceMicro, graph, stop2Vertex, controlDevices)
@@ -58,19 +61,23 @@ abstract class NOMADGraphSimulator(params: SimulationInputParameters) extends Pe
   def intermediateDestinationReached: PedestrianSim => Boolean = p => isInVertex(p.nextZone)(p.currentPosition)
 
   /* Updates the next destination */
-  val updateIntermediateDestination: PedestrianNOMAD => Unit = ped => graph.processIntermediateArrival(ped)
+  val updateIntermediateDestination: (Time, PedestrianNOMAD) => Unit = (t, ped) => graph.processIntermediateArrival(t, ped)
   /* => graph match {
       case rm: RouteGraphMultiple[T] => { rm.processIntermediateArrival(ped) }
       case rs: RouteGraph[T] => { rs.processIntermediateArrival(ped) }
     }*/
 
   /* Computes the first route  */
-  val setFirstRoute: PedestrianNOMAD => Unit = ped => graph match {
-    case rm: MultipleGraph => {
-      rm.setRouteFirst(ped)
-    }
-    case rs: SingleGraph => {
-      rs.processIntermediateArrival(ped)
+  val setFirstRoute: (Time, PedestrianNOMAD) => Unit = {
+    (t, ped) =>
+      ped.appendAccomplishedRoute(this.currentTime, ped.origin)
+    graph match {
+      case rm: MultipleGraph => {
+        rm.setRouteFirst(t, ped)
+      }
+      case rs: SingleGraph => {
+        rs.processIntermediateArrival(t, ped)
+      }
     }
   }
 
@@ -121,11 +128,13 @@ abstract class NOMADGraphSimulator(params: SimulationInputParameters) extends Pe
     *
     * @param sim simulation object
     */
-  class StartSim[U <: P](sim: NOMADGraphSimulator) extends super.GenericStartSim(sim) {
+  class StartSim(sim: NOMADGraphSimulator) extends super.GenericStartSim(sim) {
 
     override def execute(): Unit = {
 
       sim.eventLogger.trace("sim-time=" + sim.currentTime + ": simulation started. dt=" + sim.motionModelUpdateInterval)
+
+      this.sim.graph.edges.foreach(e => e.updateCost(this.sim.currentTime, e.cost))
 
       // Inserts the update routes events in the simulation
       sim.insertEventWithZeroDelay(new UpdatePedestrianRoutes(sim))
@@ -167,12 +176,26 @@ abstract class NOMADGraphSimulator(params: SimulationInputParameters) extends Pe
 
     }
 
-    type A = StartSim[P]
-
-    type B = NOMADGraphSimulator
+    type A = StartSim
 
     override def deepCopy(simulator: PedestrianPrediction): Option[A] = {
       Some(new StartSim(simulator))
+    }
+  }
+
+
+  class EndSim(sim: NOMADGraphSimulator) extends GenericFinishSim(sim, sim.finalTime){
+
+    override def execute(): Any = {
+
+      sim.graph.edges.foreach(e => e.updateCost(sim.currentTime, e.cost))
+
+    }
+
+    type A = EndSim
+
+    override def deepCopy(simulator: PedestrianPrediction): Option[A] = {
+      Some(new EndSim(simulator))
     }
   }
 
@@ -206,7 +229,7 @@ abstract class NOMADGraphSimulator(params: SimulationInputParameters) extends Pe
     * Runs the simulation. This should be called after the processing events have been inserted.
     */
   override def run(): Unit = {
-    super.genericRun(new StartSim(this))
+    super.genericRun(new StartSim(this), new EndSim(this))
   }
 
 
@@ -265,7 +288,7 @@ abstract class NOMADGraphSimulator(params: SimulationInputParameters) extends Pe
   def getSetupArgumentsNew: SimulationInputParameters = {
     {
       val inputParameters: SimulationInputParameters = {
-        new SimulationInputParameters(startTime, finalTime, motionModelUpdateInterval, updateRoutesInterval, spaceMicro, graph, stop2Vertex, controlDevices)
+        new SimulationInputParameters(startTime, finalTime, motionModelUpdateInterval, updateRoutesInterval, spaceMicro, graph, stop2Vertex, controlDevices, params.predictionParameters)
       }
 
       inputParameters.logFullPedestrianHistory = logFullPedestrianHistory
@@ -291,7 +314,7 @@ abstract class NOMADGraphSimulator(params: SimulationInputParameters) extends Pe
     * @param controlDevices
     * @param logFullPedestrianHistory
     */
-  @deprecated
+  /*@deprecated
   def this(st: Time,
            et: Time,
            motionModelUpdateInterval: Time,
@@ -315,6 +338,6 @@ abstract class NOMADGraphSimulator(params: SimulationInputParameters) extends Pe
       inputParameters.stateEvaluationInterval = Some(stateEvaluationInterval)
       inputParameters
     })
-  }
+  }*/
 
 }

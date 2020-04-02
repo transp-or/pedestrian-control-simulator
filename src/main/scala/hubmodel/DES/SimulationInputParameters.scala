@@ -24,7 +24,8 @@ class SimulationInputParameters(var startTime: Time,
                                 val spaceMicro: ContinuousSpace,
                                 val graph: GraphContainer,
                                 val stop2Vertex: Stop2Vertex,
-                                val controlDevices: ControlDevices) {
+                                val controlDevices: ControlDevices,
+                                val predictionParameters: PredictionInputParameters) {
 
   // Interval at which the density inside the monitored areas is computed
   var trackDensityInterval: Option[Time] = None
@@ -58,7 +59,8 @@ class SimulationInputParameters(var startTime: Time,
       this.spaceMicro,
       g,
       this.stop2Vertex,
-      devices)
+      devices,
+      predictionParameters)
 
     params.trackDensityInterval = this.trackDensityInterval
     params.stateEvaluationInterval = this.stateEvaluationInterval

@@ -2,6 +2,7 @@ package hubmodel.prediction.state
 
 import hubmodel.control.ControlDevices
 import hubmodel.ped.PedestrianNOMAD
+import hubmodel.prediction.AMWFlowsFromGroundTruth
 import tools.Time
 import tools.cells.DensityMeasuredArea
 
@@ -25,6 +26,9 @@ class StateGroundTruthPredicted(val startTime: Time,
   val population = _population
   val controlDevices = _controlDevices
   val criticalAreas = _criticalAreas
-}
+
+  val amwFlows: AMWFlowsFromGroundTruth = new AMWFlowsFromGroundTruth(this.population, this.controlDevices.amws.toVector, this.intervals)
+
+  }
 
 

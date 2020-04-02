@@ -6,7 +6,7 @@ import tools.Time
 
 trait StatePrediction {
 
-  def getPredictedStateData: StateGroundTruthPredicted
+  def getPredictedStateData: Vector[StateGroundTruthPredicted]
   def computeObjectives: Map[String, Double]
 
   def predict(): Unit

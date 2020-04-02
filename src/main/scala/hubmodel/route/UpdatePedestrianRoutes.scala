@@ -10,7 +10,7 @@ class UpdatePedestrianRoutes(sim: NOMADGraphSimulator) extends Action {
 
     sim.eventLogger.trace("sim-time=" + sim.currentTime + ": updating pedestrian routes")
 
-    sim.population.filter(sim.intermediateDestinationReached).filterNot(_.isWaiting).foreach(p => sim.updateIntermediateDestination(p))
+    sim.population.filter(sim.intermediateDestinationReached).filterNot(_.isWaiting).foreach(p => sim.updateIntermediateDestination(this.sim.currentTime, p))
     sim.insertEventWithDelay(sim.updateRoutesInterval)(new UpdatePedestrianRoutes(sim))
   }
 
