@@ -25,7 +25,7 @@ class Point(val name: String, coordinate: Position) extends Vertex {
 
   val corners: Vector[Position] = Vector(coordinate)
 
-  def isInside(p: Position): Boolean = false
+  def isInside(p: Position, wide: Boolean): Boolean = false
 
   override def canEqual(other: Any): Boolean = other.isInstanceOf[Point]
 

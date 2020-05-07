@@ -67,7 +67,7 @@ class ControlDevices(val monitoredAreas: Iterable[DensityMeasuredArea],
   def deepCopyWithState(t: => Time, population: Iterable[PedestrianNOMAD]): ControlDevices = {
     new ControlDevices(
       monitoredAreas.map(_.deepCopy),
-      amws.map(_.deepCopyWithState),
+      amws.map(_.deepCopyWithState(population)),
       flowGates.map(_.deepCopyWithState(t, population)),
       binaryGates.map(_.deepCopy),
       flowSeparators.map(_.deepCopyWithState),

@@ -2,6 +2,7 @@ package hubmodel.supply.graph
 
 import hubmodel.generateUUID
 import org.jgrapht.graph.DefaultWeightedEdge
+import tools.Time
 import tools.cells.Vertex
 
 /** Representation of an edge used in the graph structure. Can be used as parent for advanced edges with gates.
@@ -23,11 +24,19 @@ class MyEdge(val startVertex: Vertex, val endVertex: Vertex) extends DefaultWeig
   // Cost of the edge in seconds (i.e. travel time)
   private var _cost: Double = length / averageWalkingSpeed
 
+  // History of the edge costs
+  private val _costHistory: collection.mutable.ArrayBuffer[(Time, Double)] = collection.mutable.ArrayBuffer()
+
+  def costHistory: Vector[(Time,Double)] = this._costHistory.toVector
+
   // accessor for the cost
   def cost: Double = _cost
 
   // setter for the cost.
-  def updateCost(v: Double): Unit = {_cost = v}
+  def updateCost(t: Time, v: Double): Unit = {
+    this._costHistory.append((t, v))
+    this._cost = v
+  }
 
 
   /** Checks whether another object equals this one
@@ -58,6 +67,16 @@ class MyEdge(val startVertex: Vertex, val endVertex: Vertex) extends DefaultWeig
   }
 
   override def toString: String = this.ID
+
+  def toJSON: String = {
+    "{\n" +
+      "\"ID\":\"" + this.ID + "\",\n" +
+      "\"start_vertex\":\"" + this.startVertex.name + "\",\n" +
+      "\"end_vertex\":\"" + this.endVertex.name + "\",\n" +
+    "\"cost_history\":[" + this._costHistory.map(tc => "{\"t\":" + tc._1 + ", \"c\":" + tc._2 + "}").mkString(",\n") + "]\n"+
+      "}"
+  }
+
 
   def deepCopy: MyEdge = new MyEdge(
     this.startVertex, this.endVertex

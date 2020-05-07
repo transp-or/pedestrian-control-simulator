@@ -8,6 +8,7 @@ import hubmodel.ped.PedestrianNOMAD
 import myscala.math.vector.ZeroVector2D
 import org.jgrapht.alg.shortestpath.{DijkstraShortestPath, KShortestPaths}
 import org.jgrapht.graph.DefaultDirectedWeightedGraph
+import tools.Time
 import tools.cells.Vertex
 
 import scala.collection.JavaConverters._
@@ -43,9 +44,9 @@ class RouteGraph(protected val baseVertices: Iterable[Vertex],
   val vertexCollection: Map[String, Vertex] = this.baseVertices.map(v => v.name -> v).toMap ++
     flowSeparators.flatMap(fs => fs.associatedZonesStart.map(oz => oz.name -> oz) ++ fs.associatedZonesEnd.map(oz => oz.name -> oz)) --
     flowSeparators.flatMap(fs => fs.overridenZones) ++
-  movingWalkways.flatMap(amw => Map(amw.startVertex.name -> amw.startVertex, amw.endVertex.name -> amw.endVertex)) ++
-  movingWalkways.flatMap(amw => amw.associatedZonesStart.map(oz => oz.name -> oz) ++ amw.associatedZonesEnd.map(oz => oz.name -> oz)) --
-  movingWalkways.flatMap(amw => amw.droppedVertices)
+    movingWalkways.flatMap(amw => Map(amw.startVertex.name -> amw.startVertex, amw.endVertex.name -> amw.endVertex)) ++
+    movingWalkways.flatMap(amw => amw.associatedZonesStart.map(oz => oz.name -> oz) ++ amw.associatedZonesEnd.map(oz => oz.name -> oz)) --
+    movingWalkways.flatMap(amw => amw.droppedVertices)
 
   // Inverted destination groups which is used to check if alternative equivalent destination are available
   private val destination2EquivalentDestinations: Map[String, Vector[String]] = destinationGroups.flatMap(kv => kv._2.map(r => r -> kv._2)).toMap
@@ -74,7 +75,7 @@ class RouteGraph(protected val baseVertices: Iterable[Vertex],
     .filterNot(e =>
       flowSeparators.flatMap(fs => fs.overridenZones).toVector.contains(e.startVertex.name)
         || flowSeparators.flatMap(fs => fs.overridenZones).toVector.contains(e.endVertex.name)
-      || movingWalkways.flatMap(amw => amw.droppedVertices).toVector.contains(e.startVertex.name)
+        || movingWalkways.flatMap(amw => amw.droppedVertices).toVector.contains(e.startVertex.name)
         || movingWalkways.flatMap(amw => amw.droppedVertices).toVector.contains(e.endVertex.name)
     ) ++ flowSeparators.flatMap(_.associatedConnectivity) ++ movingWalkways.flatMap(_.associatedConnectivity)) ++ edges2Add) -- edges2Remove
 
@@ -84,9 +85,15 @@ class RouteGraph(protected val baseVertices: Iterable[Vertex],
   this.edgeCollection.foreach(e => {
     network.addEdge(e.startVertex, e.endVertex, e)
     e match {
-      case lv: MyEdgeLevelChange => { network.setEdgeWeight(lv, 0.0) }
-      case a: MovingWalkway => {a.graphEdges.foreach(e => network.setEdgeWeight(e, e.cost))}
-      case _ => { network.setEdgeWeight(e, e.length / 1.34) }
+      case lv: MyEdgeLevelChange => {
+        network.setEdgeWeight(lv, 0.0)
+      }
+      case a: MovingWalkway => {
+        a.graphEdges.foreach(e => network.setEdgeWeight(e, e.cost))
+      }
+      case _ => {
+        network.setEdgeWeight(e, e.length / 1.34)
+      }
     }
   })
 
@@ -126,6 +133,7 @@ class RouteGraph(protected val baseVertices: Iterable[Vertex],
     val path = paths(probabilities.scanLeft(0.0)(_ + _).tail.indexWhere(p => ThreadLocalRandom.current().nextDouble() < p)).getVertexList*/
 
 
+    // println(o,d)
     Try(shortestPathBuilder.getPath(o, d)) match {
       case Success(s) if (s.getVertexList.size() > 0) => {
         (s.getWeight, s.getVertexList.asScala.toList)
@@ -148,12 +156,21 @@ class RouteGraph(protected val baseVertices: Iterable[Vertex],
   }
 
 
+
+  def updateRouteOutsideZones(t: Time, p: PedestrianNOMAD): Unit = {
+    p.route = destination2EquivalentDestinations(p.finalDestination).filter(_ != p.origin).map(d => this.getShortestPath(p.previousZone, d)).minBy(_._1)._2.tail
+    p.finalDestination = p.route.last
+    p.nextZone = p.route.head
+    p.route = p.route.tail
+    p.setCurrentDestination(p.nextZone.uniformSamplePointInside)
+  }
+
   /**
     * Changes the pedestrian's intermediat destination when the current intermediat destination is reached.
     *
     * @param p pedestrian for whom to change destination
     */
-  def processIntermediateArrival(p: PedestrianNOMAD): Unit = {
+  def processIntermediateArrival(t: Time, p: PedestrianNOMAD): Unit = {
     //println(p.route)
     if (p.route.isEmpty) {
       p.route = destination2EquivalentDestinations(p.finalDestination).filter(_ != p.origin).map(d => this.getShortestPath(p.origin, d)).minBy(_._1)._2.tail
@@ -178,17 +195,41 @@ class RouteGraph(protected val baseVertices: Iterable[Vertex],
     }
     p.setCurrentDestination(p.nextZone.uniformSamplePointInside)
 
-    this.edgeCollection
-      .find(e => e.startVertex == p.accomplishedRoute.last._2 &&  e.endVertex == p.accomplishedRoute.dropRight(1).last._2)
-      .get.updateCost((p.accomplishedRoute.last._1 - p.accomplishedRoute.dropRight(1).last._1).value.toDouble)
+    /*if (p.accomplishedRoute.size >= 2) {
+      this.edgeCollection
+        .find(e => e.startVertex == p.accomplishedRoute.dropRight(1).last._2 && e.endVertex == p.accomplishedRoute.last._2)
+        .foreach(e => {
+          e.updateCost(t, (p.accomplishedRoute.last._1 - p.accomplishedRoute.dropRight(1).last._1).value.toDouble)
+        })
+    }*/
 
-    // update the base moving speed of pedestrian p if he is entering a or exiting a moving walkway
+    // update the base moving speed of pedestrian p if he is entering or exiting a moving walkway
     val nextZoneIsAMW = movingWalkways.find(w => (w.startVertex == p.previousZone && w.endVertex == p.nextZone) || (w.endVertex == p.previousZone && w.startVertex == p.nextZone))
     val leavingAMW = movingWalkways.find(w => (w.endVertex == p.previousZone && w.startVertex != p.nextZone) || (w.startVertex == p.previousZone && w.endVertex != p.nextZone))
 
-    if (nextZoneIsAMW.isDefined && leavingAMW.isEmpty) {p.baseVelocity = nextZoneIsAMW.get.movingSpeed}
-    else if (nextZoneIsAMW.isEmpty && leavingAMW.isDefined) {p.baseVelocity = new ZeroVector2D}
-    else if (nextZoneIsAMW.isDefined && leavingAMW.isDefined) {throw new Exception("Error with pedestrian leaving AMW. This case should not happen ! ")}
+
+
+    if (nextZoneIsAMW.isDefined && leavingAMW.isEmpty) {
+      // entering amw
+      p.baseVelocity = nextZoneIsAMW.get.movingSpeed
+      nextZoneIsAMW.get.addPedToAMW(p.ID)
+      p.isInsideAMW = Some(nextZoneIsAMW.get.name)
+    }
+    else if (nextZoneIsAMW.isEmpty && leavingAMW.isDefined) {
+      // leaving amw
+      p.baseVelocity = { t => new ZeroVector2D }
+      leavingAMW.get.removePedFromAMW(p.ID)
+      p.isInsideAMW = None
+
+    }
+    else if (nextZoneIsAMW.isDefined && leavingAMW.isDefined) {
+      throw new Exception("Error with pedestrian leaving AMW. This case should not happen ! ")
+    }
+
+    /*if (p.previousZone.name == "amw2" && p.nextZone.name == "amw1") {
+      println("debug")
+    }*/
+
 
   }
 

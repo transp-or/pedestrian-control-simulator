@@ -93,7 +93,7 @@ class SingleDayAggregateProcessor(fileName: String,
               (vidTime, p.ID, linearInterpolationPosition((p.h_x(minSecond._2), p.h_y(minSecond._2)), (p.h_x(minFirst._2), p.h_y(minFirst._2)), p.h_t(minSecond._2), p.h_t(minFirst._2), vidTime))
             }
           }
-        }.filter(tPos => z.isInside(new Position(tPos._3._1, tPos._3._2)))
+        }.filter(tPos => z.isInside(new Position(tPos._3._1, tPos._3._2), false))
       }).groupBy(tup => tup._1).map(tup => (tup._1, tup._2.map(_._2))).toVector
     //val timeMap: Vector[(Double, Iterable[Int])] = collectIDByTime(times, this.pedSimplified, Vector())
     val res = timeMap.map(p => {
@@ -104,7 +104,7 @@ class SingleDayAggregateProcessor(fileName: String,
           val idx: Int = ped(id).h_t.indexWhere(t => t >= p._1)
           if (idx >= 0 && idx < ped(id).h_t.size - 1) {
             val pos: (Double, Double) = linearInterpolationPosition((ped(id).h_x(idx), ped(id).h_y(idx)), (ped(id).h_x(idx + 1), ped(id).h_y(idx + 1)), ped(id).h_t(idx), ped(id).h_t(idx + 1), p._1)
-            if (z.isInside(new Position(pos._1, pos._2))) {
+            if (z.isInside(new Position(pos._1, pos._2), false)) {
               stupidList.add(new Site(pos._1, pos._2))
             }
           }
@@ -117,7 +117,7 @@ class SingleDayAggregateProcessor(fileName: String,
         if (stupidList.size > 0) {
           voronoi.setSites(stupidList)
           voronoi.setClipPoly(voronoiBoundary)
-          (p._1, voronoi.computeDiagram().asScala.toVector.filter(s => z.isInside(new Position(s.x, s.y))))
+          (p._1, voronoi.computeDiagram().asScala.toVector.filter(s => z.isInside(new Position(s.x, s.y), false)))
         }
         else {
           (p._1, scala.collection.immutable.Vector())
@@ -204,7 +204,7 @@ class SingleDayAggregateProcessor(fileName: String,
           }
         }
       }.filter(tPos => {
-        z.isInside(new Position(tPos._2._1, tPos._2._2))
+        z.isInside(new Position(tPos._2._1, tPos._2._2), false)
       })
     }).groupBy(t => t._1).map(d => (d._1, d._2.size / z.area)).toVector
 
@@ -225,7 +225,7 @@ class SingleDayAggregateProcessor(fileName: String,
           }
         }
       }.filter(tPos => {
-        z.isInside(new Position(tPos._2._1, tPos._2._2))
+        z.isInside(new Position(tPos._2._1, tPos._2._2), false)
       })
     }).groupBy(t => t._1))
     (res ++ (for (t <- times if !res.exists(_._1 == t)) yield {
@@ -343,7 +343,7 @@ class SingleDayAggregateProcessor(fileName: String,
       * @return id of the zone, -1 if none are found.
       */
     def findZone(x: Double, y: Double): Int = {
-      (mainZone +: zones).find(z => z.isInside(new Position(x, y))) match {
+      (mainZone +: zones).find(z => z.isInside(new Position(x, y), false)) match {
         case Some(z) => z.name.toInt
         case None => -1
       }
@@ -482,7 +482,7 @@ class SingleDayAggregateProcessor(fileName: String,
           val idx: Int = p.h_t.indexWhere(_ > t)
           (t, p.ID, linearInterpolationPosition((p.h_x(idx), p.h_y(idx)), (p.h_x(idx + 1), p.h_y(idx + 1)), p.h_t(idx), p.h_t(idx + 1), t))
         }
-        }.filter(tPos => z.isInside(new Position(tPos._3._1, tPos._3._2)))
+        }.filter(tPos => z.isInside(new Position(tPos._3._1, tPos._3._2), false))
       }).groupBy(tup => tup._1).map(tup => (tup._1, tup._2.map(_._2))).toVector.sortBy(_._1)
     //val timeMap: Vector[(Double, Iterable[Int])] = collectIDByTime(times, pedSimplifiedNew, 0.05)
     //println(timeMap)
@@ -492,7 +492,7 @@ class SingleDayAggregateProcessor(fileName: String,
         val t1: Double = times(i)
         val t2: Double = times(i + 1)
         ped.values.flatMap(p => {
-          val txyData = p.getTXYZipped.filter(txy => t1 <= txy._1 && txy._1 < t2 & z.isInside(new Position(txy._2._1, txy._2._2)))
+          val txyData = p.getTXYZipped.filter(txy => t1 <= txy._1 && txy._1 < t2 & z.isInside(new Position(txy._2._1, txy._2._2), false))
           if (txyData.nonEmpty) {
             txyData.dropRight(1).zip(txyData.tail).map(tup => (tup._2._1 - tup._1._1, (tup._2._2._1 - tup._1._2._1, tup._2._2._2 - tup._1._2._2))).toVector
           } else {

@@ -13,7 +13,7 @@ package object cells {
     * @return boolean indicating if the point is inside the vertex
     */
   def isInVertex(v: Vertex)(pos: Position): Boolean = {
-    v.isInside(pos)
+    v.isInside(pos, false)
   }
 
 }

@@ -7,6 +7,7 @@ import hubmodel.control.amw.MovingWalkway
 import hubmodel.control.flowgate.{BinaryGate, FlowGate}
 import hubmodel.control.flowsep.FlowSeparator
 import hubmodel.ped.PedestrianNOMAD
+import tools.Time
 import tools.cells.Vertex
 
 class MultipleGraph(fg: Iterable[FlowGate],
@@ -53,8 +54,12 @@ class MultipleGraph(fg: Iterable[FlowGate],
     }
   }
 
-  def processIntermediateArrival(ped: PedestrianNOMAD): Unit = {
-    this._graphCollection(ped.graph)._2.processIntermediateArrival(ped)
+  def processIntermediateArrival(t: Time, ped: PedestrianNOMAD): Unit = {
+    this._graphCollection(ped.graph)._2.processIntermediateArrival(t, ped)
+  }
+
+  def processRouteOutOfZones(t: Time, ped: PedestrianNOMAD): Unit = {
+    this._graphCollection(ped.graph)._2.updateRouteOutsideZones(t, ped)
   }
 
   // Get the vertex map from all the graphs.
@@ -70,10 +75,10 @@ class MultipleGraph(fg: Iterable[FlowGate],
     vectorizedIds(bins.indexWhere(_ > ThreadLocalRandom.current.nextDouble(0.00001, 0.999999)))._1
   }
 
-  def setRouteFirst(ped: PedestrianNOMAD): Unit = {
+  def setRouteFirst(t: Time, ped: PedestrianNOMAD): Unit = {
     val graph = this.sampleGraphs
     ped.setGraph(graph)
-    this.processIntermediateArrival(ped)
+    this.processIntermediateArrival(t, ped)
   }
 
   type T = MultipleGraph
@@ -89,7 +94,7 @@ class MultipleGraph(fg: Iterable[FlowGate],
 
     val graphs = new MultipleGraph(devices.flowGates, devices.binaryGates, devices.amws, devices.flowSeparators)
     this._graphCollection.foreach(g => {
-      graphs.addGraph(g._1, g._2._1, g._2._2.vertexCollection.values, g._2._2.edgeCollection, Set(), Set(), g._2._2.levelChanges, g._2._2.destinationGroups)
+      graphs.addGraph(g._1, g._2._1, g._2._2.vertexCollection.values.map(_.deepCopy), g._2._2.edgeCollection.map(_.deepCopy), Set(), Set(), g._2._2.levelChanges.map(_.deepCopy), g._2._2.destinationGroups)
     })
     graphs
   }
@@ -109,11 +114,11 @@ class MultipleGraph(fg: Iterable[FlowGate],
 
     val graphs = new MultipleGraph(devices.flowGates, devices.binaryGates, devices.amws, devices.flowSeparators)
     val refGraph = this._graphCollection("reference")
-    graphs.addGraph("reference", 1.0 - populationFraction, refGraph._2.vertexCollection.values, refGraph._2.edgeCollection, Set(), Set(), refGraph._2.levelChanges, refGraph._2.destinationGroups)
+    graphs.addGraph("reference", 1.0 - populationFraction, refGraph._2.vertexCollection.values, refGraph._2.edgeCollection.map(_.deepCopy), Set(), Set(), refGraph._2.levelChanges.map(_.deepCopy), refGraph._2.destinationGroups)
 
     if (populationFraction > 0.0) {
       val alternateGraph = this._graphCollection.filterNot(kv => kv._1 == "reference").head
-      graphs.addGraph(alternateGraph._1, populationFraction, alternateGraph._2._2.vertexCollection.values, alternateGraph._2._2.edgeCollection, alternateGraph._2._2.edges2Add, alternateGraph._2._2.edges2Remove, alternateGraph._2._2.levelChanges, alternateGraph._2._2.destinationGroups)
+      graphs.addGraph(alternateGraph._1, populationFraction, alternateGraph._2._2.vertexCollection.values, alternateGraph._2._2.edgeCollection.map(_.deepCopy), alternateGraph._2._2.edges2Add, alternateGraph._2._2.edges2Remove, alternateGraph._2._2.levelChanges.map(_.deepCopy), alternateGraph._2._2.destinationGroups)
     }
     graphs
   }

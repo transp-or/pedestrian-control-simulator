@@ -14,7 +14,7 @@ import tools.Time
 import tools.TimeNumeric.mkOrderingOps
 
 import scala.collection.immutable.HashMap
-import scala.util.Random
+import scala.util.{Random, Try}
 
 /**
   * Main DES simulator. All the basic information for performing discrete event simulations
@@ -91,8 +91,14 @@ abstract class PedestrianDES(val startTime: Time,
     * @param delay  time after the [[currentTime]] at which the event must take place
     * @param action the [[Action]] which must take place
     */
-  def insertEventWithDelay[U <: Action](delay: Time)(action: U): Unit = {
-    if (this.currentTime + delay < finalTime) eventList += new MyEvent(this.currentTime + delay, action)
+  def insertEventWithDelay[U <: Action](delay: Time)(action: U): Option[MyEvent] = {
+    if (this.currentTime + delay < finalTime) {
+      val event = new MyEvent(this.currentTime + delay, action)
+      eventList += event
+      Some(event)
+    } else {
+      None
+    }
   }
 
   /** Inserts an event witha zero delaay in time. The action will be executed at the current time of the simulator.
@@ -100,8 +106,14 @@ abstract class PedestrianDES(val startTime: Time,
     * @param action Child of the  [[Action]] class to inlcude in the event list
     * @tparam U [[Action]]
     */
-  def insertEventWithZeroDelay[U <: Action](action: U): Unit = {
-    eventList += new MyEvent(this.currentTime, action)
+  def insertEventWithZeroDelay[U <: Action](action: U): Option[MyEvent] = {
+    if (this.currentTime < this.finalTime) {
+      val event = new MyEvent(this.currentTime, action)
+      eventList += event
+      Some(event)
+    } else {
+      None
+    }
   }
 
 
@@ -126,7 +138,9 @@ abstract class PedestrianDES(val startTime: Time,
   def cloneEventQueueInto(simulator: PedestrianPrediction): Unit = {
 
     this.eventList.collect {
-      case e if e.action.deepCopy(simulator).isDefined => simulator.eventList.enqueue(new MyEvent(e.t, e.action.deepCopy(simulator).get))
+      case e if e.action.deepCopy(simulator).isDefined && e.t < simulator.finalTime => {
+        simulator.eventList.enqueue(new MyEvent(e.t, e.action.deepCopy(simulator).get))
+      }
     }
   }
 
@@ -139,6 +153,21 @@ abstract class PedestrianDES(val startTime: Time,
 
   // New population structure using a map where keys are IDs. This makes the usage of a tree for searching neighbours easier
   private val _populationNew: collection.mutable.Map[String, PedestrianNOMAD] = collection.mutable.Map()
+
+  def pedByID(id: String): Option[PedestrianNOMAD] = {
+    if (!this._populationNew.contains(id)) {
+      println("error ! ")
+    }
+
+    this._populationNew.get(id) match {
+      case None => {
+        this.errorLogger.error("Pedestrian not in population ! ID=" + id + ". Probably because she missed the exit zone of the AMW.")
+        this._exitCode = 2
+        None
+      }
+      case Some(p) => Some(p)
+    }
+  }
 
   /**
     * Gets the collection of pedestrians inside the simulation
@@ -177,6 +206,7 @@ abstract class PedestrianDES(val startTime: Time,
   def processCompletedPedestrian(condition: PedestrianNOMAD => Boolean): Unit = {
     val completedPeds: Map[String, PedestrianNOMAD] = this._populationNew.filter(kv => condition(kv._2)).toMap
     completedPeds.values.foreach(p => {
+      p.appendAccomplishedRoute(this.currentTime, p.finalDestination, p.currentPosition)
       p.updatePositionHistory(this.currentTime, scala.math.max(p.isolationTypePed, p.isolationTypeObs))
       p.reachedDestination = true
       p.exitTime = this.currentTime
@@ -250,7 +280,13 @@ abstract class PedestrianDES(val startTime: Time,
   ///////////////////////////////////////////////////////////////////////////////////////////////////
 
 
-  trait StateEvaluationActionDES extends Action
+  /** Parent of the state evaluation methods used in the main simulation and the prediction simulations.
+    * This action has priority over other actions at equal execution time, hence priority set to 1.
+    *
+    */
+  trait StateEvaluationActionDES extends Action {
+    override val priority: Int = 100
+  }
 
   def insertStateEvaluationStart(stateEval: StateEvaluationActionDES): Unit = {
     this.insertEventWithZeroDelay(stateEval)
@@ -268,6 +304,8 @@ abstract class PedestrianDES(val startTime: Time,
     * as an argument. This makes it very general.
     */
   abstract class GenericStartSim(sim: PedestrianDES) extends Action
+
+  abstract class GenericFinishSim(sim: PedestrianDES, val finalTime: Time) extends Action
 
   /** Abstract run which must be overriden in implementation.
     * This will call the [[genericRun()]] method and pass the first start as an argument.
@@ -291,17 +329,18 @@ abstract class PedestrianDES(val startTime: Time,
     * Once this is done, it should run through the [[eventList]] and execute all events
     * until the list is empty.
     */
-  def genericRun(startEvent: GenericStartSim): Unit = {
+  def genericRun(startEvent: GenericStartSim, endEvent: GenericFinishSim): Unit = {
     if (verbose) {    this.logger.info("Starting simulation (" + this.simulationType + ") " + this.ID + " @" + this.currentTime) }
 
-    insertEventWithZeroDelay{startEvent}
+    this.insertEventWithZeroDelay{startEvent}
+    this.eventList.addOne(new MyEvent(endEvent.finalTime, endEvent))
 
     while (this.eventList.nonEmpty && this._exitCode == -1) {
+      /*if (this.currentTime.value.toDouble > 625.0 && this.simulationType == "main simulation"){
+        println("debug")
+      }*/
       val event = eventList.dequeue()
       this._currentTime = event.t
-      /*if (this._currentTime.value % 5.0 == 0) {
-        print(" * simulation at " + this._currentTime + " sec\r")
-      }*/
       if (!event.skip) { event.action.execute()}
     }
 

@@ -956,12 +956,519 @@
   ],
   "moving_walkways": [
     {
-      "o": "b",
-      "d": "c"
+      "name": "amw1",
+      "x1": 27,
+      "y1": 13.5,
+      "x2": 49.5,
+      "y2": 13.5,
+      "width": 1.2,
+      "start_area": "",
+      "end_area": "",
+      "overriden_zones_1": [
+        {
+          "name": "b1",
+          "x1": 21,
+          "y1": 14,
+          "x2": 26,
+          "y2": 14,
+          "x3": 26,
+          "y3": 15.5,
+          "x4": 21,
+          "y4": 15.5,
+          "overrides": "b",
+          "OD": false,
+          "maximum_rate": null
+        },
+        {
+          "name": "b15",
+          "x1": 21,
+          "y1": 12.6,
+          "x2": 26,
+          "y2": 12.6,
+          "x3": 26,
+          "y3": 13.9,
+          "x4": 21,
+          "y4": 13.9,
+          "overrides": "b",
+          "OD": false,
+          "maximum_rate": null
+        },
+        {
+          "name": "b2",
+          "x1": 21,
+          "y1": 11,
+          "x2": 26,
+          "y2": 11,
+          "x3": 26,
+          "y3": 12.5,
+          "x4": 21,
+          "y4": 12.5,
+          "overrides": "b",
+          "OD": false,
+          "maximum_rate": null
+        },
+        {
+          "name": "d1",
+          "x1": 51,
+          "y1": 14,
+          "x2": 55,
+          "y2": 14,
+          "x3": 55,
+          "y3": 15.5,
+          "x4": 51,
+          "y4": 15.5,
+          "overrides": "d",
+          "OD": false,
+          "maximum_rate": null
+        },
+        {
+          "name": "d15",
+          "x1": 51,
+          "y1": 12.6,
+          "x2": 55,
+          "y2": 12.6,
+          "x3": 55,
+          "y3": 13.9,
+          "x4": 51,
+          "y4": 13.9,
+          "overrides": "d",
+          "OD": false,
+          "maximum_rate": null
+        },
+        {
+          "name": "d2",
+          "x1": 51,
+          "y1": 11,
+          "x2": 55,
+          "y2": 11,
+          "x3": 55,
+          "y3": 12.5,
+          "x4": 51,
+          "y4": 12.5,
+          "overrides": "d",
+          "OD": false,
+          "maximum_rate": null
+        },
+        {
+          "name": "c1",
+          "x1": 35.5,
+          "y1": 14.5,
+          "x2": 39.5,
+          "y2": 14.5,
+          "x3": 39.5,
+          "y3": 15.5,
+          "x4": 35.5,
+          "y4": 15.5,
+          "overrides": "c",
+          "OD": true,
+          "maximum_rate": null
+        },
+        {
+          "name": "c2",
+          "x1": 36,
+          "y1": 11,
+          "x2": 40,
+          "y2": 11,
+          "x3": 40,
+          "y3": 12.5,
+          "x4": 36,
+          "y4": 12.5,
+          "overrides": "c",
+          "OD": false,
+          "maximum_rate": null
+        }
+      ],
+      "overriden_zones_2": [],
+      "overriden_connections": [
+        {
+          "node": "amw11",
+          "connected_to": [
+            "b1",
+            "b2",
+            "b15"
+          ]
+        },
+        {
+          "node": "amw12",
+          "connected_to": [
+            "d1",
+            "d2",
+            "d15"
+          ]
+        },
+        {
+          "node": "b1",
+          "connected_to": [
+            "6b",
+            "a",
+            "b2",
+            "c1",
+            "amw11"
+          ]
+        },
+        {
+          "node": "b2",
+          "connected_to": [
+            "a",
+            "5b",
+            "b1",
+            "c2",
+            "amw11"
+          ]
+        },
+        {
+          "node": "b15",
+          "connected_to": [
+            "b1",
+            "b2",
+            "amw11",
+            "a"
+          ]
+        },
+        {
+          "node": "6b",
+          "connected_to": [
+            "6a",
+            "b1"
+          ]
+        },
+        {
+          "node": "5b",
+          "connected_to": [
+            "b2",
+            "5a"
+          ]
+        },
+        {
+          "node": "a",
+          "connected_to": [
+            "4",
+            "a",
+            "2a",
+            "3a",
+            "b1",
+            "b2",
+            "1",
+            "b15"
+          ]
+        },
+        {
+          "node": "c1",
+          "connected_to": [
+            "d1",
+            "b1",
+            "8b"
+          ]
+        },
+        {
+          "node": "c2",
+          "connected_to": [
+            "b2",
+            "d2",
+            "7b"
+          ]
+        },
+        {
+          "node": "d1",
+          "connected_to": [
+            "e1",
+            "10b",
+            "c1",
+            "amw12"
+          ]
+        },
+        {
+          "node": "d15",
+          "connected_to": [
+            "d1",
+            "d2",
+            "amw12"
+          ]
+        },
+        {
+          "node": "d2",
+          "connected_to": [
+            "e",
+            "9b",
+            "c2",
+            "amw12"
+          ]
+        },
+        {
+          "node": "10b",
+          "connected_to": [
+            "10a",
+            "d1"
+          ]
+        },
+        {
+          "node": "9b",
+          "connected_to": [
+            "9a",
+            "d2"
+          ]
+        }
+      ,
+        {
+          "node": "8b",
+          "connected_to": [
+            "8a",
+            "c1"
+          ]
+        },
+        {
+          "node": "7b",
+          "connected_to": [
+            "7a",
+            "c2"
+          ]
+        },
+        {
+          "node": "e",
+          "connected_to": [
+            "11b",
+            "12b",
+            "d1",
+            "13a",
+            "14a"
+          ]
+        },
+        {
+          "node": "b",
+          "connected_to": [
+            "a",
+            "5b",
+            "6b",
+            "c2"
+          ]
+        }
+      ],
+      "parallel_flows": [
+        ["b1", "c1", "d1"],
+        ["b2", "c2", "d2"]
+      ]
     },
     {
-      "o": "c",
-      "d": "b"
+      "name": "amw3",
+      "x1": 57,
+      "y1": 13,
+      "x2": 71.5,
+      "y2": 13,
+      "width": 1.2,
+      "start_area": "",
+      "end_area": "",
+      "overriden_zones_1": [
+        {
+          "name": "d1",
+          "x1": 51,
+          "y1": 14,
+          "x2": 55,
+          "y2": 14,
+          "x3": 55,
+          "y3": 15.5,
+          "x4": 51,
+          "y4": 15.5,
+          "overrides": "d",
+          "OD": false,
+          "maximum_rate": null
+        },
+        {
+          "name": "d15",
+          "x1": 51,
+          "y1": 12.6,
+          "x2": 55,
+          "y2": 12.6,
+          "x3": 55,
+          "y3": 13.9,
+          "x4": 51,
+          "y4": 13.9,
+          "overrides": "d",
+          "OD": false,
+          "maximum_rate": null
+        },
+        {
+          "name": "d2",
+          "x1": 51,
+          "y1": 11,
+          "x2": 55,
+          "y2": 11,
+          "x3": 55,
+          "y3": 12.5,
+          "x4": 51,
+          "y4": 12.5,
+          "overrides": "d",
+          "OD": false,
+          "maximum_rate": null
+        }
+      ],
+      "overriden_zones_2": [
+        {
+          "name": "e1",
+          "x1": 72.5,
+          "y1": 14,
+          "x2": 76,
+          "y2": 14,
+          "x3": 76,
+          "y3": 15.5,
+          "x4": 72.5,
+          "y4": 15.5,
+          "overrides": "e",
+          "OD": false,
+          "maximum_rate": null
+        },
+        {
+          "name": "e15",
+          "x1": 72.5,
+          "y1": 12.6,
+          "x2": 76,
+          "y2": 12.6,
+          "x3": 76,
+          "y3": 13.9,
+          "x4": 72.5,
+          "y4": 13.9,
+          "overrides": "e",
+          "OD": false,
+          "maximum_rate": null
+        },
+        {
+          "name": "e2",
+          "x1": 72.5,
+          "y1": 9,
+          "x2": 76,
+          "y2": 9,
+          "x3": 76,
+          "y3": 12.5,
+          "x4": 72.5,
+          "y4": 12.5,
+          "overrides": "e",
+          "OD": false,
+          "maximum_rate": null
+        }
+      ],
+      "overriden_connections": [
+        {
+          "node": "amw31",
+          "connected_to": [
+            "d1",
+            "d2",
+            "d15",
+            "amw32"
+          ]
+        },
+        {
+          "node": "amw32",
+          "connected_to": [
+            "e1",
+            "e15",
+            "e2",
+            "amw31"
+          ]
+        },
+        {
+          "node": "d15",
+          "connected_to": [
+            "d1",
+            "d2",
+            "amw12",
+            "amw31"
+          ]
+        },
+        {
+        "node": "d1",
+        "connected_to": [
+          "e1",
+          "d15",
+          "10b",
+          "amw31",
+          "amw12"
+        ]
+      },
+        {
+          "node": "d2",
+          "connected_to": [
+            "9b",
+            "c2",
+            "amw12",
+            "amw31",
+            "d15",
+            "e2"
+          ]
+        },
+        {
+          "node": "e1",
+          "connected_to": [
+            "12b",
+            "14a",
+            "13a",
+            "amw32",
+            "e15",
+            "d1"
+          ]
+        },
+        {
+          "node": "e2",
+          "connected_to": [
+            "d2",
+            "11b",
+            "13a",
+            "14a",
+            "12b",
+            "amw32",
+            "e15"
+          ]
+        },
+        {
+          "node": "e15",
+          "connected_to": [
+            "e1",
+            "e2",
+            "amw32",
+            "12b",
+            "14a",
+            "13a"
+          ]
+        },
+        {
+          "node": "11b",
+          "connected_to": [
+            "e2",
+            "11a"
+          ]
+        },
+        {
+          "node": "12b",
+          "connected_to": [
+            "e1",
+            "e2",
+            "e15",
+            "14a",
+            "13a",
+            "12a"
+          ]
+        },
+        {
+          "node": "13a",
+          "connected_to": [
+            "e2",
+            "e1",
+            "12b",
+            "13"
+          ]
+        },
+        {
+          "node": "14a",
+          "connected_to": [
+            "e1",
+            "e2",
+            "12b",
+            "14"
+          ]
+        }
+      ],
+      "parallel_flows": [
+        ["d1", "e1"],
+        ["d2", "e2"]
+      ]
     }
   ],
   "flow_separators": [
@@ -1114,7 +1621,8 @@
             "2a",
             "3a",
             "b1",
-            "b2"
+            "b2",
+            "1"
           ]
         },
         {
@@ -1485,7 +1993,9 @@
           "connected_to": [
             "e2",
             "e1",
-            "12b"
+            "12b",
+            "13",
+            "e15"
           ]
         },
         {
@@ -1493,7 +2003,8 @@
           "connected_to": [
             "e1",
             "e2",
-            "12b"
+            "12b",
+            "e15"
           ]
         }
       ]

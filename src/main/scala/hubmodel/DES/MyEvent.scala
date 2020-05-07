@@ -14,9 +14,10 @@ class MyEvent(val t: Time, val action: Action) extends Ordered[MyEvent] {
   override def compare(that: MyEvent): Int = {
     if (this.t > that.t) -1 // this.t is larger than that.t, that should be executed before this, hence that has higher priority
     else if (this.t < that.t) 1 // this.t is smaller than that.t, this should be executed before that, hence this has higher priority
+    else if (this.action.priority < that.action.priority) -1 // this.action.priority is smaller than that.action.priority, that should be executed before this, hence that has higher priority
+    else if (this.action.priority > that.action.priority) 1 // this.action.priority is greater than that.action.priority, this should be executed before that, hence this has higher priority
     else 0
   }
-
 
   private var _skip: Boolean = false
 

@@ -5,6 +5,7 @@ import java.util.concurrent.ThreadLocalRandom
 import com.typesafe.config.{Config, ConfigFactory, ConfigValueFactory}
 import hubmodel.DES.{NOMADGraphSimulator, _}
 import hubmodel.control.ControlDevices
+import hubmodel.control.amw.MovingWalkway
 import hubmodel.control.flowgate.BinaryGate
 import hubmodel.demand.{DemandData, PublicTransportSchedule}
 import hubmodel.io.output.image.{DrawControlDevicesAndWalls, DrawGraph, DrawWalls, DrawWallsAndGraph}
@@ -16,9 +17,11 @@ import hubmodel.supply.continuous.{ContinuousSpace, MovableWall}
 import hubmodel.supply.graph._
 import myscala.math.vector.{Vector2D, Vector3D}
 import myscala.timeBlock
+import myscala.output.SeqOfSeqExtensions.SeqOfSeqWriter
 import org.apache.commons.lang3.RandomStringUtils
 import tools.Time
 
+import scala.annotation.tailrec
 import scala.collection.immutable.NumericRange
 
 
@@ -50,6 +53,11 @@ package object hubmodel {
   // Maximum number of pedestrians who can wait behind a gate. This prevents simulations  becoming infeasible when
   // hundreds of pedestrians are stuck behind a  gate and then the simulation time explodes.
   val GATE_MAXIMUM_QUEUE_SIZE: Int = 15
+
+
+
+  // AMW acceleration amplitude.
+  val AMW_ACCELERATION_AMPLITUDE: Double = 0.25
 
   /** Samples a pedestrian free flow walking speed.
     *
@@ -90,7 +98,7 @@ package object hubmodel {
     *
     * @return UUID formatted as a String
     */
-  def generateUUID: String = RandomStringUtils.randomAlphabetic(1) + RandomStringUtils.randomAlphanumeric(10) // java.util.UUID.randomUUID.toString
+  def generateUUID: String = RandomStringUtils.randomAlphabetic(1) + RandomStringUtils.randomAlphanumeric(10)
 
 
   // ******************************************************************************************
@@ -214,10 +222,41 @@ package object hubmodel {
     bw.close()
   }
 
-  //type T <: PedestrianNOMAD
+  def writeEdgesJSON(edges: Iterable[MyEdge], file: String): Unit = {
+    val f = new File(file)
+    val bw = new BufferedWriter(new FileWriter(f))
+    bw.write("[")
+    edges.dropRight(1).foreach(e => bw.write(e.toJSON + ",\n"))
+    bw.write(edges.last.toJSON)
+    bw.write("]")
+    bw.close()
+  }
 
-  // Loads the pedestrian flows. These are either exogenous to the trains (from outside) or flows originating from trains.
 
+  def writeEdgesCSV(edges: Iterable[MyEdge], file: String): Unit = {
+
+    @tailrec
+    def csvfy(edges: Vector[MyEdge], dataColumns:Vector[Vector[Double]], headers: Vector[String]): (Vector[String], Vector[Vector[Double]]) = {
+      if (edges.isEmpty) {(headers, dataColumns)}
+      else { csvfy(edges.tail, dataColumns :+ edges.head.costHistory.map(tc => tc._1.value.toDouble) :+ edges.head.costHistory.map(tc => tc._2), headers :+ (edges.head.startVertex.name + " -> " + edges.head.endVertex.name) :+ (edges.head.startVertex.name + " -> " + edges.head.endVertex.name))}
+    }
+
+    val (headers, data): (Vector[String], Vector[Vector[Double]]) = csvfy(edges.toVector, Vector(), Vector())
+
+    data.writeToCSV(file, rowNames = None, columnNames = Some(headers))
+
+  }
+
+
+  def writeAMWsJSON(amws: Iterable[MovingWalkway], file: String): Unit = {
+    val f = new File(file)
+    val bw = new BufferedWriter(new FileWriter(f))
+    bw.write("[")
+    amws.dropRight(1).foreach(amw => bw.write(amw.toJSON + ",\n"))
+    bw.write(amws.last.toJSON)
+    bw.write("]")
+    bw.close()
+  }
 
   // ******************************************************************************************
   //                    Runs the simulation, creates video and outputs results
@@ -227,7 +266,7 @@ package object hubmodel {
   /** Creates, runs and makes a video from the simulation. No results are processed.
     * Making the video can take some time.
     */
-  def runSimulationWithVideo(config: Config, singleDemandSet: Option[DemandData] = None): Unit = {
+  def runSimulationWithVideo(config: Config, singleDemandSet: Option[DemandData] = None): NOMADGraphSimulator = {
 
     // create simulation
     val sim = createSimulation(config, singleDemandSet)
@@ -248,7 +287,15 @@ package object hubmodel {
     println("Running simulation for video...")
 
     // execute simulation
-    timeBlock(sim.run())
+    runAndWriteResults(
+      sim,
+      config.getString("output.output_prefix") + "_",
+      config.getString("output.dir"),
+      config.getBoolean("output.write_trajectories_as_VS"),
+      config.getBoolean("output.write_trajectories_as_JSON"),
+      config.getBoolean("output.write_tt_4_transform")
+    )
+
 
     if (config.getBoolean("output.write_trajectories_as_JSON")) {
       println("Writing trajectory data as JSON...")
@@ -271,6 +318,8 @@ package object hubmodel {
       (sim.startTime.value to sim.finalTime.value by config.getDouble("output.video_dt")).map(new Time(_)),
       sim.controlDevices.flowSeparators
     )
+
+    sim
   }
 
   /** Runs the simulation and then collects the results. The simulation is timed.

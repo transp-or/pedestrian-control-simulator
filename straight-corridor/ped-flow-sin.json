@@ -7,17 +7,17 @@
       "origin": "top",
       "destination": "bottom",
       "linear": [ ],
-      "constant": [ ],
+      "constant": [],
       "sine": [
         {
           "start": "00:00:00",
-          "end": "00:05:00",
+          "end": "00:15:00",
           "period_multiplier": 0.01,
           "period_shift": 0.0,
           "a": 1.0,
           "b": 0.49,
           "c": 0.015,
-          "max_flow": 5.0
+          "max_flow": 5.01
         }
       ]
     },
@@ -29,13 +29,13 @@
       "sine": [
         {
           "start": "00:00:00",
-          "end": "00:05:00",
+          "end": "00:15:00",
           "period_multiplier": 0.01,
           "period_shift": 1.0,
           "a": 1.0,
           "b": 0.49,
           "c": 0.015,
-          "max_flow": 5.0
+          "max_flow": 5.01
         }
       ]
     }

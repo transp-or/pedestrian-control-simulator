@@ -4,7 +4,7 @@ import java.io.{BufferedWriter, File, FileWriter}
 import java.nio.file.{Files, Paths}
 
 import hubmodel.DES.NOMADGraphSimulator
-import hubmodel.io.input.JSONReaders.PedestrianResults_JSON
+import hubmodel.io.input.JSONReaders.{AMWData_JSON, PedestrianResults_JSON}
 import hubmodel.ped.PedestrianSim
 import myscala.math.stats.{ComputeStats, Statistics}
 import myscala.output.SeqOfSeqExtensions.SeqOfSeqWriter
@@ -134,9 +134,35 @@ package object results {
           println("written critical zone successfully")
         }
         case Failure(f) => {
-          println("failed writing criticsl zones")
+          println("Failed writing critical zones")
           throw f
         }
+    }
+
+    // Writes the edge data to JSON
+    Try {
+      writeEdgesJSON(simulator.graph.edges,path + prefix + "edges_" + simulator.ID + ".json")
+    } match {
+      case Success(s) => {
+        println("written edge data successfully")
+      }
+      case Failure(f) => {
+        println("Failed writing edge data")
+        throw f
+      }
+    }
+
+    // Write the AMW data to JSON
+    Try {
+      writeAMWsJSON(simulator.controlDevices.amws, path + prefix + "amws_" + simulator.ID + ".json")
+    } match {
+      case Success(s) => {
+        println("written edga data successfully")
+      }
+      case Failure(f) => {
+        println("Failed writing edga data")
+        throw f
+      }
     }
 
     if (writeTrajectoriesVS) {
@@ -282,6 +308,8 @@ package object results {
           case a if a.contains("_tt_") => "tt"
           case b if b.contains("_density_") => "density"
           case c if c.contains("_individual_densities_") => "individual_densities"
+          case amw if amw.contains("_amws_") => "amw"
+          case edge if edge.contains("_edges_") => "edge"
           case other => throw new IllegalArgumentException("File should not be present: " + other)
         }
       } -> f
@@ -289,6 +317,7 @@ package object results {
       )
 
     filesJson.map(str => {
+
 
       val tt: Vector[PedestrianResults_JSON] = {
         val source: BufferedSource = scala.io.Source.fromFile(str._2("tt"))
@@ -301,9 +330,21 @@ package object results {
         }
       }
 
+
+     val amw: Vector[AMWData_JSON] = {
+       val source: BufferedSource = scala.io.Source.fromFile(str._2("amw"))
+       val input: JsValue = Json.parse(try source.mkString finally source.close)
+       input.validate[Vector[AMWData_JSON]] match {
+         case s: JsSuccess[Vector[AMWData_JSON]] => {
+           s.get
+         }
+         case e: JsError => throw new Error("Error while parsing results file: " + str + "\nerror: " + JsError.toJson(e).toString())
+       }
+     }
+
       // TODO implement reading density results using JSON
 
-      new ResultsContainerReadNew(tt, None, None)
+      new ResultsContainerReadNew(tt, None, None, Some(amw))
     })
   }
 

@@ -1,17 +1,29 @@
 package hubmodel.route
 
 import hubmodel.DES.{Action, NOMADGraphSimulator, PedestrianPrediction}
+import tools.cells.Vertex
 
 
-class UpdatePedestrianRoutes(sim: NOMADGraphSimulator) extends Action {
+class UpdatePedestrianRoutes(sim: NOMADGraphSimulator, withInsert: Boolean = true) extends Action {
 
 
   override def execute(): Unit = {
 
     sim.eventLogger.trace("sim-time=" + sim.currentTime + ": updating pedestrian routes")
 
-    sim.population.filter(sim.intermediateDestinationReached).filterNot(_.isWaiting).foreach(p => sim.updateIntermediateDestination(p))
-    sim.insertEventWithDelay(sim.updateRoutesInterval)(new UpdatePedestrianRoutes(sim))
+    this.sim.controlDevices.amws.foreach(_.updateCosts(sim.currentTime))
+    this.sim.graph.updateGraphCosts()
+
+    val (intermediateDest, outsideZones) = sim.population.partition(sim.intermediateDestinationReached)
+
+    val amwVerticesNames: Vector[String] = this.sim.controlDevices.amws.flatMap(w => Vector(w.startVertex.name, w.endVertex.name)).toVector
+
+    intermediateDest.filterNot(_.isWaiting).foreach(p => sim.updateIntermediateDestination(this.sim.currentTime, p))
+    outsideZones.filter(p => !p.isWaiting && amwVerticesNames.contains(p.nextZone.name) && !amwVerticesNames.contains(p.previousZone.name)).foreach(p => sim.graph.processRouteOutOfZones(this.sim.currentTime, p))
+
+    if (withInsert) {
+      sim.insertEventWithDelay(sim.updateRoutesInterval)(new UpdatePedestrianRoutes(sim))
+    }
   }
 
   type A = UpdatePedestrianRoutes
@@ -19,7 +31,7 @@ class UpdatePedestrianRoutes(sim: NOMADGraphSimulator) extends Action {
   type B = NOMADGraphSimulator
 
 override def deepCopy(simulator: PedestrianPrediction): Option[A] = {
-    Some(new UpdatePedestrianRoutes(simulator))
+    None //Some(new UpdatePedestrianRoutes(simulator))
   }
 
   override def toString: String = "UpdateRoutes"

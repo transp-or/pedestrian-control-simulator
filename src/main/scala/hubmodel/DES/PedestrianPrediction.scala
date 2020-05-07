@@ -2,6 +2,8 @@ package hubmodel.DES
 
 class PedestrianPrediction(params: SimulationInputParameters) extends NOMADGraphSimulator(params) with IsPrediction {
 
+  val isPrediction: Boolean = true
+
   override val verbose: Boolean = false
 
   override val simulationType: String = "prediction simulation"

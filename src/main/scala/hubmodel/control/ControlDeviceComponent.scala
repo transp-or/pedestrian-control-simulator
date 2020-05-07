@@ -24,7 +24,7 @@ trait ControlDeviceComponent {
   *
   * @param start start of the control policy
   */
-abstract class ControlDevicePolicy(val start: Time) {
+abstract class ControlDevicePolicy(val start: Time, val name: String) {
 
   /** human readable name of the policy.
     *
@@ -46,7 +46,11 @@ object ControlDevicePolicy {
   // Note that because `Ordering[A]` is not contravariant, the declaration
   // must be type-parametrized in the event that you want the implicit
   // ordering to apply to subclasses of `ControlDevicePolicy`.
-  implicit def orderingByStart[A <: ControlDevicePolicy]: Ordering[A] =
-    Ordering.by(e => e.start * -1.0)
+  /*implicit def orderingByStart[A <: ControlDevicePolicy]: Ordering[A] =
+    Ordering.by(e => e.start* -1.0)*/
+
+  implicit def orderingByStartAndName[A <: ControlDevicePolicy]: Ordering[A] =
+    Ordering.by(e => (e.name, e.start))
 }
 
+class ControlDeviceData(val name: String)

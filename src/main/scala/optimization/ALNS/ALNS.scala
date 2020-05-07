@@ -2,111 +2,151 @@ package optimization.ALNS
 
 import java.util.concurrent.ThreadLocalRandom
 
-import hubmodel.control.ControlDevicePolicy
+import hubmodel.control.{ControlDeviceData, ControlDevicePolicy}
 import hubmodel.control.amw.AMWPolicy
-import hubmodel.prediction.StatePrediction
+import hubmodel.prediction.{AMWFlowsFromGroundTruth, StatePrediction}
+import hubmodel.prediction.state.StateGroundTruthPredicted
 
 import scala.util.Random
-
 import myscala.output.SeqOfSeqExtensions.SeqOfSeqWriter
+import tools.Time
+
+import scala.annotation.tailrec
 
 
-trait Operator {
-  def xprime(x: ControlDevicePolicy): ControlDevicePolicy
-}
 
-trait RandomChange {
-  val probability: Double
-}
 
-object RandomIncreaseSpeed extends Operator with RandomChange {
-  def xprime(x: ControlDevicePolicy): ControlDevicePolicy = {
-    x match {
-      case amw: AMWPolicy => {AMWPolicy(amw.name, amw.start, amw.end, amw.speed + 1)}
+class ALNS(function: StatePrediction, initialPolicy: Iterable[ControlDevicePolicy], _operators: Vector[OperatorGenerator with RandomChange], constraints: Vector[Constraint], stochasticReduction: FunctionEvaluation => FunctionEvaluationReduced) {
+
+  // Reference to alns algorithm so that the inner classes can access the members and functions.
+  alns: ALNS =>
+
+  private class ExploreBestSolution extends Operator {
+
+    def xprime(x: Vector[ControlDevicePolicy]): Vector[ControlDevicePolicy] = {
+      alns.bestx._1
     }
   }
-  val probability: Double = 0.45
-}
 
-object RandomDecreaseSpeed extends Operator with RandomChange {
-  def xprime(x: ControlDevicePolicy): ControlDevicePolicy = {
-    x match {
-      case amw: AMWPolicy => {AMWPolicy(amw.name, amw.start, amw.end, amw.speed - 1)}
+  private object ExploreBestSolution extends OperatorGenerator with RandomChange {
+    val probability: Double = 0.075
+    val name: String = "ExploreBestSolution"
+    type T = ExploreBestSolution
+
+    def returnOperator(x: Vector[ControlDevicePolicy], iterable: Vector[StateGroundTruthPredicted]): T = new ExploreBestSolution
+  }
+
+  private def stringify(x: Vector[ControlDevicePolicy]): String = x.sorted.map(dv => dv.nameToString + dv.decisionVariable.toString).mkString("-")
+
+  private def computeObjective(x: Vector[ControlDevicePolicy]): Double = {
+    stochasticReduction(evaluatedSolutions(stringify(x))._1)("meanTT")
+  }
+
+  private def getOF(x: Vector[ControlDevicePolicy]): FunctionEvaluation = evaluatedSolutions(stringify(x))._1
+  private def getStateData(x: Vector[ControlDevicePolicy]): Vector[StateGroundTruthPredicted] = evaluatedSolutions(stringify(x))._2
+
+
+  private def changeSolution(x: Vector[ControlDevicePolicy], currentPredictedState: Vector[StateGroundTruthPredicted]): (Solution, String) = {
+
+    val r: Double = ThreadLocalRandom.current.nextDouble()
+
+    val weightSum: Double = this.operatorWeights.values.sum
+
+    val op1Name = this.operatorWeights
+      .toVector
+      .map(w => w._2 / weightSum)
+      .scanLeft(0.0)((a: Double, b: Double) =>  a + b)
+      .zip(this.operatorWeights.toVector)
+      .takeWhile(_._1 < r).last._2._1
+
+    val op1 = operators.find(_.name == op1Name).get
+    val tmp: Solution = op1.returnOperator(x, currentPredictedState).newSolution(x, function.getRealisedControlData._1)
+
+    (tmp, op1.name)
+  }
+
+  @tailrec private def applyConstraints(cs: Vector[Constraint], currentSolution: Vector[ControlDevicePolicy]): Vector[ControlDevicePolicy] = {
+
+    if (cs.size == 1) {
+      cs.head.checkFeasibility(currentSolution)
+      cs.head.feasibleSolution
+    }
+    else {
+      cs.head.checkFeasibility(currentSolution)
+      applyConstraints(cs.tail, cs.head.feasibleSolution)
     }
   }
-  val probability: Double = 0.45
-}
 
-object RandomChangeDirection extends Operator with RandomChange {
-  def xprime(x: ControlDevicePolicy): ControlDevicePolicy = {
-    x match {
-      case amw: AMWPolicy => {AMWPolicy(amw.name, amw.start, amw.end, - amw.speed)}
+  private def acceptanceCriteriaSA(i: Int, x: Vector[ControlDevicePolicy]): (Boolean, Double) = {
+    val T: Double = -0.5/math.log(0.99 + (0.00001-0.99)*i/this.maxIterations)
+    if (computeObjective(x) < computeObjective(this.currentx._1)) {(true, T)}
+    else {
+      (math.exp((computeObjective(this.currentx._1) - computeObjective(x))/T) > ThreadLocalRandom.current.nextDouble(), T)
     }
   }
-  val probability: Double = 0.1
-}
-
-object CongestionIncreaseSpeed extends Operator {
-  def xprime(x: ControlDevicePolicy): ControlDevicePolicy = x
-}
-
-object CongestionDescreaseSpeed extends Operator {
-  def xprime(x: ControlDevicePolicy): ControlDevicePolicy = x
-}
 
 
-trait Constraint {
-  def checkFeasibility(DV: Vector[ControlDevicePolicy]): Boolean
-  def makeFeasible: Vector[ControlDevicePolicy]
-}
+  private def isBestSolution(x: Solution): Boolean = {
+    computeObjective(x._1) < computeObjective(this.bestx._1)
+  }
 
-object SpeedUpperBound extends Constraint {
+  def optimalSolution: (Vector[ControlDevicePolicy], FunctionEvaluation, Vector[ControlDeviceData]) = (this.bestx._1, this.getOF(this.bestx._1), this.bestx._2)
 
-  private var numberOfIterationsWithoutFeasiblity: Int = 0
+  def optimize(): Unit = {
+    var it: Int = 1
+    while (it <= maxIterations && evaluatedSolutions(stringify(this.bestx._1))._2.size/function.replications < 0.3*maxIterations) {
 
-  private var DVSplit: (Vector[ControlDevicePolicy], Vector[ControlDevicePolicy]) =  (Vector(), Vector())
+      print("\r * Running simulation " + it + "/" + maxIterations)
+      println("")
+      val (xNewRaw, op): (Solution, String) = changeSolution(this.currentx._1, this.getStateData(this.currentx._1))
+      val xNew: Solution = (applyConstraints(this.constraints, xNewRaw._1), xNewRaw._2)
+      println("Evaluating solution: " + xNew._1.map(_.decisionVariable))
+      function.predict(xNew._1, xNew._2)
 
-  def checkFeasibility(DV: Vector[ControlDevicePolicy]): Boolean = {
-    DVSplit = DV.partition(dv => dv.decisionVariable <= 5.0)
+      evaluatedSolutions.update(
+        stringify(xNew._1),
+        (
+          (evaluatedSolutions.getOrElse(stringify(xNew._1), (Map(), Vector()))._1.toVector ++ function.computeObjectives.toVector).groupBy(_._1).view.mapValues(v => v.flatMap(_._2)).toMap,
+          evaluatedSolutions.getOrElse(stringify(xNew._1), (Map(), Vector()))._2 ++ function.getPredictedStateData
+        )
+      )
 
-    if (DVSplit._2.nonEmpty) {
-      numberOfIterationsWithoutFeasiblity += 1
-      false
+      var accepted = false
+      var score: Double = weightScores("rejected")
+      val (accept, temp) = acceptanceCriteriaSA(it, xNew._1)
+
+      if ( accept) {
+        score = weightScores("accepted")
+        if (computeObjective(xNew._1) < computeObjective(this.currentx._1)) { score = weightScores("improvement")}
+        this.currentx = xNew
+        accepted = true
+      }
+
+      if ( isBestSolution(xNew) ) {
+        this.bestx = xNew
+        score = weightScores("newBest")
+      }
+
+      operatorWeights.update(op, math.max(weightMin, math.min(weightMax, operatorWeights(op) * lambda  + (1-lambda) * score)))
+
+      println(this.evaluatedSolutions(stringify(xNew._1))._2.size ,computeObjective(xNew._1), computeObjective(this.currentx._1), computeObjective(this.bestx._1))
+      this.iterations.append((it, temp, xNew, accepted, op, stochasticReduction(this.getOF(xNew._1)), stochasticReduction(this.getOF(this.currentx._1)), stochasticReduction(this.getOF(this.bestx._1)), operatorWeights.toMap))
+
+      it = it + 1
     }
-    else {true}
+    print("\n")
   }
 
-  def makeFeasible: Vector[ControlDevicePolicy] = {
-    this.DVSplit._2.map(dv => dv match {
-      case amw: AMWPolicy => amw.copy(speed = 5.0)
-    }) ++ this.DVSplit._1
+  def writeIterationsToCSV(file: String, path: String = ""): Unit = {
+    val objectiveHeader: Vector[String] = this.iterations.head._6.keys.toVector.sorted
+    val header: Vector[String] = this.iterations.head._3._1.sorted.map(_.nameToString)
+    val weightHeader: Vector[String] = this.iterations.head._9.keys.toVector
+
+    this.iterations.toVector
+      .map(v => Vector(v._1, v._2, v._5, v._4) ++ v._3._1.sorted.map(_.decisionVariable) ++ objectiveHeader.map(v._6) ++ objectiveHeader.map(v._7) ++ objectiveHeader.map(v._8) ++ weightHeader.map(v._9) )
+      .transpose
+      .writeToCSV(file, rowNames = None, columnNames = Some(Vector("it", "temp", "operator", "accepted") ++ header ++ objectiveHeader ++ objectiveHeader.map(_ ++ "_current") ++ objectiveHeader.map(_ ++ "_best") ++ weightHeader.map(_ ++ "_weight")))
   }
-}
-
-object SpeedLowerBound extends Constraint {
-
-  private var numberOfIterationsWithoutFeasiblity: Int = 0
-
-  private var DVSplit: (Vector[ControlDevicePolicy], Vector[ControlDevicePolicy]) =  (Vector(), Vector())
-
-  def checkFeasibility(DV: Vector[ControlDevicePolicy]): Boolean = {
-    DVSplit = DV.partition(dv => dv.decisionVariable >= - 5.0)
-
-    if (DVSplit._2.nonEmpty) {
-      numberOfIterationsWithoutFeasiblity += 1
-      false
-    }
-    else {true}
-  }
-
-  def makeFeasible: Vector[ControlDevicePolicy] = {
-    this.DVSplit._2.map(dv => dv match {
-      case amw: AMWPolicy => amw.copy(speed = -5.0)
-    }) ++ this.DVSplit._1
-  }
-}
-
-class ALNS(function: StatePrediction, initialPolicy: Iterable[ControlDevicePolicy], operators: Vector[Operator], constraints: Vector[Constraint]) {
 
   println("Starting optimization for simulation")
   println(" * start time = " + this.function.predictionStartTime)
@@ -114,100 +154,44 @@ class ALNS(function: StatePrediction, initialPolicy: Iterable[ControlDevicePolic
   println(" * decision variables interval = " + this.function.predictionInterval)
 
 
-  private val x0: Vector[ControlDevicePolicy] = initialPolicy.toVector
+  val weightMin: Double = 0.5
+  val weightMax: Double = 10
+  val lambda: Double = 0.9
+  private val weightScores: Map[String, Double] = Map("newBest" -> 15, "improvement" -> 10, "accepted" -> 5, "rejected" -> 1)
+  private val operators: Vector[OperatorGenerator with RandomChange] = this._operators :+ ExploreBestSolution
+  private val operatorWeights: collection.mutable.TreeMap[String, Double] = collection.mutable.TreeMap.from(operators.map(o => o.name -> 3))
 
-  function.predict(x0)
-  function.getPredictedStateData
+  private val x0: Vector[ControlDevicePolicy] = initialPolicy.toVector.sorted
 
-  private var currentBestx: Vector[ControlDevicePolicy] = x0
+  function.predict(x0, Vector())
 
-  private var currentBestOF: FunctionEvaluation = function.computeObjectives
+  private val evaluatedSolutions: collection.mutable.Map[String, (FunctionEvaluation, Vector[StateGroundTruthPredicted])] = collection.mutable.Map(stringify(x0) -> (function.computeObjectives, function.getPredictedStateData))
 
-  def optimalSolution: (Vector[ControlDevicePolicy], FunctionEvaluation) = (this.currentBestx, this.currentBestOF)
 
-  private val solutions: collection.mutable.ArrayBuffer[(Vector[ControlDevicePolicy], FunctionEvaluation)] = collection.mutable.ArrayBuffer((currentBestx, currentBestOF))
+  private var bestx: Solution = (x0, Vector())
+  private var currentx: Solution = (x0, Vector())
 
-  val lowerBoundRandomFraction: Double = 0.25
-  val upperBoundRandomFraction: Double = 0.75
-  val maxIterations: Int = 50
+  type OperatorWeights = Map[String, Double]
 
-  if (operators.collect{case rand: RandomChange => {rand.probability}}.sum != 1.0) {
-    throw new Exception("Sum of probabilities for random operators different than one.")
-  }
+  private val iterations: collection.mutable.ArrayBuffer[(Iteration, Temperature, Solution, Boolean, OperatorName, FunctionEvaluationReduced, FunctionEvaluationReduced, FunctionEvaluationReduced, OperatorWeights)] =
+    collection.mutable.ArrayBuffer((0, Double.NaN, bestx, true, "", stochasticReduction(getOF(x0)), stochasticReduction(getOF(x0)), stochasticReduction(getOF(x0)), operatorWeights.toMap))
 
-  val sizeOfX: Int = x0.size
-  val orderedIdxOfX: Vector[Int] = (0 until sizeOfX).toVector
+  //val lowerBoundRandomFraction: Double = 0.2
+  //val upperBoundRandomFraction: Double = 0.4
+  val maxIterations: Int = 100
 
-  val randomOperatorsProbCumSum: Vector[(Double, Operator with RandomChange)] = {
-    operators
-      .collect{case rand: Operator with RandomChange => {rand}}
-      .scanLeft(0.0)((a: Double, b: Operator with RandomChange) =>  a + b.probability)
-      .zip(operators.collect{case rand: Operator with RandomChange => {rand}})
-  }
+  /*if (this.operators.collect{case rand: RandomChange => {rand.probability}}.sum != 1.0) {
+    throw new Exception("Sum of probabilities for random operators different than one !")
+  }*/
 
-  def selectRandomChange: Vector[(ControlDevicePolicy, Operator with RandomChange)] = {
-    val fractionToChange: Double = ThreadLocalRandom.current.nextDouble(lowerBoundRandomFraction, upperBoundRandomFraction)
-    Random.shuffle(orderedIdxOfX)
-      .take((fractionToChange * sizeOfX).round.toInt)
-      .map(idx => {
-        val operatorSample: Double = ThreadLocalRandom.current.nextDouble()
-        (x0(idx), randomOperatorsProbCumSum.takeWhile(_._1 < operatorSample).last._2)
-      })
-  }
+  //val sizeOfX: Int = x0.size
+  //val orderedIdxOfX: Vector[Int] = (0 until sizeOfX).toVector
 
-  def changeSolution(x: Vector[ControlDevicePolicy]): Vector[ControlDevicePolicy] = {
-
-    val randomChanges = selectRandomChange
-
-    x.map(dv => {
-      val change: Option[(ControlDevicePolicy, Operator with RandomChange)] = randomChanges.find(rc => rc._1.start == dv.start)
-      if (change.isDefined) {change.get._2.xprime(dv) }
-      else {dv}
-    })
-  }
-
-  def applyConstraints(cs: Vector[Constraint], currentSolution: Vector[ControlDevicePolicy]): Vector[ControlDevicePolicy] = {
-    if (cs.size == 1) {
-      cs.head.checkFeasibility(currentSolution)
-      cs.head.makeFeasible
-    }
-    else {
-      cs.head.checkFeasibility(currentSolution)
-      applyConstraints(cs.tail, cs.head.makeFeasible)
-    }
-  }
-
-  def optimize(): Unit = {
-    var it: Int = 0
-    while (it < maxIterations) {
-
-      print("\r * Running simulation " + it + "/" + maxIterations)
-      //System.out.print(")
-      val xNewRaw = changeSolution(this.currentBestx)
-      val xNew = applyConstraints(this.constraints, xNewRaw)
-      //println(xNew)
-      function.predict(xNew)
-      val fNew = function.computeObjectives
-      //println(fNew)
-      this.solutions.append((xNew, fNew))
-      if ( fNew("meanTT") <=  this.currentBestOF("meanTT")) {
-        this.currentBestOF = fNew
-        this.currentBestx = xNew
-        //this.solutions.sortBy(_._2("meanTT")).take(10).foreach(d => println(d._2("meanTT"), d._1.sortBy(_.start).map(v => v.asInstanceOf[AMWPolicy]).map(_.speed)))
-      }
-      it = it + 1
-    }
-    print("\n")
-  }
-
-  def writeSolutionToCSV(file: String, path: String = ""): Unit = {
-    val objectiveHeader: Vector[String] = this.solutions.head._2.keys.toVector.sorted
-    val header: Vector[String] = this.solutions.head._1.sortBy(_.start).map(_.nameToString)
-
-    this.solutions.toVector
-      .map(v => objectiveHeader.map(v._2) ++ v._1.sortBy(_.start).map(_.decisionVariable))
-      .transpose
-      .writeToCSV(file, rowNames = None, columnNames = Some(objectiveHeader ++ header))
-  }
-
+  /*val randomOperatorsProbCumSum: Vector[(Double, OperatorGenerator with RandomChange)] = {
+    this.operators
+      .collect{case rand: OperatorGenerator with RandomChange => {rand}}
+      .scanLeft(0.0)((a: Double, b: OperatorGenerator with RandomChange) =>  a + b.probability)
+      .zip(operators.collect{case rand: OperatorGenerator with RandomChange => {rand}})
+  }*/
 }
+

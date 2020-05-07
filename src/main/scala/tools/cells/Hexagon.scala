@@ -24,7 +24,7 @@ class Hexagon(val center: Position, edgeLength: Double) extends Vertex {
   val area: Double = 1.5 * scala.math.sqrt(3.0) * edgeLength * edgeLength
 
 
-  def isInside(p: Position): Boolean = {
+  def isInside(p: Position, wide: Boolean): Boolean = {
     // https://stackoverflow.com/questions/5193331/is-a-point-inside-regular-hexagon
     val d: Double = (p - center).norm
 

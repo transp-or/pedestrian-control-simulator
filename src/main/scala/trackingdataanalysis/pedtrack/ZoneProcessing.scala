@@ -47,7 +47,7 @@ abstract class ZoneProcessing(zoneFile: String, tolerance: Double) {
     if (mapZones.isEmpty) -1
     else {
       val pair = mapZones.head
-      if (pair._2.isInside(new Position(pos._1, pos._2))) pair._1
+      if (pair._2.isInside(new Position(pos._1, pos._2), false)) pair._1
       else findZoneOwnership(pos, mapZones.tail)
     }
   }

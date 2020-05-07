@@ -14,7 +14,7 @@ trait Vertex {
 
   def numberCorners: Int = corners.size
 
-  def isInside(p: Position): Boolean
+  def isInside(p: Position, wide: Boolean): Boolean
 
   def name: String
 
@@ -26,9 +26,9 @@ trait Vertex {
   def uniformSamplePointInside: Position
 
   //def equalsID(other: Any): Boolean
-  override def equals(other: Any): Boolean
+  def equals(other: Any): Boolean
 
-  override def hashCode: Int
+  def hashCode: Int
 
   def canEqual(other: Any): Boolean
 

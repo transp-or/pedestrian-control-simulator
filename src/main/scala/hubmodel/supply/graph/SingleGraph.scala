@@ -5,6 +5,7 @@ import hubmodel.control.amw.MovingWalkway
 import hubmodel.control.flowgate.{BinaryGate, FlowGate}
 import hubmodel.control.flowsep.FlowSeparator
 import hubmodel.ped.PedestrianNOMAD
+import tools.Time
 import tools.cells.Vertex
 
 class SingleGraph(private val baseVertices: Iterable[Vertex],
@@ -31,8 +32,9 @@ class SingleGraph(private val baseVertices: Iterable[Vertex],
     *
     * @param p pedestrian for whom to change destination
     */
-  def processIntermediateArrival(p: PedestrianNOMAD): Unit = this.graph.processIntermediateArrival(p)
+  def processIntermediateArrival(t: Time, p: PedestrianNOMAD): Unit = this.graph.processIntermediateArrival(t, p)
 
+  def processRouteOutOfZones(t: Time, p: PedestrianNOMAD): Unit = this.graph.updateRouteOutsideZones(t, p)
 
   type T = SingleGraph
 
@@ -44,11 +46,11 @@ class SingleGraph(private val baseVertices: Iterable[Vertex],
     * @return Copy of the graph.
     */
   def deepCopy(devices: ControlDevices): T = new SingleGraph(
-    this.baseVertices, this.standardEdges, this.levelChanges, this.destinationGroups, devices.flowGates, devices.binaryGates, devices.amws, devices.flowSeparators
+    this.baseVertices.map(_.deepCopy), this.standardEdges.map(_.deepCopy), this.levelChanges.map(_.deepCopy), this.destinationGroups, devices.flowGates, devices.binaryGates, devices.amws, devices.flowSeparators
   )
 
   def deepCopy2AlternateGraphs(devices: ControlDevices, popFraction: Double): T = new SingleGraph(
-    this.baseVertices, this.standardEdges, this.levelChanges, this.destinationGroups, devices.flowGates, devices.binaryGates, devices.amws, devices.flowSeparators
+    this.baseVertices.map(_.deepCopy), this.standardEdges.map(_.deepCopy), this.levelChanges.map(_.deepCopy), this.destinationGroups, devices.flowGates, devices.binaryGates, devices.amws, devices.flowSeparators
   )
 
   override def toString: String = {
