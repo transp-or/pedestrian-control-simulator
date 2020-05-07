@@ -2,6 +2,7 @@ package hubmodel.ped
 
 import java.util.concurrent.ThreadLocalRandom
 
+import hubmodel.control.amw.MovingWalkway
 import hubmodel.ped.History.{CoordinateTracking, HistoryContainer, PositionIsolation}
 import hubmodel.{Position, pedestrianWalkingSpeed, _}
 import myscala.math.vector.ZeroVector2D
@@ -70,13 +71,20 @@ class PedestrianSim(val origin: Vertex,
 
 
   // Route the pedestrian actually accomplished
-  protected val _accomplishedRoute: collection.mutable.ArrayBuffer[(Time, Vertex)] = new collection.mutable.ArrayBuffer()
+  protected val _accomplishedRoute: collection.mutable.ArrayBuffer[(Time, Vertex, Position)] = new collection.mutable.ArrayBuffer()
 
-  def appendAccomplishedRoute(t: Time, v: Vertex): Unit = {this._accomplishedRoute.append((t, v))}
+  def appendAccomplishedRoute(t: Time, v: Vertex ,p: Position): Unit = {this._accomplishedRoute.append((t, v, p))}
 
-  def accomplishedRoute: Vector[(Time, Vertex)] = this._accomplishedRoute.toVector
+  def accomplishedRoute: Vector[(Time, Vertex, Position)] = this._accomplishedRoute.toVector
 
   var route: List[Vertex] = List()
+
+  def reverseRoute(): Unit = {
+    val tmp = this.nextZone
+    this.nextZone = this.previousZone
+    this.previousZone = tmp
+    setCurrentDestination(this.nextZone.uniformSamplePointInside)
+  }
 
   /** intermediate destination of the pedestrian */
   var currentDestination: Position = new Position(0, 0) //route.head.uniformSamplePointInside
@@ -87,8 +95,10 @@ class PedestrianSim(val origin: Vertex,
   }
 
 
+  var isInsideAMW: Option[String] = None
+
   // Base moving speed on top of which the pedestrian moves. This is used to model the effect of moving walkways.
-  var baseVelocity: Velocity = new ZeroVector2D
+  var baseVelocity: Time => Velocity = t => new ZeroVector2D
 
   /** current velocity, initialized to 0.0 */
   var currentVelocity: Velocity = new ZeroVector2D

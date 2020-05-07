@@ -95,15 +95,15 @@ package object graph {
 
             // create start and end vertices
             val startCircle: Circle = new Circle( m.name + "1",
-                start + (start - end).normalized * 0.5 * (m.width - 0.2),
-                0.5 * (m.width - 0.2),
+                start + (start - end).normalized * 0.5 * (m.width - 0.3),
+                0.5 * (m.width - 0.3),
                 false,
                 None
               )
 
             val endCircle: Circle =  new Circle(                m.name + "2",
-                end + (end - start).normalized * 0.5*(m.width-0.2),
-                0.5*(m.width-0.2),
+                end + (end - start).normalized * 0.5*(m.width-0.3),
+                0.5*(m.width - 0.3),
                 false,
                 None
               )

@@ -77,7 +77,7 @@ def this(data: Array[Double]) {
   * @param pos [[Position]] to check
   * @return boolean indicating if the point is inside the vertex.
   */
-  def isInside(pos: Position): Boolean = {
+  def isInside(pos: Position, wide: Boolean): Boolean = {
     val AB: Position = (B + new Position(-0.1, 0.1)) - (A + new Position(0.1, 0.1))
     val BC: Position = (C + new Position(-0.1, -0.1)) - (B + new Position(-0.1, 0.1))
     val AP: Position = pos - (A + new Position(0.1, 0.1))

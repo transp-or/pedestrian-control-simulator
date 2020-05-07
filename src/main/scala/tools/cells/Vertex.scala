@@ -14,7 +14,7 @@ trait Vertex {
 
   def numberCorners: Int = corners.size
 
-  def isInside(p: Position): Boolean
+  def isInside(p: Position, wide: Boolean): Boolean
 
   def name: String
 

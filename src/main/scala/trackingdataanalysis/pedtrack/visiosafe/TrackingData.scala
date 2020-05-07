@@ -16,7 +16,7 @@ package visiosafe {
     // 0 => no side change
     // -1 => from left to right
     def crossesLine(currentPos: myscala.math.vector.Vector2D, previousPos: myscala.math.vector.Vector2D): Int = {
-      if (this.nearRegion.isInside(currentPos)) {
+      if (this.nearRegion.isInside(currentPos, false)) {
         // https://stackoverflow.com/questions/1560492/how-to-tell-whether-a-point-is-to-the-right-or-left-side-of-a-line/1560510#1560510
         if (math.signum((end.X - start.X) * (currentPos.Y - start.Y) - (end.Y - start.Y) * (currentPos.X - start.X)) ==
           math.signum((end.X - start.X) * (previousPos.Y - start.Y) - (end.Y - start.Y) * (previousPos.X - start.X))) 0

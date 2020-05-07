@@ -19,7 +19,7 @@ class Circle(val name: String, val center: Position, radius: Double, val isOD: B
     val a = ThreadLocalRandom.current().nextDouble() * 2 * math.Pi
 
     // radius
-    val r = this.radius * math.sqrt(ThreadLocalRandom.current().nextDouble())
+    val r = 0.1 * this.radius * math.sqrt(ThreadLocalRandom.current().nextDouble())
 
     // cartesian coordinates
     this.center + new Position(r * math.cos(a), r * math.sin(a))
@@ -33,8 +33,12 @@ class Circle(val name: String, val center: Position, radius: Double, val isOD: B
     this.center + new Position(-this.radius, 0.0),
     this.center + new Position(0.0, - this.radius ))
 
-  def isInside(p: Position): Boolean = {
-    (p - this.center).norm <= this.radius
+  def isInside(p: Position, wide: Boolean): Boolean = {
+    if (wide) {
+      (p - this.center).norm <= 3 *this.radius
+    } else {
+      (p - this.center).norm <= this.radius
+    }
   }
 
   // Rate in pedestrians/second at which to generate pedestrians inside this cell.

@@ -24,7 +24,7 @@ class UpdateClosestWall(sim: NOMADGraphSimulator) extends Action {
   type B = NOMADGraphSimulator
 
 override def deepCopy(simulator: PedestrianPrediction): Option[A] = {
-    Some(new UpdateClosestWall(simulator))
+    None // Some(new UpdateClosestWall(simulator))
   }
 
 }

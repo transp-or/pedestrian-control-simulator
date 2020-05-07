@@ -14,7 +14,7 @@ import tools.Time
 import tools.TimeNumeric.mkOrderingOps
 
 import scala.collection.immutable.HashMap
-import scala.util.Random
+import scala.util.{Random, Try}
 
 /**
   * Main DES simulator. All the basic information for performing discrete event simulations
@@ -91,8 +91,14 @@ abstract class PedestrianDES(val startTime: Time,
     * @param delay  time after the [[currentTime]] at which the event must take place
     * @param action the [[Action]] which must take place
     */
-  def insertEventWithDelay[U <: Action](delay: Time)(action: U): Unit = {
-    if (this.currentTime + delay < finalTime) eventList += new MyEvent(this.currentTime + delay, action)
+  def insertEventWithDelay[U <: Action](delay: Time)(action: U): Option[MyEvent] = {
+    if (this.currentTime + delay < finalTime) {
+      val event = new MyEvent(this.currentTime + delay, action)
+      eventList += event
+      Some(event)
+    } else {
+      None
+    }
   }
 
   /** Inserts an event witha zero delaay in time. The action will be executed at the current time of the simulator.
@@ -100,8 +106,14 @@ abstract class PedestrianDES(val startTime: Time,
     * @param action Child of the  [[Action]] class to inlcude in the event list
     * @tparam U [[Action]]
     */
-  def insertEventWithZeroDelay[U <: Action](action: U): Unit = {
-    eventList += new MyEvent(this.currentTime, action)
+  def insertEventWithZeroDelay[U <: Action](action: U): Option[MyEvent] = {
+    if (this.currentTime < this.finalTime) {
+      val event = new MyEvent(this.currentTime, action)
+      eventList += event
+      Some(event)
+    } else {
+      None
+    }
   }
 
 
@@ -142,6 +154,21 @@ abstract class PedestrianDES(val startTime: Time,
   // New population structure using a map where keys are IDs. This makes the usage of a tree for searching neighbours easier
   private val _populationNew: collection.mutable.Map[String, PedestrianNOMAD] = collection.mutable.Map()
 
+  def pedByID(id: String): Option[PedestrianNOMAD] = {
+    if (!this._populationNew.contains(id)) {
+      println("error ! ")
+    }
+
+    this._populationNew.get(id) match {
+      case None => {
+        this.errorLogger.error("Pedestrian not in population ! ID=" + id + ". Probably because she missed the exit zone of the AMW.")
+        this._exitCode = 2
+        None
+      }
+      case Some(p) => Some(p)
+    }
+  }
+
   /**
     * Gets the collection of pedestrians inside the simulation
     *
@@ -179,7 +206,7 @@ abstract class PedestrianDES(val startTime: Time,
   def processCompletedPedestrian(condition: PedestrianNOMAD => Boolean): Unit = {
     val completedPeds: Map[String, PedestrianNOMAD] = this._populationNew.filter(kv => condition(kv._2)).toMap
     completedPeds.values.foreach(p => {
-      p.appendAccomplishedRoute(this.currentTime, p.nextZone)
+      p.appendAccomplishedRoute(this.currentTime, p.finalDestination, p.currentPosition)
       p.updatePositionHistory(this.currentTime, scala.math.max(p.isolationTypePed, p.isolationTypeObs))
       p.reachedDestination = true
       p.exitTime = this.currentTime
@@ -253,7 +280,13 @@ abstract class PedestrianDES(val startTime: Time,
   ///////////////////////////////////////////////////////////////////////////////////////////////////
 
 
-  trait StateEvaluationActionDES extends Action
+  /** Parent of the state evaluation methods used in the main simulation and the prediction simulations.
+    * This action has priority over other actions at equal execution time, hence priority set to 1.
+    *
+    */
+  trait StateEvaluationActionDES extends Action {
+    override val priority: Int = 100
+  }
 
   def insertStateEvaluationStart(stateEval: StateEvaluationActionDES): Unit = {
     this.insertEventWithZeroDelay(stateEval)
@@ -303,6 +336,9 @@ abstract class PedestrianDES(val startTime: Time,
     this.eventList.addOne(new MyEvent(endEvent.finalTime, endEvent))
 
     while (this.eventList.nonEmpty && this._exitCode == -1) {
+      /*if (this.currentTime.value.toDouble > 625.0 && this.simulationType == "main simulation"){
+        println("debug")
+      }*/
       val event = eventList.dequeue()
       this._currentTime = event.t
       if (!event.skip) { event.action.execute()}

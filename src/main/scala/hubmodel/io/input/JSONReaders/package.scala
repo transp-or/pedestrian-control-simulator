@@ -569,6 +569,18 @@ package object JSONReaders {
       (JsPath \ "tt-monitored-zones").read[Vector[TravelTimeThroughZone_JSON]]
     ) (PedestrianResults_JSON.apply _)
 
+  // *********************** AMW data ****************************
+
+  case class AMWData_JSON(id: String, start: String, end: String, appliedPolicy: Vector[(Double, Double)], expectedPolicy: Vector[(Double, Double)])
+
+  implicit val AMWData_JSON_Reads: Reads[AMWData_JSON] = (
+    (JsPath \ "ID").read[String] and
+      (JsPath \ "start_vertex").read[String] and
+      (JsPath \ "end_vertex").read[String] and
+      (JsPath \ "applied_speed_history").read[Vector[Tuple2[Double, Double]]] and
+      (JsPath \ "expected_speed_history").read[Vector[Tuple2[Double, Double]]]
+    ) (AMWData_JSON.apply _)
+
 
   // ******************************************************************************************
   //                         READERS FOR THE OD GROUPS USED IN THE RESULTS

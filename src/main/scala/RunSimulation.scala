@@ -380,6 +380,23 @@ object RunSimulation extends App with StrictLogging {
   }*/
 
     // ******************************************************************************************
+    //                                        AMW data
+    // ******************************************************************************************
+
+    if (config.getBoolean("output.amws.control-policy")) {
+      val headersData = resultsJson
+        .filter(_.amwData.isDefined)
+        .flatMap(_.amwData.get)
+        .map(d => ( Vector(d.id + "_applied_t", d.id + "_applied_s", d.id + "_expected_t", d.id + "expected_s"), Vector(d.appliedPolicy.map(_._1), d.appliedPolicy.map(_._2), d.expectedPolicy.map(_._1), d.expectedPolicy.map(_._2)) ))
+
+      val headers = headersData.flatMap(_._1)
+      val data = headersData.flatMap(_._2)
+
+      data.writeToCSV(config.getString("output.output_prefix") + "_amw_speeds.csv", rowNames=None, columnNames = Some(headers))
+    }
+
+
+    // ******************************************************************************************
     //                                  Processing for TRANS-FORM
     // ******************************************************************************************
 

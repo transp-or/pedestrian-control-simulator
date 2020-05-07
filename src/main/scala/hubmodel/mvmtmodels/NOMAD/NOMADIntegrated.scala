@@ -256,7 +256,7 @@ class NOMADIntegrated(sim: NOMADGraphSimulator) extends Action {
 
       // updates the next destination if the current destination is reached
       if (sim.intermediateDestinationReached(ped)) {
-        ped.appendAccomplishedRoute(this.sim.currentTime, ped.nextZone)
+        ped.appendAccomplishedRoute(this.sim.currentTime, ped.nextZone, ped.currentPosition)
         sim.updateIntermediateDestination(this.sim.currentTime, ped)
       }
     })
@@ -288,7 +288,7 @@ class NOMADIntegrated(sim: NOMADGraphSimulator) extends Action {
   type B = NOMADGraphSimulator
 
 override def deepCopy(simulator: PedestrianPrediction): Option[A] = {
-    Some(new NOMADIntegrated(simulator))
+    None //Some(new NOMADIntegrated(simulator))
   }
 
   def walkPedestrian(ped: PedestrianNOMAD, pedestrians: util.ArrayList[InfluenceAreaReturnPedDataNew], obstacles: util.ArrayList[InfluenceAreaReturnObsData], dt: Double): Unit = {
@@ -899,7 +899,7 @@ override def deepCopy(simulator: PedestrianPrediction): Option[A] = {
 
     pedestrian.nextVelocity = nextSpeed
     pedestrian.acceleration = (nextSpeed * 2.0 / nextSpeed.norm) -  speed
-    pedestrian.nextPosition = position + nextSpeed*dt + pedestrian.baseVelocity*dt
+    pedestrian.nextPosition = position + nextSpeed*dt + pedestrian.baseVelocity(sim.currentTime)*dt
 
 
     /*if (Pedestrian.isParallel) { // if it is parallel update

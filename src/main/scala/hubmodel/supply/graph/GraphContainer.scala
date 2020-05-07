@@ -19,6 +19,8 @@ abstract class GraphContainer(protected val flowGates: Iterable[FlowGate],
 
   def processIntermediateArrival(t: Time, ped: PedestrianNOMAD): Unit
 
+  def processRouteOutOfZones(t: Time, ped: PedestrianNOMAD): Unit
+
   def updateGraphCosts(): Unit
 
   type T <: GraphContainer

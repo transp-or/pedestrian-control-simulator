@@ -8,6 +8,7 @@ import hubmodel.DES.{Action, NOMADGraphSimulator, PedestrianPrediction}
 import hubmodel.demand.{PedestrianFlowFunction_New, PedestrianFlow_New, PedestrianGenerationOverInterval, splitFractionsUniform}
 import hubmodel.ped.PedestrianNOMAD
 import tools.Time
+import tools.TimeNumeric.mkOrderingOps
 
 import scala.reflect.ClassTag
 
@@ -41,10 +42,19 @@ class ProcessPedestrianFlows(pedestrianFlows: Iterable[PedestrianFlow_New], pede
     // functional pedestrian flows
     pedestrianFlowsFunction
       .foreach(flow => splitFractionsUniform(sim.stop2Vertices(flow.O), sim.stop2Vertices(flow.D)).foreach(f => {
-        sim.insertEventAtAbsolute(flow.start)(new PedestrianGenerationNonHomogeneousRate(
+        val startTime: Time = {
+          if (flow.start < sim.startTime && sim.startTime < flow.end) {
+            sim.startTime
+          }
+          else {
+            flow.start
+          }
+        }
+
+        sim.insertEventAtAbsolute(startTime)(new PedestrianGenerationNonHomogeneousRate(
           f._1,
           f._2,
-          flow.start,
+          startTime,
           flow.end,
           (t: Time) => flow.f(t) * f._3,
           sim

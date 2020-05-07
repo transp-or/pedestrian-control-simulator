@@ -128,7 +128,8 @@ class PedestrianNOMAD(oZone: Vertex, dZone: Vertex, entryTime: Time, posO: Posit
     * @param logFullHistory collect full history
     * @param isTransfer is the pedestrian a transfering passenger
     */
-  def this(ID: String,
+  def this(/*ID: String,*/
+          origin: Vertex,
            previousZone: Vertex,
            nextZone: Vertex,
            route: List[Vertex],
@@ -139,7 +140,7 @@ class PedestrianNOMAD(oZone: Vertex, dZone: Vertex, entryTime: Time, posO: Posit
            logFullHistory: Boolean,
            isTransfer: Boolean,
            isolationData: (Int, Double, Int, Double)) {
-    this(previousZone, dZone, entryTime, posO, logFullHistory, isTransfer)
+    this(origin, dZone, entryTime, posO, logFullHistory, isTransfer)
     this.currentPosition = posO
     this.currentVelocity = velO
     this.route = route
@@ -149,8 +150,7 @@ class PedestrianNOMAD(oZone: Vertex, dZone: Vertex, entryTime: Time, posO: Posit
     this.isolationTimePed = isolationData._2
     this.isolationTypeObs = isolationData._3
     this.isolationTimeObs = isolationData._4
-    this._ID = ID
-
+    /*this._ID = ID*/
   }
 
 
@@ -162,9 +162,10 @@ class PedestrianNOMAD(oZone: Vertex, dZone: Vertex, entryTime: Time, posO: Posit
     *
     * @return deep copy of this pedestrian
     */
-  def copyState(currentTime: => Time, logFullHistory: Boolean): PedestrianNOMAD = {
-    new PedestrianNOMAD(
-      this.ID,
+  def copyState(currentTime: => Time, logFullHistory: Boolean): (PedestrianNOMAD, Vector[(Time, String, Position)]) = {
+    val newPed: PedestrianNOMAD = new PedestrianNOMAD(
+      /*this.ID,*/
+      this.origin,
       this.previousZone,
       this.nextZone,
       this.route,
@@ -175,6 +176,11 @@ class PedestrianNOMAD(oZone: Vertex, dZone: Vertex, entryTime: Time, posO: Posit
       logFullHistory,
       this.isTransfer,
       (this.isolationTypePed, this.isolationTimePed, this.isolationTypeObs, this.isolationTimeObs))
+
+    newPed.baseVelocity = this.baseVelocity
+    newPed.isInsideAMW = this.isInsideAMW
+    newPed.currentDestination = this.currentDestination
+    (newPed, this.accomplishedRoute.map(x => (x._1, x._2.name, x._3)))
   }
 
 }

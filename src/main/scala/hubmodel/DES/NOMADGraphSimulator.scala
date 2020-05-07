@@ -58,7 +58,9 @@ abstract class NOMADGraphSimulator(params: SimulationInputParameters) extends Pe
   def walls: Iterable[Wall] = spaceMicro.walls ++ controlDevices.flowSeparators.map(_.getWall)
 
   /* checks whether a pedestrian has reach is next destination zone */
-  def intermediateDestinationReached: PedestrianSim => Boolean = p => isInVertex(p.nextZone)(p.currentPosition)
+  def intermediateDestinationReached: PedestrianSim => Boolean = p => {
+    p.nextZone.isInside(p.currentPosition, p.isInsideAMW.isDefined)
+  }
 
   /* Updates the next destination */
   val updateIntermediateDestination: (Time, PedestrianNOMAD) => Unit = (t, ped) => graph.processIntermediateArrival(t, ped)
@@ -70,7 +72,7 @@ abstract class NOMADGraphSimulator(params: SimulationInputParameters) extends Pe
   /* Computes the first route  */
   val setFirstRoute: (Time, PedestrianNOMAD) => Unit = {
     (t, ped) =>
-      ped.appendAccomplishedRoute(this.currentTime, ped.origin)
+      ped.appendAccomplishedRoute(this.currentTime, ped.origin, ped.currentPosition)
     graph match {
       case rm: MultipleGraph => {
         rm.setRouteFirst(t, ped)
@@ -147,7 +149,7 @@ abstract class NOMADGraphSimulator(params: SimulationInputParameters) extends Pe
 
       // Inserts the events for changing the AMW speeds.
       sim.controlDevices.amws.filter(_.noControlPolicy).foreach(w => {
-        w.setControlPolicy(Vector(AMWPolicy(w.name, sim.startTime, sim.finalTime, w.speed)))
+        w.setControlPolicy(Vector(AMWPolicy(w.name, sim.startTime, sim.finalTime, w.speed(sim.currentTime), w.length)), None)
         w.insertChangeSpeed(sim)
       })
 
@@ -179,7 +181,7 @@ abstract class NOMADGraphSimulator(params: SimulationInputParameters) extends Pe
     type A = StartSim
 
     override def deepCopy(simulator: PedestrianPrediction): Option[A] = {
-      Some(new StartSim(simulator))
+      None // Some(new StartSim(simulator))
     }
   }
 

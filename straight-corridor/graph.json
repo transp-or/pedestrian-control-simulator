@@ -172,7 +172,8 @@
           "node": "amw1",
           "connected_to": [
             "b2",
-            "amw2"
+            "amw2",
+            "b1"
           ]
         },
         {
@@ -200,7 +201,8 @@
           "node": "amw2",
           "connected_to": [
             "t2",
-            "amw1"
+            "amw1",
+            "t1"
           ]
         }
       ],
@@ -653,7 +655,16 @@
       ]
     }
   ],
-  "destination_groups": []
+  "destination_groups": [
+    {
+      "name": "top",
+      "zones": ["top", "t2"]
+    },
+    {
+      "name": "bottom",
+      "zones": ["bottom", "b2"]
+    }
+  ]
 }
 
 

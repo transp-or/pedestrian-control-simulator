@@ -1,7 +1,10 @@
 package hubmodel.prediction
 
+import hubmodel.Position
 import hubmodel.control.amw.MovingWalkway
+import hubmodel.ped.History.HistoryContainer
 import hubmodel.ped.PedestrianNOMAD
+import myscala.math.vector.Vector2D
 import tools.Time
 import tools.TimeNumeric.mkOrderingOps
 import tools.cells.{DensityMeasuredArea, Vertex}
@@ -12,50 +15,81 @@ class AMWFlowsFromGroundTruth(population: Vector[PedestrianNOMAD], movingWalkway
   private val amwAlternativeVerticesFilter: Vector[Vertex] = this.movingWalkways
     .flatMap(amw => amw.parallelFlows.flatten ++ Vector(amw.startVertex, amw.endVertex))
 
-  private val parallelFlows: Vector[(String, Vector[Vertex], Int)] = this.movingWalkways
-    .flatMap(amw => amw.parallelFlows.flatMap(pf => Vector( (amw.name, Vector(amw.startVertex, amw.endVertex), 1), (amw.name, Vector(amw.endVertex, amw.startVertex), -1),  (amw.name, pf, 1), (amw.name, pf.reverse, -1))))
-
+  private val parallelFlows: Vector[(String, (Vertex, Vertex), Vector2D, Int, Double)] = this.movingWalkways
+    .flatMap(amw => amw.parallelFlows.flatMap(pf => {Vector(
+      (amw.name, (amw.startVertex, amw.endVertex), (amw.endVertex.center - amw.startVertex.center).normalized, 1, (amw.endVertex.center - amw.startVertex.center).norm),
+      (amw.name, (amw.endVertex, amw.startVertex), (amw.startVertex.center - amw.endVertex.center).normalized, -1, (amw.startVertex.center - amw.endVertex.center).norm),
+      (amw.name, (pf.head, pf.last), (pf.last.center - pf.head.center).normalized, 1, (pf.last.center - pf.head.center).norm),
+      (amw.name, (pf.last, pf.head), (pf.head.center - pf.last.center).normalized, -1, (pf.head.center - pf.last.center).norm)
+    )}))
 
   private val flowsByAMW: Iterable[(String, Int, Int, Double)] = population
-    .filter(p => {
-      p.accomplishedRoute.map(_._2).intersect(amwAlternativeVerticesFilter).nonEmpty
-    })
+    .filter(p => {p.accomplishedRoute.map(_._2).intersect(amwAlternativeVerticesFilter).nonEmpty})
     .flatMap(p => {
       parallelFlows.flatMap(pf => {
-        val idx: Int = p.accomplishedRoute.map(_._2).indexOfSlice(pf._2)
+        val idx: Int = p.accomplishedRoute.map(_._2).indexOfSlice(Vector(pf._2._1, pf._2._2))
         if (idx >= 0) {
-          val pedSubRoute: Vector[(Time, Vertex)] = p.accomplishedRoute.slice(idx, idx + pf._2.size)
+          val pedSubRoute: Vector[(Time, Vertex, Position)] = p.accomplishedRoute.slice(idx, idx + 2)
 
-          intervals.dropRight(1).zip(intervals.tail).zipWithIndex.map(a => (a._1._1, a._1._2, a._2)).collect {
-            // pedestrian entered during interval and is still inside at end of interval
-            case a if a._1 <= pedSubRoute.head._1 && pedSubRoute.head._1 < a._2 && pedSubRoute.last._1 > a._2 => {
-              (pf._1, pf._3, a._3, ((a._2 - pedSubRoute.head._1).value / (a._2 - a._1).value).toDouble)
+          intervals.sliding(2).zipWithIndex.map(a => (a._1.head, a._1.last, a._2)).collect {
+            // pedestrian entered link before start of interval and after the end during interval
+            case a if a._1 >= pedSubRoute.head._1 && pedSubRoute.last._1 > a._2 && pedSubRoute.last._1 > a._2=> {
+
+              val posAtEntry: Position = p.getHistoryPosition.minBy(v => math.abs((v._1 - a._1).value.toDouble))._2.pos
+              val posAtExit: Position = p.getHistoryPosition.minBy(v => math.abs((v._1 - a._2).value.toDouble))._2.pos
+
+              //println( ((pf._3 * (posAtExit - pf._2._1.center).dot(pf._3)).norm - (pf._3 * (posAtEntry - pf._2._1.center).dot(pf._3)).norm) / (pf._5 * (a._2 - a._1).value.toDouble ) )
+
+              (pf._1, pf._4, a._3, ((pf._3 * (posAtExit - pf._2._1.center).dot(pf._3)).norm - (pf._3 * (posAtEntry - pf._2._1.center).dot(pf._3)).norm) / (pf._5 * (a._2 - a._1).value.toDouble ) )
             }
-            // pedestrian entered during interval and exited during interval
-            case b if b._1 <= pedSubRoute.head._1 && pedSubRoute.head._1 < b._2 && pedSubRoute.last._1 < b._2 => {
-              (pf._1, pf._3, b._3, ((pedSubRoute.last._1 - pedSubRoute.head._1).value / (b._2 - b._1).value).toDouble)
+            // pedestrian entered link before start of interval and left link before the end of interval
+            case b if b._1 >= pedSubRoute.head._1 && pedSubRoute.last._1 > b._1 && pedSubRoute.last._1 < b._2 => {
+
+              val posAtEntry: Position = p.getHistoryPosition.minBy(v => math.abs((v._1 - b._1).value.toDouble))._2.pos
+
+              //println( (posAtEntry - pf._2._1.center).dot(pf._3) )
+              //println(  pf._3 * (posAtEntry - pf._2._1.center).dot(pf._3) )
+              //println( (pf._5 - (pf._3 * (posAtEntry - pf._2._1.center).dot(pf._3)).norm) / (pf._5 * (b._2 - b._1).value.toDouble ))
+
+              (pf._1, pf._4, b._3, (pf._5 - (pf._3 * (posAtEntry - pf._2._1.center).dot(pf._3)).norm) / (pf._5 * (b._2 - b._1).value.toDouble ) )
             }
-            // pedestrian entered before start of interval and left after end of interval (pedestrian was inside for whole interval)
-            case c if c._1 >= pedSubRoute.head._1 && pedSubRoute.last._1 >= c._2 => {
-              (pf._1, pf._3, c._3, 1.0)
+            // pedestrian entered link after start of interval and left link before the end of interval (pedestrian was inside for whole interval)
+            case c if c._1 <= pedSubRoute.head._1 && pedSubRoute.head._1 < c._2 && pedSubRoute.last._1 <= c._2 => {
+              //println(1.0 / (c._2 - c._1).value.toDouble)
+              (pf._1, pf._4, c._3, 1.0 / (c._2 - c._1).value.toDouble)
             }
-            // pedestrian entered before start of interval and left during interval
-            case d if d._1 >= pedSubRoute.head._1 && pedSubRoute.last._1 <= d._2 && pedSubRoute.last._1 >= d._1 => {
-              (pf._1, pf._3, d._3, ((pedSubRoute.last._1 - d._1).value / (d._2 - d._1).value).toDouble)
+            // pedestrian entered link after start of interval and left link after the end during interval
+            case d if d._1 <= pedSubRoute.head._1 && pedSubRoute.head._1 < d._2 && pedSubRoute.last._1 >= d._2 => {
+
+              val posAtEnd: Position = p.getHistoryPosition.minBy(v => math.abs((v._1 - d._2).value.toDouble))._2.pos
+
+              //println( (pf._3 * (posAtEnd - pf._2._1.center).dot(pf._3)).norm / (pf._5 * (d._2 - d._1).value.toDouble ) )
+
+              (pf._1, pf._4, d._3, (pf._3 * (posAtEnd - pf._2._1.center).dot(pf._3)).norm / (pf._5 * (d._2 - d._1).value.toDouble ) )
             }
           }
 
-        } else if (p.accomplishedRoute.last._2 == pf._2.head && p.nextZone == pf._2.last) {
+        } else if (p.accomplishedRoute.last._2 == pf._2._1 && p.nextZone == pf._2._2) {
 
           val pedEnteringTime: Time = p.accomplishedRoute.last._1
           intervals.sliding(2).zipWithIndex.map(a => (a._1.head, a._1.last, a._2)).collect{
-                // pedestrian entered during interval and is still inside at end of interval
+
+                // Pedestrian entered before start of interval and is still inside
             case a if a._1 <= pedEnteringTime && pedEnteringTime < a._2 => {
-              (pf._1, pf._3, a._3, ((a._2 - pedEnteringTime).value/(a._2 - a._1).value).toDouble)
+
+              //println((pf._3 * (p.currentPosition - pf._2._1.center).dot(pf._3)).norm / (pf._5 * (a._2 - a._1).value.toDouble ))
+              (pf._1, pf._4, a._3, (pf._3 * (p.currentPosition - pf._2._1.center).dot(pf._3)).norm / (pf._5 * (a._2 - a._1).value.toDouble ) )
+
             }
-              // Pedestrian already inside link at beginning of interval and hasn't left yet
+              // Pedestrian entered during interval and is still inside at end of interval
             case b if pedEnteringTime < b._1 => {
-              (pf._1, pf._3, b._3, 1.0)
+              val posAtEntry: Position = p.getHistoryPosition.minBy(v => math.abs((v._1 - b._1).value.toDouble))._2.pos
+              val posAtExit: Position = p.getHistoryPosition.minBy(v => math.abs((v._1 - b._2).value.toDouble))._2.pos
+
+              //println( ((pf._3 * (posAtExit - pf._2._1.center).dot(pf._3)).norm - (pf._3 * (posAtEntry - pf._2._1.center).dot(pf._3)).norm) / (pf._5 * (b._2 - b._1).value.toDouble ) )
+
+              (pf._1, pf._4, b._3, ((pf._3 * (posAtExit - pf._2._1.center).dot(pf._3)).norm - (pf._3 * (posAtEntry - pf._2._1.center).dot(pf._3)).norm) / (pf._5 * (b._2 - b._1).value.toDouble ) )
+
             }
           }
         } else {

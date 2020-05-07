@@ -1,3 +1,9 @@
-val intervals = Vector(0,10,20,30,40,50,60)
+val pos = 2.0
 
-intervals.indexWhere(_ > -1)
+val zero = 0.0
+
+val neg = -2.0
+
+pos.sign.sign
+zero.sign.sign
+neg.sign.sign
