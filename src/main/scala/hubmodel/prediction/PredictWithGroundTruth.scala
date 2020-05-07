@@ -27,11 +27,12 @@ import scala.util.{Failure, Success, Try}
   *
   * @param sim
   */
-class PredictWithGroundTruth(private val sim: PedestrianSimulation, predictionHorizon: Time, val predictionInterval: Time, densityUpdateInterval: Time) extends StatePrediction {
+class PredictWithGroundTruth(private val sim: PedestrianSimulation) extends StatePrediction {
 
 
   val predictionStartTime: Time = this.sim.currentTime
   val predictionEndTime: Time = this.sim.currentTime + this.sim.predictionInputParameters.horizon
+  val predictionInterval: Time = this.sim.predictionInputParameters.updateInterval
   val replications: Int = sim.predictionInputParameters.replications
 
   private var predictionSimulatorSequential: Vector[PedestrianPrediction] = this.buildPredictionSimulatorSequential
@@ -48,10 +49,10 @@ class PredictWithGroundTruth(private val sim: PedestrianSimulation, predictionHo
           val graph: GraphContainer = sim.graph.deepCopy(stateData.controlDevices)
 
           val predictionParameters: SimulationInputParameters = sim.getSetupArgumentsNew.deepCopy(graph, stateData.controlDevices)
-          predictionParameters.trackDensityInterval = Some(densityUpdateInterval)
+          predictionParameters.trackDensityInterval = Some(this.sim.predictionInputParameters.densityUpdateInterval)
 
           predictionParameters.startTime = sim.currentTime
-          predictionParameters.endTime = sim.currentTime + this.predictionHorizon
+          predictionParameters.endTime = sim.currentTime + this.sim.predictionInputParameters.horizon
           predictionParameters.logFullPedestrianHistory = true
 
           val simulator: PedestrianPrediction = new PedestrianPrediction(predictionParameters)
@@ -86,10 +87,10 @@ class PredictWithGroundTruth(private val sim: PedestrianSimulation, predictionHo
         val graph: GraphContainer = sim.graph.deepCopy(stateData.controlDevices)
 
         val predictionParameters: SimulationInputParameters = sim.getSetupArgumentsNew.deepCopy(graph, stateData.controlDevices)
-        predictionParameters.trackDensityInterval = Some(densityUpdateInterval)
+        predictionParameters.trackDensityInterval = Some(this.sim.predictionInputParameters.densityUpdateInterval)
 
         predictionParameters.startTime = sim.currentTime
-        predictionParameters.endTime = sim.currentTime + this.predictionHorizon
+        predictionParameters.endTime = sim.currentTime + this.sim.predictionInputParameters.horizon
         predictionParameters.logFullPedestrianHistory = true
 
         val simulator: PedestrianPrediction = new PedestrianPrediction(predictionParameters)
@@ -165,7 +166,7 @@ class PredictWithGroundTruth(private val sim: PedestrianSimulation, predictionHo
     this.predictionSimulatorSequential.foreach(s => {
       Try(s.run()) match {
         case Success(ok) => {
-          new MovingPedestriansWithDensityWithWallVideo(
+          /*new MovingPedestriansWithDensityWithWallVideo(
             "E:\\PhD\\hub-simulator\\SUCESS_moving_pedestrians_walls_" + s.ID + ".mp4",
             s.walls.filterNot(_.isInstanceOf[MovableWall]),
             math.max((1.0 / 0.1).toInt, 1),
@@ -176,7 +177,7 @@ class PredictWithGroundTruth(private val sim: PedestrianSimulation, predictionHo
             scala.collection.mutable.ArrayBuffer(),
             (s.startTime.value to s.finalTime.value by 0.1).map(new Time(_)),
             s.controlDevices.flowSeparators
-          )
+          )*/
         }
         case Failure(f) => {
           f.printStackTrace()
@@ -201,7 +202,7 @@ class PredictWithGroundTruth(private val sim: PedestrianSimulation, predictionHo
     this.predictionSimulatorParallel.foreach(s => {
       Try(s.run()) match {
         case Success(ok) => {
-          new MovingPedestriansWithDensityWithWallVideo(
+          /*new MovingPedestriansWithDensityWithWallVideo(
             "E:\\PhD\\hub-simulator\\SUCESS_moving_pedestrians_walls_" + s.ID + ".mp4",
             s.walls.filterNot(_.isInstanceOf[MovableWall]),
             math.max((1.0 / 0.1).toInt, 1),
@@ -212,7 +213,7 @@ class PredictWithGroundTruth(private val sim: PedestrianSimulation, predictionHo
             scala.collection.mutable.ArrayBuffer(),
             (s.startTime.value to s.finalTime.value by 0.1).map(new Time(_)),
             s.controlDevices.flowSeparators
-          )
+          )*/
         }
         case Failure(f) => {
           f.printStackTrace()
@@ -262,7 +263,7 @@ class PredictWithGroundTruth(private val sim: PedestrianSimulation, predictionHo
 
     (this.predictionSimulatorSequential ++ this.predictionSimulatorParallel).collect{
       case s if s.exitCode == 0 => new StateGroundTruthPredicted(
-        s.startTime, s.finalTime, this.predictionInterval,
+        s.startTime, s.finalTime, this.sim.predictionInputParameters.updateInterval,
         (s.population ++ s.populationCompleted).toVector,
         s.controlDevices,
         s.criticalAreas

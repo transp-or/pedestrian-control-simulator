@@ -19,7 +19,7 @@ override def deepCopy(simulator: PedestrianPrediction): Option[A] = None
   override def execute(): Unit = {
 
     // Creates the simulation to use for prediction
-    val prediction = new PredictWithGroundTruth(sim, predHorizon, predInterval, densityUpdateInterval: Time)
+    val prediction = new PredictWithGroundTruth(sim)
 
     // Performs the prediction
     prediction.predict()

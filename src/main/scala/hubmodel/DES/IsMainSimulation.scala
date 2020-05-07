@@ -9,10 +9,7 @@ import myscala.math.stats.{ComputeQuantiles, ComputeStats, computeQuantile}
 
 trait IsMainSimulation {
 
-  val predictionHorizon: Time = Time(60)
-  val predictionUpdateInterval: Time = Time(30)
   val predictionInterval: Time = Time(10)
-  val densityUpdateInterval: Time = Time(5)
 
 
 
@@ -63,20 +60,19 @@ trait IsMainSimulation {
 
     override def execute(): Any = {
 
-      val timeIntervals: Vector[Time] = sim.currentTime.value.until((sim.currentTime + predictionHorizon).value).by(predictionInterval.value).toVector.map(v => Time(v.toDouble))
+      val timeIntervals: Vector[Time] = sim.currentTime.value.until((sim.currentTime + this.sim.predictionInputParameters.horizon).value).by(this.sim.predictionInputParameters.decisionVariableLength.value).toVector.map(v => Time(v.toDouble))
 
       val initialControlPolicy = sim.controlDevices.amws
         .flatMap(w => timeIntervals.zip(Vector.fill(timeIntervals.size)((w.name, w.length))).map(t => (t._2, t._1)))
-        .map(t => AMWPolicy(t._1._1, t._2, t._2 + predictionInterval, 0.0, t._1._2))
+        .map(t => AMWPolicy(t._1._1, t._2, t._2 + this.sim.predictionInputParameters.decisionVariableLength, 0.0, t._1._2))
 
 
 
       def f(x: FunctionEvaluation): Map[String, Double] = x.view.mapValues(v => v.sum/v.size.toDouble).toMap
 
-      val function = new PredictWithGroundTruth(sim, predictionHorizon, predictionInterval, densityUpdateInterval)
 
       val horizonOptimization: ALNS = new ALNS(
-        new PredictWithGroundTruth(sim, predictionHorizon, predictionInterval, densityUpdateInterval),
+        new PredictWithGroundTruth(sim),
         initialControlPolicy,
         Vector(RandomIncreaseSpeed, RandomDecreaseSpeed, MinimumDurationSameDirection, RandomIncreaseAllSpeeds, DirectionMatchFlow),
         Vector(SpeedUpperBound, SpeedLowerBound),
@@ -85,7 +81,7 @@ trait IsMainSimulation {
 
       horizonOptimization.optimize()
 
-      horizonOptimization.writeIterationsToCSV("NS_points_" + sim.ID + "_" + sim.currentTime + "_" + (sim.currentTime + predictionHorizon) + "_" + predictionInterval + ".csv" ,"/home/nicholas/PhD/code/hub-simulator/")
+      horizonOptimization.writeIterationsToCSV("NS_points_" + sim.ID + "_" + sim.currentTime + "_" + (sim.currentTime + this.sim.predictionInputParameters.horizon) + "_" + this.sim.predictionInputParameters.decisionVariableLength + ".csv" ,"/home/nicholas/PhD/code/hub-simulator/")
 
       println(horizonOptimization.optimalSolution._1.sorted)
 
