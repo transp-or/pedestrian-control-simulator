@@ -153,15 +153,17 @@ package object results {
     }
 
     // Write the AMW data to JSON
-    Try {
-      writeAMWsJSON(simulator.controlDevices.amws, path + prefix + "amws_" + simulator.ID + ".json")
-    } match {
-      case Success(s) => {
-        println("written edga data successfully")
-      }
-      case Failure(f) => {
-        println("Failed writing edga data")
-        throw f
+    if (simulator.controlDevices.amws.nonEmpty) {
+      Try {
+        writeAMWsJSON(simulator.controlDevices.amws, path + prefix + "amws_" + simulator.ID + ".json")
+      } match {
+        case Success(s) => {
+          println("written edga data successfully")
+        }
+        case Failure(f) => {
+          println("Failed writing edga data")
+          throw f
+        }
       }
     }
 
@@ -318,7 +320,6 @@ package object results {
 
     filesJson.map(str => {
 
-
       val tt: Vector[PedestrianResults_JSON] = {
         val source: BufferedSource = scala.io.Source.fromFile(str._2("tt"))
         val input: JsValue = Json.parse(try source.mkString finally source.close)
@@ -330,21 +331,25 @@ package object results {
         }
       }
 
-
-     val amw: Vector[AMWData_JSON] = {
-       val source: BufferedSource = scala.io.Source.fromFile(str._2("amw"))
-       val input: JsValue = Json.parse(try source.mkString finally source.close)
-       input.validate[Vector[AMWData_JSON]] match {
-         case s: JsSuccess[Vector[AMWData_JSON]] => {
-           s.get
-         }
-         case e: JsError => throw new Error("Error while parsing results file: " + str + "\nerror: " + JsError.toJson(e).toString())
-       }
-     }
+      val amw: Option[Vector[AMWData_JSON]] = {
+        if (str._2.keySet.contains("amw")) {
+          val source: BufferedSource = scala.io.Source.fromFile(str._2("amw"))
+          val input: JsValue = Json.parse(try source.mkString finally source.close)
+          input.validate[Vector[AMWData_JSON]] match {
+            case s: JsSuccess[Vector[AMWData_JSON]] => {
+              Some(s.get)
+            }
+            case e: JsError => throw new Error("Error while parsing results file: " + str + "\nerror: " + JsError.toJson(e).toString())
+          }
+        }
+        else {
+          None
+        }
+      }
 
       // TODO implement reading density results using JSON
 
-      new ResultsContainerReadNew(tt, None, None, Some(amw))
+      new ResultsContainerReadNew(tt, None, None, amw)
     })
   }
 

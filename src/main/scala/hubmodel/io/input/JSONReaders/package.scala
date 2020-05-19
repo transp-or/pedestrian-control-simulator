@@ -555,8 +555,15 @@ package object JSONReaders {
       (JsPath \ "tt").read[Double]
     ) (TravelTimeThroughZone_JSON.apply _)
 
+  case class Route_JSON(t: Double, node: String)
+
+  implicit val Route_JSON_Reads: Reads[Route_JSON] = (
+    (JsPath \ "t").read[Double] and
+      (JsPath \ "node").read[String]
+    ) (Route_JSON.apply _)
+
   // *********************** Pedestrian data with travel time, etc ****************************
-  case class PedestrianResults_JSON(o: String, d: String, tt: Double, entry: Double, exit: Option[Double], td: Double, gates: Vector[String], ttThroughZones: Vector[TravelTimeThroughZone_JSON])
+  case class PedestrianResults_JSON(o: String, d: String, tt: Double, entry: Double, exit: Option[Double], td: Double, route: Vector[Route_JSON], gates: Vector[String], ttThroughZones: Vector[TravelTimeThroughZone_JSON])
 
   implicit val PedestrianResults_JSON_Reads: Reads[PedestrianResults_JSON] = (
     (JsPath \ "o").read[String] and
@@ -565,20 +572,22 @@ package object JSONReaders {
       (JsPath \ "entry").read[Double] and
       (JsPath \ "exit").readNullable[Double] and
       (JsPath \ "td").read[Double] and
+      (JsPath \ "accomplished-route").read[Vector[Route_JSON]] and
       (JsPath \ "gates").read[Vector[String]] and
       (JsPath \ "tt-monitored-zones").read[Vector[TravelTimeThroughZone_JSON]]
     ) (PedestrianResults_JSON.apply _)
 
   // *********************** AMW data ****************************
 
-  case class AMWData_JSON(id: String, start: String, end: String, appliedPolicy: Vector[(Double, Double)], expectedPolicy: Vector[(Double, Double)])
+  case class AMWData_JSON(id: String, name: String, start: String, end: String, appliedPolicy: Vector[(Double, Double)], expectedPolicy: Vector[Vector[(Double, Double)]])
 
   implicit val AMWData_JSON_Reads: Reads[AMWData_JSON] = (
     (JsPath \ "ID").read[String] and
+    (JsPath \ "name").read[String] and
       (JsPath \ "start_vertex").read[String] and
       (JsPath \ "end_vertex").read[String] and
       (JsPath \ "applied_speed_history").read[Vector[Tuple2[Double, Double]]] and
-      (JsPath \ "expected_speed_history").read[Vector[Tuple2[Double, Double]]]
+      (JsPath \ "expected_speed_history").read[Vector[Vector[Tuple2[Double, Double]]]]
     ) (AMWData_JSON.apply _)
 
 

@@ -16,7 +16,7 @@ class UpdatePedestrianRoutes(sim: NOMADGraphSimulator, withInsert: Boolean = tru
 
     val (intermediateDest, outsideZones) = sim.population.partition(sim.intermediateDestinationReached)
 
-    val amwVerticesNames: Vector[String] = this.sim.controlDevices.amws.flatMap(w => Vector(w.startVertex.name, w.endVertex.name)).toVector
+    val amwVerticesNames: Vector[String] = this.sim.controlDevices.amws.flatMap(w => Vector(w.firstVertex.name, w.secondVertex.name)).toVector
 
     intermediateDest.filterNot(_.isWaiting).foreach(p => sim.updateIntermediateDestination(this.sim.currentTime, p))
     outsideZones.filter(p => !p.isWaiting && amwVerticesNames.contains(p.nextZone.name) && !amwVerticesNames.contains(p.previousZone.name)).foreach(p => sim.graph.processRouteOutOfZones(this.sim.currentTime, p))

@@ -4,6 +4,7 @@ import java.util
 import java.util.concurrent.ThreadLocalRandom
 
 import hubmodel.DES.PedestrianPrediction
+import hubmodel.control.amw.MovingWalkway
 
 //import com.vividsolutions.jts.geom.Coordinate
 import hubmodel.DES.{Action, NOMADGraphSimulator}
@@ -258,8 +259,20 @@ class NOMADIntegrated(sim: NOMADGraphSimulator) extends Action {
       if (sim.intermediateDestinationReached(ped)) {
         ped.appendAccomplishedRoute(this.sim.currentTime, ped.nextZone, ped.currentPosition)
         sim.updateIntermediateDestination(this.sim.currentTime, ped)
+      } else if (this.sim.controlDevices.amws.flatMap(w => Vector(w.firstVertex, w.secondVertex)).toVector.intersect(Vector(ped.nextZone, ped.previousZone)).isEmpty && this.sim.controlDevices.amws.exists(w => w.startVertex(sim.currentTime).isInside(ped.currentPosition, false))) {
+        this.sim.controlDevices.amws
+          .find(w => w.startVertex(sim.currentTime).isInside(ped.currentPosition, false))
+          match {
+          case Some(w) => {
+            ped.previousZone = w.startVertex(sim.currentTime)
+            ped.nextZone = w.endVertex(sim.currentTime)
+            sim.updateIntermediateDestination(this.sim.currentTime, ped)
+          }
+          case None => {//do nothing}
+        }
       }
-    })
+    }})
+
 
 
     //sim.population.filter(sim.intermediateDestinationReached).foreach(p => { sim.updateIntermediateDestination(p) })

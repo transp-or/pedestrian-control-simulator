@@ -17,8 +17,8 @@ import tools.exceptions.ControlDevicesException
   *
   */
 class MovingWalkway(val name: String,
-                    override val startVertex: Vertex,
-                    override val endVertex: Vertex,
+                    val firstVertex: Vertex,
+                    val secondVertex: Vertex,
                     val width: Double,
                     val start: Position,
                     val end: Position,
@@ -28,7 +28,7 @@ class MovingWalkway(val name: String,
                     val associatedConnectivity: Iterable[MyEdge],
                     val parallelFlows: Vector[Vector[Vertex]],
                     val startArea: String,
-                    val endArea: String) extends MyEdge(startVertex, endVertex) with ControlDeviceComponent {
+                    val endArea: String) extends MyEdge(firstVertex, secondVertex) with ControlDeviceComponent {
 
   outer =>
 
@@ -36,6 +36,15 @@ class MovingWalkway(val name: String,
   private val direction: Position = (this.end - this.start).normalized
 
 
+  def startVertex(t: Time): Vertex = {
+    if (this.speed(t) >= 0) {this.firstVertex}
+    else { this.secondVertex}
+  }
+
+  def endVertex(t: Time): Vertex = {
+    if (this.speed(t) >= 0) {this.secondVertex}
+    else { this.firstVertex}
+  }
 
   /** Getter method for the speed.
     * // A positive speed makes pedetrians move from start to end a a negative speed makes pedestrians
@@ -92,8 +101,8 @@ class MovingWalkway(val name: String,
   }
 
 
-  private val positiveEdge: MyEdge = new MyEdge(this.startVertex, this.endVertex)
-  private val negativeEdge: MyEdge = new MyEdge(this.endVertex, this.startVertex)
+  private val positiveEdge: MyEdge = new MyEdge(this.firstVertex, this.secondVertex)
+  private val negativeEdge: MyEdge = new MyEdge(this.secondVertex, this.firstVertex)
 
   private var isClosed: Boolean = false
 
@@ -125,13 +134,13 @@ class MovingWalkway(val name: String,
 
   val appliedPolicy: collection.mutable.ArrayBuffer[(Time, Double)] = collection.mutable.ArrayBuffer()
 
-  val expectedPolicy: collection.mutable.ArrayBuffer[(Time, Double)] = collection.mutable.ArrayBuffer()
+  val expectedPolicy: collection.mutable.ArrayBuffer[Vector[(Time, Double)]] = collection.mutable.ArrayBuffer()
 
   def noControlPolicy: Boolean = this.controlPolicy.isEmpty
 
   private var nextSpeedUpdate: Option[MyEvent] = None
-  private var nextCloseAMW: collection.mutable.ArrayBuffer[MyEvent] = collection.mutable.ArrayBuffer()
-  private var nextOpenAMW: collection.mutable.ArrayBuffer[MyEvent] = collection.mutable.ArrayBuffer()
+  private val nextCloseAMW: collection.mutable.ArrayBuffer[MyEvent] = collection.mutable.ArrayBuffer()
+  private val nextOpenAMW: collection.mutable.ArrayBuffer[MyEvent] = collection.mutable.ArrayBuffer()
 
   def setControlPolicy(policy: Vector[AMWPolicy], events: Option[MovingWalkwayControlEvents]): Unit = {
 
@@ -139,9 +148,10 @@ class MovingWalkway(val name: String,
       throw new IllegalArgumentException("AMW policy has policy from different control device")
     }
 
-    if (controlPolicy.nonEmpty) {
-      (this.controlPolicy.minBy(_.start).start.value to this.controlPolicy.maxBy(_.end).end.value by 0.5)
-        .foreach(t => this.expectedPolicy.append((Time(t.toDouble), this.speed(Time(t.toDouble)))))
+    if (policy.nonEmpty) {
+      this.expectedPolicy.append(
+        (policy.minBy(_.start).start.value until policy.maxBy(_.end).end.value by 0.5).map(t => (Time(t.toDouble), this.speed(Time(t.toDouble)))).toVector
+      )
     }
 
     this.nextSpeedUpdate.foreach(_.setSkipTrue())
@@ -234,11 +244,6 @@ class MovingWalkway(val name: String,
         }
       }
 
-      if (controlPolicy.nonEmpty) {
-        (speedToSet.start.value to speedToSet.end.value by 0.5)
-          .foreach(t => outer.appliedPolicy.append((Time(t.toDouble), outer.speed(Time(t.toDouble)))))
-      }
-
       if (outer.closeTimes.nonEmpty) {
         sim.insertEventAtAbsolute(outer.closeTimes.dequeue())(new CloseAMW(this.sim)).foreach(nextCloseAMW.addOne)
         sim.insertEventAtAbsolute(outer.openTimes.dequeue())(new OpenAMW(this.sim)).foreach(nextOpenAMW.addOne)
@@ -284,8 +289,8 @@ class MovingWalkway(val name: String,
     */
   override def deepCopy: MovingWalkway = new MovingWalkway(
     this.name,
-    this.startVertex,
-    this.endVertex,
+    this.firstVertex,
+    this.secondVertex,
     this.width,
     this.start,
     this.end,
@@ -301,8 +306,8 @@ class MovingWalkway(val name: String,
   def deepCopyWithState(pop: Iterable[PedestrianNOMAD]): MovingWalkway = {
    val amw = new MovingWalkway(
       this.name,
-      this.startVertex,
-      this.endVertex,
+      this.firstVertex,
+      this.secondVertex,
       this.width,
       this.start,
       this.end,
@@ -327,13 +332,13 @@ class MovingWalkway(val name: String,
   override def toJSON: String = {
     "{\n" +
       "\"ID\":\"" + this.ID + "\",\n" +
-      "\"start_vertex\":\"" + this.startVertex.name + "\",\n" +
-      "\"end_vertex\":\"" + this.endVertex.name + "\",\n" +
+      "\"name\":\"" + this.name + "\",\n" +
+      "\"start_vertex\":\"" + this.firstVertex.name + "\",\n" +
+      "\"end_vertex\":\"" + this.secondVertex.name + "\",\n" +
       "\"applied_speed_history\":[" + this.appliedPolicy.map(tc => "[" + tc._1 + "," + tc._2 + "]").mkString(",\n") + "],\n"+
-      "\"expected_speed_history\":[" + this.expectedPolicy.map(tc => "[" + tc._1 + "," + tc._2 + "]").mkString(",\n") + "]\n"+
+      "\"expected_speed_history\":[[" + this.expectedPolicy.map(p => "[" + p.map(tc => tc._1 + "," + tc._2).mkString("],[") + "]").mkString("],[") + "]]\n"+
       "}"
   }
-
 }
 
 /** Defintion of speed for a specific time interval for a given AMW. The times are ABSOLUTE for the simulation.

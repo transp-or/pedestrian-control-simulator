@@ -658,11 +658,11 @@
   "destination_groups": [
     {
       "name": "top",
-      "zones": ["top", "t2"]
+      "zones": ["top"]
     },
     {
       "name": "bottom",
-      "zones": ["bottom", "b2"]
+      "zones": ["bottom"]
     }
   ]
 }

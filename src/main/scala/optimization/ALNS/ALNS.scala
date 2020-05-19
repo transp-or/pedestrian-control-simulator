@@ -178,7 +178,7 @@ class ALNS(function: StatePrediction, initialPolicy: Iterable[ControlDevicePolic
 
   //val lowerBoundRandomFraction: Double = 0.2
   //val upperBoundRandomFraction: Double = 0.4
-  val maxIterations: Int = 10
+  val maxIterations: Int = 3
 
   /*if (this.operators.collect{case rand: RandomChange => {rand.probability}}.sum != 1.0) {
     throw new Exception("Sum of probabilities for random operators different than one !")

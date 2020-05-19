@@ -97,7 +97,7 @@ object RunSimulation extends App with StrictLogging {
   }
 
   val resultsJson: Vector[ResultsContainerReadNew] = if (demandSets.isDefined) {
-    readResultsJson(config.getString("output.dir")+ demandSets.get.head.dir.getFileName + "/", config.getString("output.output_prefix"), demandSets.get.map(_.flowFile.getFileName.toString.replace(".json", "") + "/")).toVector
+    readResultsJson(config.getString("output.dir") + demandSets.get.head.dir.getFileName + "/", config.getString("output.output_prefix"), demandSets.get.map(_.flowFile.getFileName.toString.replace(".json", "") + "/")).toVector
   } else {
     readResultsJson(config.getString("output.dir"), config.getString("output.output_prefix")).toVector
   }
@@ -278,7 +278,7 @@ object RunSimulation extends App with StrictLogging {
     }
 
 
-    if (config.getBoolean("output.travel-time.per-simulation-median-by-OD") && results.nonEmpty) {
+    if (config.getBoolean("output.travel-time.per-simulation-median-by-OD-groups") && results.nonEmpty) {
 
       // each group becomes one column. The columns are sorted alphabetically.
       val columnNames: Vector[String] = resultsJson.head.tt.groupBy(p => groupsReversed((p.o, p.d))).keys.toVector.sortBy(a => a)
@@ -296,6 +296,31 @@ object RunSimulation extends App with StrictLogging {
         .zipWithIndex
         .map(g => (g._2, g._1._1, computeBoxPlotData(g._1._2.map(_._2)).toCSV, 1.0)).toVector
         .writeToCSV(config.getString("output.output_prefix") + "_median-travel-time-per-simulation-by-OD-boxplot-data.csv", rowNames = None, columnNames = Some(Vector("pos", "name", "mean", "median", "lq", "uq", "lw", "uw", "outliersize", "boxplotwidth")))
+    }
+
+    // write travel time mean by all existing OD pairs.
+    if (config.getBoolean("output.travel-time.per-simulation-mean-by-OD") && results.nonEmpty) {
+
+      // each od pair becomes one column. The columns are sorted alphabetically.
+      val columnNames: Vector[String] = resultsJson.head.tt.groupBy(p => p.o + "->" +  p.d).keys.toVector.sorted
+
+      // writes the mean of each od pair to csv file
+      /*resultsJson
+        .map(r => {
+          val tmp: Map[String, Double] = r.tt.groupBy(p => p.o + "->" +  p.d).map(g => (g._1, g._2.map(_.tt).statistics.mean))
+          tmp ++ columnNames.filterNot(c => tmp.keys.toVector.contains(c)).map(n => (n, Double.NaN))
+        }.toVector.sortBy(_._1).map(_._2))
+        .transpose
+        .writeToCSV(config.getString("output.output_prefix") + "_mean-travel-time-per-simulation-by-OD.csv", rowNames = None, columnNames = Some(columnNames))*/
+
+      // writes the data to create a boxplot in tikz to a csv file
+      resultsJson
+        .flatMap(r => r.tt.groupBy(p => p.o + "->" +  p.d).toVector.map(g => (g._1, g._2.map(_.tt))))
+        .groupBy(_._1).toVector.map(g => g._1 -> g._2.flatMap(_._2))
+        .sortBy(_._1)
+        .zipWithIndex
+        .map(g =>  (g._2, g._1._1, computeBoxPlotData(g._1._2).toCSV, 1.0)).toVector
+        .writeToCSV(config.getString("output.output_prefix") + "_mean-travel-time-per-simulation-by-OD-boxplot-data.csv", rowNames = None, columnNames = Some(Vector("pos", "name", "mean", "median", "lq", "uq", "lw", "uw", "outliersize", "boxplotwidth")))
     }
 
     if (config.getBoolean("output.travel-time.through-monitored-zones-by-OD") && resultsJson.nonEmpty) {
@@ -384,16 +409,25 @@ object RunSimulation extends App with StrictLogging {
     // ******************************************************************************************
 
     if (config.getBoolean("output.amws.control-policy")) {
-      val headersData = resultsJson
+      // writes the applied data to the same csv file
+      val appliedSpeeds: Vector[(String, Vector[Double], String, Vector[Double])] = resultsJson
         .filter(_.amwData.isDefined)
         .flatMap(_.amwData.get)
-        .map(d => ( Vector(d.id + "_applied_t", d.id + "_applied_s", d.id + "_expected_t", d.id + "expected_s"), Vector(d.appliedPolicy.map(_._1), d.appliedPolicy.map(_._2), d.expectedPolicy.map(_._1), d.expectedPolicy.map(_._2)) ))
+        .map(w => ((w.name + "_" + w.id + "_t", w.appliedPolicy.map(_._1), w.name + "_s", w.appliedPolicy.map(_._2))))
 
-      val headers = headersData.flatMap(_._1)
-      val data = headersData.flatMap(_._2)
+      appliedSpeeds.flatMap(d => Vector(d._2, d._4)).writeToCSV(config.getString("output.output_prefix") + "_applied_amw_speeds.csv", rowNames=None, columnNames = Some(appliedSpeeds.flatMap(d => Vector(d._1, d._3))))
 
-      data.writeToCSV(config.getString("output.output_prefix") + "_amw_speeds.csv", rowNames=None, columnNames = Some(headers))
-    }
+      // writes the expected data to separate csv files
+      val expectedSpeeds: Map[(String, String), Vector[(String, Vector[Double], String, Vector[Double])]] = resultsJson
+        .filter(_.amwData.isDefined)
+        .flatMap(_.amwData.get)
+        .map(w => (w.name, w.id) -> w.expectedPolicy.map(e => (w.name + "_t", e.map(_._1), w.name + "_s", e.map(_._2)))).toMap
+
+      expectedSpeeds.foreach(e => {
+        val headers: Vector[String] = e._2.flatMap(d => Vector(d._1, d._3))
+        e._2.flatMap(d => Vector(d._2, d._4)).writeToCSV(config.getString("output.output_prefix") + "_expected_speeds_for_" + e._1._1 + "_" + e._1._2 + ".csv", rowNames=None, columnNames = Some(headers))
+      })
+ }
 
 
     // ******************************************************************************************

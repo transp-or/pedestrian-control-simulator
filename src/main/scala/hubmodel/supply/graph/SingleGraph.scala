@@ -32,9 +32,11 @@ class SingleGraph(private val baseVertices: Iterable[Vertex],
     *
     * @param p pedestrian for whom to change destination
     */
-  def processIntermediateArrival(t: Time, p: PedestrianNOMAD): Unit = this.graph.processIntermediateArrival(t, p)
+  def processIntermediateArrival(t: Time, p: PedestrianNOMAD): Unit = {this.graph.processIntermediateArrival(t, p)}
 
-  def processRouteOutOfZones(t: Time, p: PedestrianNOMAD): Unit = this.graph.updateRouteOutsideZones(t, p)
+  def processRouteOutOfZones(t: Time, p: PedestrianNOMAD): Unit = {this.graph.updateRouteOutsideZones(t, p) }
+
+  def changeAMWStatus(ped: PedestrianNOMAD): Unit = { this.graph.changeAMWStatus(ped) }
 
   type T = SingleGraph
 

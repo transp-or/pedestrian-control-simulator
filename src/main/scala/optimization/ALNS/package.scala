@@ -78,7 +78,7 @@ package object ALNS {
         }
 
         x match {
-          // delay to allow pedestrian leave the amw complety spans over the policy interval.
+          // delay to allow pedestrian to leave the amw completely spans over the policy interval.
           case amw: AMWPolicy if amw.name == dirChange.name && amw.end <= speedChangeStart && amw.speed.sign != oldSpeed.sign && amw.start >= dirChange.start => {
             amw.copy(speed = previousPolicySpeed.get)
           }
@@ -118,7 +118,7 @@ package object ALNS {
           val changedPolicy: Vector[AMWPolicy] = tmpPolicy.take(idxToProcess) ++ Vector(changeAMWPolicy(tmpPolicy(idxToProcess), if (idxToProcess - 1 >= 0) {
             Some(tmpPolicy(idxToProcess - 1).speed)
           } else {
-            None
+            Some(initialAMWSpeed(tmpPolicy(idxToProcess).name))
           })) ++ tmpPolicy.takeRight(tmpPolicy.size - 1 - idxToProcess)
           processPolicy(changeAMWPolicy)(changedPolicy, idxToProcess + 1)
         }

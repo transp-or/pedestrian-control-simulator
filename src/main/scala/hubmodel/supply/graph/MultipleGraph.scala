@@ -62,6 +62,10 @@ class MultipleGraph(fg: Iterable[FlowGate],
     this._graphCollection(ped.graph)._2.updateRouteOutsideZones(t, ped)
   }
 
+  def changeAMWStatus(ped: PedestrianNOMAD): Unit = {
+    this._graphCollection(ped.graph)._2.changeAMWStatus(ped)
+  }
+
   // Get the vertex map from all the graphs.
   def vertexMapNew: Map[String, Vertex] = this._graphCollection.flatMap(_._2._2.vertexCollection).toMap
 

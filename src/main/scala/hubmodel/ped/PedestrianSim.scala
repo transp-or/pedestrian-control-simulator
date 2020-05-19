@@ -252,6 +252,13 @@ class PedestrianSim(val origin: Vertex,
     } + "," +
       "\"transfer\":" + this.isTransfer + "," +
       "\"td\":" + this.travelDistance + "," +
+      "\"accomplished-route\": [" + {
+    if (this.accomplishedRoute.nonEmpty) {
+      "{" + this.accomplishedRoute.map(v => "\"t\":" + v._1 + ", \"node\":" + "\"" + v._2.name+"\"").mkString("},{") + "}"
+    } else {
+      ""
+    }
+  } + "]," +
       "\"gates\": [" + {
       if (this.freedFrom.nonEmpty) {
         "\"" + this.freedFrom.mkString("\",\"") + "\""

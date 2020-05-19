@@ -26,10 +26,6 @@ trait IsMainSimulation {
 
     override def execute(): Unit = {
 
-      if (sim.currentTime.value > 625.0){
-        println("debug")
-      }
-
       sim.eventLogger.trace("sim-time=" + sim.currentTime + ": state evaluation")
 
       this.computeDensityAtCurrentTime()
@@ -42,7 +38,9 @@ trait IsMainSimulation {
         processIncomingFlowsForFS()
       }
 
-      sim.insertEventWithZeroDelay(new RollingHorizonOptimization(this.sim))
+      if (sim.controlDevices.amws.nonEmpty) {
+        sim.insertEventWithZeroDelay(new RollingHorizonOptimization(this.sim))
+      }
 
       this.sim.insertEventWithDelay(sim.stateEvaluationInterval)(new StateEval(sim))
     }
@@ -53,6 +51,17 @@ trait IsMainSimulation {
 
     override def deepCopy(simulator: PedestrianPrediction): Option[A] = None
 
+  }
+
+  class LogState(sim: PedestrianSimulation) extends Action {
+
+    override def execute(): Any = {
+      sim.controlDevices.amws.foreach(w => w.appliedPolicy.append((sim.currentTime, w.speed(sim.currentTime))))
+      sim.insertEventWithDelay(Time(0.5))(new LogState(this.sim))
+    }
+    type A = LogState
+
+    override def deepCopy(simulator: PedestrianPrediction): Option[A] = None
   }
 
   class RollingHorizonOptimization(sim: PedestrianSimulation) extends Action {

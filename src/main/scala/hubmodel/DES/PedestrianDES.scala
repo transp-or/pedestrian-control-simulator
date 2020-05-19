@@ -307,6 +307,9 @@ abstract class PedestrianDES(val startTime: Time,
 
   abstract class GenericFinishSim(sim: PedestrianDES, val finalTime: Time) extends Action
 
+  trait LogStateDES extends Action
+
+
   /** Abstract run which must be overriden in implementation.
     * This will call the [[genericRun()]] method and pass the first start as an argument.
     */

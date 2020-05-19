@@ -105,8 +105,8 @@ class PedestrianNOMAD(oZone: Vertex, dZone: Vertex, entryTime: Time, posO: Posit
   def updateDesiredDirection(): Unit = {
 
     if (this.isStuck) {
-      //this.nextZone = this.previousZone
-      //this.currentDestination = this.previousZone.uniformSamplePointInside
+      this.nextZone = this.previousZone
+      this.currentDestination = this.previousZone.uniformSamplePointInside
     }
 
     this.desiredDirection = computeDesiredDirection(this.currentPosition, this.currentDestination)

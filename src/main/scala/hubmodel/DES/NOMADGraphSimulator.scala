@@ -201,6 +201,8 @@ abstract class NOMADGraphSimulator(params: SimulationInputParameters) extends Pe
     }
   }
 
+
+
   /**
     * Class to interrupt the simulation if some criteria is met. The idea is to prevent simulations running for
     * ridiculous times if some unfeasible situation has occured.

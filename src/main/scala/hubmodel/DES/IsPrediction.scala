@@ -1,6 +1,7 @@
 package hubmodel.DES
 
 import hubmodel.control.{EvaluateState, UpdateGates}
+import tools.Time
 
 trait IsPrediction {
 
@@ -23,6 +24,15 @@ trait IsPrediction {
     }
 
     type A = StateEval
+
+    override def deepCopy(simulator: PedestrianPrediction): Option[A] = None
+  }
+
+  class LogState() extends  Action {
+
+    override def execute(): Any = {}
+
+    type A = LogState
 
     override def deepCopy(simulator: PedestrianPrediction): Option[A] = None
   }

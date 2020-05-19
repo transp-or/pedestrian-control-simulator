@@ -12,6 +12,8 @@ class PedestrianPrediction(params: SimulationInputParameters) extends NOMADGraph
 
   class StateEvaluation extends super.StateEval(this) with super.StateEvaluationActionDES
 
+  class LogStatePrediction extends super.LogState() with super.LogStateDES
+
   insertStateEvaluationStart(new this.StateEvaluation)
 
 }

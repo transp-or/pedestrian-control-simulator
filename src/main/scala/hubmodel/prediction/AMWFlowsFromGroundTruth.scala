@@ -13,12 +13,12 @@ import tools.cells.{DensityMeasuredArea, Vertex}
 class AMWFlowsFromGroundTruth(population: Vector[PedestrianNOMAD], movingWalkways: Vector[MovingWalkway], intervals: Vector[Time]) extends DemandEstimate {
 
   private val amwAlternativeVerticesFilter: Vector[Vertex] = this.movingWalkways
-    .flatMap(amw => amw.parallelFlows.flatten ++ Vector(amw.startVertex, amw.endVertex))
+    .flatMap(amw => amw.parallelFlows.flatten ++ Vector(amw.firstVertex, amw.secondVertex))
 
   private val parallelFlows: Vector[(String, (Vertex, Vertex), Vector2D, Int, Double)] = this.movingWalkways
     .flatMap(amw => amw.parallelFlows.flatMap(pf => {Vector(
-      (amw.name, (amw.startVertex, amw.endVertex), (amw.endVertex.center - amw.startVertex.center).normalized, 1, (amw.endVertex.center - amw.startVertex.center).norm),
-      (amw.name, (amw.endVertex, amw.startVertex), (amw.startVertex.center - amw.endVertex.center).normalized, -1, (amw.startVertex.center - amw.endVertex.center).norm),
+      (amw.name, (amw.firstVertex, amw.secondVertex), (amw.secondVertex.center - amw.firstVertex.center).normalized, 1, (amw.secondVertex.center - amw.firstVertex.center).norm),
+      (amw.name, (amw.secondVertex, amw.firstVertex), (amw.firstVertex.center - amw.secondVertex.center).normalized, -1, (amw.firstVertex.center - amw.secondVertex.center).norm),
       (amw.name, (pf.head, pf.last), (pf.last.center - pf.head.center).normalized, 1, (pf.last.center - pf.head.center).norm),
       (amw.name, (pf.last, pf.head), (pf.head.center - pf.last.center).normalized, -1, (pf.head.center - pf.last.center).norm)
     )}))

@@ -38,30 +38,32 @@ class RouteGraph(protected val baseVertices: Iterable[Vertex],
                  val edges2Remove: Set[MyEdge] = Set(),
                  val destinationGroups: Iterable[(String, Vector[String])]) {
 
-  private val movingWalkwayVertices: Vector[Vertex] = movingWalkways.flatMap(w => Vector(w.startVertex, w.endVertex)).toVector
+  private val movingWalkwayVertices: Vector[Vertex] = movingWalkways.flatMap(w => Vector(w.firstVertex, w.secondVertex)).toVector
 
   // Collection of all vertices in the network. This map can be used to get a vertex based on it's name.
   val vertexCollection: Map[String, Vertex] = this.baseVertices.map(v => v.name -> v).toMap ++
     flowSeparators.flatMap(fs => fs.associatedZonesStart.map(oz => oz.name -> oz) ++ fs.associatedZonesEnd.map(oz => oz.name -> oz)) --
     flowSeparators.flatMap(fs => fs.overridenZones) ++
-    movingWalkways.flatMap(amw => Map(amw.startVertex.name -> amw.startVertex, amw.endVertex.name -> amw.endVertex)) ++
+    movingWalkways.flatMap(amw => Map(amw.firstVertex.name -> amw.firstVertex, amw.secondVertex.name -> amw.secondVertex)) ++
     movingWalkways.flatMap(amw => amw.associatedZonesStart.map(oz => oz.name -> oz) ++ amw.associatedZonesEnd.map(oz => oz.name -> oz)) --
     movingWalkways.flatMap(amw => amw.droppedVertices)
 
   // Inverted destination groups which is used to check if alternative equivalent destination are available
   private val destination2EquivalentDestinations: Map[String, Vector[String]] = destinationGroups.flatMap(kv => kv._2.map(r => r -> kv._2)).toMap
 
-  private def destination2EquivalentDestinations(zone: Vertex): Vector[Vertex] = destination2EquivalentDestinations.getOrElse(zone.name, Vector(zone.name)).map(zID => this.vertexCollection(zID))
-
-
-  //def vertexMapNew: Map[String, Rectangle] = this.vertexCollection
-
   // builds the container for the graph
   private val network: DefaultDirectedWeightedGraph[Vertex, MyEdge] = new DefaultDirectedWeightedGraph[Vertex, MyEdge](classOf[MyEdge])
 
+
+
+  private def destination2EquivalentDestinations(zone: Vertex): Vector[Vertex] = destination2EquivalentDestinations.getOrElse(zone.name, Vector(zone.name)).map(zID => this.vertexCollection(zID))
+
+  this.vertexCollection.values.foreach(v => network.addVertex(v))
+  //def vertexMapNew: Map[String, Rectangle] = this.vertexCollection
+
+
   // adds the vertices to the graph
   //println(vertexMapNew)
-  this.vertexCollection.values.foreach(v => network.addVertex(v))
 
   // builds the edge set from the various strategies which modify the base graph.
   /*val edgeCollection: Set[MyEdge] = (((standardEdges ++ flowGates ++ binaryGates ++ movingWalkways ++ levelChanges).toSet
@@ -70,14 +72,17 @@ class RouteGraph(protected val baseVertices: Iterable[Vertex],
       || flowSeparators.flatMap(_.associatedConnectivity.map(_.startVertex.name)).toVector.contains(e.endVertex.name)
     ) ++ flowSeparators.flatMap(_.associatedConnectivity)) ++ edges2Add) -- edges2Remove*/
 
+  val edgeCollectionWithoutAMW: Set[MyEdge] = (standardEdges ++ flowGates ++ binaryGates ++ levelChanges).toSet
 
-  val edgeCollection: Set[MyEdge] = (((standardEdges ++ flowGates ++ binaryGates ++ movingWalkways.flatMap(_.graphEdges) ++ levelChanges).toSet
+  val edgeCollection: Set[MyEdge] = ((edgeCollectionWithoutAMW ++ movingWalkways.flatMap(_.graphEdges)
     .filterNot(e =>
       flowSeparators.flatMap(fs => fs.overridenZones).toVector.contains(e.startVertex.name)
         || flowSeparators.flatMap(fs => fs.overridenZones).toVector.contains(e.endVertex.name)
         || movingWalkways.flatMap(amw => amw.droppedVertices).toVector.contains(e.startVertex.name)
         || movingWalkways.flatMap(amw => amw.droppedVertices).toVector.contains(e.endVertex.name)
     ) ++ flowSeparators.flatMap(_.associatedConnectivity) ++ movingWalkways.flatMap(_.associatedConnectivity)) ++ edges2Add) -- edges2Remove
+
+
 
   //def edges: Set[MyEdge] = edgeCollection
 
@@ -103,7 +108,7 @@ class RouteGraph(protected val baseVertices: Iterable[Vertex],
   private var shortestPathBuilder: DijkstraShortestPath[Vertex, MyEdge] = new DijkstraShortestPath[Vertex, MyEdge](network)
 
   // Construction for getting k shortest paths between and origin and a destination in the graph
-  private var multipleShortestPathsBuilder: KShortestPaths[Vertex, MyEdge] = new KShortestPaths[Vertex, MyEdge](network, 5)
+  //private var multipleShortestPathsBuilder: KShortestPaths[Vertex, MyEdge] = new KShortestPaths[Vertex, MyEdge](network, 5)
 
 
   /**
@@ -115,7 +120,7 @@ class RouteGraph(protected val baseVertices: Iterable[Vertex],
     //this.edgeCollection.foreach(e => println(e.startVertex, e.endVertex, e.cost))
     this.edgeCollection.foreach(e => network.setEdgeWeight(e, e.cost))
     this.shortestPathBuilder = new DijkstraShortestPath[Vertex, MyEdge](network)
-    this.multipleShortestPathsBuilder = new KShortestPaths[Vertex, MyEdge](network, 5)
+    //this.multipleShortestPathsBuilder = new KShortestPaths[Vertex, MyEdge](network, 5)
   }
 
   /** Uses to shortestPathBuilder to compute the shortest path between two vertices.
@@ -131,7 +136,6 @@ class RouteGraph(protected val baseVertices: Iterable[Vertex],
     val weightsSum = paths.map(v => math.exp(-math.log(v.getWeight))).sum
     val probabilities: Seq[Double] = paths.map(p => math.exp(-math.log(p.getWeight))/weightsSum)
     val path = paths(probabilities.scanLeft(0.0)(_ + _).tail.indexWhere(p => ThreadLocalRandom.current().nextDouble() < p)).getVertexList*/
-
 
     // println(o,d)
     Try(shortestPathBuilder.getPath(o, d)) match {
@@ -195,44 +199,41 @@ class RouteGraph(protected val baseVertices: Iterable[Vertex],
     }
     p.setCurrentDestination(p.nextZone.uniformSamplePointInside)
 
-    /*if (p.accomplishedRoute.size >= 2) {
-      this.edgeCollection
+    // update the cost of all edges EXCEPT for the AMW edges.
+    if (p.accomplishedRoute.size >= 2) {
+      this.edgeCollectionWithoutAMW
         .find(e => e.startVertex == p.accomplishedRoute.dropRight(1).last._2 && e.endVertex == p.accomplishedRoute.last._2)
         .foreach(e => {
           e.updateCost(t, (p.accomplishedRoute.last._1 - p.accomplishedRoute.dropRight(1).last._1).value.toDouble)
         })
-    }*/
+    }
 
     // update the base moving speed of pedestrian p if he is entering or exiting a moving walkway
-    val nextZoneIsAMW = movingWalkways.find(w => (w.startVertex == p.previousZone && w.endVertex == p.nextZone) || (w.endVertex == p.previousZone && w.startVertex == p.nextZone))
-    val leavingAMW = movingWalkways.find(w => (w.endVertex == p.previousZone && w.startVertex != p.nextZone) || (w.startVertex == p.previousZone && w.endVertex != p.nextZone))
+    changeAMWStatus(p)
+  }
 
+  def changeAMWStatus(ped: PedestrianNOMAD): Unit = {
+    val nextZoneIsAMW = this.movingWalkways.find(w => (w.firstVertex == ped.previousZone && w.secondVertex == ped.nextZone) || (w.secondVertex == ped.previousZone && w.firstVertex == ped.nextZone))
+    val leavingAMW = this.movingWalkways.find(w => (w.secondVertex == ped.previousZone && w.firstVertex != ped.nextZone) || (w.firstVertex == ped.previousZone && w.secondVertex != ped.nextZone))
 
 
     if (nextZoneIsAMW.isDefined && leavingAMW.isEmpty) {
       // entering amw
-      p.baseVelocity = nextZoneIsAMW.get.movingSpeed
-      nextZoneIsAMW.get.addPedToAMW(p.ID)
-      p.isInsideAMW = Some(nextZoneIsAMW.get.name)
+      ped.baseVelocity = nextZoneIsAMW.get.movingSpeed
+      nextZoneIsAMW.get.addPedToAMW(ped.ID)
+      ped.isInsideAMW = Some(nextZoneIsAMW.get.name)
     }
     else if (nextZoneIsAMW.isEmpty && leavingAMW.isDefined) {
       // leaving amw
-      p.baseVelocity = { t => new ZeroVector2D }
-      leavingAMW.get.removePedFromAMW(p.ID)
-      p.isInsideAMW = None
+      ped.baseVelocity = { t => new ZeroVector2D }
+      leavingAMW.get.removePedFromAMW(ped.ID)
+      ped.isInsideAMW = None
 
     }
     else if (nextZoneIsAMW.isDefined && leavingAMW.isDefined) {
       throw new Exception("Error with pedestrian leaving AMW. This case should not happen ! ")
     }
-
-    /*if (p.previousZone.name == "amw2" && p.nextZone.name == "amw1") {
-      println("debug")
-    }*/
-
-
   }
-
 
   /**
     * Clones the graph, this should be thread safe and make hard copies of the objects os they can be used for
@@ -244,5 +245,4 @@ class RouteGraph(protected val baseVertices: Iterable[Vertex],
   def clone(devices: ControlDevices): RouteGraph = new RouteGraph(
     this.baseVertices, this.standardEdges, this.levelChanges, devices.flowGates, devices.binaryGates, devices.amws, devices.flowSeparators, destinationGroups = this.destinationGroups
   )
-
 }
