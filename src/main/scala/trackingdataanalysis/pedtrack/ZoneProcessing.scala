@@ -5,11 +5,13 @@ import tools.cells.Rectangle
 import trackingdataanalysis.pedtrack.visiosafe.PedestrianMap
 import trackingdataanalysis.{SBBFormat, TrackingDataFormat, VisioSafeNumericFormat}
 
+import scala.annotation.tailrec
+
 /** Container for the procssing methods common to both single day and multi day processing
   *
   * @param zoneFile location of the file specifying the zones
   */
-abstract class ZoneProcessing(zoneFile: String, tolerance: Double) {
+@deprecated abstract class ZoneProcessing(zoneFile: String, tolerance: Double) {
 
   /** Map from zone_ID to Zone. */
   val zones: Map[Int, Rectangle] = (for (l <- scala.io.Source.fromFile(zoneFile).getLines.drop(1)) yield l.split(",").map(_.trim.toInt).head -> new Rectangle(l.split(",").map(_.trim.toDouble / 1000.0))).toMap
@@ -20,8 +22,7 @@ abstract class ZoneProcessing(zoneFile: String, tolerance: Double) {
     * @param fileName location of the raw data
     * @return aggregated data
     */
-  @deprecated
-  def aggregatePedestrians(fileName: String): PedestrianMap = {
+  @deprecated def aggregatePedestrians(fileName: String): PedestrianMap = {
     val ped: PedestrianMap = collection.mutable.Map()
     val bufferedSource: scala.io.BufferedSource = scala.io.Source.fromFile(fileName)
     for (l <- bufferedSource.getLines) {
@@ -35,20 +36,18 @@ abstract class ZoneProcessing(zoneFile: String, tolerance: Double) {
     ped
   }
 
-
-
-  /** Returns the zone in which a point is located
+  /** Returns the first zone in which a point is located
     *
     * @param pos      point to find owernship
     * @param mapZones Map storing the zones
     * @return Int naming the zone, -1 if none found
     */
-  private def findZoneOwnership(pos: (Double, Double), mapZones: Map[Int, Rectangle]): Int = {
-    if (mapZones.isEmpty) -1
+  @tailrec private def findZoneOwnership(pos: (Double, Double), mapZones: Map[Int, Rectangle]): Int = {
+    if (this.zones.isEmpty) -1
     else {
-      val pair = mapZones.head
-      if (pair._2.isInside(new Position(pos._1, pos._2), false)) pair._1
-      else findZoneOwnership(pos, mapZones.tail)
+      val pair = this.zones.head
+      if (pair._2.isInside(new Position(pos._1, pos._2), false)) {pair._1}
+      else {findZoneOwnership(pos, this.zones.tail)}
     }
   }
 
@@ -57,7 +56,7 @@ abstract class ZoneProcessing(zoneFile: String, tolerance: Double) {
     * @param p pedestrian before the zone is set
     * @return the same pedestrian with updated info
     */
-  protected def assignZonePedestrian(p: Pedestrian): Pedestrian = {
+  @deprecated protected def assignZonePedestrian(p: Pedestrian): Pedestrian = {
     p.oZone = findZoneOwnership(p.oCoords, this.zones)
     p.dZone = findZoneOwnership(p.dCoords, this.zones)
     p.travelTime = p.exitTime - p.entryTime
@@ -68,7 +67,7 @@ abstract class ZoneProcessing(zoneFile: String, tolerance: Double) {
   /** Abstract assign zones method. Must be implemented for processors.
     *
     */
-  protected def assignZones(): Unit
+  @deprecated protected def assignZones(): Unit
 
   /** Takes the simplified version of the population stored in an [[Iterable]] and aggregates the data based on a
     * collection of times. For each time provided as input, the IDs of the pedestrians which are within a specified
@@ -79,7 +78,7 @@ abstract class ZoneProcessing(zoneFile: String, tolerance: Double) {
     * @param acc   accumulator
     * @return map with the times as keys and the IDs of pedestrians as values
     */
-  protected def collectIDByTime(times: Seq[Double], pop: Iterable[(Int, Seq[Double], Seq[Double], Seq[Double])], acc: Vector[(Double, Iterable[Int])]): Vector[(Double, Iterable[Int])] = {
+  @deprecated protected def collectIDByTime(times: Seq[Double], pop: Iterable[(Int, Seq[Double], Seq[Double], Seq[Double])], acc: Vector[(Double, Iterable[Int])]): Vector[(Double, Iterable[Int])] = {
     if (times.isEmpty) acc
     else {
       collectIDByTime(
@@ -99,7 +98,7 @@ abstract class ZoneProcessing(zoneFile: String, tolerance: Double) {
     * @param tDesired desired time
     * @return point at the desired time using a linear interpolation
     */
-  def linearInterpolationPosition(x1: (Double, Double), x2: (Double, Double), t1: Double, t2: Double, tDesired: Double): (Double, Double) = {
+  @deprecated def linearInterpolationPosition(x1: (Double, Double), x2: (Double, Double), t1: Double, t2: Double, tDesired: Double): (Double, Double) = {
     if (t1 > t2) {
       throw new IllegalArgumentException("t1 is larger than t2 ! t1=" + t1 + ", t2=" + t2)
     }
@@ -110,9 +109,9 @@ abstract class ZoneProcessing(zoneFile: String, tolerance: Double) {
     (x1._1 + frac * (x2._1 - x1._1), x1._2 + frac * (x2._2 - x1._2))
   }
 
-  /** Returns the index of the inteval in which the argument lies
+  /** Returns the index of the interval in which the argument lies
     *
-    * @param t     value wanted to be placed
+    * @param t value wanted to be placed
     * @param times vector in which to place the argument
     * @return index of the correct position
     */

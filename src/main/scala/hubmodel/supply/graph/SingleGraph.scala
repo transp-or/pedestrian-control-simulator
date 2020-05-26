@@ -38,6 +38,10 @@ class SingleGraph(private val baseVertices: Iterable[Vertex],
 
   def changeAMWStatus(ped: PedestrianNOMAD): Unit = { this.graph.changeAMWStatus(ped) }
 
+  def computeODsWithAMWs: Map[(String, String), Vector[String]] = {
+    this.graph.computeODs
+  }
+
   type T = SingleGraph
 
   /**

@@ -6,7 +6,7 @@ import hubmodel.supply.Infrastructure
   * Class which reads the full graph file. All elements are read from the file and the config file specifies which
   * elements are used. The combination of multiple control strategies is possible.
   *
-  * @param location            geographical location
+  * @param amwsMode            geographical location
   * @param subLocation         sublocation within the hub
   * @param nodes               list of nodes
   * @param standardConnections connectivity
@@ -16,7 +16,7 @@ import hubmodel.supply.Infrastructure
   * @param movingWalkways      collection of moving walkways
   * @param flowSeparators      collection of flow separators
   */
-case class InfraGraphParser(location: String,
+case class InfraGraphParser(amwsMode: String,
                             subLocation: String,
                             nodes: Vector[Vertex_JSON],
                             standardConnections: Vector[Connectivity_JSON],

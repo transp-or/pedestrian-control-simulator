@@ -98,8 +98,11 @@ object CompareTravelTimeResultsPIW extends App {
 
 
   def WelchTTest(m1: Double, sd1:Double, size1: Int, m2: Double, sd2:Double, size2: Int): (Double, Double) = {
-    val nu = math.pow(sd1*sd1/size1 + sd2*sd2 / size2, 2) / (math.pow(sd1, 4) / (size1*size1*(size1-1)) + math.pow(sd2, 4) / (size2*size2*(size2-1)))
+    val nu = math.pow(sd1*sd1/size1 + sd2*sd2/size2, 2) / (math.pow(sd1, 4) / (size1*size1*(size1-1.0)) + math.pow(sd2, 4) / (size2*size2*(size2-1.0)))
     val t = (m1 - m2)/math.sqrt(sd1*sd1/size1 + sd2*sd2 / size2)
+    if (nu <0) {
+      println("debug")
+    }
     (t,nu)
   }
 
@@ -114,12 +117,15 @@ object CompareTravelTimeResultsPIW extends App {
         ).map(r => (r._1, r._2._1, r._3._1, r._2._2, r._3._2, r._2._3, r._3._3, r._2._4, r._3._4, r._2._5, r._3._5)).toVector
     })
 
-  resultsCompared.head._2.sortBy(_._1).foreach(r => {
+  /*resultsCompared.head._2.sortBy(_._1).foreach(r => {
     val (t, nu) = WelchTTest(r._2, r._4, r._10, r._3, r._5, r._11)
     println(r._1, t, nu, new TDistribution(nu).density(t))
-  })
+  })*/
 
-  resultsCompared.flatMap(rr => rr._2.map(rrr => (rr._1, rrr._1, rrr._2, rrr._3, {val (t, nu) = WelchTTest(rrr._2, rrr._4, rrr._10, rrr._3, rrr._5, rrr._11); new TDistribution(nu).density(t)}, rrr._6, rrr._7, rrr._8, rrr._9, rrr._10, rrr._11))).toVector
+  resultsCompared.flatMap(rr => rr._2.map(rrr => (rr._1, rrr._1, rrr._2, rrr._3, {
+    val (t, nu) = WelchTTest(rrr._2, rrr._4, rrr._10, rrr._3, rrr._5, rrr._11)
+    new TDistribution(nu).density(t)
+  }, rrr._6, rrr._7, rrr._8, rrr._9, rrr._10, rrr._11))).toVector
     .filterNot(v => v._3.isNaN || v._4.isNaN)
     .sortBy(v => v._2) //(v._3-v._2)/v._2)//v._1)
     // .filterNot(v => v._9 == "other")

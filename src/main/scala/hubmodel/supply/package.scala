@@ -107,7 +107,7 @@ package hubmodel {
       *
       */
     trait Infrastructure {
-      val location: String
+      val amwsMode: String
       val subLocation: String
     }
 

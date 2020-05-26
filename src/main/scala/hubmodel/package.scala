@@ -1,4 +1,5 @@
 import java.io.{BufferedWriter, File, FileWriter}
+import java.lang.Error
 import java.nio.file.{Files, Paths}
 import java.util.concurrent.ThreadLocalRandom
 
@@ -23,6 +24,7 @@ import tools.Time
 
 import scala.annotation.tailrec
 import scala.collection.immutable.NumericRange
+import scala.util.{Failure, Success, Try}
 
 
 /**
@@ -345,8 +347,13 @@ package object hubmodel {
     * @param writeTRANSFORMTT      should the outputs for TRANS-FORM be computed and written ?
     */
   def runAndWriteResults(simulator: NOMADGraphSimulator, prefix: String = "", dir: String, writeTrajectoriesVS: Boolean = false, writeTrajectoriesJSON: Boolean = false, writeTRANSFORMTT: Boolean = false): Unit = {
-    timeBlock(simulator.run())
-    writeResults(simulator, prefix, dir, writeTrajectoriesVS, writeTrajectoriesJSON, writeTRANSFORMTT)
+    Try(timeBlock(simulator.run())) match {
+      case Success(s) => {
+        writeResults(simulator, prefix, dir, writeTrajectoriesVS, writeTrajectoriesJSON, writeTRANSFORMTT)
+      }
+      case Failure(f) => {println(f)}
+    }
+
   }
 
 

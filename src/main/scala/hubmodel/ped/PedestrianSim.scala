@@ -71,11 +71,11 @@ class PedestrianSim(val origin: Vertex,
 
 
   // Route the pedestrian actually accomplished
-  protected val _accomplishedRoute: collection.mutable.ArrayBuffer[(Time, Vertex, Position)] = new collection.mutable.ArrayBuffer()
+  /*protected val _accomplishedRoute: collection.mutable.ArrayBuffer[(Time, Vertex, Position)] = new collection.mutable.ArrayBuffer()
 
   def appendAccomplishedRoute(t: Time, v: Vertex ,p: Position): Unit = {this._accomplishedRoute.append((t, v, p))}
 
-  def accomplishedRoute: Vector[(Time, Vertex, Position)] = this._accomplishedRoute.toVector
+  def accomplishedRoute: Vector[(Time, Vertex, Position)] = this._accomplishedRoute.toVector*/
 
   var route: List[Vertex] = List()
 

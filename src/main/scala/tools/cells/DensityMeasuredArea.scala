@@ -57,10 +57,10 @@ class DensityMeasuredArea(name: String, A: Position, B: Position, C: Position, D
   def toJSON: String = {
     "{" +
       "\"name\":\"" + this.name + "\"," +
+      "\"id\":\"" + this.ID + "\"," +
       "\"target-density\":" + this.targetDensity + "," +
-      "\"density-measurements\":[" +
-    this.densityHistory.map(dp => "{\"time\":" + dp._1.toString + ",\"density\":" + dp._2 + "}").mkString(",\n") +
-    "],\n\"density-individual-measurements\":[" + this.paxIndividualDensityHistory.map(d => "{\"time\":" + d._1 + ",\"densities\":[" + d._2.mkString(",")) + "]}"+
+      "\"density-measurements\":[" + this.densityHistory.map(dp => "[" + dp._1.toString + "," + dp._2 + "]").mkString(",\n") +
+    "],\n\"density-individual-measurements\":[" + this.paxIndividualDensityHistory.map(d => "{\"time\":" + d._1 + ",\"densities\":[" + d._2.mkString(",") + "]}").mkString(",\n") +
     "]"+
       "}"
   }

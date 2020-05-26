@@ -10,6 +10,7 @@ import hubmodel.ped.PedestrianNOMAD
 import myscala.math.vector.Vector2D
 import play.api.libs.json.{JsError, JsSuccess, JsValue, Json}
 import tools.cells._
+import tools.exceptions.ControlDevicesException
 
 import scala.collection.mutable.ArrayBuffer
 import scala.io.BufferedSource
@@ -40,6 +41,11 @@ package object graph {
 
     input.validate[InfraGraphParser] match {
       case s: JsSuccess[InfraGraphParser] => {
+
+        if (!Vector("static", "reactive", "predictive").contains(s.get.amwsMode)){
+          throw new ControlDevicesException("AMW mode is wrong ! It should be one of \"static\", \"reactive\", \"predictive\" ! It is:" + s.get.amwsMode)
+        }
+
         val v: Vector[Rectangle] = s.get.nodes.map(n => new Rectangle(n.name, Vector2D(n.x1, n.y1), Vector2D(n.x2, n.y2), Vector2D(n.x3, n.y3), Vector2D(n.x4, n.y4), n.OD, n.rate))
         val vertexMapReader: collection.mutable.Map[String, Vertex] = collection.mutable.Map() ++ v.map(v => v.name -> v)
         val edgesFromVertexToRemove: ArrayBuffer[String] = ArrayBuffer()
@@ -276,7 +282,7 @@ package object graph {
             }
           }
           ,
-          new ControlDevices(monitoredAreas, mv, fg, bg, flowSeparators, fixedFlowSep, Some(flowSepParameters))
+          new ControlDevices(monitoredAreas, mv, s.get.amwsMode, fg, bg, flowSeparators, fixedFlowSep, Some(flowSepParameters))
         )
       }
       case e: JsError => throw new Error("Error while parsing graph specification file: " + JsError.toJson(e).toString())

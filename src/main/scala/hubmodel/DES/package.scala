@@ -165,6 +165,7 @@ package object DES {
     simulationParameters.logFullPedestrianHistory = config.getBoolean("output.write_trajectories_as_VS") || config.getBoolean("output.write_trajectories_as_JSON") || config.getBoolean("output.make_video")
     simulationParameters.timeTable = timeTable
     simulationParameters.stateEvaluationInterval = Some(evaluationInterval)
+    simulationParameters.trackDensityInterval = if (config.getBoolean("sim.measure_density")) {Some(Time(config.getDouble("sim.density_compute_dt")))} else {None}
 
     // Creation of the simulator
     val sim: NOMADGraphSimulator = new PedestrianSimulation(simulationParameters)

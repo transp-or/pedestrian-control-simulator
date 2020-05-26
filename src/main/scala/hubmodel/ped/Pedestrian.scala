@@ -61,6 +61,4 @@ class Pedestrian(val ID: Int, val entryTime: Time) extends PedestrianTrajectory 
     this._historyPositionUnsorted.append((t, CoordinateGroup(pos, group)))
   }
 
-
-
 }

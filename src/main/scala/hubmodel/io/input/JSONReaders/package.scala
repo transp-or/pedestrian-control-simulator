@@ -491,7 +491,7 @@ package object JSONReaders {
     * Reads the JSON structure into a [[InfraGraphParser]] object. No validation on arguments is done.
     */
   implicit val InfraGraphParserReads: Reads[InfraGraphParser] = (
-    (JsPath \ "location").read[String](minLength[String](2)) and
+    (JsPath \ "amws_mode").read[String](minLength[String](2)) and
       (JsPath \ "sublocation").read[String](minLength[String](2)) and
       (JsPath \ "nodes").read[Vector[Vertex_JSON]] and
       (JsPath \ "connectivity").read[Vector[Connectivity_JSON]] and
@@ -590,6 +590,15 @@ package object JSONReaders {
       (JsPath \ "expected_speed_history").read[Vector[Vector[Tuple2[Double, Double]]]]
     ) (AMWData_JSON.apply _)
 
+
+  case class DensityData_JSON(id: String, name: String, aggregateMeasurement: Vector[(Double, Double)], disaggregateMeasurements: Vector[(Double, Vector[Double])])
+
+  implicit val DensityData_JSON_Reads: Reads[DensityData_JSON] = (
+    (JsPath \ "ID").read[String] and
+      (JsPath \ "name").read[String] and
+      (JsPath \ "density-measurements").read[Vector[Tuple2[Double, Double]]] and
+      (JsPath \ "density-individual-measurements").read[Vector[Tuple2[Double, Vector[Double]]]]
+    ) (DensityData_JSON.apply _)
 
   // ******************************************************************************************
   //                         READERS FOR THE OD GROUPS USED IN THE RESULTS

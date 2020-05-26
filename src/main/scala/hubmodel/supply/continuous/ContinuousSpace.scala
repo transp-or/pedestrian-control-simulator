@@ -9,7 +9,7 @@ import hubmodel.supply.Infrastructure
   * @param walls : Vector or [[hubmodel.supply.continuous.Wall]]
   */
 class ContinuousSpace(val walls: Vector[Wall]) extends Infrastructure with BuildClosedPolygon {
-  override val location: String = "unused"
+  override val amwsMode: String = "unused"
   override val subLocation: String = "unused"
 
   override lazy val shellCollection: List[Shell] = buildShells(walls)

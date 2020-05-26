@@ -107,9 +107,9 @@ class RouteGraph(protected val baseVertices: Iterable[Vertex],
   // object used to get the shortest path in the network
   private var shortestPathBuilder: DijkstraShortestPath[Vertex, MyEdge] = new DijkstraShortestPath[Vertex, MyEdge](network)
 
-  // Construction for getting k shortest paths between and origin and a destination in the graph
-  //private var multipleShortestPathsBuilder: KShortestPaths[Vertex, MyEdge] = new KShortestPaths[Vertex, MyEdge](network, 5)
 
+
+  computeODs
 
   /**
     * Updates the cost of each edge in the graph based on the cost of the edges stored in the "edges" variable.
@@ -234,6 +234,27 @@ class RouteGraph(protected val baseVertices: Iterable[Vertex],
       throw new Exception("Error with pedestrian leaving AMW. This case should not happen ! ")
     }
   }
+
+  def computeODs: Map[(String, String), Vector[String]] = {
+    // Construction for getting k shortest paths between and origin and a destination in the graph
+    this.movingWalkways.foreach(w => w.graphEdges.foreach(e => e.updateCost(Time(-1), 0.0)))
+    val multipleShortestPathsBuilder: KShortestPaths[Vertex, MyEdge] = new KShortestPaths[Vertex, MyEdge](network, 5)
+
+    val amwEdgesIDs: Map[String, String] = this.movingWalkways.flatMap(w => w.graphEdges.map(e => e.ID -> w.name)).toMap
+
+    this.vertexCollection
+      .filter(_._2.isOD)
+      .keys.toVector
+      .combinations(2)
+      .flatMap(od => Vector( (od(0), od(1)) , (od(1), od(0)) ) )
+      .map(od => od -> multipleShortestPathsBuilder.getPaths(vertexCollection(od._1), vertexCollection(od._2))).toMap
+      .view
+      .mapValues(rc => rc.asScala.toVector.flatMap(r => r.getEdgeList.asScala.toVector.map(_.ID).intersect(amwEdgesIDs.keys.toVector).map(amwEdgesIDs)).distinct)
+      .to(Map)
+
+  }
+
+
 
   /**
     * Clones the graph, this should be thread safe and make hard copies of the objects os they can be used for

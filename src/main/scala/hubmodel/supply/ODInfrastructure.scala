@@ -83,13 +83,13 @@ class ODInfrastructureParser(nameMapFile: String) {
   * The notion of 'node' is associated with a capacity if the physical location corresponds to a doorway
   * or anything with bottleneck. Ramps, stairs or doors are some examples.
   *
-  * @param location            general geographical location of the infrastructure
+  * @param amwsMode            general geographical location of the infrastructure
   * @param subLocation         sub specification of the infrastructure
   * @param connectionMatrix    OD matrix stored as a vector of OD pairs
   * @param nodeThroughput      pedestrian capacity limitation of a given node
   * @param nodeToPlatformInput mapping from nodes to platforms. Answers the question on which platform is a given node located
   */
-case class InfraODParser(location: String,
+case class InfraODParser(amwsMode: String,
                          subLocation: String,
                          connectionMatrix: Vector[ODPairWithoutCapacity],
                          nodeThroughput: Vector[NodeThroughput],
@@ -112,7 +112,7 @@ case class InfraODParser(location: String,
   * @param nameMappings map of string names to int names and reverse
   */
 class InfraODModel(infraRaw: InfraODParser, val nameMappings: NameConversions) extends Infrastructure {
-  val location: String = infraRaw.location
+  val amwsMode: String = infraRaw.amwsMode
   val subLocation: String = infraRaw.subLocation
   val network: Map[Tuple2[NodeIDOld, NodeIDOld], Double] = {
     val tmpNetwork: Map[Tuple2[NodeIDOld, NodeIDOld], Double] = infraRaw.connectionMatrix.map(od => (od.O, od.D) -> od.distance).toMap

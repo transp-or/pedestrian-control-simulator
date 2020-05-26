@@ -413,7 +413,7 @@ object RunSimulation extends App with StrictLogging {
       val appliedSpeeds: Vector[(String, Vector[Double], String, Vector[Double])] = resultsJson
         .filter(_.amwData.isDefined)
         .flatMap(_.amwData.get)
-        .map(w => ((w.name + "_" + w.id + "_t", w.appliedPolicy.map(_._1), w.name + "_s", w.appliedPolicy.map(_._2))))
+        .map(w => ((w.name + "_" + w.id + "_t", w.appliedPolicy.map(_._1), w.name + "_" + w.id + "_s", w.appliedPolicy.map(_._2))))
 
       appliedSpeeds.flatMap(d => Vector(d._2, d._4)).writeToCSV(config.getString("output.output_prefix") + "_applied_amw_speeds.csv", rowNames=None, columnNames = Some(appliedSpeeds.flatMap(d => Vector(d._1, d._3))))
 

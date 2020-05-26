@@ -74,9 +74,10 @@ abstract class EvaluateState(sim: NOMADGraphSimulator) {
       fs.inflowLinesEnd.foreach(_.reinitialize())
     })
   }
+
 }
 
-class computePedestrianDensity(sim: NOMADGraphSimulator) extends EvaluateState(sim) with Action {
+class ComputePedestrianDensity(sim: NOMADGraphSimulator) extends EvaluateState(sim) with Action {
 
   override def execute(): Any = {
 
@@ -84,11 +85,11 @@ class computePedestrianDensity(sim: NOMADGraphSimulator) extends EvaluateState(s
 
     computeDensityAtCurrentTime()
 
-    sim.insertEventWithDelay(sim.trackDensityInterval.get)(new computePedestrianDensity(this.sim))
+    sim.trackDensityInterval.foreach(t => sim.insertEventWithDelay(t)(new ComputePedestrianDensity(this.sim)))
 
   }
 
-  type A = computePedestrianDensity
+  type A = ComputePedestrianDensity
 
   override def deepCopy(simulator: PedestrianPrediction): Option[A] = None
 }

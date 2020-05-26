@@ -3,7 +3,8 @@ package optimization.ALNS
 import java.util.concurrent.ThreadLocalRandom
 
 import hubmodel.control.ControlDevicePolicy
-import hubmodel.control.amw.{AMWPolicy}
+import hubmodel.control.amw.AMWPolicy
+import hubmodel.prediction.AMWFlowsFromGroundTruth
 import hubmodel.prediction.state.StateGroundTruthPredicted
 import tools.Time
 import tools.TimeNumeric.mkOrderingOps
@@ -142,10 +143,9 @@ object RandomIncreaseAllSpeeds extends OperatorGenerator with RandomChange {
 }
 
 
-class DirectionMatchFlow(currentPredictedState: Vector[StateGroundTruthPredicted]) extends Operator {
-
-  val flowDataBySimulation = currentPredictedState.map(_.amwFlows.aggregateFlowsByAMW)
-  val timeIntervals = currentPredictedState.head.intervals
+class DirectionMatchFlow(val flowDataBySimulation: Vector[Map[(String, Int, Int), Double]], val timeIntervals: Vector[Time]) extends Operator {
+  /*val flowDataBySimulation = currentPredictedState.map(_.amwFlows.aggregateFlowsByAMW)
+  val timeIntervals = currentPredictedState.head.intervals*/
   val flowData: Map[(String, Int, Int), Double] = flowDataBySimulation.flatMap(_.toVector).groupBy(_._1).view.mapValues(v => v.map(_._2).statistics.median).toMap
 
   def xprime(x: Vector[ControlDevicePolicy]): Vector[ControlDevicePolicy] = {
@@ -153,7 +153,7 @@ class DirectionMatchFlow(currentPredictedState: Vector[StateGroundTruthPredicted
       case amw: AMWPolicy => {
         val flow = flowData.filter(v => v._1._1 == amw.name && timeIntervals(v._1._3) == amw.start).maxByOption(_._2)
         if (flow.exists(f => f._1._2.sign != amw.speed.sign)) {
-          amw.copy(speed = flow.get._1._2.sign * 2.0)
+          amw.copy(speed = flow.get._1._2.sign * 3.0)
         }
         else {
           amw
@@ -161,7 +161,6 @@ class DirectionMatchFlow(currentPredictedState: Vector[StateGroundTruthPredicted
       }
       case other => other
     }
-
     tmp
   }
 }
@@ -172,9 +171,8 @@ object DirectionMatchFlow extends OperatorGenerator with RandomChange {
 
   type T = DirectionMatchFlow
 
-  def returnOperator(x: Vector[ControlDevicePolicy], iterable: Vector[StateGroundTruthPredicted]): T = new DirectionMatchFlow(iterable)
+  def returnOperator(x: Vector[ControlDevicePolicy], iterable: Vector[StateGroundTruthPredicted]): T = new DirectionMatchFlow(iterable.map(_.amwFlows.aggregateFlowsByAMW), iterable.head.intervals)
 }
-
 
 class MinimumDurationSameDirection(allPolicy: Vector[ControlDevicePolicy]) extends Operator {
 

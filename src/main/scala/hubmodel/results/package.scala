@@ -4,7 +4,7 @@ import java.io.{BufferedWriter, File, FileWriter}
 import java.nio.file.{Files, Paths}
 
 import hubmodel.DES.NOMADGraphSimulator
-import hubmodel.io.input.JSONReaders.{AMWData_JSON, PedestrianResults_JSON}
+import hubmodel.io.input.JSONReaders.{AMWData_JSON, DensityData_JSON, PedestrianResults_JSON}
 import hubmodel.ped.PedestrianSim
 import myscala.math.stats.{ComputeStats, Statistics}
 import myscala.output.SeqOfSeqExtensions.SeqOfSeqWriter
@@ -15,6 +15,8 @@ import tools.cells.Vertex
 import scala.io.BufferedSource
 import scala.jdk.CollectionConverters._
 import scala.util.{Failure, Success, Try}
+import play.api.libs.json.Json
+import tools.Time
 
 package object results {
 
@@ -165,6 +167,16 @@ package object results {
           throw f
         }
       }
+
+      val file = new File(prefix + "ods-with-amws_" + simulator.ID + ".json")
+
+      val bw = new BufferedWriter(new FileWriter(file))
+      bw.write("[{")
+      bw.write(simulator.graph.computeODsWithAMWs
+        .map(kv => "\"o\":\"" + kv._1._1 + "\",\"d\":\"" + kv._1._2 + "\",\"amws\":[\"" + kv._2.mkString("\",\"") + "\"]")
+          .mkString("},{"))
+      bw.write("}]")
+      bw.close()
     }
 
     if (writeTrajectoriesVS) {
@@ -331,6 +343,23 @@ package object results {
         }
       }
 
+      val densities: Option[Vector[DensityData_JSON]] = {
+        if (str._2.keySet.contains("_density_")) {
+          val source: BufferedSource = scala.io.Source.fromFile(str._2("density"))
+          val input: JsValue = Json.parse(try source.mkString finally source.close)
+          input.validate[Vector[DensityData_JSON]] match {
+            case s: JsSuccess[Vector[DensityData_JSON]] => {
+              Some(s.get)
+            }
+            case e: JsError => throw new Error("Error while parsing results file: " + str + "\nerror: " + JsError.toJson(e).toString())
+          }
+        }
+        else {
+          None
+        }
+      }
+
+
       val amw: Option[Vector[AMWData_JSON]] = {
         if (str._2.keySet.contains("amw")) {
           val source: BufferedSource = scala.io.Source.fromFile(str._2("amw"))
@@ -349,7 +378,11 @@ package object results {
 
       // TODO implement reading density results using JSON
 
-      new ResultsContainerReadNew(tt, None, None, amw)
+      new ResultsContainerReadNew(
+        tt,
+        densities.map(d => d.map(dd => dd.name -> dd.aggregateMeasurement.map(v => (Time(v._1), v._2))).toMap),
+        densities.map(d => d.map(dd => dd.name -> dd.disaggregateMeasurements.map(v =>  (Time(v._1), v._2))).toMap),
+        amw)
     })
   }
 

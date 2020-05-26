@@ -19,13 +19,7 @@ import tools.exceptions.IllegalSimulationInput
   * @param flowSeparators      dynamic flow separators
   * @param fixedFlowSeparators indicator if the flow separators are fixed
   */
-class ControlDevices(val monitoredAreas: Iterable[DensityMeasuredArea],
-                     val amws: Iterable[MovingWalkway],
-                     val flowGates: Iterable[FlowGate],
-                     val binaryGates: Iterable[BinaryGate],
-                     val flowSeparators: Iterable[FlowSeparator[_, _]],
-                     val fixedFlowSeparators: Boolean,
-                     val flowSepParams: Option[Seq[FlowSeparatorParameters[_, _]]] = None) extends ControlDeviceComponent {
+class ControlDevices(val monitoredAreas: Iterable[DensityMeasuredArea], val amws: Iterable[MovingWalkway], val amwsMode: String, val flowGates: Iterable[FlowGate], val binaryGates: Iterable[BinaryGate], val flowSeparators: Iterable[FlowSeparator[_, _]], val fixedFlowSeparators: Boolean, val flowSepParams: Option[Seq[FlowSeparatorParameters[_, _]]] = None) extends ControlDeviceComponent {
 
   // Incompatible setup: flow gates exist but no areas to measure density exist
   if (flowGates.nonEmpty && monitoredAreas.isEmpty) {
@@ -48,14 +42,7 @@ class ControlDevices(val monitoredAreas: Iterable[DensityMeasuredArea],
     * @return deep copy of the current component
     */
   override def deepCopy: ControlDevices = {
-    new ControlDevices(
-      monitoredAreas.map(_.deepCopy),
-      amws.map(_.deepCopy),
-      flowGates.map(_.deepCopy),
-      binaryGates.map(_.deepCopy),
-      flowSeparators.map(_.deepCopy),
-      fixedFlowSeparators
-    )
+    new ControlDevices(monitoredAreas.map(_.deepCopy), amws.map(_.deepCopy), this.amwsMode, flowGates.map(_.deepCopy), binaryGates.map(_.deepCopy), flowSeparators.map(_.deepCopy), fixedFlowSeparators)
   }
 
 
@@ -65,14 +52,7 @@ class ControlDevices(val monitoredAreas: Iterable[DensityMeasuredArea],
     * @return deep copy of the current component
     */
   def deepCopyWithState(t: => Time, population: Iterable[PedestrianNOMAD]): ControlDevices = {
-    new ControlDevices(
-      monitoredAreas.map(_.deepCopy),
-      amws.map(_.deepCopyWithState(population)),
-      flowGates.map(_.deepCopyWithState(t, population)),
-      binaryGates.map(_.deepCopy),
-      flowSeparators.map(_.deepCopyWithState),
-      fixedFlowSeparators
-    )
+    new ControlDevices(monitoredAreas.map(_.deepCopy), amws.map(_.deepCopyWithState(population)),this.amwsMode , flowGates.map(_.deepCopyWithState(t, population)), binaryGates.map(_.deepCopy), flowSeparators.map(_.deepCopyWithState), fixedFlowSeparators)
   }
 
   /**
@@ -84,32 +64,18 @@ class ControlDevices(val monitoredAreas: Iterable[DensityMeasuredArea],
     * @return new set of control devices
     */
   def deepCopyModifyFlowGates[T <: Measurement, U <: Flow](f: FunctionalForm[T, U]): ControlDevices = {
-    new ControlDevices(
-      monitoredAreas.map(_.deepCopy),
-      amws.map(_.deepCopy),
-      flowGates.map(fg => fg match {
-        case fgFunc: FlowGateFunctional[_, _] => {
-          fgFunc.deepCopy(f)
-        }
-        case fg: FlowGate => {
-          fg.deepCopy
-        }
-      }),
-      binaryGates.map(_.deepCopy),
-      flowSeparators.map(_.deepCopy),
-      fixedFlowSeparators
-    )
+    new ControlDevices(monitoredAreas.map(_.deepCopy), amws.map(_.deepCopy),this.amwsMode , flowGates.map(fg => fg match {
+            case fgFunc: FlowGateFunctional[_, _] => {
+              fgFunc.deepCopy(f)
+            }
+            case fg: FlowGate => {
+              fg.deepCopy
+            }
+          }), binaryGates.map(_.deepCopy), flowSeparators.map(_.deepCopy), fixedFlowSeparators)
   }
 
   def deepCopyModifyMonitoredAreas(rho: Double): ControlDevices = {
-    new ControlDevices(
-      monitoredAreas.map(_.deepCopyChangeTargetDensity(rho)),
-      amws.map(_.deepCopy),
-      flowGates.map(_.deepCopy),
-      binaryGates.map(_.deepCopy),
-      flowSeparators.map(_.deepCopy),
-      fixedFlowSeparators
-    )
+    new ControlDevices(monitoredAreas.map(_.deepCopyChangeTargetDensity(rho)), amws.map(_.deepCopy),this.amwsMode , flowGates.map(_.deepCopy), binaryGates.map(_.deepCopy), flowSeparators.map(_.deepCopy), fixedFlowSeparators)
   }
 
   /**
@@ -121,13 +87,6 @@ class ControlDevices(val monitoredAreas: Iterable[DensityMeasuredArea],
     * @return new set of control devices
     */
   def deepCopyModifyFlowSeparators[T <: Measurement, U <: SeparatorPositionFraction](f: FunctionalForm[T, U]): ControlDevices = {
-    new ControlDevices(
-      monitoredAreas.map(_.deepCopy),
-      amws,
-      flowGates.map(_.deepCopy),
-      binaryGates.map(_.deepCopy),
-      flowSeparators.map(_.deepCopy(f)),
-      fixedFlowSeparators
-    )
+    new ControlDevices(monitoredAreas.map(_.deepCopy), amws,this.amwsMode , flowGates.map(_.deepCopy), binaryGates.map(_.deepCopy), flowSeparators.map(_.deepCopy(f)), fixedFlowSeparators)
   }
 }

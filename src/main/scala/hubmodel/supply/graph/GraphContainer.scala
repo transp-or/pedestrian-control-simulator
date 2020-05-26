@@ -23,6 +23,8 @@ abstract class GraphContainer(protected val flowGates: Iterable[FlowGate],
 
   def changeAMWStatus(ped: PedestrianNOMAD): Unit
 
+  def computeODsWithAMWs: Map[(String, String), Vector[String]]
+
   def updateGraphCosts(): Unit
 
   type T <: GraphContainer

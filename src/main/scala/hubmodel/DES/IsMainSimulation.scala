@@ -28,7 +28,7 @@ trait IsMainSimulation {
 
       sim.eventLogger.trace("sim-time=" + sim.currentTime + ": state evaluation")
 
-      this.computeDensityAtCurrentTime()
+      //this.computeDensityAtCurrentTime()
 
       if (sim.useFlowGates || sim.useBinaryGates) {
         sim.insertEventWithZeroDelay(new UpdateGates(sim))
@@ -38,7 +38,7 @@ trait IsMainSimulation {
         processIncomingFlowsForFS()
       }
 
-      if (sim.controlDevices.amws.nonEmpty) {
+      if (sim.controlDevices.amws.nonEmpty && this.sim.controlDevices.amwsMode == "predictive") {
         sim.insertEventWithZeroDelay(new RollingHorizonOptimization(this.sim))
       }
 
@@ -97,6 +97,7 @@ trait IsMainSimulation {
       this.sim.controlDevices.amws
         .foreach(w => {
           val policy = horizonOptimization.optimalSolution._1.collect{case amw: AMWPolicy if amw.name == w.name => amw}
+          w.expectedPolicy.append(policy.map(p => (p.start, p.speed)))
           val eventData: Option[MovingWalkwayControlEvents] = horizonOptimization.optimalSolution._3.collect{case data: MovingWalkwayControlEvents => data}.find(_.name == w.name)
           w.setControlPolicy(policy, eventData)
           w.insertChangeSpeed(this.sim)

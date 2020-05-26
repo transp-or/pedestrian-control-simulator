@@ -127,8 +127,7 @@ package object ALNS {
 
       if (directionChanges.isEmpty) {
         (policy, amwEvents)
-      }
-      else {
+      } else {
         val dirChange = policy(directionChanges.head)
         val oldSpeed = if (directionChanges.head > 0) {
           policy(directionChanges.head - 1).speed

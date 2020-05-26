@@ -6,7 +6,7 @@ import java.awt.image.BufferedImage
 import hubmodel.Position
 import trackingdataanalysis.TrackingDataFormat
 import hubmodel.io.output.video.MovingPedestriansWithDensityWithWallVideo
-import hubmodel.ped.History.CoordinateGroup
+import hubmodel.ped.History.{CoordinateGroup, CoordinateTracking}
 import javax.imageio.ImageIO
 import trackingdataanalysis.visualization.{DrawingComponents, PlotOptions}
 import hubmodel.io.output.createBackgroundFromImage
@@ -21,6 +21,8 @@ class SingleFileTrajectoryRepresentation(file: String) extends TrajectoryProcess
 
   // read the data file and build the population
   val population: Map[Int, hubmodel.ped.Pedestrian] = buildPedestrianTrajectories(dataType)
+
+  println("debug")
 
   population.head._2.entryTime
   val (start, end) = population.values.foldRight((population.head._2.entryTime.value,population.head._2.exitTime.value))((ped, acc) => (acc._1.min(ped.entryTime.value), acc._2.max(ped.exitTime.value)))
@@ -42,7 +44,7 @@ class SingleFileTrajectoryRepresentation(file: String) extends TrajectoryProcess
     p + 50
   }
 
-population.values.map(ped => {
+/*population.values.map(ped => {
   ped.getHistoryPosition.map(h => {
     h._2 match {
       case g: CoordinateGroup => {
@@ -51,9 +53,12 @@ population.values.map(ped => {
         else if (g.group == 4) {}
         else {}
       }
+      case t: CoordinateTracking => {
+        //println(t)
+      }
     }
   })
-})
+})*/
 
   new TrajectoriesImage(
     "test.png",

@@ -148,11 +148,11 @@ class MovingWalkway(val name: String,
       throw new IllegalArgumentException("AMW policy has policy from different control device")
     }
 
-    if (policy.nonEmpty) {
+    /*if (policy.nonEmpty) {
       this.expectedPolicy.append(
         (policy.minBy(_.start).start.value until policy.maxBy(_.end).end.value by 0.5).map(t => (Time(t.toDouble), this.speed(Time(t.toDouble)))).toVector
       )
-    }
+    }*/
 
     this.nextSpeedUpdate.foreach(_.setSkipTrue())
     this.nextOpenAMW.foreach(_.setSkipTrue())
@@ -225,7 +225,7 @@ class MovingWalkway(val name: String,
 
       val speedToSet: AMWPolicy = outer.controlPolicy.dequeue()
 
-      if (sim.verbose) {println("old speed for " + speedToSet.name + "@" + sim.currentTime  + ": " + _nextSpeed)}
+      //if (sim.verbose) {println("old speed for " + speedToSet.name + "@" + sim.currentTime  + ": " + _nextSpeed)}
 
       // Set the new speed for the walkway
       outer.updateSpeed(speedToSet.speed)
@@ -270,9 +270,9 @@ class MovingWalkway(val name: String,
         }
       }
 
-        if (sim.verbose) {
+        /*if (sim.verbose) {
         println("new speed for " + speedToSet.name + " @ " + sim.currentTime + ": " + _nextSpeed)
-      }
+      }*/
     }
 
     type A = ChangeAMWSpeed

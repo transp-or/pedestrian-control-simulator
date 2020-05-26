@@ -1,8 +1,8 @@
 package hubmodel.DES
 
 import hubmodel._
-import hubmodel.control.amw.AMWPolicy
-import hubmodel.control.{ControlDevices, EvaluateState, computePedestrianDensity}
+import hubmodel.control.amw.{AMWPolicy, StaticEngineeringSolution}
+import hubmodel.control.{ComputePedestrianDensity, ControlDevices, EvaluateState}
 import hubmodel.demand.{PTInducedQueue, PublicTransportSchedule}
 import hubmodel.mvmtmodels.NOMAD.NOMADIntegrated
 import hubmodel.mvmtmodels.{RebuildPopulationTree, UpdateClosestWall}
@@ -13,6 +13,7 @@ import hubmodel.supply.continuous.{ContinuousSpace, Wall}
 import hubmodel.supply.graph._
 import tools.Time
 import tools.cells.{DensityMeasuredArea, Vertex, isInVertex}
+import tools.exceptions.ControlDevicesException
 
 abstract class NOMADGraphSimulator(params: SimulationInputParameters) extends PedestrianDES(params.startTime, params.endTime) {
 
@@ -27,7 +28,7 @@ abstract class NOMADGraphSimulator(params: SimulationInputParameters) extends Pe
   val stop2Vertex: Stop2Vertex = params.stop2Vertex
   val rebuildTreeInterval: Option[Time] = params.rebuildTreeInterval
   val trackDensityInterval: Option[Time] = params.trackDensityInterval
-  val predictionInputParameters:PredictionInputParameters = params.predictionParameters
+  val predictionInputParameters: PredictionInputParameters = params.predictionParameters
 
   val isPrediction: Boolean
 
@@ -73,14 +74,14 @@ abstract class NOMADGraphSimulator(params: SimulationInputParameters) extends Pe
   val setFirstRoute: (Time, PedestrianNOMAD) => Unit = {
     (t, ped) =>
       ped.appendAccomplishedRoute(this.currentTime, ped.origin, ped.currentPosition)
-    graph match {
-      case rm: MultipleGraph => {
-        rm.setRouteFirst(t, ped)
+      graph match {
+        case rm: MultipleGraph => {
+          rm.setRouteFirst(t, ped)
+        }
+        case rs: SingleGraph => {
+          rs.processIntermediateArrival(t, ped)
+        }
       }
-      case rs: SingleGraph => {
-        rs.processIntermediateArrival(t, ped)
-      }
-    }
   }
 
   /* checks if the pedestrian has reached is final destination */
@@ -101,7 +102,6 @@ abstract class NOMADGraphSimulator(params: SimulationInputParameters) extends Pe
 
   /** Indicator whether an m-tree is used to perform neighbour search */
   val useTreeForNeighbourSearch: Boolean = rebuildTreeInterval.isDefined
-
 
 
   /** Indicator whether flow separators are used */
@@ -145,13 +145,38 @@ abstract class NOMADGraphSimulator(params: SimulationInputParameters) extends Pe
       sim.insertEventWithZeroDelay(new NOMADIntegrated(sim))
 
       // Inserts the event which computes the pedestrian density at regular intervals.
-      trackDensityInterval.foreach(interval => sim.insertEventWithDelay(interval)(new computePedestrianDensity(sim)))
+      trackDensityInterval.foreach(interval => sim.insertEventWithDelay(interval)(new ComputePedestrianDensity(sim)))
+
+
+      if (this.sim.controlDevices.amwsMode == "static") {
+        val engineeringPolicy = new StaticEngineeringSolution(sim.graph.vertexMapNew, sim.controlDevices.amws).staticPolicyEngineeringSolution
+        sim.controlDevices.amws.filter(_.noControlPolicy).foreach(w => {
+          val policy: Vector[AMWPolicy] = engineeringPolicy._1.collect { case p: AMWPolicy if p.name == w.name => {
+            p
+          }
+          }
+          w.setControlPolicy(policy, engineeringPolicy._2.find(_.name == w.name))
+          w.insertChangeSpeed(sim)
+        })
+      } else if (this.sim.controlDevices.amwsMode == "reactive") {
+        ???
+      }
+      else if (this.sim.controlDevices.amwsMode == "predictive") {
+        sim.controlDevices.amws.filter(_.noControlPolicy).foreach(w => {
+          w.setControlPolicy(Vector(AMWPolicy(w.name, sim.startTime, sim.finalTime, w.speed(sim.currentTime), w.length)), None)
+          w.insertChangeSpeed(sim)
+        })
+      } else {
+        throw new ControlDevicesException("Illegal amw mode ! ")
+      }
+
+      // END OF DIRTY HACK
 
       // Inserts the events for changing the AMW speeds.
-      sim.controlDevices.amws.filter(_.noControlPolicy).foreach(w => {
+      /*sim.controlDevices.amws.filter(_.noControlPolicy).foreach(w => {
         w.setControlPolicy(Vector(AMWPolicy(w.name, sim.startTime, sim.finalTime, w.speed(sim.currentTime), w.length)), None)
         w.insertChangeSpeed(sim)
-      })
+      })*/
 
 
       // Makes the simulation keep track of the state of the system.
@@ -180,13 +205,15 @@ abstract class NOMADGraphSimulator(params: SimulationInputParameters) extends Pe
 
     type A = StartSim
 
-    override def deepCopy(simulator: PedestrianPrediction): Option[A] = {
+    override def deepCopy(simulator: PedestrianPrediction): Option[A]
+
+    = {
       None // Some(new StartSim(simulator))
     }
   }
 
 
-  class EndSim(sim: NOMADGraphSimulator) extends GenericFinishSim(sim, sim.finalTime){
+  class EndSim(sim: NOMADGraphSimulator) extends GenericFinishSim(sim, sim.finalTime) {
 
     override def execute(): Any = {
 
@@ -200,7 +227,6 @@ abstract class NOMADGraphSimulator(params: SimulationInputParameters) extends Pe
       Some(new EndSim(simulator))
     }
   }
-
 
 
   /**
@@ -242,8 +268,8 @@ abstract class NOMADGraphSimulator(params: SimulationInputParameters) extends Pe
 
 
     if (measureDensity) {
-    logger.info(" * measuring density")
-  }
+      logger.info(" * measuring density")
+    }
 
     if (useFlowSep && !controlDevices.fixedFlowSeparators) {
       logger.info(" * using dynamic flow separators")
