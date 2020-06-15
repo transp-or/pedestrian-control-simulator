@@ -4,6 +4,7 @@ import hubmodel.control.ControlDevices
 import hubmodel.demand.PublicTransportSchedule
 import hubmodel.supply.continuous.ContinuousSpace
 import hubmodel.supply.graph.{GraphContainer, Stop2Vertex}
+import optimization.ALNS.ALNSParameters
 import tools.Time
 
 class PedestrianSimulation(params: SimulationInputParameters) extends NOMADGraphSimulator(params) with IsMainSimulation {
@@ -19,5 +20,9 @@ class PedestrianSimulation(params: SimulationInputParameters) extends NOMADGraph
   this.insertEventWithZeroDelay(new LogStateSimulation)
 
   insertStateEvaluationStart(new this.StateEvaluation)
+
+  if (this.controlDevices.amws.nonEmpty && this.controlDevices.amwsMode == "predictive") {
+    this.insertEventWithZeroDelay(new RollingHorizonOptimization(this))
+  }
 
 }

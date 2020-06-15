@@ -4,7 +4,7 @@ import java.util
 import java.util.concurrent.ThreadLocalRandom
 
 import hubmodel.DES.PedestrianPrediction
-import hubmodel.control.amw.MovingWalkway
+import hubmodel.control.amw.{MovingWalkway, MovingWalkwayControlEvents, MovingWalkwayWithDensityMeasurement, MovingWalkwayWithFlowMeasurement}
 
 //import com.vividsolutions.jts.geom.Coordinate
 import hubmodel.DES.{Action, NOMADGraphSimulator}
@@ -174,6 +174,27 @@ class NOMADIntegrated(sim: NOMADGraphSimulator) extends Action {
           fl.collectPedestriansWhoCrossed(sim.population)
         })
       })
+    }
+
+    if (sim.useAMWs && sim.controlDevices.amwsMode == "reactive") {
+      sim.controlDevices.amws.collect {
+        case w: MovingWalkwayWithFlowMeasurement[_,_] => {
+          w.inflowLinesStart.foreach(fl => {
+            fl.collectPedestriansWhoCrossed(sim.population)
+          })
+          w.inflowLinesEnd.foreach(fl => {
+            fl.collectPedestriansWhoCrossed(sim.population)
+          })
+        }
+        case w: MovingWalkwayWithDensityMeasurement[_,_] => {
+          w.inflowLinesStart.foreach(fl => {
+            fl.collectPedestriansWhoCrossed(sim.population)
+          })
+          w.inflowLinesEnd.foreach(fl => {
+            fl.collectPedestriansWhoCrossed(sim.population)
+          })
+        }
+      }
     }
 
     sim.population.foreach(ped => {

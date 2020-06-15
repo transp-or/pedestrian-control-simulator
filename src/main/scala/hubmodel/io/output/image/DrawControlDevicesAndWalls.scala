@@ -5,6 +5,7 @@ import java.awt.image.BufferedImage
 import java.awt.{Color, Graphics2D}
 
 import hubmodel.control.ControlDevices
+import hubmodel.control.amw.{MovingWalkwayWithDensityMeasurement, MovingWalkwayWithFlowMeasurement}
 import hubmodel.io.output._
 import hubmodel.supply.continuous.Wall
 import javax.imageio.ImageIO
@@ -90,8 +91,82 @@ class DrawControlDevicesAndWalls(filename: String = "",
         verticalTransformation(mappingFunctions._2(inflowDirEnd.Y))
       )
       drawArrow(gImage, mappingFunctions._1(inflowDirStart.X), verticalTransformation(mappingFunctions._2(inflowDirStart.Y)), mappingFunctions._1(inflowDirEnd.X), verticalTransformation(mappingFunctions._2(inflowDirEnd.Y)))
-
     })
+
+    devices.amws.collect {
+      case w: MovingWalkwayWithFlowMeasurement[_, _] => {
+
+        (w.inflowLinesStart ++ w.inflowLinesEnd).foreach(fl => {
+
+          // draws line
+          gImage.drawLine(
+            mappingFunctions._1(fl.start.X),
+            verticalTransformation(mappingFunctions._2(fl.start.Y)),
+            mappingFunctions._1(fl.end.X),
+            verticalTransformation(mappingFunctions._2(fl.end.Y))
+          )
+
+          // draws near region
+          gImage.drawPolygon(fl.nearRegion.corners.map(_.X).map(mappingFunctions._1).toArray, fl.nearRegion.corners.map(_.Y).map(mappingFunctions._2).map(verticalTransformation).toArray, 4)
+
+          // draws inflow direction
+          val inflowDirStart: Vector2D = fl.start + (fl.end - fl.start) * 0.5 - (fl.end - fl.start).orthogonal * 2.0 * 0.5
+          val inflowDirEnd: Vector2D = fl.start + (fl.end - fl.start) * 0.5 + (fl.end - fl.start).orthogonal * 2.0 * 0.5
+          gImage.drawLine(
+            mappingFunctions._1(inflowDirStart.X),
+            verticalTransformation(mappingFunctions._2(inflowDirStart.Y)),
+            mappingFunctions._1(inflowDirEnd.X),
+            verticalTransformation(mappingFunctions._2(inflowDirEnd.Y))
+          )
+          drawArrow(gImage, mappingFunctions._1(inflowDirStart.X), verticalTransformation(mappingFunctions._2(inflowDirStart.Y)), mappingFunctions._1(inflowDirEnd.X), verticalTransformation(mappingFunctions._2(inflowDirEnd.Y)))
+
+          gImage.drawString(
+            fl.name,
+            (mappingFunctions._1(fl.start.X) + mappingFunctions._1(fl.end.X)) / 2,
+            verticalTransformation((mappingFunctions._2(fl.start.Y) + mappingFunctions._2(fl.end.Y)) / 2)
+          )
+
+        })
+      }
+      case w: MovingWalkwayWithDensityMeasurement[_, _] => {
+
+        (w.criticalAreadStart ++ w.criticalAreadEnd).foreach(area => {
+
+        })
+
+        (w.inflowLinesStart ++ w.inflowLinesEnd).foreach(fl => {
+
+          // draws line
+          gImage.drawLine(
+            mappingFunctions._1(fl.start.X),
+            verticalTransformation(mappingFunctions._2(fl.start.Y)),
+            mappingFunctions._1(fl.end.X),
+            verticalTransformation(mappingFunctions._2(fl.end.Y))
+          )
+
+          // draws near region
+          gImage.drawPolygon(fl.nearRegion.corners.map(_.X).map(mappingFunctions._1).toArray, fl.nearRegion.corners.map(_.Y).map(mappingFunctions._2).map(verticalTransformation).toArray, 4)
+
+          // draws inflow direction
+          val inflowDirStart: Vector2D = fl.start + (fl.end - fl.start) * 0.5 - (fl.end - fl.start).orthogonal * 2.0 * 0.5
+          val inflowDirEnd: Vector2D = fl.start + (fl.end - fl.start) * 0.5 + (fl.end - fl.start).orthogonal * 2.0 * 0.5
+          gImage.drawLine(
+            mappingFunctions._1(inflowDirStart.X),
+            verticalTransformation(mappingFunctions._2(inflowDirStart.Y)),
+            mappingFunctions._1(inflowDirEnd.X),
+            verticalTransformation(mappingFunctions._2(inflowDirEnd.Y))
+          )
+          drawArrow(gImage, mappingFunctions._1(inflowDirStart.X), verticalTransformation(mappingFunctions._2(inflowDirStart.Y)), mappingFunctions._1(inflowDirEnd.X), verticalTransformation(mappingFunctions._2(inflowDirEnd.Y)))
+
+          gImage.drawString(
+            fl.name,
+            (mappingFunctions._1(fl.start.X) + mappingFunctions._1(fl.end.X)) / 2,
+            verticalTransformation((mappingFunctions._2(fl.start.Y) + mappingFunctions._2(fl.end.Y)) / 2)
+          )
+
+        })
+      }
+    }
   }
 
   if (filename.length > 0) {

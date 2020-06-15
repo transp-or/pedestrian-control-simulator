@@ -121,6 +121,7 @@ object RunSimulation extends App with StrictLogging {
     )*/
 
     if (config.getBoolean("output.write_densities") && results.nonEmpty) {
+
       // Collects times at which densities where measured
       val densityTimes: Vector[Time] = results.head.monitoredAreaDensity.get._1.map(Time(_))
 
@@ -195,6 +196,16 @@ object RunSimulation extends App with StrictLogging {
         (i, computeBoxPlotData(dataDisagg.map(d => computeQuantile(i)(d).value.toDouble)).toCSV, 1)
       }).writeToCSV(config.getString("output.output_prefix") + "-individual-densities-boxplot-per-quantile.csv", rowNames = None, columnNames = Some(Vector("quantile", "mean", "median", "lq", "uq", "lw", "uw", "outliersize", "boxplotwidth")))
 
+    }
+
+    if (config.getBoolean("output.density.individual-75") && resultsJson.nonEmpty) {
+      // writes the applied data to the same csv file
+      val individualDensitiesQuantile: Vector[(String, Vector[Double], String, Vector[Double])] = resultsJson
+        .filter(_.monitoredAreaIndividualDensity.isDefined)
+        .flatMap(_.monitoredAreaIndividualDensity.get)
+        .map(d =>(d._1._1 + "_" + d._1._2 + "_t", d._2.map(v => v._1.value.toDouble), d._1._1 + "_" + d._1._2 + "_d", d._2.map(v => if (v._2.isEmpty) {Double.NaN} else {computeQuantile(75)(v._2).value})))
+
+      individualDensitiesQuantile.flatMap(d => Vector(d._2, d._4)).writeToCSV(config.getString("output.output_prefix") + "_individual_density_75.csv", rowNames=None, columnNames = Some(individualDensitiesQuantile.flatMap(d => Vector(d._1, d._3))))
     }
 
     // computes statistics on travel times and writes them

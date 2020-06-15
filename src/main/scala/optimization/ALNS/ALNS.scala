@@ -14,9 +14,14 @@ import tools.Time
 import scala.annotation.tailrec
 
 
+case class ALNSParameters(maxIterations: Int = 150,
+                          weightScores: Map[String, Double] = Map("newBest" -> 20, "improvement" -> 15, "accepted" -> 10, "rejected" -> 1),
+                          lambda: Double = 0.9,
+                          initialScore: Double = 5.0,
+                          maxScore: Double = 20,
+                          minScore: Double = 0.5)
 
-
-class ALNS(function: StatePrediction, initialPolicy: Iterable[ControlDevicePolicy], _operators: Vector[OperatorGenerator with RandomChange], constraints: Vector[Constraint], stochasticReduction: FunctionEvaluation => FunctionEvaluationReduced) {
+class ALNS(function: StatePrediction, initialPolicy: Iterable[ControlDevicePolicy], _operators: Vector[OperatorGenerator with RandomChange], constraints: Vector[Constraint], stochasticReduction: FunctionEvaluation => FunctionEvaluationReduced, parameters: ALNSParameters = new ALNSParameters) {
 
   // Reference to alns algorithm so that the inner classes can access the members and functions.
   alns: ALNS =>
@@ -39,7 +44,7 @@ class ALNS(function: StatePrediction, initialPolicy: Iterable[ControlDevicePolic
   private def stringify(x: Vector[ControlDevicePolicy]): String = x.sorted.map(dv => dv.nameToString + dv.decisionVariable.toString).mkString("-")
 
   private def computeObjective(x: Vector[ControlDevicePolicy]): Double = {
-    stochasticReduction(evaluatedSolutions(stringify(x))._1)("meanTT")
+    stochasticReduction(evaluatedSolutions(stringify(x))._1)("density")
   }
 
   private def getOF(x: Vector[ControlDevicePolicy]): FunctionEvaluation = evaluatedSolutions(stringify(x))._1
@@ -151,15 +156,15 @@ class ALNS(function: StatePrediction, initialPolicy: Iterable[ControlDevicePolic
   println("Starting optimization for simulation")
   println(" * start time = " + this.function.predictionStartTime)
   println(" * end time = " + this.function.predictionEndTime)
-  println(" * decision variables interval = " + this.function.predictionInterval)
+  println(" * replications = " + this.function.replications)
 
 
-  val weightMin: Double = 0.5
-  val weightMax: Double = 10
-  val lambda: Double = 0.9
-  private val weightScores: Map[String, Double] = Map("newBest" -> 15, "improvement" -> 10, "accepted" -> 5, "rejected" -> 1)
+  val weightMin: Double = parameters.minScore
+  val weightMax: Double = parameters.maxScore
+  val lambda: Double = parameters.lambda
+  private val weightScores: Map[String, Double] = parameters.weightScores
   private val operators: Vector[OperatorGenerator with RandomChange] = this._operators :+ ExploreBestSolution
-  private val operatorWeights: collection.mutable.TreeMap[String, Double] = collection.mutable.TreeMap.from(operators.map(o => o.name -> 3))
+  private val operatorWeights: collection.mutable.TreeMap[String, Double] = collection.mutable.TreeMap.from(operators.map(o => o.name -> parameters.initialScore))
 
   private val x0: Vector[ControlDevicePolicy] = initialPolicy.toVector.sorted
 
@@ -178,7 +183,7 @@ class ALNS(function: StatePrediction, initialPolicy: Iterable[ControlDevicePolic
 
   //val lowerBoundRandomFraction: Double = 0.2
   //val upperBoundRandomFraction: Double = 0.4
-  val maxIterations: Int = 1
+  val maxIterations: Int = parameters.maxIterations
 
   /*if (this.operators.collect{case rand: RandomChange => {rand.probability}}.sum != 1.0) {
     throw new Exception("Sum of probabilities for random operators different than one !")

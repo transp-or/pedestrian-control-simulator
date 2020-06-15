@@ -30,6 +30,9 @@ class SimulationInputParameters(var startTime: Time,
   // Interval at which the density inside the monitored areas is computed
   var trackDensityInterval: Option[Time] = None
 
+  // Interval at which the flow counters are reset. Basically the interval length of the flow counters
+  var resetFlowCountersInterval: Option[Time] = None
+
   // Interval at which the state variables are computed
   var stateEvaluationInterval: Option[Time] = None
 

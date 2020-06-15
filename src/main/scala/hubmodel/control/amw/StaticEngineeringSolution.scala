@@ -15,10 +15,10 @@ class StaticEngineeringSolution(vertices: Map[String, Vertex], amws: Iterable[Mo
   private val zoneProcessor = new ZoneProcessingNew("E:\\PhD\\hub-simulator\\piw-corridor\\graph.json")
 
   private val files = Vector(
-    "E:\\PhD\\hub-simulator\\tracking-data-lausanne\\tracking-data-lausanne.tar\\tracking-data-lausanne\\lausanne_2013_01_22_piw.csv"/*,
+    "E:\\PhD\\hub-simulator\\tracking-data-lausanne\\tracking-data-lausanne.tar\\tracking-data-lausanne\\lausanne_2013_01_22_piw.csv",
     "E:\\PhD\\hub-simulator\\tracking-data-lausanne\\tracking-data-lausanne.tar\\tracking-data-lausanne\\lausanne_2013_01_23_piw.csv",
     "E:\\PhD\\hub-simulator\\tracking-data-lausanne\\tracking-data-lausanne.tar\\tracking-data-lausanne\\lausanne_2013_02_06_piw.csv",
-    "E:\\PhD\\hub-simulator\\tracking-data-lausanne\\tracking-data-lausanne.tar\\tracking-data-lausanne\\lausanne_2013_02_27_piw.csv",
+    "E:\\PhD\\hub-simulator\\tracking-data-lausanne\\tracking-data-lausanne.tar\\tracking-data-lausanne\\lausanne_2013_02_27_piw.csv"/*,
     "E:\\PhD\\hub-simulator\\tracking-data-lausanne\\tracking-data-lausanne.tar\\tracking-data-lausanne\\lausanne_2013_02_28_piw.csv",
     "E:\\PhD\\hub-simulator\\tracking-data-lausanne\\tracking-data-lausanne.tar\\tracking-data-lausanne\\lausanne_2013_03_05_piw.csv",
     "E:\\PhD\\hub-simulator\\tracking-data-lausanne\\tracking-data-lausanne.tar\\tracking-data-lausanne\\lausanne_2013_04_09_piw.csv",

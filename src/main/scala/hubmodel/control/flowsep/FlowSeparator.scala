@@ -118,6 +118,7 @@ class FlowSeparator[T <: Measurement, U <: SeparatorPositionFraction](val startA
 
     function match {
       case default: FunctionalFormFlowSeparator => {
+        // computes the fraction where the fs should be based on flow history
         val frac: SeparatorPositionFraction = Try(default.f(flowHistoryNew.last._2)) match {
           case Success(s) => s
           case Failure(f) => f match {

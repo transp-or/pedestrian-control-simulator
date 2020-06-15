@@ -5,17 +5,7 @@ import hubmodel.ped.{PedestrianTrait, Population}
 import hubmodel.{FLOW_LINE_REGION_EXTENSION, Position, generateUUID}
 import tools.cells.Rectangle
 
-class FlowLine(val start: Position, val end: Position, private val controlled: Int = 0) extends ControlDeviceComponent {
-
-  /**
-    * second constructor which uses the parameter class to create the object.
-    *
-    * @param params case class containing all the parameters.
-    * @return
-    */
-  def this(params: FlowLineParameters) = {
-    this(params.start, params.end, params.isControlled)
-  }
+class FlowLine(val name: String, val start: Position, val end: Position, private val controlled: Int = 0) extends ControlDeviceComponent {
 
   // Unique identifier of the object.
   val ID: String = generateUUID
@@ -40,7 +30,7 @@ class FlowLine(val start: Position, val end: Position, private val controlled: I
     * @param ped pedestrian to check
     * @return boolean indicating if the ped did cross the line
     */
-  def crossesLineRight2Left(ped: PedestrianTrait): Boolean = {
+  private def crossesLineRight2Left(ped: PedestrianTrait): Boolean = {
     this.nearRegion.isInside(ped.currentPosition, false) && {
       // https://stackoverflow.com/questions/1560492/how-to-tell-whether-a-point-is-to-the-right-or-left-side-of-a-line/1560510#1560510
       if (math.signum((end.X - start.X) * (ped.currentPosition.Y - start.Y) - (end.Y - start.Y) * (ped.currentPosition.X - start.X)) == 1 &&
@@ -79,5 +69,5 @@ class FlowLine(val start: Position, val end: Position, private val controlled: I
     *
     * @return deep copy of the current component
     */
-  def deepCopy: FlowLine = new FlowLine(this.start, this.end, this.controlled)
+  def deepCopy: FlowLine = new FlowLine(this.name, this.start, this.end, this.controlled)
 }

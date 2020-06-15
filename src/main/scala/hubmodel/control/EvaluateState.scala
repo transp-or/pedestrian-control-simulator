@@ -1,6 +1,7 @@
 package hubmodel.control
 
 import hubmodel.DES.{Action, NOMADGraphSimulator, PedestrianPrediction}
+import hubmodel.control.amw.{MovingWalkwayWithDensityMeasurement, MovingWalkwayWithFlowMeasurement}
 import kn.uni.voronoitreemap.datastructure.OpenList
 import kn.uni.voronoitreemap.diagram.PowerDiagram
 import kn.uni.voronoitreemap.j2d.{PolygonSimple, Site}
@@ -70,14 +71,28 @@ abstract class EvaluateState(sim: NOMADGraphSimulator) {
       if (!fs.movingWallEventIsInserted && fs.flowSeparatorNeedsToMove(sim.motionModelUpdateInterval)) {
         sim.insertEventWithZeroDelay(new fs.MoveFlowSeperator(sim))
       }
-      fs.inflowLinesStart.foreach(_.reinitialize())
-      fs.inflowLinesEnd.foreach(_.reinitialize())
+      //fs.inflowLinesStart.foreach(_.reinitialize())
+      //fs.inflowLinesEnd.foreach(_.reinitialize())
     })
   }
+
+  def updateReactiveAMWs(): Unit = {
+    // update the speeds
+    sim.controlDevices.amws.collect{
+      case w: MovingWalkwayWithFlowMeasurement[_,_] => {
+        w.updateReactivePolicy(sim.currentTime, sim)
+      }
+      case wd: MovingWalkwayWithDensityMeasurement[_,_] => {
+        wd.updateReactivePolicy(sim.currentTime, sim)
+      }
+    }
+      }
 
 }
 
 class ComputePedestrianDensity(sim: NOMADGraphSimulator) extends EvaluateState(sim) with Action {
+
+  override val priority: Int = 109
 
   override def execute(): Any = {
 
@@ -85,11 +100,43 @@ class ComputePedestrianDensity(sim: NOMADGraphSimulator) extends EvaluateState(s
 
     computeDensityAtCurrentTime()
 
+
+
     sim.trackDensityInterval.foreach(t => sim.insertEventWithDelay(t)(new ComputePedestrianDensity(this.sim)))
 
   }
 
   type A = ComputePedestrianDensity
+
+  override def deepCopy(simulator: PedestrianPrediction): Option[A] = None
+}
+
+class ReinitializeFlowCounters(sim: NOMADGraphSimulator) extends EvaluateState(sim) with Action {
+
+  override val priority: Int = 110
+
+  override def execute(): Any = {
+
+    sim.eventLogger.trace("sim-time=" + sim.currentTime + ": reinitialize flow counters")
+
+    // reinitialize the flow counters for the next interval
+    sim.controlDevices.amws.collect{
+      case w: MovingWalkwayWithFlowMeasurement[_,_] => {
+
+        w.inflowLinesEnd ++ w.inflowLinesStart
+      }
+      case w: MovingWalkwayWithDensityMeasurement[_,_] => {
+        w.updateFlowHistory(sim.currentTime)
+        w.inflowLinesEnd ++ w.inflowLinesStart
+      }
+    }.flatten.foreach(_.reinitialize())
+
+
+    sim.resetFlowCountersInterval.foreach(t => sim.insertEventWithDelay(t)(new ReinitializeFlowCounters(this.sim)))
+
+  }
+
+  type A = ReinitializeFlowCounters
 
   override def deepCopy(simulator: PedestrianPrediction): Option[A] = None
 }

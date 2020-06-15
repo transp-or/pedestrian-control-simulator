@@ -102,7 +102,8 @@ package object results {
         val file = new File(path + prefix + "density_" + simulator.ID + ".json")
         val bw = new BufferedWriter(new FileWriter(file))
         bw.write("[")
-        simulator.criticalAreas.foreach(ca => bw.write(ca._2.toJSON + ",\n"))
+        simulator.criticalAreas.dropRight(1).foreach(ca => bw.write(ca._2.toJSON + ",\n"))
+        bw.write(simulator.criticalAreas.last._2.toJSON + "\n")
         bw.write("]")
         bw.close()
       }
@@ -173,7 +174,7 @@ package object results {
       val bw = new BufferedWriter(new FileWriter(file))
       bw.write("[{")
       bw.write(simulator.graph.computeODsWithAMWs
-        .map(kv => "\"o\":\"" + kv._1._1 + "\",\"d\":\"" + kv._1._2 + "\",\"amws\":[\"" + kv._2.mkString("\",\"") + "\"]")
+        .map(kv => "\"o\":\"" + kv._1._1 + "\",\"d\":\"" + kv._1._2 + "\",\"amws\":[" + {if (kv._2.nonEmpty) {"\"" + kv._2.mkString("\",\"") + "\""} else {""} } + "]")
           .mkString("},{"))
       bw.write("}]")
       bw.close()
@@ -344,7 +345,7 @@ package object results {
       }
 
       val densities: Option[Vector[DensityData_JSON]] = {
-        if (str._2.keySet.contains("_density_")) {
+        if (str._2.keySet.contains("density")) {
           val source: BufferedSource = scala.io.Source.fromFile(str._2("density"))
           val input: JsValue = Json.parse(try source.mkString finally source.close)
           input.validate[Vector[DensityData_JSON]] match {
@@ -381,7 +382,7 @@ package object results {
       new ResultsContainerReadNew(
         tt,
         densities.map(d => d.map(dd => dd.name -> dd.aggregateMeasurement.map(v => (Time(v._1), v._2))).toMap),
-        densities.map(d => d.map(dd => dd.name -> dd.disaggregateMeasurements.map(v =>  (Time(v._1), v._2))).toMap),
+        densities.map(d => d.map(dd => (dd.name, dd.id) -> dd.disaggregateMeasurements.map(v =>  (Time(v._1), v._2))).toMap),
         amw)
     })
   }

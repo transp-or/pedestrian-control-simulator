@@ -3,15 +3,11 @@ package hubmodel.DES
 import hubmodel.control.amw.{AMWPolicy, MovingWalkwayControlEvents}
 import hubmodel.control.{EvaluateState, UpdateGates}
 import hubmodel.prediction.{AMWFlowsFromGroundTruth, CongestionDataFromGroundTruth, PredictWithGroundTruth, StatePrediction}
-import optimization.ALNS.{ALNS, DirectionMatchFlow, FunctionEvaluation, MinimumDurationSameDirection, RandomChangeDirection, RandomDecreaseSpeed, RandomIncreaseAllSpeeds, RandomIncreaseSpeed, SpeedLowerBound, SpeedUpperBound}
+import optimization.ALNS.{ALNS, ALNSParameters, DirectionMatchFlow, FunctionEvaluation, MinimumDurationSameDirection, RandomChangeDirection, RandomDecreaseSpeed, RandomIncreaseAllSpeeds, RandomIncreaseSpeed, SpeedLowerBound, SpeedUpperBound}
 import tools.Time
 import myscala.math.stats.{ComputeQuantiles, ComputeStats, computeQuantile}
 
 trait IsMainSimulation {
-
-  val predictionInterval: Time = Time(10)
-
-
 
   /** container for keeping the prediction results */
   private var _prediction: Option[StatePrediction] = None
@@ -39,7 +35,10 @@ trait IsMainSimulation {
       }
 
       if (sim.controlDevices.amws.nonEmpty && this.sim.controlDevices.amwsMode == "predictive") {
-        sim.insertEventWithZeroDelay(new RollingHorizonOptimization(this.sim))
+        // this is inserted elsewhere now.
+        //sim.insertEventWithZeroDelay(new RollingHorizonOptimization(this.sim))
+      } else if (sim.controlDevices.amws.nonEmpty && this.sim.controlDevices.amwsMode == "reactive") {
+        updateReactiveAMWs()
       }
 
       this.sim.insertEventWithDelay(sim.stateEvaluationInterval)(new StateEval(sim))
@@ -66,7 +65,6 @@ trait IsMainSimulation {
 
   class RollingHorizonOptimization(sim: PedestrianSimulation) extends Action {
 
-
     override def execute(): Any = {
 
       val timeIntervals: Vector[Time] = sim.currentTime.value.until((sim.currentTime + this.sim.predictionInputParameters.horizon).value).by(this.sim.predictionInputParameters.decisionVariableLength.value).toVector.map(v => Time(v.toDouble))
@@ -85,7 +83,8 @@ trait IsMainSimulation {
         initialControlPolicy,
         Vector(RandomIncreaseSpeed, RandomDecreaseSpeed, MinimumDurationSameDirection, RandomIncreaseAllSpeeds, DirectionMatchFlow),
         Vector(SpeedUpperBound, SpeedLowerBound),
-        f
+        f,
+        sim.predictionInputParameters.ALNSParameters
       )
 
       horizonOptimization.optimize()
@@ -102,7 +101,13 @@ trait IsMainSimulation {
           w.setControlPolicy(policy, eventData)
           w.insertChangeSpeed(this.sim)
         })
+
+
+      sim.insertEventWithDelay(sim.predictionInputParameters.updateInterval)(new RollingHorizonOptimization(this.sim))
+
+
     }
+
 
 
 

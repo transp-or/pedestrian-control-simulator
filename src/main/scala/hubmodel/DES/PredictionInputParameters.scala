@@ -1,5 +1,6 @@
 package hubmodel.DES
 
+import optimization.ALNS.ALNSParameters
 import tools.Time
 
 /** Container for all the parameters related to the predictions.
@@ -15,4 +16,6 @@ class PredictionInputParameters(val horizon: Time,
                                 val decisionVariableLength: Time,
                                 val densityUpdateInterval: Time,
                                 val replications: Int,
-                                val threads: Int)
+                                val threads: Int,
+                                val ALNSParameters: ALNSParameters
+)

@@ -10,6 +10,7 @@ import hubmodel.ped.PedestrianNOMAD
 import hubmodel.supply.continuous.ReadContinuousSpace
 import hubmodel.supply.graph.{GraphContainer, Stop2Vertex, readGraph, readPTStop2GraphVertexMap}
 import hubmodel.supply.{NodeID_New, NodeParent, StopID_New, TrainID_New}
+import optimization.ALNS.ALNSParameters
 import tools.Time
 import tools.cells.Vertex
 
@@ -104,16 +105,7 @@ package object DES {
     val infraSF = new ReadContinuousSpace(config.getString("files.walls"))
 
     // Builds the graph used for route choice. This Graph is composed of multiple different link types.
-    val (routeGraph, controlDevices) = readGraph(
-      config.getString("files.graph"),
-      config.getBoolean("sim.use_flow_gates"),
-      config.getBoolean("sim.use_binary_gates"),
-      config.getBoolean("sim.use_amw"),
-      config.getBoolean("sim.use_flow_sep"),
-      config.getBoolean("sim.fixed_flow_sep"),
-      config.getBoolean("sim.measure_density"),
-      config.getBoolean("sim.use_alternate_graphs")
-    )
+    val (routeGraph, controlDevices) = readGraph(config.getString("files.graph"), config.getBoolean("sim.use_flow_gates"), config.getBoolean("sim.use_binary_gates"), config.getBoolean("sim.use_amw"), config.getBoolean("sim.use_flow_sep"), config.getBoolean("sim.fixed_flow_sep"), config.getBoolean("sim.measure_density"), config.getBoolean("sim.use_alternate_graphs"), (config.getString("sim.amws_mode"), config.getString("sim.amws_reactive_mode")))
 
     // Reads the pedestrian flows which are modelled as flows (i.e. aggregate)
     val flows = getAggregateFlows(config)
@@ -139,6 +131,8 @@ package object DES {
     val evaluationInterval: Time = Time(config.getDouble("sim.evaluate_dt"))
     val rebuildTreeInterval: Time = Time(config.getDouble("sim.rebuild_tree_dt"))
 
+    val ALNSParameters: ALNSParameters = new ALNSParameters(maxIterations = config.getInt("sim.prediction.alns-iterations"))
+
     // Loads the prediction parameters
     val predictionParams: PredictionInputParameters = new PredictionInputParameters(
       Time(config.getDouble("sim.prediction.horizon")),
@@ -146,7 +140,8 @@ package object DES {
       Time(config.getDouble("sim.prediction.dv-length")),
       Time(config.getDouble("sim.prediction.density-msmt-update")),
       config.getInt("sim.prediction.replications"),
-      config.getInt("sim.prediction.threads")
+      config.getInt("sim.prediction.threads"),
+      ALNSParameters
     )
 
     val simulationParameters: SimulationInputParameters = new SimulationInputParameters(
@@ -166,6 +161,7 @@ package object DES {
     simulationParameters.timeTable = timeTable
     simulationParameters.stateEvaluationInterval = Some(evaluationInterval)
     simulationParameters.trackDensityInterval = if (config.getBoolean("sim.measure_density")) {Some(Time(config.getDouble("sim.density_compute_dt")))} else {None}
+    simulationParameters.resetFlowCountersInterval = Some(Time(config.getDouble("sim.flow_counters_compute_dt")))
 
     // Creation of the simulator
     val sim: NOMADGraphSimulator = new PedestrianSimulation(simulationParameters)

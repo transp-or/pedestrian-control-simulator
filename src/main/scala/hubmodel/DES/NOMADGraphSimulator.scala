@@ -2,7 +2,7 @@ package hubmodel.DES
 
 import hubmodel._
 import hubmodel.control.amw.{AMWPolicy, StaticEngineeringSolution}
-import hubmodel.control.{ComputePedestrianDensity, ControlDevices, EvaluateState}
+import hubmodel.control.{ComputePedestrianDensity, ControlDevices, EvaluateState, ReinitializeFlowCounters}
 import hubmodel.demand.{PTInducedQueue, PublicTransportSchedule}
 import hubmodel.mvmtmodels.NOMAD.NOMADIntegrated
 import hubmodel.mvmtmodels.{RebuildPopulationTree, UpdateClosestWall}
@@ -28,6 +28,7 @@ abstract class NOMADGraphSimulator(params: SimulationInputParameters) extends Pe
   val stop2Vertex: Stop2Vertex = params.stop2Vertex
   val rebuildTreeInterval: Option[Time] = params.rebuildTreeInterval
   val trackDensityInterval: Option[Time] = params.trackDensityInterval
+  val resetFlowCountersInterval: Option[Time] = params.resetFlowCountersInterval
   val predictionInputParameters: PredictionInputParameters = params.predictionParameters
 
   val isPrediction: Boolean
@@ -132,6 +133,8 @@ abstract class NOMADGraphSimulator(params: SimulationInputParameters) extends Pe
     */
   class StartSim(sim: NOMADGraphSimulator) extends super.GenericStartSim(sim) {
 
+    override val priority: Int = Int.MaxValue
+
     override def execute(): Unit = {
 
       sim.eventLogger.trace("sim-time=" + sim.currentTime + ": simulation started. dt=" + sim.motionModelUpdateInterval)
@@ -145,7 +148,10 @@ abstract class NOMADGraphSimulator(params: SimulationInputParameters) extends Pe
       sim.insertEventWithZeroDelay(new NOMADIntegrated(sim))
 
       // Inserts the event which computes the pedestrian density at regular intervals.
-      trackDensityInterval.foreach(interval => sim.insertEventWithDelay(interval)(new ComputePedestrianDensity(sim)))
+      if (!this.sim.isPrediction) {
+        trackDensityInterval.foreach(interval => sim.insertEventWithDelay(interval)(new ComputePedestrianDensity(sim)))
+        sim.insertEventWithZeroDelay(new ReinitializeFlowCounters(sim))
+      }
 
 
       if (this.sim.controlDevices.amwsMode == "static") {
@@ -159,7 +165,12 @@ abstract class NOMADGraphSimulator(params: SimulationInputParameters) extends Pe
           w.insertChangeSpeed(sim)
         })
       } else if (this.sim.controlDevices.amwsMode == "reactive") {
-        ???
+        sim.controlDevices.amws.filter(_.noControlPolicy).foreach(w => {
+          w.setControlPolicy(Vector(AMWPolicy(w.name, sim.startTime, sim.finalTime, w.speed(sim.currentTime), w.length)), None)
+        })
+        sim.controlDevices.amws.foreach(w => {
+          w.insertChangeSpeed(sim)
+        })
       }
       else if (this.sim.controlDevices.amwsMode == "predictive") {
         sim.controlDevices.amws.filter(_.noControlPolicy).foreach(w => {
@@ -169,8 +180,6 @@ abstract class NOMADGraphSimulator(params: SimulationInputParameters) extends Pe
       } else {
         throw new ControlDevicesException("Illegal amw mode ! ")
       }
-
-      // END OF DIRTY HACK
 
       // Inserts the events for changing the AMW speeds.
       /*sim.controlDevices.amws.filter(_.noControlPolicy).foreach(w => {

@@ -1,0 +1,198 @@
+{
+  "location": "corridor",
+  "PTflows": [],
+  "flows": [],
+  "function_flows": [
+    {
+      "origin": "top",
+      "destination": "bottom",
+      "linear": [],
+      "constant": [
+        {
+          "start": "00:00:00",
+          "end": "00:02:00",
+          "rate": 0.25
+        },
+        {
+          "start": "00:02:00",
+          "end": "00:05:00",
+          "rate": 0.91
+        },
+        {
+          "start": "00:05:00",
+          "end": "00:07:00",
+          "rate": 0.25
+        }
+      ],
+      "sine": []
+    },
+    {
+      "origin": "top",
+      "destination": "bottom2",
+      "linear": [],
+      "constant": [
+        {
+          "start": "00:00:00",
+          "end": "00:02:00",
+          "rate": 0.25
+        },
+        {
+          "start": "00:02:00",
+          "end": "00:05:00",
+          "rate": 0.91
+        },
+        {
+          "start": "00:05:00",
+          "end": "00:07:00",
+          "rate": 0.25
+        }
+      ],
+      "sine": [
+      ]
+    },
+    {
+      "origin": "bottom",
+      "destination": "top",
+      "linear": [],
+      "constant": [
+        {
+          "start": "00:00:00",
+          "end": "00:01:45",
+          "rate": 0.25
+        },
+        {
+          "start": "00:01:45",
+          "end": "00:05:00",
+          "rate": 0.91
+        },
+        {
+          "start": "00:05:00",
+          "end": "00:07:00",
+          "rate": 0.25
+        }
+      ],
+      "sine": [
+      ]
+    },
+    {
+      "origin": "bottom",
+      "destination": "top2",
+      "linear": [],
+      "constant": [
+        {
+          "start": "00:00:00",
+          "end": "00:01:45",
+          "rate": 0.25
+        },
+        {
+          "start": "00:01:45",
+          "end": "00:05:00",
+          "rate": 0.91
+        },
+        {
+          "start": "00:05:00",
+          "end": "00:07:00",
+          "rate": 0.25
+        }
+      ],
+      "sine": [
+      ]
+    },
+    {
+      "origin": "top2",
+      "destination": "bottom",
+      "linear": [],
+      "constant": [
+        {
+          "start": "00:00:00",
+          "end": "00:02:00",
+          "rate": 0.25
+        },
+        {
+          "start": "00:02:00",
+          "end": "00:05:00",
+          "rate": 0.91
+        },
+        {
+          "start": "00:05:00",
+          "end": "00:07:00",
+          "rate": 0.25
+        }
+      ],
+      "sine": [
+      ]
+    },
+    {
+      "origin": "top2",
+      "destination": "bottom2",
+      "linear": [],
+      "constant": [
+        {
+          "start": "00:00:00",
+          "end": "00:02:00",
+          "rate": 0.25
+        },
+        {
+          "start": "00:02:00",
+          "end": "00:05:00",
+          "rate": 0.91
+        },
+        {
+          "start": "00:05:00",
+          "end": "00:07:00",
+          "rate": 0.25
+        }
+      ],
+      "sine": [
+      ]
+    },
+    {
+      "origin": "bottom2",
+      "destination": "top",
+      "linear": [],
+      "constant": [
+        {
+          "start": "00:00:00",
+          "end": "00:01:45",
+          "rate": 0.25
+        },
+        {
+          "start": "00:01:45",
+          "end": "00:05:00",
+          "rate": 0.91
+        },
+        {
+          "start": "00:05:00",
+          "end": "00:07:00",
+          "rate": 0.25
+        }
+      ],
+      "sine": [
+      ]
+    },
+    {
+      "origin": "bottom2",
+      "destination": "top",
+      "linear": [],
+      "constant": [
+        {
+          "start": "00:00:00",
+          "end": "00:01:45",
+          "rate": 0.25
+        },
+        {
+          "start": "00:01:45",
+          "end": "00:05:00",
+          "rate": 0.91
+        },
+        {
+          "start": "00:05:00",
+          "end": "00:07:00",
+          "rate": 0.25
+        }
+      ],
+      "sine": [
+      ]
+    }
+  ]
+}

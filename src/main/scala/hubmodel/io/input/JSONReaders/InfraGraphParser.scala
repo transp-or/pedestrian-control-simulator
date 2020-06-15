@@ -24,6 +24,7 @@ case class InfraGraphParser(amwsMode: String,
                             flowGates: Vector[FlowGates_JSON],
                             controlledAreas: Vector[MonitoredAreas_JSON], // the controlled areas are the same as the zones
                             binaryGates: Vector[FlowGates_JSON], // binary gates are flow gates with only two states
+                            flowLines: Vector[FlowLine_JSON], // flow lines used by the amws.
                             movingWalkways: Vector[MovingWalkways_JSON],
                             flowSeparators: Vector[FlowSeparator_JSON],
                             alternateConnections: Vector[ConnectivityAlternatives_JSON],

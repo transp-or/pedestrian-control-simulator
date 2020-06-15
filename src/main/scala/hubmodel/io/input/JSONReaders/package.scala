@@ -245,7 +245,9 @@ package object JSONReaders {
                                                       overriden_zones_2: Vector[RectangleFixedOverride_JSON],
                                                       overriden_connections: Vector[Connectivity_JSON],
                                                       parallel_flows: Vector[Vector[String]],
-                                                      startArea: String, endArea: String)
+                                                      startArea: Vector[String], endArea: Vector[String],
+                                                      inf_start_name: Vector[(String, Double)],
+                                                      inf_end_name: Vector[(String, Double)])
 
   /**
     * Reads the JSON structure into a [[MovingWalkways_JSON]] object. No validation on arguments is done.
@@ -261,8 +263,10 @@ package object JSONReaders {
       (JsPath \ "overriden_zones_2").read[Vector[RectangleFixedOverride_JSON]] and
       (JsPath \ "overriden_connections").read[Vector[Connectivity_JSON]] and
       (JsPath \ "parallel_flows").read[Vector[Vector[String]]] and
-      (JsPath \ "start_area").read[String] and
-      (JsPath \ "end_area").read[String]
+      (JsPath \ "start_area").read[Vector[String]] and
+      (JsPath \ "end_area").read[Vector[String]] and
+      (JsPath \ "inflow_lines_start").read[Vector[Tuple2[String, Double]]] and
+      (JsPath \ "inflow_lines_end").read[Vector[Tuple2[String, Double]]]
     ) (MovingWalkways_JSON.apply _)
 
   /**
@@ -276,12 +280,13 @@ package object JSONReaders {
     * @param x2 x-coord of second point
     * @param y2 y-coord of second point
     */
-  private[JSONReaders] case class FlowLine_JSON(x1: Double, y1: Double, x2: Double, y2: Double)
+  private[JSONReaders] case class FlowLine_JSON(name: String, x1: Double, y1: Double, x2: Double, y2: Double)
 
   /**
     * Reads the JSON structure into a [[FlowLine_JSON]] object. No validation on arguments is done.
     */
   implicit val FlowLine_JSONReads: Reads[FlowLine_JSON] = (
+    (JsPath \ "name").read[String] and
     (JsPath \ "x1").read[Double] and
       (JsPath \ "y1").read[Double] and
       (JsPath \ "x2").read[Double] and
@@ -499,6 +504,7 @@ package object JSONReaders {
       (JsPath \ "flow_gates").read[Vector[FlowGates_JSON]] and
       (JsPath \ "controlled_areas").read[Vector[MonitoredAreas_JSON]] and
       (JsPath \ "binary_gates").read[Vector[FlowGates_JSON]] and
+      (JsPath \ "flow_lines").read[Vector[FlowLine_JSON]] and
       (JsPath \ "moving_walkways").read[Vector[MovingWalkways_JSON]] and
       (JsPath \ "flow_separators").read[Vector[FlowSeparator_JSON]] and
       (JsPath \ "alternate_graphs").read[Vector[ConnectivityAlternatives_JSON]] and
@@ -618,4 +624,15 @@ package object JSONReaders {
     (JsPath \ "name").read[String] and
       (JsPath \ "ods").read[Vector[ODPair_JSON]]
     ) (ODGroup_JSON.apply _)
+
+
+  case class ODPair_JSON_with_AMW(o: String, d: String, amws: Vector[String])
+
+  implicit val ODPair_JSON_with_AMW_Reads: Reads[ODPair_JSON_with_AMW] = (
+    (JsPath \ "o").read[String] and
+      (JsPath \ "d").read[String] and
+      (JsPath \ "amws").read[Vector[String]]
+    ) (ODPair_JSON_with_AMW.apply _)
+
+
 }

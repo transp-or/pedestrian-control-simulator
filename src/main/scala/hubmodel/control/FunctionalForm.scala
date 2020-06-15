@@ -1,6 +1,6 @@
 package hubmodel.control
 
-import tools.exceptions.{IllegalFlowSeparatorPosition, IllegalPhysicalQuantity}
+import tools.exceptions.{IllegalFlowSeparatorPosition, IllegalMovingWalkwaySpeed, IllegalPhysicalQuantity}
 
 abstract class Measurement
 
@@ -24,9 +24,19 @@ case class SeparatorPositionFraction(r: Double) extends Output {
   }
 }
 
+case class MovingWalkwaySpeed(s: Double) extends Output {
+  if (s < -3.0 || s > 3.0) {
+    throw new IllegalMovingWalkwaySpeed("Moving walkway speed cannot be outside of [-3,3] ! r=" + this.s, this.s)
+  }
+}
+
 abstract class FunctionalForm[T <: Measurement, U <: Output](functionalForm: T => U)
 
 case class FunctionalFormFlowSeparator(f: BidirectionalFlow => SeparatorPositionFraction) extends FunctionalForm(f)
+
+case class FunctionalFormMovingWalkway(f: BidirectionalFlow => MovingWalkwaySpeed) extends FunctionalForm(f)
+
+case class FunctionalFormMovingWalkwayDensity(f: Density => MovingWalkwaySpeed) extends FunctionalForm(f)
 
 case class FunctionalFormGating(f: Density => Flow) extends FunctionalForm(f)
 

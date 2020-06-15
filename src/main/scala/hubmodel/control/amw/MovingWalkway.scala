@@ -16,19 +16,7 @@ import tools.exceptions.ControlDevicesException
 /** Implementation of moving walkways as an edge. This will be used for the route choice aspects.
   *
   */
-class MovingWalkway(val name: String,
-                    val firstVertex: Vertex,
-                    val secondVertex: Vertex,
-                    val width: Double,
-                    val start: Position,
-                    val end: Position,
-                    val associatedZonesStart: Vector[Vertex],
-                    val associatedZonesEnd: Vector[Vertex],
-                    val droppedVertices: Vector[String],
-                    val associatedConnectivity: Iterable[MyEdge],
-                    val parallelFlows: Vector[Vector[Vertex]],
-                    val startArea: String,
-                    val endArea: String) extends MyEdge(firstVertex, secondVertex) with ControlDeviceComponent {
+class MovingWalkway(val name: String, val firstVertex: Vertex, val secondVertex: Vertex, val width: Double, val start: Position, val end: Position, val associatedZonesStart: Vector[Vertex], val associatedZonesEnd: Vector[Vertex], val droppedVertices: Vector[String], val associatedConnectivity: Iterable[MyEdge], val parallelFlows: Vector[Vector[Vertex]]) extends MyEdge(firstVertex, secondVertex) with ControlDeviceComponent {
 
   outer =>
 
@@ -76,7 +64,7 @@ class MovingWalkway(val name: String,
   private var accEndTime: Time =  Time(0)
   private val acc: Double = hubmodel.AMW_ACCELERATION_AMPLITUDE // norms prescribes max at 1m/ss but in practice is [0.14,0.43]m/ss (Riccardo's paper).
   private var accDirection: Double = 0.0
-  private var _nextSpeed: Double = 0.0
+  protected var _nextSpeed: Double = 0.0
   private var _previousSpeed: Double = 0.0
 
 
@@ -103,8 +91,10 @@ class MovingWalkway(val name: String,
 
   private val positiveEdge: MyEdge = new MyEdge(this.firstVertex, this.secondVertex)
   private val negativeEdge: MyEdge = new MyEdge(this.secondVertex, this.firstVertex)
+  this.negativeEdge.updateCost(Time(0), Double.PositiveInfinity)
 
-  private var isClosed: Boolean = false
+
+  protected var isClosed: Boolean = false
 
   def updateCosts(t: Time): Unit = {
     if (!isClosed) {
@@ -171,6 +161,7 @@ class MovingWalkway(val name: String,
   }
 
   def insertChangeSpeed(sim: NOMADGraphSimulator): Unit = {
+    this.nextSpeedUpdate.foreach(_.setSkipTrue())
     this.nextSpeedUpdate = sim.insertEventAtAbsolute(this.controlPolicy.head.start)(new ChangeAMWSpeed(sim))
   }
 
@@ -287,38 +278,10 @@ class MovingWalkway(val name: String,
     *
     * @return
     */
-  override def deepCopy: MovingWalkway = new MovingWalkway(
-    this.name,
-    this.firstVertex,
-    this.secondVertex,
-    this.width,
-    this.start,
-    this.end,
-    this.associatedZonesStart.map(_.deepCopy),
-    this.associatedZonesEnd.map(_.deepCopy),
-    this.droppedVertices,
-    this.associatedConnectivity.map(_.deepCopy),
-    this.parallelFlows,
-    this.startArea,
-    this.endArea
-  )
+  override def deepCopy: MovingWalkway = new MovingWalkway(this.name, this.firstVertex, this.secondVertex, this.width, this.start, this.end, this.associatedZonesStart.map(_.deepCopy), this.associatedZonesEnd.map(_.deepCopy), this.droppedVertices, this.associatedConnectivity.map(_.deepCopy), this.parallelFlows)
 
   def deepCopyWithState(pop: Iterable[PedestrianNOMAD]): MovingWalkway = {
-   val amw = new MovingWalkway(
-      this.name,
-      this.firstVertex,
-      this.secondVertex,
-      this.width,
-      this.start,
-      this.end,
-      this.associatedZonesStart.map(_.deepCopy),
-      this.associatedZonesEnd.map(_.deepCopy),
-      this.droppedVertices,
-      this.associatedConnectivity.map(_.deepCopy),
-     this.parallelFlows,
-     this.startArea,
-     this.endArea
-    )
+   val amw = new MovingWalkway(this.name, this.firstVertex, this.secondVertex, this.width, this.start, this.end, this.associatedZonesStart.map(_.deepCopy), this.associatedZonesEnd.map(_.deepCopy), this.droppedVertices, this.associatedConnectivity.map(_.deepCopy), this.parallelFlows)
     amw._previousSpeed = this._previousSpeed
     amw._nextSpeed = this._nextSpeed
     amw.accDirection = this.accDirection

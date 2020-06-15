@@ -56,13 +56,12 @@ package object ALNS {
   }
 
   def roundToSpeedValues(x: Double): Double = {
-    (x * 2.0).round / 2.0
+    (x * 4.0).round / 4.0
   }
 
   def enforceSpeedChangeIntoPolicy(x: Vector[ControlDevicePolicy], initialAMWSpeed: Map[String, Double]): (Vector[ControlDevicePolicy], Vector[MovingWalkwayControlEvents]) = {
 
     @tailrec def rec(directionChanges: Vector[Int], policy: Vector[AMWPolicy], amwEvents: MovingWalkwayControlEvents): (Vector[AMWPolicy], MovingWalkwayControlEvents) = {
-
 
       def changeAMWPolicy(dirChange: AMWPolicy, amwTripTime: Time, speedChangeStart: Time, speedChangeEnd: Time, oldSpeed: Double, newSpeed: Double)(x: AMWPolicy, previousPolicySpeed: Option[Double]): AMWPolicy = {
 

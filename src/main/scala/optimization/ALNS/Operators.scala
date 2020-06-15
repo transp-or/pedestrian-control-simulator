@@ -251,3 +251,36 @@ object MinimumDurationSameDirection extends OperatorGenerator with RandomChange 
 
   def returnOperator(x: Vector[ControlDevicePolicy], iterable: Vector[StateGroundTruthPredicted]): T = new MinimumDurationSameDirection(x)
 }
+
+
+class DownstreamDensityUpdate(val densityDataBySimulation: Vector[Map[String, Vector[(Time, Vector[Double])]]], val timeIntervals: Vector[Time]) extends Operator {
+
+
+  densityDataBySimulation
+  val flowData: Map[(String, Int, Int), Double] = flowDataBySimulation.flatMap(_.toVector).groupBy(_._1).view.mapValues(v => v.map(_._2).statistics.median).toMap
+
+  def xprime(x: Vector[ControlDevicePolicy]): Vector[ControlDevicePolicy] = {
+    val tmp = x.map {
+      case amw: AMWPolicy => {
+        val flow = flowData.filter(v => v._1._1 == amw.name && timeIntervals(v._1._3) == amw.start).maxByOption(_._2)
+        if (flow.exists(f => f._1._2.sign != amw.speed.sign)) {
+          amw.copy(speed = flow.get._1._2.sign * 3.0)
+        }
+        else {
+          amw
+        }
+      }
+      case other => other
+    }
+    tmp
+  }
+}
+
+object DownstreamDensityUpdate extends OperatorGenerator with RandomChange {
+  val probability: Double = 0.3
+  val name: String = "DownstreamDensityUpdate"
+
+  type T = DownstreamDensityUpdate
+
+  def returnOperator(x: Vector[ControlDevicePolicy], iterable: Vector[StateGroundTruthPredicted]): T = new DownstreamDensityUpdate(iterable.map(_.densitiesInsideAreas), iterable.head.intervals)
+}

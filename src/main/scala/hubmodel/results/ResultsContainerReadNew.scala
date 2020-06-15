@@ -10,7 +10,7 @@ import hubmodel.io.input.JSONReaders.{AMWData_JSON, PedestrianResults_JSON}
   */
 class ResultsContainerReadNew(val tt: Vector[PedestrianResults_JSON],
                               val monitoredAreaDensity: Option[Map[String, Vector[(tools.Time, Double)]]],
-                              val monitoredAreaIndividualDensity: Option[Map[String, Vector[(tools.Time, Vector[Double])]]],
+                              val monitoredAreaIndividualDensity: Option[Map[(String, String), Vector[(tools.Time, Vector[Double])]]],
                               val amwData: Option[Vector[AMWData_JSON]]) {
 
   def addDemandFile(ff: String): ResultsContainerReadWithDemandSetNew = {

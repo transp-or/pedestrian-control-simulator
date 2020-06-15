@@ -1,0 +1,35 @@
+{
+  "location": "corridor",
+  "PTflows": [],
+  "flows": [],
+  "function_flows": [
+    {
+      "origin": "top",
+      "destination": "bottom",
+      "linear": [ ],
+      "constant": [
+       {
+         "start": "00:00:00",
+         "end": "00:05:00",
+         "rate": 5.0
+
+      }
+      ],
+      "sine": [ ]
+    },
+    {
+      "origin": "bottom",
+      "destination": "top",
+      "linear": [ ],
+      "constant": [
+        {
+          "start": "00:00:00",
+          "end": "00:05:00",
+          "rate": 3.0
+
+        }
+      ],
+      "sine": [ ]
+    }
+  ]
+}

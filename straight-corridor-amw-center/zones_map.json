@@ -1,0 +1,18 @@
+{
+  "location": "lausanne",
+  "stop2nodes": [
+    {
+      "stop": 1,
+      "nodes": [
+        "1"
+      ]
+    },
+    {
+      "stop": 2,
+      "nodes": [
+        "2"
+      ]
+    }
+  ],
+  "zone2nodes": []
+}

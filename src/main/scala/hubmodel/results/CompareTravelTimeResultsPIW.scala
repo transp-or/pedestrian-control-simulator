@@ -3,7 +3,7 @@ package hubmodel.results
 import java.nio.file.{Files, Paths}
 
 import com.typesafe.config.Config
-import hubmodel.io.input.JSONReaders.ODGroup_JSON
+import hubmodel.io.input.JSONReaders.{ODPair_JSON_with_AMW, ODGroup_JSON}
 import hubmodel.parseConfigFile
 import myscala.math.stats.{ComputeQuantiles, ComputeStats}
 import myscala.output.SeqTuplesExtensions.SeqTuplesWriter
@@ -100,10 +100,19 @@ object CompareTravelTimeResultsPIW extends App {
   def WelchTTest(m1: Double, sd1:Double, size1: Int, m2: Double, sd2:Double, size2: Int): (Double, Double) = {
     val nu = math.pow(sd1*sd1/size1 + sd2*sd2/size2, 2) / (math.pow(sd1, 4) / (size1*size1*(size1-1.0)) + math.pow(sd2, 4) / (size2*size2*(size2-1.0)))
     val t = (m1 - m2)/math.sqrt(sd1*sd1/size1 + sd2*sd2 / size2)
-    if (nu <0) {
-      println("debug")
-    }
     (t,nu)
+  }
+
+
+  lazy val amwCountByOD: Map[String, Int] = {
+    val source: BufferedSource = scala.io.Source.fromFile(config.getString("sim.amws_by_OD"))
+    val input: JsValue = Json.parse(try source.mkString finally source.close)
+    input.validate[Vector[ODPair_JSON_with_AMW]] match {
+      case s: JsSuccess[Vector[ODPair_JSON_with_AMW]] => {
+        s.get.map(r => r.o + "->" + r.d -> r.amws.size).toMap
+      }
+      case e: JsError => throw new Error("Error while parsing amws by ods: " + JsError.toJson(e).toString())
+    }
   }
 
 
@@ -127,9 +136,11 @@ object CompareTravelTimeResultsPIW extends App {
     new TDistribution(nu).density(t)
   }, rrr._6, rrr._7, rrr._8, rrr._9, rrr._10, rrr._11))).toVector
     .filterNot(v => v._3.isNaN || v._4.isNaN)
-    .sortBy(v => v._2) //(v._3-v._2)/v._2)//v._1)
+    .sortBy(v => {
+      amwCountByOD(v._2)
+    }) //(v._3-v._2)/v._2)//v._1)
     // .filterNot(v => v._9 == "other")
     .zipWithIndex
-    .map(v => (v._2, v._1._1, v._1._2, v._1._3, v._1._4 , if (v._1._5 <= 0.05 && v._1._11 >= 20){"sigLarge"} else if (v._1._5 <= 0.05 && v._1._11 < 20) {"sigSmall"} else if (v._1._5 > 0.05 && v._1._11 > 20) {"nonSigLarge"} else {"nonSigSmall"}, v._1._6, v._1._7, v._1._8, v._1._9, v._1._10, v._1._11))
+    .map(v => (v._2, v._1._1, v._1._2, v._1._3, v._1._4 , if (v._1._5 <= 0.05 && v._1._11 >= 100){"sigLarge"} else if (v._1._5 <= 0.05 && v._1._11 <100) {"sigSmall"} else if (v._1._5 > 0.05 && v._1._11 > 100) {"nonSigLarge"} else {"nonSigSmall"}, v._1._6, v._1._7, v._1._8, v._1._9, v._1._10, v._1._11))
     .writeToCSV(config.getString("files_1.output_prefix") + "_VS_" + config.getString("files_2.output_prefix") + "_walking_time_distributions_by_OD.csv", columnNames = Some(Vector("idx", "demandFile", "odGroup", "refTT", "otherTT", "TTequalMeanPValue", "refTravelDistance", "otherTravelDistance", "refMeanSpeed", "otherMeanSpeed", "refPopulationSize", "otherPopulationSize")), rowNames = None)
 }

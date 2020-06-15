@@ -2,7 +2,7 @@ package hubmodel.supply
 
 import hubmodel.Position
 import hubmodel.control._
-import hubmodel.control.amw.MovingWalkway
+import hubmodel.control.amw.{FlowLineWithFraction, MovingWalkway, MovingWalkwayWithDensityMeasurement, MovingWalkwayWithFlowMeasurement}
 import hubmodel.control.flowgate.{BinaryGate, FlowGate, FlowGateFunctional}
 import hubmodel.control.flowsep._
 import hubmodel.io.input.JSONReaders.{Connectivity_JSON, InfraGraphParser, Track2NodeMapping_JSON}
@@ -20,20 +20,11 @@ import scala.util.{Failure, Success, Try}
 package object graph {
 
 
-  /** Class to read the graph specification file and process it.
-    *
-    * TODO: convert this class to a function
+  /** Reads the graph specification file and process it.
     *
     * @param graphSpecificationFile JSON file containing the graph specification
     */
-  def readGraph(graphSpecificationFile: String,
-                                      useFlowGates: Boolean,
-                                      useBinarygates: Boolean,
-                                      useAMWs: Boolean,
-                                      useFlowSep: Boolean,
-                                      fixedFlowSep: Boolean,
-                                      measureDensity: Boolean,
-                                      useAlternatGraphs: Boolean)(implicit tagT: ClassTag[PedestrianNOMAD]): (GraphContainer, ControlDevices) = {
+  def readGraph(graphSpecificationFile: String, useFlowGates: Boolean, useBinarygates: Boolean, useAMWs: Boolean, useFlowSep: Boolean, fixedFlowSep: Boolean, measureDensity: Boolean, useAlternatGraphs: Boolean, amwsMode: (String, String)): (GraphContainer, ControlDevices) = {
 
 
     val source: BufferedSource = scala.io.Source.fromFile(graphSpecificationFile)
@@ -42,8 +33,12 @@ package object graph {
     input.validate[InfraGraphParser] match {
       case s: JsSuccess[InfraGraphParser] => {
 
-        if (!Vector("static", "reactive", "predictive").contains(s.get.amwsMode)){
-          throw new ControlDevicesException("AMW mode is wrong ! It should be one of \"static\", \"reactive\", \"predictive\" ! It is:" + s.get.amwsMode)
+        if (!Vector("static", "reactive", "predictive").contains(amwsMode._1)){
+          throw new ControlDevicesException("AMW mode is wrong ! It should be one of \"static\", \"reactive\", \"predictive\" ! It is:" + amwsMode._1)
+        }
+
+        if (amwsMode._1 == "reactive" && !Vector("flow", "density").contains(amwsMode._2)){
+          throw new ControlDevicesException("AMW reactive mode is wrong ! It should be one of \"flow\", \"density\" ! It is:" + amwsMode._2)
         }
 
         val v: Vector[Rectangle] = s.get.nodes.map(n => new Rectangle(n.name, Vector2D(n.x1, n.y1), Vector2D(n.x2, n.y2), Vector2D(n.x3, n.y3), Vector2D(n.x4, n.y4), n.OD, n.rate))
@@ -63,7 +58,24 @@ package object graph {
         } else {
           Vector()
         }
+
+        val monitoredAreas: Iterable[DensityMeasuredArea] = if (measureDensity) {
+          s.get.controlledAreas.map(ma => new DensityMeasuredArea(ma.name, new Position(ma.x1, ma.y1), new Position(ma.x2, ma.y2), new Position(ma.x3, ma.y3), new Position(ma.x4, ma.y4), ma.targetDensity))
+        } else {
+          Vector()
+        }
+
+
         val mv: Iterable[MovingWalkway] = if (useAMWs) {
+
+          // reads flow lines if they are needed
+          val flowLines: Map[String, FlowLine] = {
+            if (amwsMode._1 == "reactive") {
+              s.get.flowLines.map(fl => fl.name -> new FlowLine(fl.name, Vector2D(fl.x1, fl.y1), Vector2D(fl.x2, fl.y2))).toMap
+            } else {
+              Map()
+            }
+          }
 
           // remove overriden vertices from map
           vertexMapReader --= s.get.movingWalkways.flatMap(_.overriden_zones_1.collect({ case oZone if oZone.overridenZone.isDefined => oZone.overridenZone.get }))
@@ -125,7 +137,29 @@ package object graph {
             val newConnections = m.overriden_connections.collect({ case c if vertexMapReader.contains(c.node) => c.conn.collect({ case neigh if vertexMapReader.contains(neigh) => new MyEdge(vertexMapReader(c.node), vertexMapReader(neigh)) }) }).flatten
 
             // create AMW
-            new MovingWalkway(m.name, startCircle, endCircle, m.width, start, end, oz_1, oz_2, oldZones, newConnections, m.parallel_flows.map(r => r.map(v => vertexMapReader(v))), m.startArea, m.endArea)
+            if (amwsMode._1 == "reactive" && amwsMode._2 == "flow") {
+              new MovingWalkwayWithFlowMeasurement(
+                m.name,
+                startCircle, endCircle,
+                m.width,
+                start, end,
+                oz_1, oz_2,
+                oldZones,
+                newConnections,
+                m.parallel_flows.map(r => r.map(v => vertexMapReader(v))),
+                m.inf_start_name.map(fl => new FlowLineWithFraction(flowLines(fl._1).name, flowLines(fl._1).start, flowLines(fl._1).end, fl._2)),
+                m.inf_end_name.map(fl => new FlowLineWithFraction(flowLines(fl._1).name, flowLines(fl._1).start, flowLines(fl._1).end, fl._2)),
+                FunctionalFormMovingWalkway((bf: BidirectionalFlow) => MovingWalkwaySpeed(if (bf.f1 > bf.f2) {
+                  3.0
+                } else {
+                  -3.0
+                }))
+              )
+            } else if (amwsMode._1 == "reactive" && amwsMode._2 == "density"){
+              new MovingWalkwayWithDensityMeasurement(m.name, startCircle, endCircle, m.width, start, end, oz_1, oz_2, oldZones, newConnections, m.parallel_flows.map(r => r.map(v => vertexMapReader(v))),   m.inf_start_name.map(fl => new FlowLineWithFraction(flowLines(fl._1).name, flowLines(fl._1).start, flowLines(fl._1).end, fl._2)),
+                m.inf_end_name.map(fl => new FlowLineWithFraction(flowLines(fl._1).name, flowLines(fl._1).start, flowLines(fl._1).end, fl._2)), m.startArea.map(z => monitoredAreas.find(_.name == z).get), m.endArea.map(z => monitoredAreas.find(_.name == z).get), (1.36 ,0.37))            } else {
+              new MovingWalkway(m.name, startCircle, endCircle, m.width, start, end, oz_1, oz_2, oldZones, newConnections, m.parallel_flows.map(r => r.map(v => vertexMapReader(v))))
+            }
           })
 
         } else {
@@ -136,11 +170,7 @@ package object graph {
         } else {
           Vector()
         }
-        val monitoredAreas: Iterable[DensityMeasuredArea] = if (measureDensity) {
-          s.get.controlledAreas.map(ma => new DensityMeasuredArea(ma.name, new Position(ma.x1, ma.y1), new Position(ma.x2, ma.y2), new Position(ma.x3, ma.y3), new Position(ma.x4, ma.y4), ma.targetDensity))
-        } else {
-          Vector()
-        }
+
         val flowSeparators: Iterable[FlowSeparator[_, _]] = if (useFlowSep) {
 
           // updates the vertex map to remove overriden nodes and add the new ones linked to the flow separators
@@ -183,8 +213,8 @@ package object graph {
               Vector2D(fs.x1b, fs.y1b),
               Vector2D(fs.x2a, fs.y2a),
               Vector2D(fs.x2b, fs.y2b),
-              fs.inf_1.map(il => new FlowLine(Vector2D(il.x1, il.y1), Vector2D(il.x2, il.y2))),
-              fs.inf_2.map(il => new FlowLine(Vector2D(il.x1, il.y1), Vector2D(il.x2, il.y2))),
+              fs.inf_1.map(il => new FlowLine(il.name, Vector2D(il.x1, il.y1), Vector2D(il.x2, il.y2))),
+              fs.inf_2.map(il => new FlowLine(il.name, Vector2D(il.x1, il.y1), Vector2D(il.x2, il.y2))),
               oz_1,
               oz_2,
               fs.overConn.collect({ case c if vertexMapReader.contains(c.node) => c.conn.collect({ case neigh if vertexMapReader.contains(neigh) => new MyEdge(vertexMapReader(c.node), vertexMapReader(neigh)) }) }).flatten,
@@ -224,8 +254,8 @@ package object graph {
               Vector2D(fs.x1b, fs.y1b),
               Vector2D(fs.x2a, fs.y2a),
               Vector2D(fs.x2b, fs.y2b),
-              fs.inf_1.map(il => FlowLineParameters(Vector2D(il.x1, il.y1), Vector2D(il.x2, il.y2), 0)),
-              fs.inf_2.map(il => FlowLineParameters(Vector2D(il.x1, il.y1), Vector2D(il.x2, il.y2), 0)),
+              fs.inf_1.map(il => FlowLineParameters(il.name, Vector2D(il.x1, il.y1), Vector2D(il.x2, il.y2), 0)),
+              fs.inf_2.map(il => FlowLineParameters(il.name, Vector2D(il.x1, il.y1), Vector2D(il.x2, il.y2), 0)),
               oz_1,
               oz_2,
               fs.overConn.flatMap(conn => conn.conn.map(c => (conn.node, c))),
@@ -282,7 +312,7 @@ package object graph {
             }
           }
           ,
-          new ControlDevices(monitoredAreas, mv, s.get.amwsMode, fg, bg, flowSeparators, fixedFlowSep, Some(flowSepParameters))
+          new ControlDevices(monitoredAreas, mv, amwsMode._1, fg, bg, flowSeparators, fixedFlowSep, Some(flowSepParameters))
         )
       }
       case e: JsError => throw new Error("Error while parsing graph specification file: " + JsError.toJson(e).toString())

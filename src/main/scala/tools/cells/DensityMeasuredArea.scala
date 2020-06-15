@@ -19,7 +19,7 @@ class DensityMeasuredArea(name: String, A: Position, B: Position, C: Position, D
   val densityHistory: collection.mutable.ArrayBuffer[(Time, Double)] = collection.mutable.ArrayBuffer()
 
   // density per pedestrian computed using voronoi tessellations.
-  val paxIndividualDensityHistory: collection.mutable.ArrayBuffer[(Time, Iterable[Double])] = collection.mutable.ArrayBuffer()
+  val paxIndividualDensityHistory: collection.mutable.ArrayBuffer[(Time, Vector[Double])] = collection.mutable.ArrayBuffer()
 
   // inflow into the controlled area.
   val inflowHistory: collection.mutable.ArrayBuffer[(Time, Double)] = collection.mutable.ArrayBuffer()
@@ -57,10 +57,10 @@ class DensityMeasuredArea(name: String, A: Position, B: Position, C: Position, D
   def toJSON: String = {
     "{" +
       "\"name\":\"" + this.name + "\"," +
-      "\"id\":\"" + this.ID + "\"," +
+      "\"ID\":\"" + this.ID + "\"," +
       "\"target-density\":" + this.targetDensity + "," +
       "\"density-measurements\":[" + this.densityHistory.map(dp => "[" + dp._1.toString + "," + dp._2 + "]").mkString(",\n") +
-    "],\n\"density-individual-measurements\":[" + this.paxIndividualDensityHistory.map(d => "{\"time\":" + d._1 + ",\"densities\":[" + d._2.mkString(",") + "]}").mkString(",\n") +
+    "],\n\"density-individual-measurements\":[" + this.paxIndividualDensityHistory.map(d => "[" + d._1 + ",[" + d._2.mkString(",") + "]]").mkString(",\n") +
     "]"+
       "}"
   }

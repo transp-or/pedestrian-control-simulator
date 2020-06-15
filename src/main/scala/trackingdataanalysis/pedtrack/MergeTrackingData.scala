@@ -15,7 +15,7 @@ object MergeTrackingData extends App {
 
   val zoneProcessor = new ZoneProcessingNew(zoneFile)
 
-  val amws: Iterable[MovingWalkway] = readGraph(zoneFile, false, false, true, false, false, false, false)._2.amws
+  val amws: Iterable[MovingWalkway] = readGraph(zoneFile, false, false, true, false, false, false, false, ("predictive", ""))._2.amws
 
   val files = Vector(
     "E:\\PhD\\hub-simulator\\tracking-data-lausanne\\tracking-data-lausanne.tar\\tracking-data-lausanne\\lausanne_2013_01_22_piw.csv",

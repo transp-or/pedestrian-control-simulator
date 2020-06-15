@@ -351,9 +351,10 @@ package object hubmodel {
       case Success(s) => {
         writeResults(simulator, prefix, dir, writeTrajectoriesVS, writeTrajectoriesJSON, writeTRANSFORMTT)
       }
-      case Failure(f) => {println(f)}
+      case Failure(f) => {
+        throw f
+        println(f, f.getStackTrace)}
     }
-
   }
 
 
