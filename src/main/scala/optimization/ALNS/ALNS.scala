@@ -19,7 +19,8 @@ case class ALNSParameters(maxIterations: Int = 150,
                           lambda: Double = 0.9,
                           initialScore: Double = 5.0,
                           maxScore: Double = 20,
-                          minScore: Double = 0.5)
+                          minScore: Double = 0.5,
+                          SATypicalIncrease: Double = 1.0)
 
 class ALNS(function: StatePrediction, initialPolicy: Iterable[ControlDevicePolicy], _operators: Vector[OperatorGenerator with RandomChange], constraints: Vector[Constraint], stochasticReduction: FunctionEvaluation => FunctionEvaluationReduced, parameters: ALNSParameters = new ALNSParameters) {
 
@@ -83,7 +84,7 @@ class ALNS(function: StatePrediction, initialPolicy: Iterable[ControlDevicePolic
   }
 
   private def acceptanceCriteriaSA(i: Int, x: Vector[ControlDevicePolicy]): (Boolean, Double) = {
-    val T: Double = -0.5/math.log(0.99 + (0.00001-0.99)*i/this.maxIterations)
+    val T: Double = -parameters.SATypicalIncrease/math.log(0.99 + (0.00001-0.99)*i/this.maxIterations)
     if (computeObjective(x) < computeObjective(this.currentx._1)) {(true, T)}
     else {
       (math.exp((computeObjective(this.currentx._1) - computeObjective(x))/T) > ThreadLocalRandom.current.nextDouble(), T)

@@ -3,7 +3,7 @@ package hubmodel.supply.graph
 import java.util.concurrent.ThreadLocalRandom
 
 import hubmodel.control.ControlDevices
-import hubmodel.control.amw.MovingWalkway
+import hubmodel.control.amw.MovingWalkwayAbstract
 import hubmodel.control.flowgate.{BinaryGate, FlowGate}
 import hubmodel.control.flowsep.FlowSeparator
 import hubmodel.ped.PedestrianNOMAD
@@ -12,7 +12,7 @@ import tools.cells.Vertex
 
 class MultipleGraph(fg: Iterable[FlowGate],
                     bg: Iterable[BinaryGate],
-                    mw: Iterable[MovingWalkway],
+                    mw: Iterable[MovingWalkwayAbstract],
                     fs: Iterable[FlowSeparator[_, _]]
                    ) extends GraphContainer(fg, bg, mw, fs) {
 

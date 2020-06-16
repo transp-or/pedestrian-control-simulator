@@ -2,7 +2,7 @@ package hubmodel.supply
 
 import hubmodel.Position
 import hubmodel.control._
-import hubmodel.control.amw.{FlowLineWithFraction, MovingWalkway, MovingWalkwayWithDensityMeasurement, MovingWalkwayWithFlowMeasurement}
+import hubmodel.control.amw.{FlowLineWithFraction, MovingWalkway, MovingWalkwayAbstract, MovingWalkwayWithDensityMeasurement, MovingWalkwayWithFlowMeasurement}
 import hubmodel.control.flowgate.{BinaryGate, FlowGate, FlowGateFunctional}
 import hubmodel.control.flowsep._
 import hubmodel.io.input.JSONReaders.{Connectivity_JSON, InfraGraphParser, Track2NodeMapping_JSON}
@@ -66,7 +66,7 @@ package object graph {
         }
 
 
-        val mv: Iterable[MovingWalkway] = if (useAMWs) {
+        val mv: Iterable[MovingWalkwayAbstract] = if (useAMWs) {
 
           // reads flow lines if they are needed
           val flowLines: Map[String, FlowLine] = {
@@ -156,9 +156,9 @@ package object graph {
                 }))
               )
             } else if (amwsMode._1 == "reactive" && amwsMode._2 == "density"){
-              new MovingWalkwayWithDensityMeasurement(m.name, startCircle, endCircle, m.width, start, end, oz_1, oz_2, oldZones, newConnections, m.parallel_flows.map(r => r.map(v => vertexMapReader(v))),   m.inf_start_name.map(fl => new FlowLineWithFraction(flowLines(fl._1).name, flowLines(fl._1).start, flowLines(fl._1).end, fl._2)),
+              new MovingWalkwayWithDensityMeasurement(m.name, startCircle, endCircle, m.width, start, end, oz_1, oz_2, oldZones, newConnections, m.parallel_flows.map(r => r.map(v => vertexMapReader(v))), m.inf_start_name.map(fl => new FlowLineWithFraction(flowLines(fl._1).name, flowLines(fl._1).start, flowLines(fl._1).end, fl._2)),
                 m.inf_end_name.map(fl => new FlowLineWithFraction(flowLines(fl._1).name, flowLines(fl._1).start, flowLines(fl._1).end, fl._2)), m.startArea.map(z => monitoredAreas.find(_.name == z).get), m.endArea.map(z => monitoredAreas.find(_.name == z).get), (1.36 ,0.37))            } else {
-              new MovingWalkway(m.name, startCircle, endCircle, m.width, start, end, oz_1, oz_2, oldZones, newConnections, m.parallel_flows.map(r => r.map(v => vertexMapReader(v))))
+              new MovingWalkway(m.name, startCircle, endCircle, m.width, start, end, oz_1, oz_2, oldZones, newConnections, m.parallel_flows.map(r => r.map(v => vertexMapReader(v))), m.startArea.map(z => monitoredAreas.find(_.name == z).get), m.endArea.map(z => monitoredAreas.find(_.name == z).get))
             }
           })
 

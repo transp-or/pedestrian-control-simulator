@@ -43,7 +43,7 @@ class MovingWalkwayWithFlowMeasurement[T <: Measurement, U <: MovingWalkwaySpeed
                                                                                   parallelFlows: Vector[Vector[Vertex]],
                                                                                   val inflowLinesStart: Iterable[FlowLineWithFraction],
                                                                                   val inflowLinesEnd: Iterable[FlowLineWithFraction],
-                                                                                  val function: FunctionalForm[T, U]) extends MovingWalkway(name, firstVertex, secondVertex, width, start, end, associatedZonesStart, associatedZonesEnd, droppedVertices, associatedConnectivity, parallelFlows) {
+                                                                                  val function: FunctionalForm[T, U]) extends MovingWalkwayAbstract(name, firstVertex, secondVertex, width, start, end, associatedZonesStart, associatedZonesEnd, droppedVertices, associatedConnectivity, parallelFlows) {
 
   // History of the measured flows.
   private val flowHistoryNew: collection.mutable.ArrayBuffer[(Time, BidirectionalFlow)] = collection.mutable.ArrayBuffer()

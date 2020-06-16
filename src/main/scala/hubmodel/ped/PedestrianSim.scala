@@ -2,7 +2,7 @@ package hubmodel.ped
 
 import java.util.concurrent.ThreadLocalRandom
 
-import hubmodel.control.amw.MovingWalkway
+import hubmodel.control.amw.MovingWalkwayAbstract
 import hubmodel.ped.History.{CoordinateTracking, HistoryContainer, PositionIsolation}
 import hubmodel.{Position, pedestrianWalkingSpeed, _}
 import myscala.math.vector.ZeroVector2D

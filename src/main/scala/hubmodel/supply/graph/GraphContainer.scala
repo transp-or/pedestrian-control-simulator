@@ -1,7 +1,7 @@
 package hubmodel.supply.graph
 
 import hubmodel.control.ControlDevices
-import hubmodel.control.amw.MovingWalkway
+import hubmodel.control.amw.MovingWalkwayAbstract
 import hubmodel.control.flowgate.{BinaryGate, FlowGate}
 import hubmodel.control.flowsep.FlowSeparator
 import hubmodel.ped.PedestrianNOMAD
@@ -10,7 +10,7 @@ import tools.cells.Vertex
 
 abstract class GraphContainer(protected val flowGates: Iterable[FlowGate],
                               protected val binaryGates: Iterable[BinaryGate],
-                              protected val movingWalkways: Iterable[MovingWalkway],
+                              protected val movingWalkways: Iterable[MovingWalkwayAbstract],
                               protected val flowSeparators: Iterable[FlowSeparator[_, _]]) {
 
   def vertexMapNew: Map[String, Vertex]

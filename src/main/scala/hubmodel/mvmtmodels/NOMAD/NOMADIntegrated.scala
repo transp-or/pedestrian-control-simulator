@@ -4,7 +4,7 @@ import java.util
 import java.util.concurrent.ThreadLocalRandom
 
 import hubmodel.DES.PedestrianPrediction
-import hubmodel.control.amw.{MovingWalkway, MovingWalkwayControlEvents, MovingWalkwayWithDensityMeasurement, MovingWalkwayWithFlowMeasurement}
+import hubmodel.control.amw.{MovingWalkwayAbstract, MovingWalkwayControlEvents, MovingWalkwayWithDensityMeasurement, MovingWalkwayWithFlowMeasurement}
 
 //import com.vividsolutions.jts.geom.Coordinate
 import hubmodel.DES.{Action, NOMADGraphSimulator}

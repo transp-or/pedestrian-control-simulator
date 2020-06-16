@@ -130,7 +130,7 @@ class DrawControlDevicesAndWalls(filename: String = "",
       }
       case w: MovingWalkwayWithDensityMeasurement[_, _] => {
 
-        (w.criticalAreadStart ++ w.criticalAreadEnd).foreach(area => {
+        (w.criticalAreaStart ++ w.criticalAreaEnd).foreach(area => {
 
         })
 

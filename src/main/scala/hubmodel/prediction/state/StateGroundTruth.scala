@@ -2,8 +2,9 @@ package hubmodel.prediction.state
 
 import hubmodel.Position
 import hubmodel.control.ControlDevices
+import hubmodel.control.amw.MovingWalkway
 import hubmodel.ped.PedestrianNOMAD
-import hubmodel.prediction.AMWFlowsFromGroundTruth
+import hubmodel.prediction.{AMWFlowsFromGroundTruth, CongestionDataFromGroundTruth}
 import tools.Time
 import tools.TimeNumeric.mkOrderingOps
 import tools.cells.DensityMeasuredArea
@@ -22,13 +23,13 @@ class StateGroundTruthPredicted(val startTime: Time,
                                 val interval: Time,
                        _population: Vector[PedestrianNOMAD],
                        _controlDevices: ControlDevices,
-                       _criticalAreas: Map[String, DensityMeasuredArea]) {
+                                val criticalAreas: Map[String, DensityMeasuredArea]) {
 
   val intervals: Vector[Time] = this.startTime.value.to(this.endTime.value).by(this.interval.value).map(v => Time(v.toDouble)).toVector
 
   lazy val amwFlows: AMWFlowsFromGroundTruth = new AMWFlowsFromGroundTruth(_population, _controlDevices.amws.toVector, this.intervals)
 
-  lazy val  densitiesInsideAreas: Map[String, Vector[(Time, Vector[Double])]] = this._criticalAreas.map(a => a._1 -> a._2.paxIndividualDensityHistory.toVector)
+  lazy val densitiesInsideAreas: CongestionDataFromGroundTruth = new CongestionDataFromGroundTruth(this.criticalAreas, this._controlDevices.amws.collect{case w: MovingWalkway => w}.toVector, this.intervals)
 
   val indicators: Map[String, Double] = {
     val populationMvmtIdxs = _population
@@ -40,7 +41,7 @@ class StateGroundTruthPredicted(val startTime: Time,
     Map(
       "throughput" -> inflow.view.filterKeys(_ > 0).map(kv => kv._2 - outflow.getOrElse(kv._1, 0)).sum,
       "meanTT" -> _population.map(p => p.travelTime.value.toDouble).sum / _population.size,
-      "density" -> _criticalAreas.toVector.flatMap(a => a._2.paxIndividualDensityHistory.map(d => d._1.value.toDouble * {if (d._2.isEmpty){0.0} else {computeQuantile(75)(d._2.toVector).value}})).sum
+      "density" -> this.criticalAreas.toVector.flatMap(a => a._2.paxIndividualDensityHistory.map(d => d._1.value.toDouble * {if (d._2.isEmpty){0.0} else {computeQuantile(75)(d._2.toVector).value}})).sum
     )
   }
 

@@ -263,7 +263,7 @@ class PredictWithGroundTruth(private val sim: PedestrianSimulation) extends Stat
 
     (this.predictionSimulatorSequential ++ this.predictionSimulatorParallel).collect{
       case s if s.exitCode == 0 => new StateGroundTruthPredicted(
-        s.startTime, s.finalTime, this.sim.predictionInputParameters.updateInterval,
+        s.startTime, s.finalTime, this.sim.predictionInputParameters.decisionVariableLength,
         (s.population ++ s.populationCompleted).toVector,
         s.controlDevices,
         s.criticalAreas

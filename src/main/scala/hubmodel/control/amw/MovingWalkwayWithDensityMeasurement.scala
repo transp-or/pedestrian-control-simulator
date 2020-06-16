@@ -22,9 +22,9 @@ class MovingWalkwayWithDensityMeasurement[T <: Density, U <: MovingWalkwaySpeed]
                                                                                  parallelFlows: Vector[Vector[Vertex]],
                                                                                  val inflowLinesStart: Iterable[FlowLineWithFraction],
                                                                                  val inflowLinesEnd: Iterable[FlowLineWithFraction],
-                                                                                 val criticalAreadStart: Iterable[DensityMeasuredArea],
-                                                                                 val criticalAreadEnd: Iterable[DensityMeasuredArea],
-                                                                                 val PIGains: (Double, Double)) extends MovingWalkway(name, firstVertex, secondVertex, width, start, end, associatedZonesStart, associatedZonesEnd, droppedVertices, associatedConnectivity, parallelFlows) {
+                                                                                 val criticalAreaStart: Iterable[DensityMeasuredArea],
+                                                                                 val criticalAreaEnd: Iterable[DensityMeasuredArea],
+                                                                                 val PIGains: (Double, Double)) extends MovingWalkwayAbstract(name, firstVertex, secondVertex, width, start, end, associatedZonesStart, associatedZonesEnd, droppedVertices, associatedConnectivity, parallelFlows) {
 
   // History of the measured flows.
   private val flowHistoryNew: collection.mutable.ArrayBuffer[(Time, BidirectionalFlow)] = collection.mutable.ArrayBuffer()
@@ -64,21 +64,21 @@ class MovingWalkwayWithDensityMeasurement[T <: Density, U <: MovingWalkwaySpeed]
 
   private def computeTargetSpeed(t: Time, finalTime:Time, direction: Double): AMWPolicy = {
     val nextSpeed: Double = if (direction == 1) {
-      if (this.criticalAreadEnd.forall(a => a.paxIndividualDensityHistory.size < 4)) {
+      if (this.criticalAreaEnd.forall(a => a.paxIndividualDensityHistory.size < 4)) {
         3.0
       } else {
-        val ek: Double = (1.2 - (1.0/3.0) * (computeQuantile(this.criticalAreadEnd.flatMap(_.paxIndividualDensityHistory.last._2).toVector) + computeQuantile(this.criticalAreadEnd.flatMap(_.paxIndividualDensityHistory.dropRight(1).last._2).toVector) + computeQuantile(this.criticalAreadEnd.flatMap(_.paxIndividualDensityHistory.dropRight(2).last._2).toVector)))
-        val ekm1: Double = (1.2 - (1.0/3.0) * (computeQuantile(this.criticalAreadEnd.flatMap(_.paxIndividualDensityHistory.dropRight(1).last._2).toVector) + computeQuantile(this.criticalAreadEnd.flatMap(_.paxIndividualDensityHistory.dropRight(2).last._2).toVector) + computeQuantile(this.criticalAreadEnd.flatMap(_.paxIndividualDensityHistory.dropRight(3).last._2).toVector)))
+        val ek: Double = (1.2 - (1.0/3.0) * (computeQuantile(this.criticalAreaEnd.flatMap(_.paxIndividualDensityHistory.last._2).toVector) + computeQuantile(this.criticalAreaEnd.flatMap(_.paxIndividualDensityHistory.dropRight(1).last._2).toVector) + computeQuantile(this.criticalAreaEnd.flatMap(_.paxIndividualDensityHistory.dropRight(2).last._2).toVector)))
+        val ekm1: Double = (1.2 - (1.0/3.0) * (computeQuantile(this.criticalAreaEnd.flatMap(_.paxIndividualDensityHistory.dropRight(1).last._2).toVector) + computeQuantile(this.criticalAreaEnd.flatMap(_.paxIndividualDensityHistory.dropRight(2).last._2).toVector) + computeQuantile(this.criticalAreaEnd.flatMap(_.paxIndividualDensityHistory.dropRight(3).last._2).toVector)))
         val s = this._nextSpeed + (PIGains._1 + PIGains._2) * ek  - PIGains._1 * ekm1
         println(t, direction, s, ek, ekm1)
         math.round(4.0*math.max(0.0,math.min(s, 3.0)))/4.0
       }
     } else if (direction == -1) {
-      if (this.criticalAreadStart.forall(a => a.paxIndividualDensityHistory.size < 4)) {
+      if (this.criticalAreaStart.forall(a => a.paxIndividualDensityHistory.size < 4)) {
         -3.0
       } else {
-        val ek: Double = (1.2 - (1.0/3.0) * (computeQuantile(this.criticalAreadStart.flatMap(_.paxIndividualDensityHistory.last._2).toVector) + computeQuantile(this.criticalAreadStart.flatMap(_.paxIndividualDensityHistory.dropRight(1).last._2).toVector) + computeQuantile(this.criticalAreadStart.flatMap(_.paxIndividualDensityHistory.dropRight(2).last._2).toVector)))
-        val ekm1: Double = (1.2 - (1.0/3.0) * (computeQuantile(this.criticalAreadStart.flatMap(_.paxIndividualDensityHistory.dropRight(1).last._2).toVector) + computeQuantile(this.criticalAreadStart.flatMap(_.paxIndividualDensityHistory.dropRight(2).last._2).toVector) + computeQuantile(this.criticalAreadStart.flatMap(_.paxIndividualDensityHistory.dropRight(3).last._2).toVector)))
+        val ek: Double = (1.2 - (1.0/3.0) * (computeQuantile(this.criticalAreaStart.flatMap(_.paxIndividualDensityHistory.last._2).toVector) + computeQuantile(this.criticalAreaStart.flatMap(_.paxIndividualDensityHistory.dropRight(1).last._2).toVector) + computeQuantile(this.criticalAreaStart.flatMap(_.paxIndividualDensityHistory.dropRight(2).last._2).toVector)))
+        val ekm1: Double = (1.2 - (1.0/3.0) * (computeQuantile(this.criticalAreaStart.flatMap(_.paxIndividualDensityHistory.dropRight(1).last._2).toVector) + computeQuantile(this.criticalAreaStart.flatMap(_.paxIndividualDensityHistory.dropRight(2).last._2).toVector) + computeQuantile(this.criticalAreaStart.flatMap(_.paxIndividualDensityHistory.dropRight(3).last._2).toVector)))
         val s = math.min(0.0, this._nextSpeed) - ((PIGains._1 + PIGains._2) * ek  - PIGains._1 * ekm1)
         println(t, direction, s, ek, ekm1)
         math.round(4.0*math.min(0.0,math.max(s, -3.0)))/4.0

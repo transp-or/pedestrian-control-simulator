@@ -6,7 +6,7 @@ import java.util.concurrent.ThreadLocalRandom
 import com.typesafe.config.{Config, ConfigFactory, ConfigValueFactory}
 import hubmodel.DES.{NOMADGraphSimulator, _}
 import hubmodel.control.ControlDevices
-import hubmodel.control.amw.MovingWalkway
+import hubmodel.control.amw.MovingWalkwayAbstract
 import hubmodel.control.flowgate.BinaryGate
 import hubmodel.demand.{DemandData, PublicTransportSchedule}
 import hubmodel.io.output.image.{DrawControlDevicesAndWalls, DrawGraph, DrawWalls, DrawWallsAndGraph}
@@ -250,7 +250,7 @@ package object hubmodel {
   }
 
 
-  def writeAMWsJSON(amws: Iterable[MovingWalkway], file: String): Unit = {
+  def writeAMWsJSON(amws: Iterable[MovingWalkwayAbstract], file: String): Unit = {
     val f = new File(file)
     val bw = new BufferedWriter(new FileWriter(f))
     bw.write("[")

@@ -144,8 +144,7 @@ object RandomIncreaseAllSpeeds extends OperatorGenerator with RandomChange {
 
 
 class DirectionMatchFlow(val flowDataBySimulation: Vector[Map[(String, Int, Int), Double]], val timeIntervals: Vector[Time]) extends Operator {
-  /*val flowDataBySimulation = currentPredictedState.map(_.amwFlows.aggregateFlowsByAMW)
-  val timeIntervals = currentPredictedState.head.intervals*/
+
   val flowData: Map[(String, Int, Int), Double] = flowDataBySimulation.flatMap(_.toVector).groupBy(_._1).view.mapValues(v => v.map(_._2).statistics.median).toMap
 
   def xprime(x: Vector[ControlDevicePolicy]): Vector[ControlDevicePolicy] = {
@@ -253,21 +252,37 @@ object MinimumDurationSameDirection extends OperatorGenerator with RandomChange 
 }
 
 
-class DownstreamDensityUpdate(val densityDataBySimulation: Vector[Map[String, Vector[(Time, Vector[Double])]]], val timeIntervals: Vector[Time]) extends Operator {
+class DownstreamDensityUpdate(amwAreas: Map[String, (Vector[String], Vector[String])], densityDataBySimulation: Vector[Map[(String, Int), Double]], val timeIntervals: Vector[Time]) extends Operator {
 
+  val densityData/*: Map[(String, Int), Double]*/ = densityDataBySimulation
+    .flatten
+    .groupBy(_._1)
+    .view
+    .mapValues(v => v.map(_._2).sum/v.size.toDouble).to(Map).toVector
+    .map(kv => (kv._1._1, timeIntervals.sliding(2).indexWhere(i => i.head <= timeIntervals(kv._1._2) && timeIntervals(kv._1._2) <= i.last)) -> kv._2*2.5)
+    .groupBy(_._1)
+    .mapValues(v => v.map(_._2).sum).to(Map)
 
-  densityDataBySimulation
-  val flowData: Map[(String, Int, Int), Double] = flowDataBySimulation.flatMap(_.toVector).groupBy(_._1).view.mapValues(v => v.map(_._2).statistics.median).toMap
 
   def xprime(x: Vector[ControlDevicePolicy]): Vector[ControlDevicePolicy] = {
     val tmp = x.map {
       case amw: AMWPolicy => {
-        val flow = flowData.filter(v => v._1._1 == amw.name && timeIntervals(v._1._3) == amw.start).maxByOption(_._2)
-        if (flow.exists(f => f._1._2.sign != amw.speed.sign)) {
-          amw.copy(speed = flow.get._1._2.sign * 3.0)
+        val startDensity = densityData.find(t => t._1 == (amwAreas(amw.name)._1.head, timeIntervals.indexOf(amw.start)))
+        val endDensity = densityData.find(t => t._1 == (amwAreas(amw.name)._2.head, timeIntervals.indexOf(amw.start)))
+        if (startDensity.isDefined && endDensity.isDefined && startDensity.get._2 >= endDensity.get._2) {
+          amw.copy(speed = 3.0)
+        }
+        else if (startDensity.isDefined && endDensity.isDefined && startDensity.get._2 < endDensity.get._2) {
+          amw.copy(speed = -3.0)
+        }
+        else if (startDensity.isDefined && endDensity.isEmpty) {
+          amw.copy(speed = 3.0)
+        }
+        else if (startDensity.isEmpty && endDensity.isDefined) {
+          amw.copy(speed = -3.0)
         }
         else {
-          amw
+          amw.copy(speed = 3.0)
         }
       }
       case other => other
@@ -282,5 +297,5 @@ object DownstreamDensityUpdate extends OperatorGenerator with RandomChange {
 
   type T = DownstreamDensityUpdate
 
-  def returnOperator(x: Vector[ControlDevicePolicy], iterable: Vector[StateGroundTruthPredicted]): T = new DownstreamDensityUpdate(iterable.map(_.densitiesInsideAreas), iterable.head.intervals)
+  def returnOperator(x: Vector[ControlDevicePolicy], iterable: Vector[StateGroundTruthPredicted]): T = new DownstreamDensityUpdate(iterable.head.densitiesInsideAreas.amwsZones, iterable.map(_.densitiesInsideAreas.quantile75DensityByArea), iterable.head.intervals)
 }

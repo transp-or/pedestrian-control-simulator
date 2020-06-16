@@ -8,7 +8,7 @@ import optimization.ALNS.{DirectionMatchFlow, enforceSpeedChangeIntoPolicy}
 import tools.cells.Vertex
 import trackingdataanalysis.pedtrack.{ReadTrackingData, ZoneProcessingNew}
 
-class StaticEngineeringSolution(vertices: Map[String, Vertex], amws: Iterable[MovingWalkway]) {
+class StaticEngineeringSolution(vertices: Map[String, Vertex], amws: Iterable[MovingWalkwayAbstract]) {
 
   print(" * computing static engineering solution...")
 

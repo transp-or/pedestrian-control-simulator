@@ -131,7 +131,7 @@ package object DES {
     val evaluationInterval: Time = Time(config.getDouble("sim.evaluate_dt"))
     val rebuildTreeInterval: Time = Time(config.getDouble("sim.rebuild_tree_dt"))
 
-    val ALNSParameters: ALNSParameters = new ALNSParameters(maxIterations = config.getInt("sim.prediction.alns-iterations"))
+    val ALNSParameters: ALNSParameters = new ALNSParameters(maxIterations = config.getInt("sim.prediction.alns-iterations"), SATypicalIncrease = config.getDouble("sim.prediction.alns-SA-typical-increase"))
 
     // Loads the prediction parameters
     val predictionParams: PredictionInputParameters = new PredictionInputParameters(

@@ -1,7 +1,7 @@
 package hubmodel.supply.graph
 
 import hubmodel.control.ControlDevices
-import hubmodel.control.amw.{IN, MovingWalkway, OUT}
+import hubmodel.control.amw.{IN, MovingWalkwayAbstract, OUT}
 import hubmodel.control.flowgate.{BinaryGate, FlowGate}
 import hubmodel.control.flowsep.FlowSeparator
 import hubmodel.ped.PedestrianNOMAD
@@ -32,7 +32,7 @@ class RouteGraph(protected val baseVertices: Iterable[Vertex],
                  val levelChanges: Iterable[MyEdgeLevelChange],
                  protected val flowGates: Iterable[FlowGate],
                  protected val binaryGates: Iterable[BinaryGate],
-                 protected val movingWalkways: Iterable[MovingWalkway],
+                 protected val movingWalkways: Iterable[MovingWalkwayAbstract],
                  protected val flowSeparators: Iterable[FlowSeparator[_, _]],
                  val edges2Add: Set[MyEdge] = Set(),
                  val edges2Remove: Set[MyEdge] = Set(),
@@ -93,7 +93,7 @@ class RouteGraph(protected val baseVertices: Iterable[Vertex],
       case lv: MyEdgeLevelChange => {
         network.setEdgeWeight(lv, 0.0)
       }
-      case a: MovingWalkway => {
+      case a: MovingWalkwayAbstract => {
         a.graphEdges.foreach(e => network.setEdgeWeight(e, e.cost))
       }
       case _ => {

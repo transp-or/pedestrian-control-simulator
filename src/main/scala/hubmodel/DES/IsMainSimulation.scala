@@ -3,7 +3,7 @@ package hubmodel.DES
 import hubmodel.control.amw.{AMWPolicy, MovingWalkwayControlEvents}
 import hubmodel.control.{EvaluateState, UpdateGates}
 import hubmodel.prediction.{AMWFlowsFromGroundTruth, CongestionDataFromGroundTruth, PredictWithGroundTruth, StatePrediction}
-import optimization.ALNS.{ALNS, ALNSParameters, DirectionMatchFlow, FunctionEvaluation, MinimumDurationSameDirection, RandomChangeDirection, RandomDecreaseSpeed, RandomIncreaseAllSpeeds, RandomIncreaseSpeed, SpeedLowerBound, SpeedUpperBound}
+import optimization.ALNS.{ALNS, ALNSParameters, DirectionMatchFlow, DownstreamDensityUpdate, FunctionEvaluation, MinimumDurationSameDirection, RandomChangeDirection, RandomDecreaseSpeed, RandomIncreaseAllSpeeds, RandomIncreaseSpeed, SpeedLowerBound, SpeedUpperBound}
 import tools.Time
 import myscala.math.stats.{ComputeQuantiles, ComputeStats, computeQuantile}
 
@@ -81,7 +81,7 @@ trait IsMainSimulation {
       val horizonOptimization: ALNS = new ALNS(
         new PredictWithGroundTruth(sim),
         initialControlPolicy,
-        Vector(RandomIncreaseSpeed, RandomDecreaseSpeed, MinimumDurationSameDirection, RandomIncreaseAllSpeeds, DirectionMatchFlow),
+        Vector(RandomIncreaseSpeed, RandomDecreaseSpeed, MinimumDurationSameDirection, RandomIncreaseAllSpeeds, DirectionMatchFlow, DownstreamDensityUpdate),
         Vector(SpeedUpperBound, SpeedLowerBound),
         f,
         sim.predictionInputParameters.ALNSParameters

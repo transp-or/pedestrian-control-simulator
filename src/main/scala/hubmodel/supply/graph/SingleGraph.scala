@@ -1,7 +1,7 @@
 package hubmodel.supply.graph
 
 import hubmodel.control.ControlDevices
-import hubmodel.control.amw.MovingWalkway
+import hubmodel.control.amw.MovingWalkwayAbstract
 import hubmodel.control.flowgate.{BinaryGate, FlowGate}
 import hubmodel.control.flowsep.FlowSeparator
 import hubmodel.ped.PedestrianNOMAD
@@ -14,7 +14,7 @@ class SingleGraph(private val baseVertices: Iterable[Vertex],
                   private val destinationGroups: Iterable[(String, Vector[String])],
                   fg: Iterable[FlowGate],
                   bg: Iterable[BinaryGate],
-                  mw: Iterable[MovingWalkway],
+                  mw: Iterable[MovingWalkwayAbstract],
                   fs: Iterable[FlowSeparator[_, _]]) extends GraphContainer(fg, bg, mw, fs) {
 
   private val graph = new RouteGraph(baseVertices, standardEdges, levelChanges, this.flowGates, this.binaryGates, this.movingWalkways, this.flowSeparators, destinationGroups = destinationGroups)
