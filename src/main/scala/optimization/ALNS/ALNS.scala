@@ -66,7 +66,11 @@ class ALNS(function: StatePrediction, initialPolicy: Iterable[ControlDevicePolic
       .takeWhile(_._1 < r).last._2._1
 
     val op1 = operators.find(_.name == op1Name).get
-    val tmp: Solution = op1.returnOperator(x, currentPredictedState).newSolution(x, function.getRealisedControlData._1)
+
+    val tmp: Solution = /*op1Name match {
+      case exploreBest if exploreBest == "ExploreBestSolution" => { op1.returnOperator(this.bestx._1, currentPredictedState).newSolution(x, function.getRealisedControlData._1) }
+      case _ => {    */op1.returnOperator(x, currentPredictedState).newSolution(x, function.getRealisedControlData._1)/* }
+    }*/
 
     (tmp, op1.name)
   }

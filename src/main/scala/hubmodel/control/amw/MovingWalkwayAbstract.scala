@@ -184,7 +184,7 @@ class MovingWalkwayAbstract(val name: String, val firstVertex: Vertex, val secon
             throw new ControlDevicesException("Error when opening AMW ! Pedestrian not in population: " + id)
           }
         }
-        this.sim.pedByID(id)
+        //this.sim.pedByID(id)
       })
 
       updateCosts(sim.currentTime)
@@ -292,6 +292,8 @@ class MovingWalkwayAbstract(val name: String, val firstVertex: Vertex, val secon
     amw.pedestriansOnAMW.addAll(pop.filter(p => p.isInsideAMW.isDefined && p.isInsideAMW.get == amw.name).map(_.ID))
     return amw
   }
+
+
   override def toJSON: String = {
     "{\n" +
       "\"ID\":\"" + this.ID + "\",\n" +

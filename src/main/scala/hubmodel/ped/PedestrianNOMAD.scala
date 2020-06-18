@@ -1,5 +1,6 @@
 package hubmodel.ped
 
+import hubmodel.control.amw.MovingWalkwayAbstract
 import hubmodel.{Acceleration, Direction, Position, Velocity}
 import myscala.math.vector.{Vector2D, ZeroVector2D}
 import tools.Time
@@ -181,6 +182,10 @@ class PedestrianNOMAD(oZone: Vertex, dZone: Vertex, entryTime: Time, posO: Posit
     newPed.isInsideAMW = this.isInsideAMW
     newPed.currentDestination = this.currentDestination
     (newPed, this.accomplishedRoute.map(x => (x._1, x._2.name, x._3)))
+  }
+
+  def updateBaseVelocity(amws: Vector[MovingWalkwayAbstract]): Unit = {
+    this.isInsideAMW.foreach(w => this.baseVelocity = amws.find(_.name == w).get.movingSpeed)
   }
 
 }

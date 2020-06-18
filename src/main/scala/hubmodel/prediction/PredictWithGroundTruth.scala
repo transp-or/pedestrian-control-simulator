@@ -2,7 +2,7 @@ package hubmodel.prediction
 
 import hubmodel.DES.{PedestrianPrediction, PedestrianSimulation, SimulationInputParameters}
 import hubmodel.control.{ControlDeviceData, ControlDevicePolicy}
-import hubmodel.control.amw.{AMWPolicy, MovingWalkwayControlEvents}
+import hubmodel.control.amw.{AMWPolicy, MovingWalkway, MovingWalkwayControlEvents}
 import hubmodel.io.output.video.MovingPedestriansWithDensityWithWallVideo
 import hubmodel.ped.PedestrianNOMAD
 import hubmodel.prediction.state.{StateGroundTruth, StateGroundTruthPredicted}
@@ -117,7 +117,9 @@ class PredictWithGroundTruth(private val sim: PedestrianSimulation) extends Stat
     */
   protected def getActualStateData: StateGroundTruth = {
     val pop: Vector[(PedestrianNOMAD, Vector[(Time, String, Position)])] = sim.population.map(p => p.copyState(sim.currentTime, true)).toVector
-    new StateGroundTruth(pop, sim.controlDevices.deepCopyWithState(sim.currentTime, pop.map(_._1)))
+    val newDevices = sim.controlDevices.deepCopyWithState(sim.currentTime, pop.map(_._1))
+    pop.foreach(p => p._1.updateBaseVelocity(newDevices.amws.toVector))
+    new StateGroundTruth(pop, newDevices)
   }
 
   /** Performs the prediction by running the simulator.
@@ -135,6 +137,9 @@ class PredictWithGroundTruth(private val sim: PedestrianSimulation) extends Stat
     if (this.predictionSimulatorParallel.nonEmpty) {
       this.predictionSimulatorParallel.foreach(_.run())
     }
+
+    // Calls the GC to clear memory
+    System.gc()
   }
 
   def getRealisedControlData: Tuple1[Map[String, Double]] = {
@@ -261,13 +266,32 @@ class PredictWithGroundTruth(private val sim: PedestrianSimulation) extends Stat
       .filter(s => s.exitCode != 0)
       .foreach(fail => println("Dropped simulation: " + fail.ID + "! exitCode=" + fail.exitCode))
 
-    (this.predictionSimulatorSequential ++ this.predictionSimulatorParallel).collect{
-      case s if s.exitCode == 0 => new StateGroundTruthPredicted(
-        s.startTime, s.finalTime, this.sim.predictionInputParameters.decisionVariableLength,
-        (s.population ++ s.populationCompleted).toVector,
-        s.controlDevices,
-        s.criticalAreas
-      )
+    (this.predictionSimulatorSequential ++ this.predictionSimulatorParallel).collect {
+      case s if s.exitCode == 0 => {
+        val pop = (s.population ++ s.populationCompleted).toVector
+        val intervals: Vector[Time] = s.startTime.value.to(s.finalTime.value).by(this.sim.predictionInputParameters.decisionVariableLength.value).map(v => Time(v.toDouble)).toVector
+        val amwFlows = new AMWFlowsFromGroundTruthProcessor(s.controlDevices.amws.toVector, intervals).aggregateFlowsByAMW(pop)
+        val densitiesInsideAreas: CongestionDataFromGroundTruth = new CongestionDataFromGroundTruth(s.criticalAreas, s.controlDevices.amws.collect{case w: MovingWalkway => w}.toVector, intervals)
+
+        new StateGroundTruthPredicted(
+          intervals,
+          amwFlows,
+          densitiesInsideAreas,
+          {
+            val populationMvmtIdxs = pop
+              .map(ped => (intervals.indexWhere(_ > ped.entryTime), intervals.indexWhere(_ > ped.exitTime)))
+
+            val inflow: Map[Int, Int] = populationMvmtIdxs.groupBy(_._1).view.mapValues(_.size).toMap
+            val outflow: Map[Int, Int] = populationMvmtIdxs.groupBy(_._2).view.mapValues(_.size).toMap
+
+            Map(
+              "throughput" -> inflow.view.filterKeys(_ > 0).map(kv => kv._2 - outflow.getOrElse(kv._1, 0)).sum,
+              "meanTT" -> pop.map(p => p.travelTime.value.toDouble).sum / pop.size,
+              "density" -> s.criticalAreas.toVector.flatMap(a => a._2.paxIndividualDensityHistory.map(d => d._1.value.toDouble * {if (d._2.isEmpty){0.0} else {computeQuantile(75)(d._2.toVector).value}})).sum
+            )
+          }
+        )
+      }
     }
 
   }

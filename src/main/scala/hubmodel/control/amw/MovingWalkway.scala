@@ -27,7 +27,7 @@ class MovingWalkway(name: String,
   override def deepCopy: MovingWalkway = new MovingWalkway(this.name, this.firstVertex, this.secondVertex, this.width, this.start, this.end, this.associatedZonesStart.map(_.deepCopy), this.associatedZonesEnd.map(_.deepCopy), this.droppedVertices, this.associatedConnectivity.map(_.deepCopy), this.parallelFlows, this.criticalAreaStart, this.criticalAreaEnd)
 
   override def deepCopyWithState(pop: Iterable[PedestrianNOMAD]): MovingWalkway = {
-    val amw = new MovingWalkway(this.name, this.firstVertex, this.secondVertex, this.width, this.start, this.end, this.associatedZonesStart.map(_.deepCopy), this.associatedZonesEnd.map(_.deepCopy), this.droppedVertices, this.associatedConnectivity.map(_.deepCopy), this.parallelFlows, this.criticalAreaStart, this.criticalAreaEnd)
+    val amw: MovingWalkway = new MovingWalkway(this.name, this.firstVertex, this.secondVertex, this.width, this.start, this.end, this.associatedZonesStart.map(_.deepCopy), this.associatedZonesEnd.map(_.deepCopy), this.droppedVertices, this.associatedConnectivity.map(_.deepCopy), this.parallelFlows, this.criticalAreaStart, this.criticalAreaEnd)
     amw._previousSpeed = this._previousSpeed
     amw._nextSpeed = this._nextSpeed
     amw.accDirection = this.accDirection

@@ -19,7 +19,7 @@ trait AMWFlowsHelpers {
 
   protected val parallelFlows: Vector[(String, Vector[Vertex], Vector2D, Int, Double)]
 
-  val aggregateFlowsByAMW: Map[(String, Int, Int), Double]/* = flowsByAMW(population).groupBy(g => (g._1, g._2, g._3)).view.mapValues(kv => kv.map(_._4).sum).toMap*/
+  //val aggregateFlowsByAMW: Map[(String, Int, Int), Double]/* = flowsByAMW(population).groupBy(g => (g._1, g._2, g._3)).view.mapValues(kv => kv.map(_._4).sum).toMap*/
 
   protected def flowsByAMW(pop: Vector[PedestrianTrajectory]): Iterable[(String, Int, Int, Double)] = {
     pop.filter(p => {p.accomplishedRoute.map(_._2).intersect(amwAlternativeVerticesFilter).nonEmpty})
@@ -112,7 +112,7 @@ class AMWFlowsFromEmpiricalData(pop: Vector[PedestrianTrajectory], val intervals
 }
 
 
-class AMWFlowsFromGroundTruth(population: Vector[PedestrianSim], movingWalkways: Vector[MovingWalkwayAbstract], val intervals: Vector[Time]) extends DemandEstimate with AMWFlowsHelpers {
+class AMWFlowsFromGroundTruthProcessor(movingWalkways: Vector[MovingWalkwayAbstract], val intervals: Vector[Time]) extends DemandEstimate with AMWFlowsHelpers {
 
   protected val amwAlternativeVerticesFilter: Vector[Vertex] = this.movingWalkways
     .flatMap(amw => amw.parallelFlows.flatten ++ Vector(amw.firstVertex, amw.secondVertex))
@@ -125,8 +125,12 @@ class AMWFlowsFromGroundTruth(population: Vector[PedestrianSim], movingWalkways:
       (amw.name, pf.reverse, (pf.head.center - pf.last.center).normalized, -1, (pf.head.center - pf.last.center).norm)
     )}))
 
-  val aggregateFlowsByAMW: Map[(String, Int, Int), Double] = flowsByAMW(population).groupBy(g => (g._1, g._2, g._3)).view.mapValues(kv => kv.map(_._4).sum).toMap
+  //val aggregateFlowsByAMW: Map[(String, Int, Int), Double] = flowsByAMW(population).groupBy(g => (g._1, g._2, g._3)).view.mapValues(kv => kv.map(_._4).sum).toMap
+
+  def aggregateFlowsByAMW(pop: Vector[PedestrianSim]): AMWFlowsFromGroundTruth = new AMWFlowsFromGroundTruth(flowsByAMW(pop).groupBy(g => (g._1, g._2, g._3)).view.mapValues(kv => kv.map(_._4).sum).toMap)
 }
+
+class AMWFlowsFromGroundTruth(val aggregateFlowsByAMW: Map[(String, Int, Int), Double])
 
 class CongestionDataFromGroundTruth(criticalAreas: Map[String, DensityMeasuredArea], amws: Vector[MovingWalkway], intervals: Vector[Time]) extends DemandEstimate {
 
