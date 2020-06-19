@@ -35,9 +35,9 @@ class Circle(val name: String, val center: Position, radius: Double, val isOD: B
 
   def isInside(p: Position, wide: Boolean): Boolean = {
     if (wide) {
-      (p - this.center).norm <= 3 *this.radius
+      (p - this.center).norm <= 3.0 *this.radius
     } else {
-      (p - this.center).norm <= this.radius
+      (p - this.center).norm <= 0.75 * this.radius
     }
   }
 

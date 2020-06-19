@@ -2,7 +2,9 @@ package hubmodel.DES
 
 import hubmodel.control.amw.{AMWPolicy, MovingWalkwayControlEvents}
 import hubmodel.control.{EvaluateState, UpdateGates}
+import hubmodel.io.output.video.MovingPedestriansWithDensityWithWallVideo
 import hubmodel.prediction.{AMWFlowsFromGroundTruth, CongestionDataFromGroundTruth, PredictWithGroundTruth, StatePrediction}
+import hubmodel.supply.continuous.MovableWall
 import optimization.ALNS.{ALNS, ALNSParameters, DirectionMatchFlow, DownstreamDensityUpdate, FunctionEvaluation, MinimumDurationSameDirection, RandomChangeDirection, RandomDecreaseSpeed, RandomIncreaseAllSpeeds, RandomIncreaseSpeed, SpeedLowerBound, SpeedUpperBound}
 import tools.Time
 import myscala.math.stats.{ComputeQuantiles, ComputeStats, computeQuantile}
@@ -67,6 +69,22 @@ trait IsMainSimulation {
 
     override def execute(): Any = {
 
+      val previousIntervalStart: Time = Time(math.max(sim.startTime.value.toDouble, (sim.currentTime - this.sim.predictionInputParameters.horizon).value.toDouble))
+
+      println("writing main simulation from " + previousIntervalStart + " to " + sim.currentTime)
+      new MovingPedestriansWithDensityWithWallVideo(
+        "E:\\PhD\\hub-simulator\\MAIN_SIMULATION_" + sim.ID + "_" + previousIntervalStart.value.toString() + "_" + sim.currentTime +  ".mp4",
+        sim.walls.filterNot(_.isInstanceOf[MovableWall]),
+        math.max((1.0 / 0.1).toInt, 1),
+        sim.populationCompleted ++ sim.population,
+        sim.criticalAreas.values,
+        Map(),
+        collection.mutable.ArrayBuffer(),
+        scala.collection.mutable.ArrayBuffer(),
+        (previousIntervalStart.value to sim.currentTime.value by 0.1).map(new Time(_)),
+        Vector()
+      )
+
       val timeIntervals: Vector[Time] = sim.currentTime.value.until((sim.currentTime + this.sim.predictionInputParameters.horizon).value).by(this.sim.predictionInputParameters.decisionVariableLength.value).toVector.map(v => Time(v.toDouble))
 
       val initialControlPolicy = sim.controlDevices.amws
@@ -105,11 +123,7 @@ trait IsMainSimulation {
 
       sim.insertEventWithDelay(sim.predictionInputParameters.updateInterval)(new RollingHorizonOptimization(this.sim))
 
-
     }
-
-
-
 
     type A = RollingHorizonOptimization
 

@@ -181,7 +181,9 @@ class MovingWalkwayAbstract(val name: String, val firstVertex: Vertex, val secon
             //p.baseVelocity = outer.movingSpeed
           }
           case None => {
-            throw new ControlDevicesException("Error when opening AMW ! Pedestrian not in population: " + id)
+            //sim.errorLogger.error("Error when opening AMW ! Pedestrian not in population:" + id)
+            //throw new ControlDevicesException("Error when opening AMW ! Pedestrian not in population: " + id)
+            println("Error when opening AMW ! Pedestrian not in population: " + id)
           }
         }
         //this.sim.pedByID(id)

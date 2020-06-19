@@ -14,7 +14,7 @@ trait PedestrianTrajectory {
   /** Trajectory container for storing all positions of the pedestrian.
     *
     */
-  protected val _historyPosition: Vector[(Time, HistoryContainer)]
+  //protected val _historyPosition: Vector[(Time, HistoryContainer)]
 
   protected val _historyPositionUnsorted: collection.mutable.ArrayBuffer[(Time, HistoryContainer)]
 
@@ -23,7 +23,7 @@ trait PedestrianTrajectory {
     *
     * @return Pedestrian trajectory
     */
-  def getHistoryPosition: Vector[(Time, HistoryContainer)] = _historyPosition.toVector
+  def getHistoryPosition: Vector[(Time, HistoryContainer)] = _historyPositionUnsorted.toVector
 
 
   /** Updates the trajectory at the current time

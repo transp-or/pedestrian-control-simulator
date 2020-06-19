@@ -35,11 +35,11 @@ class Pedestrian(val ID: Int, val entryTime: Time) extends PedestrianTrajectory 
 
   // total travel distance
   private lazy val travelDistance: Double =  {
-    _historyPosition.dropRight(1).zip(_historyPosition.tail).foldRight(0.0)((v, acc) => acc + (v._2._2.pos - v._1._2.pos).norm)
+    _historyPositionUnsorted.sortBy(_._1).sliding(2).foldRight(0.0)((v, acc) => acc + (v(1)._2.pos - v(0)._2.pos).norm)
   }
 
   // exit time
-  lazy val exitTime: Time = Time(_historyPosition.foldRight(0.0)((xyt, acc) => acc.max(xyt._1.value.toDouble)))
+  lazy val exitTime: Time = Time(_historyPositionUnsorted.foldRight(0.0)((xyt, acc) => acc.max(xyt._1.value.toDouble)))
 
   // average velocity
   private lazy val meanVelocity: Double = travelDistance/travelTime.value.toDouble
@@ -49,7 +49,7 @@ class Pedestrian(val ID: Int, val entryTime: Time) extends PedestrianTrajectory 
   protected val _historyPositionUnsorted: collection.mutable.ArrayBuffer[(Time, HistoryContainer)] = collection.mutable.ArrayBuffer()
 
   // Sorted pedestrian trajectory
-  protected lazy val _historyPosition: Vector[(Time, HistoryContainer)] = this._historyPositionUnsorted.toVector//.sortBy(_._1)
+  //protected lazy val _historyPosition: Vector[(Time, HistoryContainer)] = this._historyPositionUnsorted.toVector//.sortBy(_._1)
 
   /* ---------- Methods -----------*/
 
