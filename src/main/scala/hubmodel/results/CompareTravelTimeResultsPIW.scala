@@ -3,9 +3,9 @@ package hubmodel.results
 import java.nio.file.{Files, Paths}
 
 import com.typesafe.config.Config
-import hubmodel.io.input.JSONReaders.{ODPair_JSON_with_AMW, ODGroup_JSON}
+import hubmodel.io.input.JSONReaders.{ODGroup_JSON, ODPair_JSON_with_AMW}
 import hubmodel.parseConfigFile
-import myscala.math.stats.{ComputeQuantiles, ComputeStats}
+import myscala.math.stats.{ComputeQuantiles, ComputeStats, Statistics, computeQuantile}
 import myscala.output.SeqTuplesExtensions.SeqTuplesWriter
 import org.apache.commons.math3.distribution.TDistribution
 import play.api.libs.json.{JsError, JsSuccess, JsValue, Json}
@@ -56,14 +56,25 @@ object CompareTravelTimeResultsPIW extends App {
     }
   }
 
-  val resultsRef: Vector[ResultsContainerReadWithDemandSetNew] = readResultsJson(config.getString("files_1.dir"), config.getString("files_1.output_prefix"), demandSets).toVector
-  val resultsOther: Vector[ResultsContainerReadWithDemandSetNew] = readResultsJson(config.getString("files_2.dir"), config.getString("files_2.output_prefix"), demandSets).toVector
+  val resultsRef: Vector[ResultsContainerReadNew] = readResultsJson(config.getString("files_1.dir"), config.getString("files_1.output_prefix"), demandSets).toVector
+  val resultsOther: Vector[ResultsContainerReadNew] = readResultsJson(config.getString("files_2.dir"), config.getString("files_2.output_prefix"), demandSets).toVector
 
 
-  def resultsByOD(results: Vector[ResultsContainerReadWithDemandSetNew]): Map[String, Map[String, (TT, Double, TD, Speed, Size)]] = {
-    val groupedFiles = results
-      .zipWithIndex
-      .groupBy(_._1.demandFile)
+  def resultsByOD(results: Vector[ResultsContainerReadNew]): Map[String, Map[String, (TT, Double, TD, Speed, Size)]] = {
+    val (noDemandSets, withDemandSets) = (results.partitionMap{
+      case a: ResultsContainerReadNew => Left(a)
+      case b: ResultsContainerReadWithDemandSetNew => Right(b.asInstanceOf[ResultsContainerReadWithDemandSetNew])
+    })
+
+
+    val groupedFiles: Map[String, Vector[(ResultsContainerReadNew, Int)]] = {
+      if (noDemandSets.nonEmpty && withDemandSets.isEmpty) {
+        Map("all" -> noDemandSets.zipWithIndex)
+      }
+      else {withDemandSets
+        .zipWithIndex
+        .groupBy(_._1.demandFile)}
+    }
 
     groupedFiles
       .map(r => {
@@ -93,8 +104,40 @@ object CompareTravelTimeResultsPIW extends App {
       })
   }
 
+
+
+
+  def computeDensityIntegral(individiualDensityData: Map[(String, String), Vector[(tools.Time, Vector[Double])]]): Double = {
+    individiualDensityData.toVector.flatMap(a => a._2.map(d => d._1.value.toDouble * {if (d._2.isEmpty){0.0} else {math.max(0.0, computeQuantile(75)(d._2).value - 1.2)}})).sum
+  }
+
   val resultsByODRef: Map[String, Map[String, (TT, Double, TD, Speed, Size)]] = resultsByOD(resultsRef)
   val resultsByODOther: Map[String, Map[String, (TT, Double, TD, Speed, Size)]] = resultsByOD(resultsOther)
+
+
+  val resultsDensityRef: Map[String, Statistics[Double]] = resultsRef
+    .collect{
+      case r: ResultsContainerReadNew if r.monitoredAreaIndividualDensity.isDefined => "all" -> computeDensityIntegral(r.monitoredAreaIndividualDensity.get)
+      case r:ResultsContainerReadWithDemandSetNew if r.monitoredAreaIndividualDensity.isDefined => r.demandFile -> computeDensityIntegral(r.monitoredAreaIndividualDensity.get)
+    }
+    .groupBy(_._1)
+    .view
+    .mapValues(v => v.map(_._2).statistics)
+    .map(kv => kv._1 + "_ref" -> kv._2)
+    .to(Map)
+
+  val resultsDensityOther: Map[String, Statistics[Double]] = resultsOther
+    .collect{
+      case r: ResultsContainerReadNew if r.monitoredAreaIndividualDensity.isDefined => "all" -> computeDensityIntegral(r.monitoredAreaIndividualDensity.get)
+      case r:ResultsContainerReadWithDemandSetNew if r.monitoredAreaIndividualDensity.isDefined => r.demandFile -> computeDensityIntegral(r.monitoredAreaIndividualDensity.get)
+    }    .groupBy(_._1)
+    .view
+    .mapValues(v => v.map(_._2).statistics)
+    .map(kv => kv._1 + "_other" -> kv._2)
+    .to(Map)
+
+  (resultsDensityRef ++ resultsDensityOther).toVector.map(kv => (kv._1, kv._2.toCSV))
+    .writeToCSV("density-integral-stats.csv", columnNames=Some(Vector("name") ++ resultsDensityRef.head._2.CSVColumnNames.split(",")), rowNames = None)
 
 
   def WelchTTest(m1: Double, sd1:Double, size1: Int, m2: Double, sd2:Double, size2: Int): (Double, Double) = {
@@ -116,7 +159,7 @@ object CompareTravelTimeResultsPIW extends App {
   }
 
 
-  val resultsCompared: Map[String, Seq[(String, Double, Double, Double, Double, Double, Double, Double, Double, Int, Int)]] =
+  val resultsTTCompared: Map[String, Seq[(String, Double, Double, Double, Double, Double, Double, Double, Double, Int, Int)]] =
     resultsByODRef.map(rr => rr._1 -> {
       (
         rr._2
@@ -131,7 +174,8 @@ object CompareTravelTimeResultsPIW extends App {
     println(r._1, t, nu, new TDistribution(nu).density(t))
   })*/
 
-  resultsCompared.flatMap(rr => rr._2.map(rrr => (rr._1, rrr._1, rrr._2, rrr._3, {
+  // walking time distribution comparison
+  resultsTTCompared.flatMap(rr => rr._2.map(rrr => (rr._1, rrr._1, rrr._2, rrr._3, {
     val (t, nu) = WelchTTest(rrr._2, rrr._4, rrr._10, rrr._3, rrr._5, rrr._11)
     new TDistribution(nu).density(t)
   }, rrr._6, rrr._7, rrr._8, rrr._9, rrr._10, rrr._11))).toVector

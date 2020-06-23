@@ -1,13 +1,14 @@
 package hubmodel.DES
 
 import hubmodel.control.amw.{AMWPolicy, MovingWalkwayControlEvents}
-import hubmodel.control.{EvaluateState, UpdateGates}
+import hubmodel.control.{ControlDevicePolicy, EvaluateState, UpdateGates}
 import hubmodel.io.output.video.MovingPedestriansWithDensityWithWallVideo
 import hubmodel.prediction.{AMWFlowsFromGroundTruth, CongestionDataFromGroundTruth, PredictWithGroundTruth, StatePrediction}
 import hubmodel.supply.continuous.MovableWall
 import optimization.ALNS.{ALNS, ALNSParameters, DirectionMatchFlow, DownstreamDensityUpdate, FunctionEvaluation, MinimumDurationSameDirection, RandomChangeDirection, RandomDecreaseSpeed, RandomIncreaseAllSpeeds, RandomIncreaseSpeed, SpeedLowerBound, SpeedUpperBound}
 import tools.Time
 import myscala.math.stats.{ComputeQuantiles, ComputeStats, computeQuantile}
+import hubmodel.AMW_ACCELERATION_AMPLITUDE
 
 trait IsMainSimulation {
 
@@ -109,14 +110,23 @@ trait IsMainSimulation {
 
       horizonOptimization.writeIterationsToCSV("NS_points_" + sim.ID + "_" + sim.currentTime + "_" + (sim.currentTime + this.sim.predictionInputParameters.horizon) + "_" + this.sim.predictionInputParameters.decisionVariableLength + ".csv" ,"/home/nicholas/PhD/code/hub-simulator/")
 
-      println(horizonOptimization.optimalSolution._1.sorted)
+      println(horizonOptimization.optimalSolution._1.sorted.map(_.decisionVariable))
 
       this.sim.controlDevices.amws
         .foreach(w => {
           val policy = horizonOptimization.optimalSolution._1.collect{case amw: AMWPolicy if amw.name == w.name => amw}
           w.expectedPolicy.append(policy.map(p => (p.start, p.speed)))
           val eventData: Option[MovingWalkwayControlEvents] = horizonOptimization.optimalSolution._3.collect{case data: MovingWalkwayControlEvents => data}.find(_.name == w.name)
-          w.setControlPolicy(policy, eventData)
+          val additionalOpenTime = {
+            if (w.getIsClosed &&  ((w.speed(sim.currentTime) > 0.0 && policy.head.speed < 0.0 ) ||(w.speed(sim.currentTime) < 0.0 && policy.head.speed > 0.0 ))) {
+              Vector(sim.currentTime + Time(math.abs(w.speed(sim.currentTime))/AMW_ACCELERATION_AMPLITUDE))
+            } else if (w.getIsClosed) {
+              Vector(sim.currentTime)
+            } else {
+              Vector()
+            }
+          }
+          w.setControlPolicy(policy, Some(eventData.getOrElse(MovingWalkwayControlEvents(w.name)).copy(openTime = (eventData.get.openTime ++ additionalOpenTime).distinct)))
           w.insertChangeSpeed(this.sim)
         })
 

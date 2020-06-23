@@ -31,16 +31,6 @@ package object ALNS {
 
   val SPEED_INCREMENT: Double = 0.5
 
-  def findDirectionChanges(x: Vector[AMWPolicy]): Vector[Int] = {
-    x.sliding(2)
-      .zipWithIndex
-      .collect { case change if (
-        change._1.head.speed.sign > 0 && change._1.last.speed.sign < 0) ||
-        (change._1.head.speed.sign < 0 && change._1.last.speed.sign > 0) /*&&
-        math.abs(change._1.head.speed) + math.abs(change._1.last.speed) > ((change._1.last.end - change._1.last.start).value.toDouble*AMW_ACCELERATION_AMPLITUDE)*/ => change._2 + 1
-      }
-      .toVector
-  }
 
   def groupAMWPolicies(x: Vector[ControlDevicePolicy]): (Map[String, Vector[AMWPolicy]], Vector[ControlDevicePolicy]) = {
     val (amw, others) = x.partitionMap {
@@ -61,6 +51,49 @@ package object ALNS {
 
   def enforceSpeedChangeIntoPolicy(x: Vector[ControlDevicePolicy], initialAMWSpeed: Map[String, Double]): (Vector[ControlDevicePolicy], Vector[MovingWalkwayControlEvents]) = {
 
+    /** Returns the indices where there is a change in direction in the AMW.
+      *
+      * @param x control policy
+      * @return indices where the speed direction changes
+      */
+    def findDirectionChanges(x: Vector[AMWPolicy]): Vector[Int] = {
+      if (x.size > 1) {
+        x.sliding(2)
+          .zipWithIndex
+          .collect { case change if (
+            change._1.head.speed > 0 && change._1.last.speed < 0) ||
+            (change._1.head.speed < 0 && change._1.last.speed > 0) /*&&
+        math.abs(change._1.head.speed) + math.abs(change._1.last.speed) > ((change._1.last.end - change._1.last.start).value.toDouble*AMW_ACCELERATION_AMPLITUDE)*/ => change._2 + 1
+          }
+          .toVector
+      } else { Vector()}
+    }
+
+    /** Returns the indices where the acceleration is too large, i.e. when the change in speed over the duration of the
+      * policy interval is greater than [[AMW_ACCELERATION_AMPLITUDE]]
+      *
+      * @param x policy to check
+      * @return indices where acceleration is too large
+      */
+    def findExcessiveAcceleration(x: Vector[AMWPolicy]): Vector[Int] = {
+      {if (math.abs((x.head.speed - initialAMWSpeed(x.head.name)))/(x.head.end - x.head.start).value > AMW_ACCELERATION_AMPLITUDE) {Vector(0)} else {Vector()}} ++ {if (x.size > 1) {
+        x.sliding(2)
+          .zipWithIndex
+          .collect { case acc if math.abs(acc._1(1).speed - acc._1(0).speed) / (acc._1(1).start - acc._1(0).start).value > AMW_ACCELERATION_AMPLITUDE => acc._2 + 1 }
+          .toVector
+      } else {Vector()}}
+    }
+
+    /** Finds all indices corresponding to policies which must be adapated.
+      *
+      * @param x initial control policy
+      * @return indicies where the policy must be adapated
+      */
+    def findIndicesToChange(x: Vector[AMWPolicy]): Vector[Int] = {
+      (findDirectionChanges(x) ++ findExcessiveAcceleration(x)).distinct.sorted
+    }
+
+
     @tailrec def rec(directionChanges: Vector[Int], policy: Vector[AMWPolicy], amwEvents: MovingWalkwayControlEvents): (Vector[AMWPolicy], MovingWalkwayControlEvents) = {
 
       def changeAMWPolicy(dirChange: AMWPolicy, amwTripTime: Time, speedChangeStart: Time, speedChangeEnd: Time, oldSpeed: Double, newSpeed: Double)(x: AMWPolicy, previousPolicySpeed: Option[Double]): AMWPolicy = {
@@ -70,6 +103,7 @@ package object ALNS {
         } else {
           None
         }
+
         val open: Option[Time] = if (dirChange.start == x.start && dirChange.end == x.end) {
           Some(dirChange.start + amwTripTime + Time(math.abs(oldSpeed / AMW_ACCELERATION_AMPLITUDE)))
         } else {
@@ -81,7 +115,7 @@ package object ALNS {
           case amw: AMWPolicy if amw.name == dirChange.name && amw.end <= speedChangeStart && amw.speed.sign != oldSpeed.sign && amw.start >= dirChange.start => {
             amw.copy(speed = previousPolicySpeed.get)
           }
-          // before speed changed as started
+          // before speed change has started
           case amw: AMWPolicy if amw.name == dirChange.name && amw.end <= speedChangeStart => {
             amw
           }
@@ -95,10 +129,10 @@ package object ALNS {
           }
           // interval where the speed changes begins
           case amw: AMWPolicy if amw.name == dirChange.name && (amw.start < speedChangeStart && speedChangeStart < amw.end) && amw.end >= speedChangeStart => {
-            amw.copy(speed = oldSpeed + roundToSpeedValues(hubmodel.AMW_ACCELERATION_AMPLITUDE * (amw.end - speedChangeStart).value.toDouble) * (dirChange.speed.sign))
+            amw.copy(speed = previousPolicySpeed.get + roundToSpeedValues(hubmodel.AMW_ACCELERATION_AMPLITUDE * (amw.end - speedChangeStart).value.toDouble) * (dirChange.speed.sign))
           }
           // intervals for which the speed change is happening accross all interval
-          case amw: AMWPolicy if amw.name == dirChange.name && amw.start > speedChangeStart && amw.start < speedChangeEnd && amw.end < speedChangeEnd => {
+          case amw: AMWPolicy if amw.name == dirChange.name && amw.start >= speedChangeStart && amw.start < speedChangeEnd && amw.end < speedChangeEnd => {
             amw.copy(speed = previousPolicySpeed.get + roundToSpeedValues(hubmodel.AMW_ACCELERATION_AMPLITUDE * (amw.end - amw.start).value.toDouble) * (dirChange.speed.sign))
           }
           // non affected control policies
@@ -110,15 +144,18 @@ package object ALNS {
 
 
       @tailrec def processPolicy(changeAMWPolicy: (AMWPolicy, Option[Double]) => AMWPolicy)(tmpPolicy: Vector[AMWPolicy], idxToProcess: Int): Vector[AMWPolicy] = {
-
         if (idxToProcess == tmpPolicy.size) {
           tmpPolicy
         } else {
-          val changedPolicy: Vector[AMWPolicy] = tmpPolicy.take(idxToProcess) ++ Vector(changeAMWPolicy(tmpPolicy(idxToProcess), if (idxToProcess - 1 >= 0) {
-            Some(tmpPolicy(idxToProcess - 1).speed)
-          } else {
-            Some(initialAMWSpeed(tmpPolicy(idxToProcess).name))
-          })) ++ tmpPolicy.takeRight(tmpPolicy.size - 1 - idxToProcess)
+          val changedPolicy: Vector[AMWPolicy] = tmpPolicy.take(idxToProcess) ++
+            Vector(
+              changeAMWPolicy(
+                tmpPolicy(idxToProcess),
+                if (idxToProcess - 1 >= 0) {Some(tmpPolicy(idxToProcess - 1).speed)}
+                else {Some(initialAMWSpeed(tmpPolicy(idxToProcess).name))}
+              )
+            ) ++ tmpPolicy.takeRight(tmpPolicy.size - 1 - idxToProcess)
+
           processPolicy(changeAMWPolicy)(changedPolicy, idxToProcess + 1)
         }
       }
@@ -127,24 +164,58 @@ package object ALNS {
       if (directionChanges.isEmpty) {
         (policy, amwEvents)
       } else {
+        // policy which must be changed
         val dirChange = policy(directionChanges.head)
-        val oldSpeed = if (directionChanges.head > 0) {
-          policy(directionChanges.head - 1).speed
-        } else {
-          initialAMWSpeed(dirChange.name)
+
+        // previous speed which won't be changed
+        val oldSpeed = {
+          if (directionChanges.head > 0) {
+            policy(directionChanges.head - 1).speed // previous speed is in policy
+          } else {
+            initialAMWSpeed(dirChange.name) // previous speed is before policy
+          }
         }
+        // original target speed
         val newSpeed: Double = dirChange.speed
+
+        val requireCloseOpenEvents: Boolean = (oldSpeed < 0.0 && newSpeed > 0.0 ) || (oldSpeed > 0.0 && newSpeed < 0.0)
+
+        // expected trip duration on the amw
         val amwTripTime: Time = Time(dirChange.amwLength / (math.abs(oldSpeed) + 1.34))
-        val speedChangeStart: Time = dirChange.start + amwTripTime
-        val speedChangeEnd: Time = dirChange.start + amwTripTime + Time(math.abs((newSpeed - oldSpeed) / hubmodel.AMW_ACCELERATION_AMPLITUDE))
 
-        val updatePolicy = changeAMWPolicy(dirChange, amwTripTime, speedChangeStart, speedChangeEnd, oldSpeed, newSpeed) _
-        val updateWholePolicy = processPolicy(updatePolicy) _
+        // time to close the entrance of the amw, i.e. the time when the route graph must stop pedestrians from
+        // walking along this link
+        val routeGraphCloseTime: Option[Time] = if (requireCloseOpenEvents) {Some(dirChange.start)} else {None}
+
+        // time when the moving walkway can start to slow down. This should allow all pedestrians to clear the amw.
+        val speedChangeStart: Time = if (requireCloseOpenEvents) {routeGraphCloseTime.get + amwTripTime } else {dirChange.start}
+
+        // time when the moving walkway can allow pedestrians along it again since it's now moving in the right direction
+        val routeGraphOpenTime: Option[Time] = if (requireCloseOpenEvents) {Some(routeGraphCloseTime.get + amwTripTime + Time(math.abs(oldSpeed / AMW_ACCELERATION_AMPLITUDE)))} else {None}
+
+        // time when the moving walkway will have reached it's target speed.
+        val speedChangeEnd: Time = speedChangeStart + Time(math.abs((newSpeed - oldSpeed) / hubmodel.AMW_ACCELERATION_AMPLITUDE))
 
 
-        val newPolicy: Vector[AMWPolicy] = updateWholePolicy(policy, 0)
+        val newPolicy: Vector[AMWPolicy] = {
+          if (routeGraphOpenTime.isDefined && amwEvents.openTime.contains(routeGraphOpenTime.get) && routeGraphCloseTime.isDefined && amwEvents.closeTime.contains(routeGraphCloseTime.get)) {
+            //println("nothing to do ! ")
+            policy
+          } else {
+            //println("need to change policy")
+            // function which will update the one single policy to match the close and open times with feasible acceleration
+            val updatePolicy = changeAMWPolicy(dirChange, amwTripTime, speedChangeStart, speedChangeEnd, oldSpeed, newSpeed) _
 
-        rec(findDirectionChanges(newPolicy).filter(_ > directionChanges.head + 1), newPolicy, amwEvents.copy(closeTime = amwEvents.closeTime :+ dirChange.start, openTime = amwEvents.openTime :+ dirChange.start + amwTripTime + Time(math.abs(oldSpeed / AMW_ACCELERATION_AMPLITUDE))))
+            // function which wlaks thtough the whole control policy and applies the "updatePolicy" function to each interval
+            processPolicy(updatePolicy)(policy, 0)
+          }
+        }
+
+        // update the direction changes and then proceed to the next one
+        if (routeGraphCloseTime.isDefined && routeGraphOpenTime.isDefined) {
+          rec(findIndicesToChange(newPolicy).filter(_ > directionChanges.head + 1), newPolicy, amwEvents.copy(closeTime = amwEvents.closeTime :+ routeGraphCloseTime.get, openTime = amwEvents.openTime :+ routeGraphOpenTime.get))}
+        else {
+          rec(findIndicesToChange(newPolicy).filter(_ > directionChanges.head + 1), newPolicy, amwEvents)}
       }
     }
 
@@ -154,9 +225,9 @@ package object ALNS {
     val directionChanges: Map[String, Vector[Int]] = amwPolicies
       .map(g => g._1 -> {
         if ((initialAMWSpeed(g._1).sign < 0 && g._2.head.speed.sign > 0) || (initialAMWSpeed(g._1).sign > 0 && g._2.head.speed.sign < 0)) {
-          0 +: findDirectionChanges(g._2)
+          0 +: findIndicesToChange(g._2)
         } else {
-          findDirectionChanges(g._2)
+          findIndicesToChange(g._2)
         }
       })
 

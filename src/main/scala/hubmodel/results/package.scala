@@ -292,12 +292,17 @@ package object results {
     })
   }
 
-  def readResultsJson(dir: String, prefix: String, demandSets: Seq[String]): Iterable[ResultsContainerReadWithDemandSetNew] = {
+  def readResultsJson(dir: String, prefix: String, demandSets: Seq[String]): Iterable[ResultsContainerReadNew] = {
     if (demandSets.isEmpty) {
       val dirContents = Files.newDirectoryStream(Paths.get(dir))
-      val subDirs: Iterable[String] = dirContents.asScala.toVector.collect({ case f if Files.isDirectory(f) => f.getFileName.toString })
+      val (subDirs, files) = dirContents.asScala.toVector.partitionMap{
+        case f if Files.isDirectory(f) => Left(f.getFileName.toString)
+        case f if Files.isRegularFile(f) => Right(f.getFileName.toString)
+      }
       dirContents.close()
-      subDirs.flatMap(ff => readResultsJson(dir + ff, prefix).map(_.addDemandFile(ff)))
+      if (subDirs.nonEmpty && files.isEmpty) {subDirs.flatMap(ff => readResultsJson(dir + ff, prefix).map(_.addDemandFile(ff)))}
+      else if (subDirs.isEmpty && files.nonEmpty) {readResultsJson(dir, prefix)}
+      else {throw new Exception("Results dir contains both files and subdir ! Cannot process this structure ! ")}
     } else {
       demandSets.flatMap(ff => readResultsJson(dir + ff, prefix).map(_.addDemandFile(ff)))
     }

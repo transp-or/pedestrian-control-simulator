@@ -45,11 +45,11 @@ class ALNS(function: StatePrediction, initialPolicy: Iterable[ControlDevicePolic
   private def stringify(x: Vector[ControlDevicePolicy]): String = x.sorted.map(dv => dv.nameToString + dv.decisionVariable.toString).mkString("-")
 
   private def computeObjective(x: Vector[ControlDevicePolicy]): Double = {
-    stochasticReduction(evaluatedSolutions(stringify(x))._1)("density")
+    stochasticReduction(evaluatedSolutions(stringify(x))._2)("density")
   }
 
-  private def getOF(x: Vector[ControlDevicePolicy]): FunctionEvaluation = evaluatedSolutions(stringify(x))._1
-  private def getStateData(x: Vector[ControlDevicePolicy]): Vector[StateGroundTruthPredicted] = evaluatedSolutions(stringify(x))._2
+  private def getOF(x: Vector[ControlDevicePolicy]): FunctionEvaluation = evaluatedSolutions(stringify(x))._2
+  private def getStateData(x: Vector[ControlDevicePolicy]): Vector[StateGroundTruthPredicted] = evaluatedSolutions(stringify(x))._3
 
 
   private def changeSolution(x: Vector[ControlDevicePolicy], currentPredictedState: Vector[StateGroundTruthPredicted]): (Solution, String) = {
@@ -115,9 +115,9 @@ class ALNS(function: StatePrediction, initialPolicy: Iterable[ControlDevicePolic
 
       evaluatedSolutions.update(
         stringify(xNew._1),
-        (
-          (evaluatedSolutions.getOrElse(stringify(xNew._1), (Map(), Vector()))._1.toVector ++ function.computeObjectives.toVector).groupBy(_._1).view.mapValues(v => v.flatMap(_._2)).toMap,
-          evaluatedSolutions.getOrElse(stringify(xNew._1), (Map(), Vector()))._2 ++ function.getPredictedStateData
+        (xNew,
+          (evaluatedSolutions.getOrElse(stringify(xNew._1), (xNew, Map(), Vector()))._2.toVector ++ function.computeObjectives.toVector).groupBy(_._1).view.mapValues(v => v.flatMap(_._2)).toMap,
+          evaluatedSolutions.getOrElse(stringify(xNew._1), (xNew, Map(), Vector()))._3 ++ function.getPredictedStateData
         )
       )
 
@@ -132,14 +132,17 @@ class ALNS(function: StatePrediction, initialPolicy: Iterable[ControlDevicePolic
         accepted = true
       }
 
-      if ( isBestSolution(xNew) ) {
+      if (stringify(xNew._1) == stringify(this.bestx._1)) {
+        this.bestx = evaluatedSolutions.minBy(s => computeObjective(s._2._1._1))._2._1
+        score = weightScores("improvement")
+      } else if ( isBestSolution(xNew) ) {
         this.bestx = xNew
         score = weightScores("newBest")
       }
 
-      operatorWeights.update(op, math.max(weightMin, math.min(weightMax, operatorWeights(op) * lambda  + (1-lambda) * score)))
+      operatorWeights.update(op, math.max(weightMin, math.min(weightMax, operatorWeights(op) * lambda  + (1.0-lambda) * score)))
 
-      println(this.evaluatedSolutions(stringify(xNew._1))._2.size ,computeObjective(xNew._1), computeObjective(this.currentx._1), computeObjective(this.bestx._1))
+      println(this.evaluatedSolutions(stringify(xNew._1))._3.size, computeObjective(xNew._1), computeObjective(this.currentx._1), computeObjective(this.bestx._1))
       this.iterations.append((it, temp, xNew, accepted, op, stochasticReduction(this.getOF(xNew._1)), stochasticReduction(this.getOF(this.currentx._1)), stochasticReduction(this.getOF(this.bestx._1)), operatorWeights.toMap))
 
       it = it + 1
@@ -175,7 +178,7 @@ class ALNS(function: StatePrediction, initialPolicy: Iterable[ControlDevicePolic
 
   function.predict(x0, Vector())
 
-  private val evaluatedSolutions: collection.mutable.Map[String, (FunctionEvaluation, Vector[StateGroundTruthPredicted])] = collection.mutable.Map(stringify(x0) -> (function.computeObjectives, function.getPredictedStateData))
+  private val evaluatedSolutions: collection.mutable.Map[String, (Solution, FunctionEvaluation, Vector[StateGroundTruthPredicted])] = collection.mutable.Map(stringify(x0) -> ((x0, Vector()), function.computeObjectives, function.getPredictedStateData))
 
 
   private var bestx: Solution = (x0, Vector())

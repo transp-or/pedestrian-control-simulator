@@ -95,6 +95,7 @@ class MovingWalkwayAbstract(val name: String, val firstVertex: Vertex, val secon
 
 
   protected var isClosed: Boolean = false
+  def getIsClosed: Boolean = this.isClosed
 
   def updateCosts(t: Time): Unit = {
     if (!isClosed) {
@@ -147,6 +148,10 @@ class MovingWalkwayAbstract(val name: String, val firstVertex: Vertex, val secon
     this.nextSpeedUpdate.foreach(_.setSkipTrue())
     this.nextOpenAMW.foreach(_.setSkipTrue())
     this.nextCloseAMW.foreach(_.setSkipTrue())
+
+    this.nextSpeedUpdate = None
+    this.nextOpenAMW.clear()
+    this.nextCloseAMW.clear()
 
     this.controlPolicy.clear()
     this.controlPolicy.addAll(policy)
@@ -239,6 +244,8 @@ class MovingWalkwayAbstract(val name: String, val firstVertex: Vertex, val secon
 
       if (outer.closeTimes.nonEmpty) {
         sim.insertEventAtAbsolute(outer.closeTimes.dequeue())(new CloseAMW(this.sim)).foreach(nextCloseAMW.addOne)
+      }
+      if (outer.openTimes.nonEmpty) {
         sim.insertEventAtAbsolute(outer.openTimes.dequeue())(new OpenAMW(this.sim)).foreach(nextOpenAMW.addOne)
       }
 
