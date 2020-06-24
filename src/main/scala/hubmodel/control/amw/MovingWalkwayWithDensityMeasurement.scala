@@ -71,7 +71,7 @@ class MovingWalkwayWithDensityMeasurement[T <: Density, U <: MovingWalkwaySpeed]
         val ek: Double = (1.2 - (1.0/3.0) * (computeQuantile(this.criticalAreaEnd.flatMap(_.paxIndividualDensityHistory.last._2).toVector) + computeQuantile(this.criticalAreaEnd.flatMap(_.paxIndividualDensityHistory.dropRight(1).last._2).toVector) + computeQuantile(this.criticalAreaEnd.flatMap(_.paxIndividualDensityHistory.dropRight(2).last._2).toVector)))
         val ekm1: Double = (1.2 - (1.0/3.0) * (computeQuantile(this.criticalAreaEnd.flatMap(_.paxIndividualDensityHistory.dropRight(1).last._2).toVector) + computeQuantile(this.criticalAreaEnd.flatMap(_.paxIndividualDensityHistory.dropRight(2).last._2).toVector) + computeQuantile(this.criticalAreaEnd.flatMap(_.paxIndividualDensityHistory.dropRight(3).last._2).toVector)))
         val s = this._nextSpeed + (PIGains._1 + PIGains._2) * ek  - PIGains._1 * ekm1
-        println(t, direction, s, ek, ekm1)
+        //println(t, direction, s, ek, ekm1)
         math.round(4.0*math.max(0.0,math.min(s, 3.0)))/4.0
       }
     } else if (direction == -1) {
@@ -81,7 +81,7 @@ class MovingWalkwayWithDensityMeasurement[T <: Density, U <: MovingWalkwaySpeed]
         val ek: Double = (1.2 - (1.0/3.0) * (computeQuantile(this.criticalAreaStart.flatMap(_.paxIndividualDensityHistory.last._2).toVector) + computeQuantile(this.criticalAreaStart.flatMap(_.paxIndividualDensityHistory.dropRight(1).last._2).toVector) + computeQuantile(this.criticalAreaStart.flatMap(_.paxIndividualDensityHistory.dropRight(2).last._2).toVector)))
         val ekm1: Double = (1.2 - (1.0/3.0) * (computeQuantile(this.criticalAreaStart.flatMap(_.paxIndividualDensityHistory.dropRight(1).last._2).toVector) + computeQuantile(this.criticalAreaStart.flatMap(_.paxIndividualDensityHistory.dropRight(2).last._2).toVector) + computeQuantile(this.criticalAreaStart.flatMap(_.paxIndividualDensityHistory.dropRight(3).last._2).toVector)))
         val s = math.min(0.0, this._nextSpeed) - ((PIGains._1 + PIGains._2) * ek  - PIGains._1 * ekm1)
-        println(t, direction, s, ek, ekm1)
+        //println(t, direction, s, ek, ekm1)
         math.round(4.0*math.min(0.0,math.max(s, -3.0)))/4.0
       }
     } else {

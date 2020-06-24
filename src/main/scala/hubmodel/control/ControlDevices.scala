@@ -92,6 +92,6 @@ class ControlDevices(val monitoredAreas: Iterable[DensityMeasuredArea], val amws
   }
 
   def deepCopyModifyMovingWalkways[T <: Measurement, U <: MovingWalkwaySpeed](P: Double, I: Double, graph: GraphContainer, flowLines: Vector[FlowLine], areas: Vector[DensityMeasuredArea]): ControlDevices = {
-    new ControlDevices(monitoredAreas.map(_.deepCopy), amws.collect{case w: MovingWalkwayWithDensityMeasurement[_,_] => w.deepCopyPIGains(graph, flowLines, areas, P, I)}, this.amwsMode, Vector(), Vector(), Vector(), fixedFlowSeparators, this.flowLines.map(_.deepCopy))
+    new ControlDevices(areas, amws.collect{case w: MovingWalkwayWithDensityMeasurement[_,_] => w.deepCopyPIGains(graph, flowLines, areas, P, I)}, this.amwsMode, Vector(), Vector(), Vector(), fixedFlowSeparators, flowLines)
   }
 }

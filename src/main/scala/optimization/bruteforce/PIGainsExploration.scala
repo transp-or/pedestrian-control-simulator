@@ -31,9 +31,7 @@ class PIGainsExploration(minP: Double, maxP:Double, minI: Double, maxI: Double, 
 
 
   override def getParameters(paramMods: ParameterModificationsPIGains): SimulationInputParameters = {
-    val parameters : SimulationInputParameters = defaultParameters
-    val newDevices : ControlDevices = parameters.controlDevices.deepCopyModifyMovingWalkways(paramMods.P, paramMods.I, parameters.graph, parameters.controlDevices.flowLines, parameters.controlDevices.monitoredAreas.toVector)
-    parameters.deepCopy(parameters.graph, newDevices)
+    defaultParameters.changePIGains(paramMods.P, paramMods.I)
   }
 
   override def getRunPrefix(paramMods: ParameterModificationsPIGains): String = {

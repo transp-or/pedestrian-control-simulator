@@ -100,8 +100,6 @@ class ComputePedestrianDensity(sim: NOMADGraphSimulator) extends EvaluateState(s
 
     computeDensityAtCurrentTime()
 
-
-
     sim.trackDensityInterval.foreach(t => sim.insertEventWithDelay(t)(new ComputePedestrianDensity(this.sim)))
 
   }

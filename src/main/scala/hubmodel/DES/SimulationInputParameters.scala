@@ -65,6 +65,30 @@ class SimulationInputParameters(var startTime: Time,
       devices,
       predictionParameters)
 
+    params.resetFlowCountersInterval = this.resetFlowCountersInterval
+    params.trackDensityInterval = this.trackDensityInterval
+    params.stateEvaluationInterval = this.stateEvaluationInterval
+    params.rebuildTreeInterval = this.rebuildTreeInterval
+    params.timeTable = this.timeTable
+    params.logFullPedestrianHistory = this.logFullPedestrianHistory
+
+    params
+  }
+
+
+  def changePIGains(P: Double, I: Double): SimulationInputParameters = {
+    val params: SimulationInputParameters = new SimulationInputParameters(
+      this.startTime,
+      this.endTime,
+      this.motionModelUpdateInterval,
+      this.updateRoutesInterval,
+      this.spaceMicro,
+      this.graph,
+      this.stop2Vertex,
+      this.controlDevices.deepCopyModifyMovingWalkways(P, I, this.graph, this.controlDevices.flowLines, this.controlDevices.monitoredAreas.toVector),
+      this.predictionParameters)
+
+    params.resetFlowCountersInterval = this.resetFlowCountersInterval
     params.trackDensityInterval = this.trackDensityInterval
     params.stateEvaluationInterval = this.stateEvaluationInterval
     params.rebuildTreeInterval = this.rebuildTreeInterval

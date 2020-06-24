@@ -330,6 +330,8 @@ abstract class NOMADGraphSimulator(params: SimulationInputParameters) extends Pe
         new SimulationInputParameters(startTime, finalTime, motionModelUpdateInterval, updateRoutesInterval, spaceMicro, graph, stop2Vertex, controlDevices, params.predictionParameters)
       }
 
+      inputParameters.resetFlowCountersInterval = resetFlowCountersInterval
+      inputParameters.trackDensityInterval = trackDensityInterval
       inputParameters.logFullPedestrianHistory = logFullPedestrianHistory
       inputParameters.timeTable = timeTable
       inputParameters.rebuildTreeInterval = rebuildTreeInterval
