@@ -2,8 +2,9 @@ package hubmodel.control.amw
 
 import hubmodel.DES.NOMADGraphSimulator
 import hubmodel.Position
+import hubmodel.control.flowsep.FlowLine
 import hubmodel.control.{BidirectionalFlow, ControlDevicePolicy, Density, FunctionalForm, FunctionalFormMovingWalkwayDensity, Measurement, MovingWalkwaySpeed}
-import hubmodel.supply.graph.MyEdge
+import hubmodel.supply.graph.{GraphContainer, MyEdge, RouteGraph}
 import myscala.math.stats.Quantile
 import tools.Time
 import tools.TimeNumeric.mkOrderingOps
@@ -40,7 +41,7 @@ class MovingWalkwayWithDensityMeasurement[T <: Density, U <: MovingWalkwaySpeed]
   private var nextPossibleDirectionChange: Time = Time(0)
 
   def updateFlowHistory(t: Time): Unit = {
-    this.flowHistoryNew.append((t, BidirectionalFlow(this.inflowLinesStart.map(l => l.fractionKept * l.getPedestrianFlow).sum, this.inflowLinesEnd.map(l => l.fractionKept * l.getPedestrianFlow).sum)))
+    this.flowHistoryNew.append((t, BidirectionalFlow(this.inflowLinesStart.map(l => l.fractionKept * l.fl.getPedestrianFlow).sum, this.inflowLinesEnd.map(l => l.fractionKept * l.fl.getPedestrianFlow).sum)))
   }
 
   private def computeDirection(t: Time): Double = {
@@ -120,6 +121,27 @@ class MovingWalkwayWithDensityMeasurement[T <: Density, U <: MovingWalkwaySpeed]
       )
       this.insertChangeSpeed(sim)
     }
+  }
+
+  def deepCopyPIGains(graph: GraphContainer, flowLines: Iterable[FlowLine], areas: Iterable[DensityMeasuredArea],  P: Double, I: Double): MovingWalkwayWithDensityMeasurement[T, U] = {
+    new MovingWalkwayWithDensityMeasurement[T, U](
+      this.name,
+      graph.vertexMapNew(this.firstVertex.name),
+      graph.vertexMapNew(this.secondVertex.name),
+      this.width,
+      this.start,
+      this.end,
+      associatedZonesStart.map(v => graph.vertexMapNew(v.name)),
+      associatedZonesEnd.map(v => graph.vertexMapNew(v.name)),
+      this.droppedVertices,
+      this.associatedConnectivity.map(e => graph.edges.find(ge => ge.startVertex == e.startVertex && ge.endVertex == e.endVertex).get),
+      this.parallelFlows.map(pf => pf.map(v => graph.vertexMapNew(v.name))),
+      this.inflowLinesStart.map(fl => new FlowLineWithFraction(fl.name, flowLines.find(_.name == fl.name).get, fl.fractionKept)),
+      this.inflowLinesEnd.map(fl => new FlowLineWithFraction(fl.name, flowLines.find(_.name == fl.name).get, fl.fractionKept)),
+      this.criticalAreaStart.map(a => areas.find(_.name == a.name).get),
+      this.criticalAreaStart.map(a => areas.find(_.name == a.name).get),
+      (P, I)
+    )
   }
 
 

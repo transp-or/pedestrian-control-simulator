@@ -11,11 +11,14 @@ import hubmodel.ped.PedestrianNOMAD
 import myscala.math.stats.ComputeStats
 
 import scala.collection.GenIterable
-
+import scala.collection.parallel.immutable.ParVector
+import scala.collection.parallel.immutable.{ParSeq, ParVector}
+import scala.collection.parallel.CollectionConverters._
+import scala.collection.parallel.ForkJoinTaskSupport
 
 abstract class GridSearchNew[T <: ParameterModifications](val config: Config) extends GridSearch {
 
-  val defaultParameters: SimulationInputParameters = createSimulation(config).getSetupArgumentsNew
+  def defaultParameters: SimulationInputParameters = createSimulation(config).getSetupArgumentsNew
 
   // checks if the output dir exists for writing the results
   val outputDir: Path = Paths.get(config.getString("output.dir"))
@@ -23,7 +26,7 @@ abstract class GridSearchNew[T <: ParameterModifications](val config: Config) ex
     Files.createDirectory(outputDir)
   }
 
-  val simulationRunsParameters: IterableOnce[T]
+  val simulationRunsParameters: Vector[T]
 
   def getParameters(paramMods: T): SimulationInputParameters
 
@@ -32,7 +35,56 @@ abstract class GridSearchNew[T <: ParameterModifications](val config: Config) ex
   def getFlowMods(paramMods: T): (Iterable[PedestrianFlow_New], Iterable[PedestrianFlowPT_New], Iterable[PedestrianFlowFunction_New])
 
   def runSimulations(): Unit = {
-    for (p <- simulationRunsParameters) {
+
+    if (config.getBoolean("execution.parallel")) {
+      val parallelRuns: ParVector[T] = simulationRunsParameters.par
+      parallelRuns.tasksupport = new ForkJoinTaskSupport(new java.util.concurrent.ForkJoinPool(math.min(simulationRunsParameters.size, config.getInt("execution.threads"))))
+
+      parallelRuns.foreach(s => {
+        val parameters: SimulationInputParameters = getParameters(s)
+        parameters.logFullPedestrianHistory = config.getBoolean("output.write_trajectories_as_VS") || config.getBoolean("output.write_trajectories_as_JSON")
+        val sim = new PedestrianSimulation(parameters)
+        val flows: AggregateFlows = getFlowMods(s)
+        val (timeTable, stop2Vertex) = getPTSchedule(config)
+        val disaggPopulation = getDisaggregateFlows(config)
+
+        insertDemandIntoSimulator(sim, disaggPopulation, flows, timeTable)
+
+        runAndWriteResults(
+          sim,
+          getRunPrefix(s),
+          config.getString("output.dir"),
+          config.getBoolean("output.write_trajectories_as_VS"),
+          config.getBoolean("output.write_trajectories_as_JSON")
+        )
+        System.gc()
+      })
+    }
+    else {
+      simulationRunsParameters.foreach(s => {
+
+        val parameters: SimulationInputParameters = getParameters(s)
+        parameters.logFullPedestrianHistory = config.getBoolean("output.write_trajectories_as_VS") || config.getBoolean("output.write_trajectories_as_JSON")
+        val sim = new PedestrianSimulation(parameters)
+        val flows: AggregateFlows = getFlowMods(s)
+        val (timeTable, stop2Vertex) = getPTSchedule(config)
+        val disaggPopulation = getDisaggregateFlows(config)
+
+        insertDemandIntoSimulator(sim, disaggPopulation, flows, timeTable)
+
+        runAndWriteResults(
+          sim,
+          getRunPrefix(s),
+          config.getString("output.dir"),
+          config.getBoolean("output.write_trajectories_as_VS"),
+          config.getBoolean("output.write_trajectories_as_JSON")
+        )
+        System.gc()
+
+      })
+    }
+
+    /*simulationRunsParameters.foreach(p => {
       val parameters: SimulationInputParameters = getParameters(p)
       parameters.logFullPedestrianHistory = config.getBoolean("output.write_trajectories_as_VS") || config.getBoolean("output.write_trajectories_as_JSON")
       val sim = new PedestrianSimulation(parameters)
@@ -67,7 +119,7 @@ abstract class GridSearchNew[T <: ParameterModifications](val config: Config) ex
         config.getBoolean("output.write_trajectories_as_JSON")
       )
       System.gc()
-    }
+    })*/
   }
 
   def groupResultsFiles: Map[String, List[File]] = { // reads the files and process the data

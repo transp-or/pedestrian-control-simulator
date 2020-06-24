@@ -180,18 +180,19 @@ class NOMADIntegrated(sim: NOMADGraphSimulator) extends Action {
       sim.controlDevices.amws.collect {
         case w: MovingWalkwayWithFlowMeasurement[_,_] => {
           w.inflowLinesStart.foreach(fl => {
-            fl.collectPedestriansWhoCrossed(sim.population)
+            fl.fl.collectPedestriansWhoCrossed(sim.population)
           })
           w.inflowLinesEnd.foreach(fl => {
-            fl.collectPedestriansWhoCrossed(sim.population)
+            fl.fl.collectPedestriansWhoCrossed(sim.population)
           })
         }
+
         case w: MovingWalkwayWithDensityMeasurement[_,_] => {
           w.inflowLinesStart.foreach(fl => {
-            fl.collectPedestriansWhoCrossed(sim.population)
+            fl.fl.collectPedestriansWhoCrossed(sim.population)
           })
           w.inflowLinesEnd.foreach(fl => {
-            fl.collectPedestriansWhoCrossed(sim.population)
+            fl.fl.collectPedestriansWhoCrossed(sim.population)
           })
         }
       }

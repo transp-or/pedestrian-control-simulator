@@ -53,7 +53,7 @@ class MovingWalkwayWithFlowMeasurement[T <: Measurement, U <: MovingWalkwaySpeed
     * @param t
     */
   private def computeTargetSpeed(t: Time, finalTime:Time): AMWPolicy = {
-    flowHistoryNew.append((t, BidirectionalFlow(this.inflowLinesStart.map(l => l.fractionKept * l.getPedestrianFlow).sum, this.inflowLinesEnd.map(l => l.fractionKept * l.getPedestrianFlow).sum)))
+    flowHistoryNew.append((t, BidirectionalFlow(this.inflowLinesStart.map(l => l.fractionKept * l.fl.getPedestrianFlow).sum, this.inflowLinesEnd.map(l => l.fractionKept * l.fl.getPedestrianFlow).sum)))
 
     val speed: MovingWalkwaySpeed = function match {
       case default: FunctionalFormMovingWalkway => {

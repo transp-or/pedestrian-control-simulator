@@ -129,7 +129,7 @@ class ReinitializeFlowCounters(sim: NOMADGraphSimulator) extends EvaluateState(s
         w.updateFlowHistory(sim.currentTime)
         w.inflowLinesEnd ++ w.inflowLinesStart
       }
-    }.flatten.foreach(_.reinitialize())
+    }.flatten.foreach(_.fl.reinitialize())
 
 
     sim.resetFlowCountersInterval.foreach(t => sim.insertEventWithDelay(t)(new ReinitializeFlowCounters(this.sim)))

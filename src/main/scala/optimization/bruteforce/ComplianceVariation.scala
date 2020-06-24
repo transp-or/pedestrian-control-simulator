@@ -11,36 +11,26 @@ import scala.collection.parallel.ForkJoinTaskSupport
 
 class ComplianceVariation(complianceInterval: Double, c: Config, upperBoundCompliance: Double = 0.5) extends GridSearchNew[ParameterModificationsCompliance](c) {
 
-  override val simulationRunsParameters: IterableOnce[ParameterModificationsCompliance] = if (config.getBoolean("execution.parallel")) {
+  override val simulationRunsParameters: Vector[ParameterModificationsCompliance] = {/*if (config.getBoolean("execution.parallel")) {
+
     val r = (for (i <- BigDecimal(0.0) to BigDecimal(upperBoundCompliance) by BigDecimal(complianceInterval); k <- 1 to config.getInt("sim.nb_runs")) yield {
       ParameterModificationsCompliance(i.toDouble)
     }).par
     r.tasksupport = new ForkJoinTaskSupport(new java.util.concurrent.ForkJoinPool(config.getInt("execution.threads")))
     r
-  } else {
-    for (i <- BigDecimal(0.0) to BigDecimal(upperBoundCompliance) by BigDecimal(complianceInterval); k <- 1 to config.getInt("sim.nb_runs")) yield {
+  } else {*/
+    (for (i <- BigDecimal(0.0) to BigDecimal(upperBoundCompliance) by BigDecimal(complianceInterval); k <- 1 to config.getInt("sim.nb_runs")) yield {
       ParameterModificationsCompliance(i.toDouble)
-    }
+    }).toVector
   }
+
 
   def getParameters(paramMods: ParameterModificationsCompliance): SimulationInputParameters = {
 
     val devices = defaultParameters.controlDevices.deepCopy
 
     defaultParameters.deepCopy(defaultParameters.graph.deepCopy2AlternateGraphs(devices, paramMods.complianceRate), devices)
-    /*new SimulationInputParameters(
-      defaultParameters._1,
-      defaultParameters._2,
-      defaultParameters._3,
-      defaultParameters._4,
-      defaultParameters._5,
-      defaultParameters._6,
-      defaultParameters._7,
-      defaultParameters._8.deepCopy2AlternateGraphs(devices, paramMods.complianceRate),
-      defaultParameters._9,
-      defaultParameters._10,
-      devices
-    )*/
+
   }
 
   def getRunPrefix(paramMods: ParameterModificationsCompliance): String = {

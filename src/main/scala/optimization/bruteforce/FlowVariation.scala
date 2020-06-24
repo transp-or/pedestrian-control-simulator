@@ -19,17 +19,18 @@ class FlowVariation(flowInterval: Double, config: Config, lowerBoundFlow: Double
     data.sum / data.size
   }
 
-  override val simulationRunsParameters: IterableOnce[ParameterModificationsFlow] = if (config.getBoolean("execution.parallel")) {
+  override val simulationRunsParameters: Vector[ParameterModificationsFlow] = {/*if (config.getBoolean("execution.parallel")) {
     val r = (for (i <- BigDecimal(lowerBoundFlow) to BigDecimal(upperBoundFlow) by BigDecimal(flowInterval); k <- 1 to config.getInt("sim.nb_runs")) yield {
       ParameterModificationsFlow(i.toDouble)
     }).par
     r.tasksupport = new ForkJoinTaskSupport(new java.util.concurrent.ForkJoinPool(config.getInt("execution.threads")))
     r
-  } else {
-    for (i <- BigDecimal(lowerBoundFlow) to BigDecimal(upperBoundFlow) by BigDecimal(flowInterval); k <- 1 to config.getInt("sim.nb_runs")) yield {
+  } else {*/
+    (for (i <- BigDecimal(lowerBoundFlow) to BigDecimal(upperBoundFlow) by BigDecimal(flowInterval); k <- 1 to config.getInt("sim.nb_runs")) yield {
       ParameterModificationsFlow(i.toDouble)
-    }
+    }).toVector
   }
+
 
   def getRunPrefix(paramMods: ParameterModificationsFlow): String = {
     paramMods.maximumFlow.toString + "_params_"

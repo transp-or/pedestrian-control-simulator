@@ -1,9 +1,10 @@
 package hubmodel.control
 
-import hubmodel.control.amw.MovingWalkwayAbstract
+import hubmodel.control.amw.{FlowLineWithFraction, MovingWalkwayAbstract, MovingWalkwayWithDensityMeasurement}
 import hubmodel.control.flowgate.{BinaryGate, FlowGate, FlowGateFunctional}
-import hubmodel.control.flowsep.{FlowSeparator, FlowSeparatorParameters}
+import hubmodel.control.flowsep.{FlowLine, FlowSeparator, FlowSeparatorParameters}
 import hubmodel.ped.PedestrianNOMAD
+import hubmodel.supply.graph.{GraphContainer, RouteGraph}
 import tools.Time
 import tools.cells.DensityMeasuredArea
 import tools.exceptions.IllegalSimulationInput
@@ -19,7 +20,7 @@ import tools.exceptions.IllegalSimulationInput
   * @param flowSeparators      dynamic flow separators
   * @param fixedFlowSeparators indicator if the flow separators are fixed
   */
-class ControlDevices(val monitoredAreas: Iterable[DensityMeasuredArea], val amws: Iterable[MovingWalkwayAbstract], val amwsMode: String, val flowGates: Iterable[FlowGate], val binaryGates: Iterable[BinaryGate], val flowSeparators: Iterable[FlowSeparator[_, _]], val fixedFlowSeparators: Boolean, val flowSepParams: Option[Seq[FlowSeparatorParameters[_, _]]] = None) extends ControlDeviceComponent {
+class ControlDevices(val monitoredAreas: Iterable[DensityMeasuredArea], val amws: Iterable[MovingWalkwayAbstract], val amwsMode: String, val flowGates: Iterable[FlowGate], val binaryGates: Iterable[BinaryGate], val flowSeparators: Iterable[FlowSeparator[_, _]], val fixedFlowSeparators: Boolean, val flowLines: Vector[FlowLine], val flowSepParams: Option[Seq[FlowSeparatorParameters[_, _]]] = None) extends ControlDeviceComponent {
 
   // Incompatible setup: flow gates exist but no areas to measure density exist
   if (flowGates.nonEmpty && monitoredAreas.isEmpty) {
@@ -42,7 +43,7 @@ class ControlDevices(val monitoredAreas: Iterable[DensityMeasuredArea], val amws
     * @return deep copy of the current component
     */
   override def deepCopy: ControlDevices = {
-    new ControlDevices(monitoredAreas.map(_.deepCopy), amws.map(_.deepCopy), this.amwsMode, flowGates.map(_.deepCopy), binaryGates.map(_.deepCopy), flowSeparators.map(_.deepCopy), fixedFlowSeparators)
+    new ControlDevices(monitoredAreas.map(_.deepCopy), amws.map(_.deepCopy), this.amwsMode, flowGates.map(_.deepCopy), binaryGates.map(_.deepCopy), flowSeparators.map(_.deepCopy), fixedFlowSeparators, this.flowLines.map(_.deepCopy))
   }
 
 
@@ -52,7 +53,7 @@ class ControlDevices(val monitoredAreas: Iterable[DensityMeasuredArea], val amws
     * @return deep copy of the current component
     */
   def deepCopyWithState(t: => Time, population: Iterable[PedestrianNOMAD]): ControlDevices = {
-    new ControlDevices(monitoredAreas.map(_.deepCopy), amws.map(_.deepCopyWithState(population)),this.amwsMode , flowGates.map(_.deepCopyWithState(t, population)), binaryGates.map(_.deepCopy), flowSeparators.map(_.deepCopyWithState), fixedFlowSeparators)
+    new ControlDevices(monitoredAreas.map(_.deepCopy), amws.map(_.deepCopyWithState(population)), this.amwsMode, flowGates.map(_.deepCopyWithState(t, population)), binaryGates.map(_.deepCopy), flowSeparators.map(_.deepCopyWithState), fixedFlowSeparators, this.flowLines.map(_.deepCopy))
   }
 
   /**
@@ -64,18 +65,18 @@ class ControlDevices(val monitoredAreas: Iterable[DensityMeasuredArea], val amws
     * @return new set of control devices
     */
   def deepCopyModifyFlowGates[T <: Measurement, U <: Flow](f: FunctionalForm[T, U]): ControlDevices = {
-    new ControlDevices(monitoredAreas.map(_.deepCopy), amws.map(_.deepCopy),this.amwsMode , flowGates.map(fg => fg match {
-            case fgFunc: FlowGateFunctional[_, _] => {
-              fgFunc.deepCopy(f)
-            }
-            case fg: FlowGate => {
-              fg.deepCopy
-            }
-          }), binaryGates.map(_.deepCopy), flowSeparators.map(_.deepCopy), fixedFlowSeparators)
+    new ControlDevices(monitoredAreas.map(_.deepCopy), amws.map(_.deepCopy), this.amwsMode, flowGates.map(fg => fg match {
+                case fgFunc: FlowGateFunctional[_, _] => {
+                  fgFunc.deepCopy(f)
+                }
+                case fg: FlowGate => {
+                  fg.deepCopy
+                }
+              }), binaryGates.map(_.deepCopy), flowSeparators.map(_.deepCopy), fixedFlowSeparators, this.flowLines.map(_.deepCopy))
   }
 
   def deepCopyModifyMonitoredAreas(rho: Double): ControlDevices = {
-    new ControlDevices(monitoredAreas.map(_.deepCopyChangeTargetDensity(rho)), amws.map(_.deepCopy),this.amwsMode , flowGates.map(_.deepCopy), binaryGates.map(_.deepCopy), flowSeparators.map(_.deepCopy), fixedFlowSeparators)
+    new ControlDevices(monitoredAreas.map(_.deepCopyChangeTargetDensity(rho)), amws.map(_.deepCopy), this.amwsMode, flowGates.map(_.deepCopy), binaryGates.map(_.deepCopy), flowSeparators.map(_.deepCopy), fixedFlowSeparators, this.flowLines.map(_.deepCopy))
   }
 
   /**
@@ -87,6 +88,10 @@ class ControlDevices(val monitoredAreas: Iterable[DensityMeasuredArea], val amws
     * @return new set of control devices
     */
   def deepCopyModifyFlowSeparators[T <: Measurement, U <: SeparatorPositionFraction](f: FunctionalForm[T, U]): ControlDevices = {
-    new ControlDevices(monitoredAreas.map(_.deepCopy), amws,this.amwsMode , flowGates.map(_.deepCopy), binaryGates.map(_.deepCopy), flowSeparators.map(_.deepCopy(f)), fixedFlowSeparators)
+    new ControlDevices(monitoredAreas.map(_.deepCopy), amws, this.amwsMode, flowGates.map(_.deepCopy), binaryGates.map(_.deepCopy), flowSeparators.map(_.deepCopy(f)), fixedFlowSeparators, this.flowLines.map(_.deepCopy))
+  }
+
+  def deepCopyModifyMovingWalkways[T <: Measurement, U <: MovingWalkwaySpeed](P: Double, I: Double, graph: GraphContainer, flowLines: Vector[FlowLine], areas: Vector[DensityMeasuredArea]): ControlDevices = {
+    new ControlDevices(monitoredAreas.map(_.deepCopy), amws.collect{case w: MovingWalkwayWithDensityMeasurement[_,_] => w.deepCopyPIGains(graph, flowLines, areas, P, I)}, this.amwsMode, Vector(), Vector(), Vector(), fixedFlowSeparators, this.flowLines.map(_.deepCopy))
   }
 }

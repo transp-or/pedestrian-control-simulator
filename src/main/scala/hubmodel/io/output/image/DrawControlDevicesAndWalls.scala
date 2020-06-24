@@ -96,7 +96,7 @@ class DrawControlDevicesAndWalls(filename: String = "",
     devices.amws.collect {
       case w: MovingWalkwayWithFlowMeasurement[_, _] => {
 
-        (w.inflowLinesStart ++ w.inflowLinesEnd).foreach(fl => {
+        (w.inflowLinesStart ++ w.inflowLinesEnd).map(_.fl).foreach(fl => {
 
           // draws line
           gImage.drawLine(
@@ -134,7 +134,7 @@ class DrawControlDevicesAndWalls(filename: String = "",
 
         })
 
-        (w.inflowLinesStart ++ w.inflowLinesEnd).foreach(fl => {
+        (w.inflowLinesStart ++ w.inflowLinesEnd).map(_.fl).foreach(fl => {
 
           // draws line
           gImage.drawLine(

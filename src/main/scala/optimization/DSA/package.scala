@@ -148,7 +148,7 @@ package object DSA {
                 }
               })
 
-              new ControlDevices(newControlAreas, defaultParameters.controlDevices.amws,"static" , newFlowGates, defaultParameters.controlDevices.binaryGates.map(_.deepCopy), defaultParameters.controlDevices.flowSeparators.map(_.deepCopy), defaultParameters.controlDevices.fixedFlowSeparators, None)
+              new ControlDevices(newControlAreas, defaultParameters.controlDevices.amws, "static", newFlowGates, defaultParameters.controlDevices.binaryGates.map(_.deepCopy), defaultParameters.controlDevices.flowSeparators.map(_.deepCopy), defaultParameters.controlDevices.fixedFlowSeparators, defaultParameters.controlDevices.flowLines.map(_.deepCopy))
             }
             case fgParams: ParametersForGatingWithDensity[_, _] => {
 
@@ -163,7 +163,7 @@ package object DSA {
                 }
               })
 
-              new ControlDevices(newControlAreas, defaultParameters.controlDevices.amws, "static", newFlowGates, defaultParameters.controlDevices.binaryGates.map(_.deepCopy), defaultParameters.controlDevices.flowSeparators.map(_.deepCopy), defaultParameters.controlDevices.fixedFlowSeparators, None)
+              new ControlDevices(newControlAreas, defaultParameters.controlDevices.amws, "static", newFlowGates, defaultParameters.controlDevices.binaryGates.map(_.deepCopy), defaultParameters.controlDevices.flowSeparators.map(_.deepCopy), defaultParameters.controlDevices.fixedFlowSeparators, defaultParameters.controlDevices.flowLines.map(_.deepCopy))
             }
             case fs: ParametersForFlowSeparators[_, _] => {
               defaultParameters.controlDevices.deepCopyModifyFlowSeparators(fs.function)

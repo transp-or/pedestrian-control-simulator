@@ -65,17 +65,12 @@ package object graph {
           Vector()
         }
 
+        // reads flow lines if they are needed
+        val flowLines: Map[String, FlowLine] = {
+            s.get.flowLines.map(fl => fl.name -> new FlowLine(fl.name, Vector2D(fl.x1, fl.y1), Vector2D(fl.x2, fl.y2))).toMap
+        }
 
         val mv: Iterable[MovingWalkwayAbstract] = if (useAMWs) {
-
-          // reads flow lines if they are needed
-          val flowLines: Map[String, FlowLine] = {
-            if (amwsMode._1 == "reactive") {
-              s.get.flowLines.map(fl => fl.name -> new FlowLine(fl.name, Vector2D(fl.x1, fl.y1), Vector2D(fl.x2, fl.y2))).toMap
-            } else {
-              Map()
-            }
-          }
 
           // remove overriden vertices from map
           vertexMapReader --= s.get.movingWalkways.flatMap(_.overriden_zones_1.collect({ case oZone if oZone.overridenZone.isDefined => oZone.overridenZone.get }))
@@ -147,8 +142,8 @@ package object graph {
                 oldZones,
                 newConnections,
                 m.parallel_flows.map(r => r.map(v => vertexMapReader(v))),
-                m.inf_start_name.map(fl => new FlowLineWithFraction(flowLines(fl._1).name, flowLines(fl._1).start, flowLines(fl._1).end, fl._2)),
-                m.inf_end_name.map(fl => new FlowLineWithFraction(flowLines(fl._1).name, flowLines(fl._1).start, flowLines(fl._1).end, fl._2)),
+                m.inf_start_name.map(fl => new FlowLineWithFraction(flowLines(fl._1).name, flowLines(fl._1), fl._2)),
+                m.inf_end_name.map(fl => new FlowLineWithFraction(flowLines(fl._1).name, flowLines(fl._1), fl._2)),
                 FunctionalFormMovingWalkway((bf: BidirectionalFlow) => MovingWalkwaySpeed(if (bf.f1 > bf.f2) {
                   3.0
                 } else {
@@ -156,8 +151,9 @@ package object graph {
                 }))
               )
             } else if (amwsMode._1 == "reactive" && amwsMode._2 == "density"){
-              new MovingWalkwayWithDensityMeasurement(m.name, startCircle, endCircle, m.width, start, end, oz_1, oz_2, oldZones, newConnections, m.parallel_flows.map(r => r.map(v => vertexMapReader(v))), m.inf_start_name.map(fl => new FlowLineWithFraction(flowLines(fl._1).name, flowLines(fl._1).start, flowLines(fl._1).end, fl._2)),
-                m.inf_end_name.map(fl => new FlowLineWithFraction(flowLines(fl._1).name, flowLines(fl._1).start, flowLines(fl._1).end, fl._2)), m.startArea.map(z => monitoredAreas.find(_.name == z).get), m.endArea.map(z => monitoredAreas.find(_.name == z).get), (1.36 ,0.37))            } else {
+              new MovingWalkwayWithDensityMeasurement(m.name, startCircle, endCircle, m.width, start, end, oz_1, oz_2, oldZones, newConnections, m.parallel_flows.map(r => r.map(v => vertexMapReader(v))), m.inf_start_name.map(fl => new FlowLineWithFraction(flowLines(fl._1).name, flowLines(fl._1), fl._2)),
+                m.inf_end_name.map(fl => new FlowLineWithFraction(flowLines(fl._1).name, flowLines(fl._1), fl._2)), m.startArea.map(z => monitoredAreas.find(_.name == z).get), m.endArea.map(z => monitoredAreas.find(_.name == z).get), (1.36 ,0.37))
+            } else {
               new MovingWalkway(m.name, startCircle, endCircle, m.width, start, end, oz_1, oz_2, oldZones, newConnections, m.parallel_flows.map(r => r.map(v => vertexMapReader(v))), m.startArea.map(z => monitoredAreas.find(_.name == z).get), m.endArea.map(z => monitoredAreas.find(_.name == z).get))
             }
           })
@@ -312,7 +308,7 @@ package object graph {
             }
           }
           ,
-          new ControlDevices(monitoredAreas, mv, amwsMode._1, fg, bg, flowSeparators, fixedFlowSep, Some(flowSepParameters))
+          new ControlDevices(monitoredAreas, mv, amwsMode._1, fg, bg, flowSeparators, fixedFlowSep, flowLines.values.toVector, Some(flowSepParameters))
         )
       }
       case e: JsError => throw new Error("Error while parsing graph specification file: " + JsError.toJson(e).toString())
