@@ -139,7 +139,7 @@ class MovingWalkwayWithDensityMeasurement[T <: Density, U <: MovingWalkwaySpeed]
       this.inflowLinesStart.map(fl => new FlowLineWithFraction(fl.name, flowLines.find(_.name == fl.name).get, fl.fractionKept)),
       this.inflowLinesEnd.map(fl => new FlowLineWithFraction(fl.name, flowLines.find(_.name == fl.name).get, fl.fractionKept)),
       this.criticalAreaStart.map(a => areas.find(_.name == a.name).get),
-      this.criticalAreaStart.map(a => areas.find(_.name == a.name).get),
+      this.criticalAreaEnd.map(a => areas.find(_.name == a.name).get),
       (P, I)
     )
   }

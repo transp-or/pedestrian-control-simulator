@@ -28,4 +28,13 @@ trait GridSearch {
     (params(0), params(1), tt)
   }
 
+  def extractFileGroup2Parameters(f: File): Option[(Double, Double, String)] = {
+    val endParams: Int = f.getName.indexOf("_params_")
+    if (endParams == -1) {None}
+    else {
+      val paramsRaw = f.getName.substring(0, endParams).split("_").map(_.toDouble).toVector
+      Some((paramsRaw(0), paramsRaw(1), f.getName.substring(0, endParams)))
+    }
+  }
+
 }

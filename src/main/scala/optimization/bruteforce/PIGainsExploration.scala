@@ -24,7 +24,7 @@ class PIGainsExploration(minP: Double, maxP:Double, minI: Double, maxI: Double, 
 
   val simulationRunsParameters: Vector[ParameterModificationsPIGains] = {
 
-    (for (i <- BigDecimal(minP) to BigDecimal(maxP) by BigDecimal(interval); j <- BigDecimal(minP) to BigDecimal(maxP) by BigDecimal(interval); k <- 1 to config.getInt("sim.nb_runs")) yield {
+    (for (i <- BigDecimal(minP) to BigDecimal(maxP) by BigDecimal(interval); j <- BigDecimal(minI) to BigDecimal(maxI) by BigDecimal(interval); k <- 1 to config.getInt("sim.nb_runs")) yield {
         ParameterModificationsPIGains(i.toDouble, j.toDouble)
     }).toVector
   }
