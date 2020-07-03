@@ -2,7 +2,7 @@ package hubmodel.DES
 
 import hubmodel._
 import hubmodel.control.amw.{AMWPolicy, StaticEngineeringSolution}
-import hubmodel.control.{ComputePedestrianDensity, ControlDevices, EvaluateState, ReinitializeFlowCounters}
+import hubmodel.control.{ComputePedestrianDensity, ControlDevices, EvaluateState, ReinitializeFlowCounters, UpdateDensityReactiveAMWs}
 import hubmodel.demand.{PTInducedQueue, PublicTransportSchedule}
 import hubmodel.mvmtmodels.NOMAD.NOMADIntegrated
 import hubmodel.mvmtmodels.{RebuildPopulationTree, UpdateClosestWall}
@@ -14,6 +14,7 @@ import hubmodel.supply.graph._
 import tools.Time
 import tools.cells.{DensityMeasuredArea, Vertex, isInVertex}
 import tools.exceptions.ControlDevicesException
+import tools.TimeNumeric.mkOrderingOps
 
 abstract class NOMADGraphSimulator(params: SimulationInputParameters) extends PedestrianDES(params.startTime, params.endTime) {
 
@@ -154,25 +155,30 @@ abstract class NOMADGraphSimulator(params: SimulationInputParameters) extends Pe
       }
 
 
-      if (this.sim.controlDevices.amwsMode == "static") {
+      if (this.sim.controlDevices.amwsMode._1 == "static") {
         val engineeringPolicy = new StaticEngineeringSolution(sim.graph.vertexMapNew, sim.controlDevices.amws).staticPolicyEngineeringSolution
         sim.controlDevices.amws.filter(_.noControlPolicy).foreach(w => {
-          val policy: Vector[AMWPolicy] = engineeringPolicy._1.collect { case p: AMWPolicy if p.name == w.name => {
+          val policy: Vector[AMWPolicy] = engineeringPolicy._1.collect { case p: AMWPolicy if p.name == w.name && p.start >= sim.startTime && p.end <= sim.finalTime => {
             p
           }
           }
           w.setControlPolicy(policy, engineeringPolicy._2.find(_.name == w.name))
           w.insertChangeSpeed(sim)
         })
-      } else if (this.sim.controlDevices.amwsMode == "reactive") {
+      } else if (this.sim.controlDevices.amwsMode._1 == "reactive") {
         sim.controlDevices.amws.filter(_.noControlPolicy).foreach(w => {
           w.setControlPolicy(Vector(AMWPolicy(w.name, sim.startTime, sim.finalTime, w.speed(sim.currentTime), w.length)), None)
         })
         sim.controlDevices.amws.foreach(w => {
           w.insertChangeSpeed(sim)
         })
+
+        if (sim.controlDevices.amws.nonEmpty && this.sim.controlDevices.amwsMode._1 == "reactive" && this.sim.controlDevices.amwsMode._2 == "density") {
+          sim.trackDensityInterval.foreach(_ => sim.insertEventWithZeroDelay(new UpdateDensityReactiveAMWs(sim)))
+        }
+
       }
-      else if (this.sim.controlDevices.amwsMode == "predictive") {
+      else if (this.sim.controlDevices.amwsMode._1 == "predictive") {
         sim.controlDevices.amws.filter(_.noControlPolicy).foreach(w => {
           w.setControlPolicy(Vector(AMWPolicy(w.name, sim.startTime, sim.finalTime, w.speed(sim.currentTime), w.length)), None)
           w.insertChangeSpeed(sim)

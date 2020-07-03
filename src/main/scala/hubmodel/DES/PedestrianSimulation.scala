@@ -21,7 +21,7 @@ class PedestrianSimulation(params: SimulationInputParameters) extends NOMADGraph
 
   insertStateEvaluationStart(new this.StateEvaluation)
 
-  if (this.controlDevices.amws.nonEmpty && this.controlDevices.amwsMode == "predictive") {
+  if (this.controlDevices.amws.nonEmpty && this.controlDevices.amwsMode._1 == "predictive") {
     this.insertEventWithZeroDelay(new RollingHorizonOptimization(this))
   }
 

@@ -20,7 +20,7 @@ import tools.exceptions.IllegalSimulationInput
   * @param flowSeparators      dynamic flow separators
   * @param fixedFlowSeparators indicator if the flow separators are fixed
   */
-class ControlDevices(val monitoredAreas: Iterable[DensityMeasuredArea], val amws: Iterable[MovingWalkwayAbstract], val amwsMode: String, val flowGates: Iterable[FlowGate], val binaryGates: Iterable[BinaryGate], val flowSeparators: Iterable[FlowSeparator[_, _]], val fixedFlowSeparators: Boolean, val flowLines: Vector[FlowLine], val flowSepParams: Option[Seq[FlowSeparatorParameters[_, _]]] = None) extends ControlDeviceComponent {
+class ControlDevices(val monitoredAreas: Iterable[DensityMeasuredArea], val amws: Iterable[MovingWalkwayAbstract], val amwsMode: (String, String), val flowGates: Iterable[FlowGate], val binaryGates: Iterable[BinaryGate], val flowSeparators: Iterable[FlowSeparator[_, _]], val fixedFlowSeparators: Boolean, val flowLines: Vector[FlowLine], val flowSepParams: Option[Seq[FlowSeparatorParameters[_, _]]] = None) extends ControlDeviceComponent {
 
   // Incompatible setup: flow gates exist but no areas to measure density exist
   if (flowGates.nonEmpty && monitoredAreas.isEmpty) {

@@ -29,10 +29,18 @@ object ExplorePIGains extends App {
     new File(config.getString("output.dir")).listFiles.filter(_.isFile).toVector.filter(f => analysis.extractFileGroup2Parameters(f).isDefined).map(f => (analysis.extractFileGroup2Parameters(f).get, f)).groupBy(a => a._1).mapValues(_.map(_._2)).to(Map)
   }
 
+  def computeDensityIntegral(individiualDensityData: Map[(String, String), Vector[(tools.Time, Vector[Double])]]): Double = {
+    individiualDensityData.toVector.flatMap(a => a._2.map(d => d._1.value.toDouble * {if (d._2.isEmpty){0.0} else {math.max(0.0, computeQuantile(75)(d._2).value - 1.2)}})).sum
+  }
+
+
   val heatmap = resultFiles.toVector.map(files => {
     val r = readResultsJson(config.getString("output.dir"), files._1._3 + "_params_", Vector()).toVector
-    val data = r.flatMap(_.tt.map(_.tt)).statistics
-    (files._1._1, files._1._2, data.mean)
+    val tt = r.flatMap(_.tt.map(_.tt))
+    val data = tt.statistics
+    (files._1._1, files._1._2, r.map(d => computeDensityIntegral(d.monitoredAreaIndividualDensity.get)).sum/r.size.toDouble)
+    //(files._1._1, files._1._2, computeQuantile(25)(tt).value)
+    //(files._1._1, files._1._2, data.mean)
   })
 
   println(resultFiles)

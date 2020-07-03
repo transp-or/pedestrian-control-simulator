@@ -176,7 +176,7 @@ class NOMADIntegrated(sim: NOMADGraphSimulator) extends Action {
       })
     }
 
-    if (sim.useAMWs && sim.controlDevices.amwsMode == "reactive") {
+    if (sim.useAMWs && sim.controlDevices.amwsMode._1 == "reactive") {
       sim.controlDevices.amws.collect {
         case w: MovingWalkwayWithFlowMeasurement[_,_] => {
           w.inflowLinesStart.foreach(fl => {

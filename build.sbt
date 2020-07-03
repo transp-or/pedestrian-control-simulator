@@ -1,7 +1,7 @@
 name := "hub-simulator"
 organization := "ch.epfl.transpor.pedestrians"
 version := "1.0-SNAPSHOT"
-scalaVersion := "2.13.1"
+scalaVersion := "2.13.3"
 fork in run := true
 
 javaOptions in run ++= Seq(

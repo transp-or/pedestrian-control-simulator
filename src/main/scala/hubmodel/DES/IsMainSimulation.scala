@@ -23,6 +23,8 @@ trait IsMainSimulation {
 
   class StateEval(sim: PedestrianSimulation) extends EvaluateState(sim) with Action {
 
+    override val priority: Int = 111
+
     override def execute(): Unit = {
 
       sim.eventLogger.trace("sim-time=" + sim.currentTime + ": state evaluation")
@@ -37,10 +39,10 @@ trait IsMainSimulation {
         processIncomingFlowsForFS()
       }
 
-      if (sim.controlDevices.amws.nonEmpty && this.sim.controlDevices.amwsMode == "predictive") {
+      if (sim.controlDevices.amws.nonEmpty && this.sim.controlDevices.amwsMode._1 == "predictive") {
         // this is inserted elsewhere now.
         //sim.insertEventWithZeroDelay(new RollingHorizonOptimization(this.sim))
-      } else if (sim.controlDevices.amws.nonEmpty && this.sim.controlDevices.amwsMode == "reactive") {
+      } else if (sim.controlDevices.amws.nonEmpty && this.sim.controlDevices.amwsMode._1 == "reactive") {
         updateReactiveAMWs()
       }
 

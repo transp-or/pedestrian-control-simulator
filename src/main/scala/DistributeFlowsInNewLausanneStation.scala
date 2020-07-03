@@ -1,7 +1,7 @@
-import java.io.{BufferedWriter, FileWriter}
 
 import trackingdataanalysis.pedtrack.NewBetterPosition2D
 import trackingdataanalysis.pedtrack.georeferencing.linearTransformation
+import java.io.{BufferedWriter, FileWriter}
 
 object DistributeFlowsInNewLausanneStation extends App {
 

@@ -15,11 +15,11 @@ class StaticEngineeringSolution(vertices: Map[String, Vertex], amws: Iterable[Mo
   private val zoneProcessor = new ZoneProcessingNew("E:\\PhD\\hub-simulator\\piw-corridor\\graph.json")
 
   private val files = Vector(
-    "E:\\PhD\\hub-simulator\\tracking-data-lausanne\\tracking-data-lausanne.tar\\tracking-data-lausanne\\lausanne_2013_01_22_piw.csv",
+    //"E:\\PhD\\hub-simulator\\tracking-data-lausanne\\tracking-data-lausanne.tar\\tracking-data-lausanne\\lausanne_2013_01_22_piw.csv",
     "E:\\PhD\\hub-simulator\\tracking-data-lausanne\\tracking-data-lausanne.tar\\tracking-data-lausanne\\lausanne_2013_01_23_piw.csv",
     "E:\\PhD\\hub-simulator\\tracking-data-lausanne\\tracking-data-lausanne.tar\\tracking-data-lausanne\\lausanne_2013_02_06_piw.csv",
-    "E:\\PhD\\hub-simulator\\tracking-data-lausanne\\tracking-data-lausanne.tar\\tracking-data-lausanne\\lausanne_2013_02_27_piw.csv"/*,
-    "E:\\PhD\\hub-simulator\\tracking-data-lausanne\\tracking-data-lausanne.tar\\tracking-data-lausanne\\lausanne_2013_02_28_piw.csv",
+    "E:\\PhD\\hub-simulator\\tracking-data-lausanne\\tracking-data-lausanne.tar\\tracking-data-lausanne\\lausanne_2013_02_27_piw.csv",
+    "E:\\PhD\\hub-simulator\\tracking-data-lausanne\\tracking-data-lausanne.tar\\tracking-data-lausanne\\lausanne_2013_02_28_piw.csv"/*,
     "E:\\PhD\\hub-simulator\\tracking-data-lausanne\\tracking-data-lausanne.tar\\tracking-data-lausanne\\lausanne_2013_03_05_piw.csv",
     "E:\\PhD\\hub-simulator\\tracking-data-lausanne\\tracking-data-lausanne.tar\\tracking-data-lausanne\\lausanne_2013_04_09_piw.csv",
     "E:\\PhD\\hub-simulator\\tracking-data-lausanne\\tracking-data-lausanne.tar\\tracking-data-lausanne\\lausanne_2013_04_20_piw.csv",
@@ -36,7 +36,7 @@ class StaticEngineeringSolution(vertices: Map[String, Vertex], amws: Iterable[Mo
     p
   }))
 
-  private val intervals = (25200 to 27000 by 10).toVector.map(t => tools.Time(t))
+  private val intervals = (27600 to 27900 by 10).toVector.map(t => tools.Time(t))
   private val r = new AMWFlowsFromEmpiricalData(pop, intervals, Map("amw1" -> Vector(Vector("b","c","d").map(zoneProcessor.vertices)), "amw2" -> Vector(Vector("d", "e").map(zoneProcessor.vertices))))
 
   private val initialControlPolicy = amws

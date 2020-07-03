@@ -99,12 +99,16 @@ class MovingWalkwayAbstract(val name: String, val firstVertex: Vertex, val secon
 
   def updateCosts(t: Time): Unit = {
     if (!isClosed) {
-      if (this._nextSpeed >= 0) {
+      if (this._nextSpeed > 0) {
         this.positiveEdge.updateCost(t, math.abs(this.length / (math.abs(this._nextSpeed) + 1.34)))
         this.negativeEdge.updateCost(t, Double.PositiveInfinity)
-      } else {
+      } else if (this._nextSpeed < 0){
         this.positiveEdge.updateCost(t, Double.PositiveInfinity)
         this.negativeEdge.updateCost(t, math.abs(this.length / (math.abs(this._nextSpeed) + 1.34)))
+      }
+      else {
+        this.positiveEdge.updateCost(t, Double.PositiveInfinity)
+        this.negativeEdge.updateCost(t, Double.PositiveInfinity)
       }
     }
   }
@@ -166,6 +170,12 @@ class MovingWalkwayAbstract(val name: String, val firstVertex: Vertex, val secon
   }
 
   def insertChangeSpeed(sim: NOMADGraphSimulator): Unit = {
+    if (this.closeTimes.nonEmpty) {
+      sim.insertEventAtAbsolute(outer.closeTimes.dequeue())(new CloseAMW(sim)).foreach(this.nextCloseAMW.addOne)
+    }
+    if (this.openTimes.nonEmpty) {
+      sim.insertEventAtAbsolute(outer.openTimes.dequeue())(new OpenAMW(sim)).foreach(this.nextOpenAMW.addOne)
+    }
     this.nextSpeedUpdate.foreach(_.setSkipTrue())
     this.nextSpeedUpdate = sim.insertEventAtAbsolute(this.controlPolicy.head.start)(new ChangeAMWSpeed(sim))
   }
@@ -242,12 +252,7 @@ class MovingWalkwayAbstract(val name: String, val firstVertex: Vertex, val secon
         }
       }
 
-      if (outer.closeTimes.nonEmpty) {
-        sim.insertEventAtAbsolute(outer.closeTimes.dequeue())(new CloseAMW(this.sim)).foreach(nextCloseAMW.addOne)
-      }
-      if (outer.openTimes.nonEmpty) {
-        sim.insertEventAtAbsolute(outer.openTimes.dequeue())(new OpenAMW(this.sim)).foreach(nextOpenAMW.addOne)
-      }
+
 
       /*if ((outer._previousSpeed.sign == -1 && outer._nextSpeed.sign == 1) || (outer._previousSpeed.sign == 1 && outer._nextSpeed.sign == -1)) {
         nextCloseAMW = sim.insertEventWithZeroDelay(new CloseAMW(this.sim))

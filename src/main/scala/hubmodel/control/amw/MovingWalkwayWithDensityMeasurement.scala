@@ -36,7 +36,7 @@ class MovingWalkwayWithDensityMeasurement[T <: Density, U <: MovingWalkwaySpeed]
     }
   }
 
-  private var currentDirection: Int = 1
+  private var currentMovingDirection: Int = 1
 
   private var nextPossibleDirectionChange: Time = Time(0)
 
@@ -44,7 +44,7 @@ class MovingWalkwayWithDensityMeasurement[T <: Density, U <: MovingWalkwaySpeed]
     this.flowHistoryNew.append((t, BidirectionalFlow(this.inflowLinesStart.map(l => l.fractionKept * l.fl.getPedestrianFlow).sum, this.inflowLinesEnd.map(l => l.fractionKept * l.fl.getPedestrianFlow).sum)))
   }
 
-  private def computeDirection(t: Time): Double = {
+  private def computeDirection(t: Time): Unit = {
     //flowHistoryNew.append((t, BidirectionalFlow(this.inflowLinesStart.map(l => l.fractionKept * l.getPedestrianFlow).sum, this.inflowLinesEnd.map(l => l.fractionKept * l.getPedestrianFlow).sum)))
 
     /*if (this.criticalAreadStart.forall(a => a.paxIndividualDensityHistory.last._2.isEmpty) || this.criticalAreadEnd.forall(a => a.paxIndividualDensityHistory.last._2.isEmpty)) {0.0}
@@ -52,15 +52,14 @@ class MovingWalkwayWithDensityMeasurement[T <: Density, U <: MovingWalkwaySpeed]
     else {-1.0}*/
 
 
-    if (t >= nextPossibleDirectionChange && currentDirection == 1 && flowHistoryNew.last._2.f2 > 1.5 * flowHistoryNew.last._2.f1) {
-      nextPossibleDirectionChange = t + Time(180)
-      currentDirection = -1
-    } else if (t >= nextPossibleDirectionChange && currentDirection == -1 && flowHistoryNew.last._2.f1 > 1.5 * flowHistoryNew.last._2.f2) {
-      nextPossibleDirectionChange = t + Time(180)
-      currentDirection = 1
+    if (t >= nextPossibleDirectionChange && currentMovingDirection == 1 && flowHistoryNew.last._2.f2 > 1.5 * flowHistoryNew.last._2.f1) {
+      nextPossibleDirectionChange = t + Time(30)
+      currentMovingDirection = -1
+    } else if (t >= nextPossibleDirectionChange && currentMovingDirection == -1 && flowHistoryNew.last._2.f1 > 1.5 * flowHistoryNew.last._2.f2) {
+      nextPossibleDirectionChange = t + Time(30)
+      currentMovingDirection = 1
     }
-    currentDirection
-    }
+  }
 
 
   private def computeTargetSpeed(t: Time, finalTime:Time, direction: Double): AMWPolicy = {
@@ -111,8 +110,10 @@ class MovingWalkwayWithDensityMeasurement[T <: Density, U <: MovingWalkwaySpeed]
 
   def updateReactivePolicy(t: Time, sim: NOMADGraphSimulator): Unit = {
 
-    if (!this.isClosed) {
-      val newPolicy = computeControlPolicy(t, computeTargetSpeed(t, sim.finalTime, computeDirection(t)))
+    if (!this.isClosed && this.noControlPolicy) {
+      val newPolicy = computeControlPolicy(t, computeTargetSpeed(t, sim.finalTime, this.currentMovingDirection))
+
+
       this.setControlPolicy(
         newPolicy._1.collect { case w: AMWPolicy if w.name == this.name => {
           w
@@ -121,6 +122,11 @@ class MovingWalkwayWithDensityMeasurement[T <: Density, U <: MovingWalkwaySpeed]
       )
       this.insertChangeSpeed(sim)
     }
+  }
+
+
+  def updateDirection(t: Time): Unit = {
+    this.computeDirection(t)
   }
 
   def deepCopyPIGains(graph: GraphContainer, flowLines: Iterable[FlowLine], areas: Iterable[DensityMeasuredArea],  P: Double, I: Double): MovingWalkwayWithDensityMeasurement[T, U] = {

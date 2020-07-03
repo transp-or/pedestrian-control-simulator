@@ -61,9 +61,9 @@ object CompareTravelTimeResultsPIW extends App {
 
 
   def resultsByOD(results: Vector[ResultsContainerReadNew]): Map[String, Map[String, (TT, Double, TD, Speed, Size)]] = {
-    val (noDemandSets, withDemandSets) = (results.partitionMap{
-      case a: ResultsContainerReadNew => Left(a)
+    val (noDemandSets, withDemandSets) = (results.partitionMap {
       case b: ResultsContainerReadWithDemandSetNew => Right(b.asInstanceOf[ResultsContainerReadWithDemandSetNew])
+      case a: ResultsContainerReadNew => Left(a)
     })
 
 
@@ -94,10 +94,10 @@ object CompareTravelTimeResultsPIW extends App {
             val ttData = dataByGroup.map(d => d.tt).statistics
 
             group._1 -> (
-              ttData.median,
+              ttData.mean,
               ttData.variance,
-              dataByGroup.map(d => d.td).statistics.median,
-              dataByGroup.map(d => d.tt / d.td).statistics.median,
+              dataByGroup.map(d => d.td).statistics.mean,
+              dataByGroup.map(d => d.tt / d.td).statistics.mean,
               dataByGroup.size
             )
           })

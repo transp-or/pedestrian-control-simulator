@@ -83,11 +83,35 @@ abstract class EvaluateState(sim: NOMADGraphSimulator) {
         w.updateReactivePolicy(sim.currentTime, sim)
       }
       case wd: MovingWalkwayWithDensityMeasurement[_,_] => {
+        wd.updateDirection(sim.currentTime)
+        //wd.updateReactivePolicy(sim.currentTime, sim)
+      }
+    }
+  }
+
+}
+
+class UpdateDensityReactiveAMWs(sim: NOMADGraphSimulator) extends Action {
+
+  override val priority: Int = 108
+
+  override def execute(): Any = {
+
+    sim.eventLogger.trace("sim-time=" + sim.currentTime + ": updating density based reactive amws")
+
+    sim.controlDevices.amws.collect{
+      case wd: MovingWalkwayWithDensityMeasurement[_,_] => {
         wd.updateReactivePolicy(sim.currentTime, sim)
       }
     }
-      }
 
+    sim.trackDensityInterval.foreach(t => sim.insertEventWithDelay(t)(new UpdateDensityReactiveAMWs(this.sim)))
+
+  }
+
+  type A = ComputePedestrianDensity
+
+  override def deepCopy(simulator: PedestrianPrediction): Option[A] = None
 }
 
 class ComputePedestrianDensity(sim: NOMADGraphSimulator) extends EvaluateState(sim) with Action {
@@ -109,7 +133,7 @@ class ComputePedestrianDensity(sim: NOMADGraphSimulator) extends EvaluateState(s
   override def deepCopy(simulator: PedestrianPrediction): Option[A] = None
 }
 
-class ReinitializeFlowCounters(sim: NOMADGraphSimulator) extends EvaluateState(sim) with Action {
+class ReinitializeFlowCounters(sim: NOMADGraphSimulator) extends  Action {
 
   override val priority: Int = 110
 

@@ -152,7 +152,7 @@ package object graph {
               )
             } else if (amwsMode._1 == "reactive" && amwsMode._2 == "density"){
               new MovingWalkwayWithDensityMeasurement(m.name, startCircle, endCircle, m.width, start, end, oz_1, oz_2, oldZones, newConnections, m.parallel_flows.map(r => r.map(v => vertexMapReader(v))), m.inf_start_name.map(fl => new FlowLineWithFraction(flowLines(fl._1).name, flowLines(fl._1), fl._2)),
-                m.inf_end_name.map(fl => new FlowLineWithFraction(flowLines(fl._1).name, flowLines(fl._1), fl._2)), m.startArea.map(z => monitoredAreas.find(_.name == z).get), m.endArea.map(z => monitoredAreas.find(_.name == z).get), (1.36 ,0.37))
+                m.inf_end_name.map(fl => new FlowLineWithFraction(flowLines(fl._1).name, flowLines(fl._1), fl._2)), m.startArea.map(z => monitoredAreas.find(_.name == z).get), m.endArea.map(z => monitoredAreas.find(_.name == z).get), (1.36, 0.37)) // (1.36 ,0.37)
             } else {
               new MovingWalkway(m.name, startCircle, endCircle, m.width, start, end, oz_1, oz_2, oldZones, newConnections, m.parallel_flows.map(r => r.map(v => vertexMapReader(v))), m.startArea.map(z => monitoredAreas.find(_.name == z).get), m.endArea.map(z => monitoredAreas.find(_.name == z).get))
             }
@@ -308,7 +308,7 @@ package object graph {
             }
           }
           ,
-          new ControlDevices(monitoredAreas, mv, amwsMode._1, fg, bg, flowSeparators, fixedFlowSep, flowLines.values.toVector, Some(flowSepParameters))
+          new ControlDevices(monitoredAreas, mv, amwsMode, fg, bg, flowSeparators, fixedFlowSep, flowLines.values.toVector, Some(flowSepParameters))
         )
       }
       case e: JsError => throw new Error("Error while parsing graph specification file: " + JsError.toJson(e).toString())

@@ -98,7 +98,7 @@ package object ALNS {
 
       def changeAMWPolicy(dirChange: AMWPolicy, amwTripTime: Time, speedChangeStart: Time, speedChangeEnd: Time, oldSpeed: Double, newSpeed: Double)(x: AMWPolicy, previousPolicySpeed: Option[Double]): AMWPolicy = {
 
-        val close: Option[Time] = if (dirChange.start == x.start && dirChange.end == x.end) {
+        /*val close: Option[Time] = if (dirChange.start == x.start && dirChange.end == x.end) {
           Some(dirChange.start)
         } else {
           None
@@ -108,7 +108,7 @@ package object ALNS {
           Some(dirChange.start + amwTripTime + Time(math.abs(oldSpeed / AMW_ACCELERATION_AMPLITUDE)))
         } else {
           None
-        }
+        }*/
 
         x match {
           // delay to allow pedestrian to leave the amw completely spans over the policy interval.
@@ -181,7 +181,7 @@ package object ALNS {
         val requireCloseOpenEvents: Boolean = (oldSpeed < 0.0 && newSpeed > 0.0 ) || (oldSpeed > 0.0 && newSpeed < 0.0)
 
         // expected trip duration on the amw
-        val amwTripTime: Time = Time(dirChange.amwLength / (math.abs(oldSpeed) + 1.34))
+        val amwTripTime: Time = Time(dirChange.amwLength / (1.34))
 
         // time to close the entrance of the amw, i.e. the time when the route graph must stop pedestrians from
         // walking along this link
@@ -199,7 +199,7 @@ package object ALNS {
 
         val newPolicy: Vector[AMWPolicy] = {
           if (routeGraphOpenTime.isDefined && amwEvents.openTime.contains(routeGraphOpenTime.get) && routeGraphCloseTime.isDefined && amwEvents.closeTime.contains(routeGraphCloseTime.get)) {
-            //println("nothing to do ! ")
+            println("nothing to do ! ")
             policy
           } else {
             //println("need to change policy")
@@ -211,11 +211,19 @@ package object ALNS {
           }
         }
 
+        val newPolicy2 = {
+          if (newPolicy.size == 1) {
+            Vector(newPolicy.head.copy(_s = newPolicy.head.start + amwTripTime))
+          } else {
+            newPolicy
+          }
+        }
+
         // update the direction changes and then proceed to the next one
         if (routeGraphCloseTime.isDefined && routeGraphOpenTime.isDefined) {
-          rec(findIndicesToChange(newPolicy).filter(_ > directionChanges.head + 1), newPolicy, amwEvents.copy(closeTime = amwEvents.closeTime :+ routeGraphCloseTime.get, openTime = amwEvents.openTime :+ routeGraphOpenTime.get))}
+          rec(findIndicesToChange(newPolicy2).filter(_ > directionChanges.head + 1), newPolicy2, amwEvents.copy(closeTime = amwEvents.closeTime :+ routeGraphCloseTime.get, openTime = amwEvents.openTime :+ routeGraphOpenTime.get))}
         else {
-          rec(findIndicesToChange(newPolicy).filter(_ > directionChanges.head + 1), newPolicy, amwEvents)}
+          rec(findIndicesToChange(newPolicy2).filter(_ > directionChanges.head + 1), newPolicy2, amwEvents)}
       }
     }
 
