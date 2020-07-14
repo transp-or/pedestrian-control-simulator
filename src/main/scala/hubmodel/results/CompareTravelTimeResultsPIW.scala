@@ -41,8 +41,16 @@ object CompareTravelTimeResultsPIW extends App {
 
   def groupsReversed(odPairs: (String, String)): String = {
     odGroups match {
-      case Some(s) => s.flatMap(g => g._2.map(t => t -> g._1)).getOrElse(odPairs, "other")
+      case Some(s) => odPairs._1 + "->" + odPairs._2/*s.flatMap(g => g._2.map(t => t -> g._1)).getOrElse(odPairs, "other")*/
       case None => odPairs._1 + "->" + odPairs._2
+    }
+    //odGroups.get.flatMap(g => g._2.map(t => t -> g._1)).getOrElse(odPairs, "other")
+  }
+
+  def ODPairsSorting(odPair: String): String = {
+    odGroups match {
+      case Some(s) => s.flatMap(g => g._2.map(t => t._1 + "->" + t._2 -> g._1)).getOrElse(odPair, "other")
+      case None => odPair
     }
     //odGroups.get.flatMap(g => g._2.map(t => t -> g._1)).getOrElse(odPairs, "other")
   }
@@ -96,10 +104,10 @@ object CompareTravelTimeResultsPIW extends App {
             val ttData = dataByGroup.map(d => d.tt).statistics
 
             group._1 -> (
-              ttData.mean,
+              ttData.median,
               ttData.variance,
-              dataByGroup.map(d => d.td).statistics.mean,
-              dataByGroup.map(d => d.tt / d.td).statistics.mean,
+              dataByGroup.map(d => d.td).statistics.median,
+              dataByGroup.map(d => d.tt / d.td).statistics.median,
               dataByGroup.size
             )
           })
@@ -211,12 +219,14 @@ object CompareTravelTimeResultsPIW extends App {
     new TDistribution(nu).density(t)
   }, rrr._6, rrr._7, rrr._8, rrr._9, rrr._10, rrr._11))).toVector
     .filterNot(v => v._3.isNaN || v._4.isNaN)
-    /*.sortBy(v => {
+    .sortBy(v => {
+      println(v._2)
       amwCountByOD(v._2)
-    })*/ //(v._3-v._2)/v._2)//v._1)
+    }) //(v._3-v._2)/v._2)//v._1)
     // .filterNot(v => v._9 == "other")
-    .sortBy(v => (v._4-v._3)/v._3)
+    //.map(v => {if (v._2.contains("7") || v._2.contains("8")){0} else {1}})
+    .sortBy(v => (ODPairsSorting(v._2), v._2))
     .zipWithIndex
-    .map(v => (v._2, v._1._1, v._1._2, v._1._3, v._1._4 , if (v._1._5 <= 0.05 && v._1._11 >= 50){"sigLarge"} else if (v._1._5 <= 0.05 && v._1._11 <50) {"sigSmall"} else if (v._1._5 > 0.05 && v._1._11 > 50) {"nonSigLarge"} else {"nonSigSmall"}, v._1._6, v._1._7, v._1._8, v._1._9, v._1._10, v._1._11, v._1._5))
-    .writeToCSV(config.getString("files_1.output_prefix") + "_VS_" + config.getString("files_2.output_prefix") + "_walking_time_distributions_by_OD.csv", columnNames = Some(Vector("idx", "demandFile", "odGroup", "refTT", "otherTT", "TTequalMeanPValue", "refTravelDistance", "otherTravelDistance", "refMeanSpeed", "otherMeanSpeed", "refPopulationSize", "otherPopulationSize", "pvalue")), rowNames = None)
+    .map(v => (v._2, v._1._1, v._1._2, v._1._3, v._1._4, 100.0*(v._1._4-v._1._3)/v._1._3 , if (v._1._5 <= 0.05 && v._1._10 >= 100 && v._1._11 >= 100){"sigLarge"} else if (v._1._5 <= 0.05 && (v._1._10 < 100 || v._1._11 <100)) {"sigSmall"} else if (v._1._5 > 0.05 && v._1._10 > 100 && v._1._11 > 100) {"nonSigLarge"} else {"nonSigSmall"}, v._1._6, v._1._7, v._1._8, v._1._9, v._1._10, v._1._11, v._1._5, ODPairsSorting(v._1._2)))
+    .writeToCSV(config.getString("files_1.output_prefix") + "_VS_" + config.getString("files_2.output_prefix") + "_walking_time_distributions_by_OD.csv", columnNames = Some(Vector("idx", "demandFile", "odGroup", "refTT", "otherTT","relativeTTDiff" , "TTequalMeanPValue", "refTravelDistance", "otherTravelDistance", "refMeanSpeed", "otherMeanSpeed", "refPopulationSize", "otherPopulationSize", "pvalue", "MISC")), rowNames = None)
 }

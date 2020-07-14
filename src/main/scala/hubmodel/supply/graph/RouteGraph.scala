@@ -162,6 +162,9 @@ class RouteGraph(protected val baseVertices: Iterable[Vertex],
 
 
   def updateRouteOutsideZones(t: Time, p: PedestrianNOMAD): Unit = {
+    if (p.origin.name == "9" && p.finalDestination.name == "8"){
+      println("debug")
+    }
     p.route = destination2EquivalentDestinationsFunc(p.finalDestination).filter(_ != p.origin).map(d => this.getShortestPath(p.previousZone, d)).minBy(_._1)._2.tail
     p.finalDestination = p.route.last
     p.nextZone = p.route.head
@@ -177,6 +180,9 @@ class RouteGraph(protected val baseVertices: Iterable[Vertex],
   def processIntermediateArrival(t: Time, p: PedestrianNOMAD): Unit = {
     //println(p.route)
     if (p.route.isEmpty) {
+      if (p.origin.name == "9" && p.finalDestination.name == "8"){
+        println("debug")
+      }
       p.route = destination2EquivalentDestinationsFunc(p.finalDestination).filter(_ != p.origin).map(d => this.getShortestPath(p.origin, d)).minBy(_._1)._2.tail
       p.finalDestination = p.route.last
       p.nextZone = p.route.head
@@ -187,11 +193,17 @@ class RouteGraph(protected val baseVertices: Iterable[Vertex],
       p.currentPosition = p.route.head.uniformSamplePointInside
       p.previousPosition = p.currentPosition
       p.nextZone = p.route.tail.head
+      if (p.origin.name == "9" && p.finalDestination.name == "8"){
+        println("debug")
+      }
       p.route = destination2EquivalentDestinationsFunc(p.finalDestination).filter(_ != p.origin).map(d => this.getShortestPath(p.nextZone, d)).minBy(_._1)._2.tail
       p.finalDestination = p.route.last
     }
     else {
       p.previousZone = p.nextZone
+      if (p.origin.name == "9" && p.finalDestination.name == "8"){
+        println("debug")
+      }
       p.route = destination2EquivalentDestinationsFunc(p.finalDestination).filter(_ != p.origin).map(d => this.getShortestPath(p.previousZone, d)).minBy(_._1)._2.tail
       p.finalDestination = p.route.last
       p.nextZone = p.route.head
