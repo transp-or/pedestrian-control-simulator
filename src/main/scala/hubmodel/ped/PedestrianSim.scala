@@ -26,7 +26,7 @@ import tools.cells.Vertex
   * @param route              initial route
   */
 class PedestrianSim(val origin: Vertex,
-                    val originalFinalDestination: Vertex,
+                    private val originalFinalDestination: Vertex,
                     val entryTime: Time,
                     val logFullHistory: Boolean = false,
                     val isTransfer: Boolean) extends PedestrianTrait with PedestrianTrajectory {

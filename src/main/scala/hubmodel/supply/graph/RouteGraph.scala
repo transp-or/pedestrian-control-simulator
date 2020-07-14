@@ -49,14 +49,14 @@ class RouteGraph(protected val baseVertices: Iterable[Vertex],
     movingWalkways.flatMap(amw => amw.droppedVertices)
 
   // Inverted destination groups which is used to check if alternative equivalent destination are available
-  private val destination2EquivalentDestinations: Map[String, Vector[String]] = destinationGroups.flatMap(kv => kv._2.map(r => r -> kv._2)).toMap
+  private val destination2EquivalentDestinations: Map[String, Vector[String]] = destinationGroups.flatMap(kv =>  kv._2.map(r => r -> kv._2)).toMap
 
   // builds the container for the graph
   private val network: DefaultDirectedWeightedGraph[Vertex, MyEdge] = new DefaultDirectedWeightedGraph[Vertex, MyEdge](classOf[MyEdge])
 
 
 
-  private def destination2EquivalentDestinations(zone: Vertex): Vector[Vertex] = destination2EquivalentDestinations.getOrElse(zone.name, Vector(zone.name)).map(zID => this.vertexCollection(zID))
+  private def destination2EquivalentDestinationsFunc(zone: Vertex): Vector[Vertex] = destination2EquivalentDestinations.getOrElse(zone.name, Vector(zone.name)).map(zID => this.vertexCollection(zID))
 
   this.vertexCollection.values.foreach(v => network.addVertex(v))
   //def vertexMapNew: Map[String, Rectangle] = this.vertexCollection
@@ -162,7 +162,7 @@ class RouteGraph(protected val baseVertices: Iterable[Vertex],
 
 
   def updateRouteOutsideZones(t: Time, p: PedestrianNOMAD): Unit = {
-    p.route = destination2EquivalentDestinations(p.finalDestination).filter(_ != p.origin).map(d => this.getShortestPath(p.previousZone, d)).minBy(_._1)._2.tail
+    p.route = destination2EquivalentDestinationsFunc(p.finalDestination).filter(_ != p.origin).map(d => this.getShortestPath(p.previousZone, d)).minBy(_._1)._2.tail
     p.finalDestination = p.route.last
     p.nextZone = p.route.head
     p.route = p.route.tail
@@ -177,7 +177,7 @@ class RouteGraph(protected val baseVertices: Iterable[Vertex],
   def processIntermediateArrival(t: Time, p: PedestrianNOMAD): Unit = {
     //println(p.route)
     if (p.route.isEmpty) {
-      p.route = destination2EquivalentDestinations(p.finalDestination).filter(_ != p.origin).map(d => this.getShortestPath(p.origin, d)).minBy(_._1)._2.tail
+      p.route = destination2EquivalentDestinationsFunc(p.finalDestination).filter(_ != p.origin).map(d => this.getShortestPath(p.origin, d)).minBy(_._1)._2.tail
       p.finalDestination = p.route.last
       p.nextZone = p.route.head
       p.route = p.route.tail
@@ -187,12 +187,12 @@ class RouteGraph(protected val baseVertices: Iterable[Vertex],
       p.currentPosition = p.route.head.uniformSamplePointInside
       p.previousPosition = p.currentPosition
       p.nextZone = p.route.tail.head
-      p.route = destination2EquivalentDestinations(p.finalDestination).filter(_ != p.origin).map(d => this.getShortestPath(p.nextZone, d)).minBy(_._1)._2.tail
+      p.route = destination2EquivalentDestinationsFunc(p.finalDestination).filter(_ != p.origin).map(d => this.getShortestPath(p.nextZone, d)).minBy(_._1)._2.tail
       p.finalDestination = p.route.last
     }
     else {
       p.previousZone = p.nextZone
-      p.route = destination2EquivalentDestinations(p.finalDestination).filter(_ != p.origin).map(d => this.getShortestPath(p.previousZone, d)).minBy(_._1)._2.tail
+      p.route = destination2EquivalentDestinationsFunc(p.finalDestination).filter(_ != p.origin).map(d => this.getShortestPath(p.previousZone, d)).minBy(_._1)._2.tail
       p.finalDestination = p.route.last
       p.nextZone = p.route.head
       p.route = p.route.tail

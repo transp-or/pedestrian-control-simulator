@@ -7,12 +7,14 @@ import hubmodel.io.input.JSONReaders.{ODGroup_JSON, ODPair_JSON_with_AMW}
 import hubmodel.parseConfigFile
 import myscala.math.stats.{ComputeQuantiles, ComputeStats, Statistics, computeQuantile}
 import myscala.output.SeqTuplesExtensions.SeqTuplesWriter
+import myscala.output.SeqOfSeqExtensions.SeqOfSeqWriter
 import org.apache.commons.math3.distribution.TDistribution
 import play.api.libs.json.{JsError, JsSuccess, JsValue, Json}
 
 import scala.io.BufferedSource
 import scala.jdk.CollectionConverters._
 import org.apache.commons.math3.stat.inference.TTest
+import tools.Time
 
 
 object CompareTravelTimeResultsPIW extends App {
@@ -27,12 +29,12 @@ object CompareTravelTimeResultsPIW extends App {
   val odGroups: Option[Map[String, Vector[(String, String)]]] = if (!config.getIsNull("output.OD-groups")) {
     val source: BufferedSource = scala.io.Source.fromFile(config.getString("output.OD-groups"))
     val input: JsValue = Json.parse(try source.mkString finally source.close)
-    input.validate[Vector[ODGroup_JSON]] match {
+    (input.validate[Vector[ODGroup_JSON]] match {
       case s: JsSuccess[Vector[ODGroup_JSON]] => {
         Some(s.get.map(r => r.name -> r.ods.map(v => (v.o, v.d))).toMap)
       }
       case e: JsError => throw new Error("Error while parsing od groups: " + JsError.toJson(e).toString())
-    }
+    }).map(s => s.flatMap(kv => Map(kv._1 -> kv._2, kv._1.split("-TO-").last + "-TO-" +  kv._1.split("-TO-").head -> kv._2.map(od => (od._2, od._1)))))
   } else {
     None
   }
@@ -60,7 +62,7 @@ object CompareTravelTimeResultsPIW extends App {
   val resultsOther: Vector[ResultsContainerReadNew] = readResultsJson(config.getString("files_2.dir"), config.getString("files_2.output_prefix"), demandSets).toVector
 
 
-  def resultsByOD(results: Vector[ResultsContainerReadNew]): Map[String, Map[String, (TT, Double, TD, Speed, Size)]] = {
+  def TTresultsByOD(results: Vector[ResultsContainerReadNew]): Map[String, Map[String, (TT, Double, TD, Speed, Size)]] = {
     val (noDemandSets, withDemandSets) = (results.partitionMap {
       case b: ResultsContainerReadWithDemandSetNew => Right(b.asInstanceOf[ResultsContainerReadWithDemandSetNew])
       case a: ResultsContainerReadNew => Left(a)
@@ -111,9 +113,19 @@ object CompareTravelTimeResultsPIW extends App {
     individiualDensityData.toVector.flatMap(a => a._2.map(d => d._1.value.toDouble * {if (d._2.isEmpty){0.0} else {math.max(0.0, computeQuantile(75)(d._2).value - 1.2)}})).sum
   }
 
-  val resultsByODRef: Map[String, Map[String, (TT, Double, TD, Speed, Size)]] = resultsByOD(resultsRef)
-  val resultsByODOther: Map[String, Map[String, (TT, Double, TD, Speed, Size)]] = resultsByOD(resultsOther)
+  def computeDensityQuantile(individiualDensityData: Map[(String, String), Vector[(tools.Time, Vector[Double])]]): Map[(String, String), Vector[(tools.Time, Double)]] = {
+    individiualDensityData.view.mapValues(a => a.map(d => (d._1, if (d._2.isEmpty) {0.0} else {computeQuantile(75)(d._2).value}))).toMap
+  }
 
+  val resultsByODRef: Map[String, Map[String, (TT, Double, TD, Speed, Size)]] = TTresultsByOD(resultsRef)
+  val resultsByODOther: Map[String, Map[String, (TT, Double, TD, Speed, Size)]] = TTresultsByOD(resultsOther)
+
+  def densityResultsByZone(results: Vector[ResultsContainerReadNew]): Vector[(String, Vector[(Time, Double)])] = {
+    results.collect{
+        case r: ResultsContainerReadNew if r.monitoredAreaIndividualDensity.isDefined => "all" -> computeDensityQuantile(r.monitoredAreaIndividualDensity.get)//.view.mapValues(v => v.map(r => (r._1, computeQuantile(75)(r._2).value))).to(Map)
+        case r: ResultsContainerReadWithDemandSetNew if r.monitoredAreaIndividualDensity.isDefined => r.demandFile -> computeDensityQuantile(r.monitoredAreaIndividualDensity.get)
+      }.flatMap(v => v._2.map(vv => v._1 + "_" + vv._1._1 -> vv._2))
+  }
 
   val resultsDensityRef: Map[String, Statistics[Double]] = resultsRef
     .collect{
@@ -138,6 +150,25 @@ object CompareTravelTimeResultsPIW extends App {
 
   (resultsDensityRef ++ resultsDensityOther).toVector.map(kv => (kv._1, kv._2.toCSV))
     .writeToCSV("density-integral-stats.csv", columnNames=Some(Vector("name") ++ resultsDensityRef.head._2.CSVColumnNames.split(",")), rowNames = None)
+
+  val densityResultsByZoneRef: Vector[(String, Vector[(Time, Double)])] = densityResultsByZone(resultsRef).sortBy(_._1)
+  val densityResultsByZoneOther: Vector[(String, Vector[(Time, Double)])] = densityResultsByZone(resultsOther).sortBy(_._1)
+
+  val headersDensity = densityResultsByZoneRef.flatMap(v => Vector(v._1 + "_t", v._1 + "_d"))
+
+  densityResultsByZoneRef.flatMap(v => Vector(v._2.map(_._1.value.toDouble), v._2.map(_._2))).writeToCSV("density-over-time-" + config.getString("files_1.output_prefix") + ".csv", columnNames = Some(headersDensity), rowNames = None)
+  densityResultsByZoneOther.flatMap(v => Vector(v._2.map(_._1.value.toDouble), v._2.map(_._2))).writeToCSV("density-over-time-" + config.getString("files_2.output_prefix") + ".csv", columnNames = Some(headersDensity), rowNames = None)
+
+
+  val avergaeDensityResultsByZoneRef: Vector[(String, Vector[(Time, Double)])] = densityResultsByZoneRef.groupBy(_._1)
+    .map(kv => (kv._1, kv._2.flatMap(td => td._2).groupBy(_._1).map(d => d._1 -> d._2.map(_._2).sum / d._2.size).toVector.sortBy(_._1))).toVector.sortBy(_._1)
+
+  val avergaeDensityResultsByZoneOther: Vector[(String, Vector[(Time, Double)])] = densityResultsByZoneOther.groupBy(_._1)
+    .map(kv => (kv._1, kv._2.flatMap(td => td._2).groupBy(_._1).map(d => d._1 -> d._2.map(_._2).sum / d._2.size).toVector.sortBy(_._1))).toVector.sortBy(_._1)
+
+  val headersDensityAverage = avergaeDensityResultsByZoneRef.flatMap(v => Vector(v._1 + "_t", v._1 + "_d"))
+  avergaeDensityResultsByZoneRef.flatMap(v => Vector(v._2.map(_._1.value.toDouble), v._2.map(_._2))).writeToCSV("average-density-over-time-" + config.getString("files_1.output_prefix") + ".csv", columnNames = Some(headersDensityAverage), rowNames = None)
+  avergaeDensityResultsByZoneOther.flatMap(v => Vector(v._2.map(_._1.value.toDouble), v._2.map(_._2))).writeToCSV("average-density-over-time-" + config.getString("files_2.output_prefix") +".csv", columnNames = Some(headersDensityAverage), rowNames = None)
 
 
   def WelchTTest(m1: Double, sd1:Double, size1: Int, m2: Double, sd2:Double, size2: Int): (Double, Double) = {
@@ -180,11 +211,12 @@ object CompareTravelTimeResultsPIW extends App {
     new TDistribution(nu).density(t)
   }, rrr._6, rrr._7, rrr._8, rrr._9, rrr._10, rrr._11))).toVector
     .filterNot(v => v._3.isNaN || v._4.isNaN)
-    .sortBy(v => {
+    /*.sortBy(v => {
       amwCountByOD(v._2)
-    }) //(v._3-v._2)/v._2)//v._1)
+    })*/ //(v._3-v._2)/v._2)//v._1)
     // .filterNot(v => v._9 == "other")
+    .sortBy(v => (v._4-v._3)/v._3)
     .zipWithIndex
-    .map(v => (v._2, v._1._1, v._1._2, v._1._3, v._1._4 , if (v._1._5 <= 0.05 && v._1._11 >= 100){"sigLarge"} else if (v._1._5 <= 0.05 && v._1._11 <100) {"sigSmall"} else if (v._1._5 > 0.05 && v._1._11 > 100) {"nonSigLarge"} else {"nonSigSmall"}, v._1._6, v._1._7, v._1._8, v._1._9, v._1._10, v._1._11))
-    .writeToCSV(config.getString("files_1.output_prefix") + "_VS_" + config.getString("files_2.output_prefix") + "_walking_time_distributions_by_OD.csv", columnNames = Some(Vector("idx", "demandFile", "odGroup", "refTT", "otherTT", "TTequalMeanPValue", "refTravelDistance", "otherTravelDistance", "refMeanSpeed", "otherMeanSpeed", "refPopulationSize", "otherPopulationSize")), rowNames = None)
+    .map(v => (v._2, v._1._1, v._1._2, v._1._3, v._1._4 , if (v._1._5 <= 0.05 && v._1._11 >= 50){"sigLarge"} else if (v._1._5 <= 0.05 && v._1._11 <50) {"sigSmall"} else if (v._1._5 > 0.05 && v._1._11 > 50) {"nonSigLarge"} else {"nonSigSmall"}, v._1._6, v._1._7, v._1._8, v._1._9, v._1._10, v._1._11, v._1._5))
+    .writeToCSV(config.getString("files_1.output_prefix") + "_VS_" + config.getString("files_2.output_prefix") + "_walking_time_distributions_by_OD.csv", columnNames = Some(Vector("idx", "demandFile", "odGroup", "refTT", "otherTT", "TTequalMeanPValue", "refTravelDistance", "otherTravelDistance", "refMeanSpeed", "otherMeanSpeed", "refPopulationSize", "otherPopulationSize", "pvalue")), rowNames = None)
 }

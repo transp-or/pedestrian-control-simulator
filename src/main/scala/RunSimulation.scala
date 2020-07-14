@@ -5,6 +5,7 @@ import hubmodel._
 import hubmodel.demand.{DemandData, DemandSet, readDemandSets}
 import hubmodel.io.input.JSONReaders.ODGroup_JSON
 import hubmodel.io.output.TRANSFORM.PopulationSummaryProcessingTRANSFORM
+import hubmodel.prediction.{AMWFlowsFromEmpiricalData, AMWFlowsFromGroundTruthProcessor}
 import hubmodel.results.{ResultsContainerRead, ResultsContainerReadNew, ResultsContainerReadWithDemandSet, ResultsContainerReadWithDemandSetNew, readResults, readResultsJson}
 import hubmodel.supply.graph.readPTStop2GraphVertexMap
 import tools.Time
@@ -14,6 +15,7 @@ import myscala.output.SeqExtension.SeqWriter
 import myscala.output.SeqOfSeqExtensions.SeqOfSeqWriter
 import myscala.output.SeqTuplesExtensions.SeqTuplesWriter
 import play.api.libs.json.{JsError, JsSuccess, JsValue, Json}
+import trackingdataanalysis.pedtrack.ZoneProcessingNew
 import trackingdataanalysis.visualization.{Histogram, PlotOptions, ScatterPlot, computeHistogramDataWithXValues}
 
 import scala.collection.parallel.immutable.{ParSeq, ParVector}
@@ -202,10 +204,26 @@ object RunSimulation extends App with StrictLogging {
       // writes the applied data to the same csv file
       val individualDensitiesQuantile: Vector[(String, Vector[Double], String, Vector[Double])] = resultsJson
         .filter(_.monitoredAreaIndividualDensity.isDefined)
-        .flatMap(_.monitoredAreaIndividualDensity.get)
-        .map(d =>(d._1._1 + "_" + d._1._2 + "_t", d._2.map(v => v._1.value.toDouble), d._1._1 + "_" + d._1._2 + "_d", d._2.map(v => if (v._2.isEmpty) {Double.NaN} else {computeQuantile(75)(v._2).value})))
+        .flatMap(v => v.monitoredAreaIndividualDensity.get.toVector.map(vv => (v.id, vv)))
+        .sortBy(s => (s._1, s._2._1._1))
+        .map(d => (d._1 + "_" + d._2._1._1 + "_t", d._2._2.map(v => v._1.value.toDouble), d._1 + "_" + d._2._1._1 + "_d", d._2._2.map(v => if (v._2.isEmpty) {Double.NaN} else {computeQuantile(75)(v._2).value})))
 
       individualDensitiesQuantile.flatMap(d => Vector(d._2, d._4)).writeToCSV(config.getString("output.output_prefix") + "_individual_density_75.csv", rowNames=None, columnNames = Some(individualDensitiesQuantile.flatMap(d => Vector(d._1, d._3))))
+
+      val averageDensities: Vector[(String, Vector[(Double, Double, Double, Double)])] = resultsJson
+        .filter(_.monitoredAreaIndividualDensity.isDefined)
+        .flatMap(_.monitoredAreaIndividualDensity.get)
+        .groupBy(_._1._1)
+        .map(kv => (kv._1, kv._2.flatMap(d => d._2.map(v => (v._1, if (v._2.isEmpty) {0.0} else {computeQuantile(75)(v._2).value}))).groupBy(_._1).toVector.map(d =>  (d._1.value.toDouble, d._2.map(_._2).sum / d._2.size.toDouble, computeQuantile(25)(d._2.map(_._2)).value, computeQuantile(75)(d._2.map(_._2)).value)).sortBy(_._1)))
+        .toVector
+        .sortBy(_._1)
+
+
+      val averageDensitiesHeaders = averageDensities.flatMap(v => Vector(v._1 + "_t", v._1 + "_s", v._1 + "_lq", v._1 + "_uq"))
+
+      averageDensities
+        .flatMap(m => Vector(m._2.map(_._1), m._2.map(_._2), m._2.map(_._3), m._2.map(_._4)))
+        .writeToCSV(config.getString("output.output_prefix") + "_average-individual_density_75.csv", columnNames = Some(averageDensitiesHeaders), rowNames = None)
     }
 
     // computes statistics on travel times and writes them
@@ -216,7 +234,7 @@ object RunSimulation extends App with StrictLogging {
         r.tt.map(_._3) /*.cutOfAfterQuantile(99.9)*/ .statistics
       })
 
-      Vector((0.0, computeBoxPlotData(statsPerRun.map(_.median)).toCSV, 0.8)).writeToCSV(config.getString("output.output_prefix") + "-travel-time-median-boxplot.csv", rowNames = None, columnNames = Some(Vector("pos", "mean", "median", "lq", "uq", "lw", "uw", "outliersize", "boxplotwidth")))
+      Vector((0.0, computeBoxPlotData(statsPerRun.map(_.mean)).toCSV, 0.8)).writeToCSV(config.getString("output.output_prefix") + "-travel-time-mean-boxplot.csv", rowNames = None, columnNames = Some(Vector("pos", "mean", "median", "lq", "uq", "lw", "uw", "outliersize", "boxplotwidth")))
 
       statsPerRun.writeToCSV(config.getString("output.output_prefix") + "_travel_times_stats.csv", rowNames = None, columnNames = Some(Vector("size", "mean", "variance", "median", "min", "max")))
 
@@ -268,6 +286,18 @@ object RunSimulation extends App with StrictLogging {
     // Writes the median travel times to a csv file
     if (config.getBoolean("output.travel-time.per-simulation-median") && results.nonEmpty) {
       results.map(r => r.tt.map(_._3).statistics.median).writeToCSV(config.getString("output.output_prefix") + "_median-travel-time-per-simulation.csv")
+    }
+
+    // Writes the box plot of the mean travel per simulation to a csv file
+    if (config.getBoolean("output.travel-time.per-simulation-mean-boxplot") && results.nonEmpty) {
+      results.map(r => (computeBoxPlotData(r.tt.map(_._3)).toCSV, 1.0))
+        .writeToCSV(config.getString("output.output_prefix") + "_mean-travel-time-per-simulation-boxplot-data.csv", rowNames = None, columnNames = Some(Vector("mean", "median", "lq", "uq", "lw", "uw", "outliersize", "boxplotwidth")))
+    }
+
+    // Writes the box plot of the mean travel per simulation to a csv file
+    if (config.getBoolean("output.travel-time.mean-boxplot") && results.nonEmpty) {
+      Vector((computeBoxPlotData(results.map(r => r.tt.map(_._3).statistics.mean)).toCSV, 1.0))
+        .writeToCSV(config.getString("output.output_prefix") + "_mean-travel-time-boxplot-data.csv", rowNames = None, columnNames = Some(Vector("mean", "median", "lq", "uq", "lw", "uw", "outliersize", "boxplotwidth")))
     }
 
 
@@ -422,11 +452,29 @@ object RunSimulation extends App with StrictLogging {
     if (config.getBoolean("output.amws.control-policy")) {
       // writes the applied data to the same csv file
       val appliedSpeeds: Vector[(String, Vector[Double], String, Vector[Double])] = resultsJson
+        .sortBy(_.id)
         .filter(_.amwData.isDefined)
-        .flatMap(_.amwData.get)
-        .map(w => ((w.name + "_" + w.id + "_t", w.appliedPolicy.map(_._1), w.name + "_" + w.id + "_s", w.appliedPolicy.map(_._2))))
+        .flatMap(v => v.amwData.get.map(vv => (v.id, vv)))
+        .map(w => ((w._1 + "_" + w._2.name + "_t", w._2.appliedPolicy.map(_._1), w._1 + "_" + w._2.name + "_s", w._2.appliedPolicy.map(_._2))))
 
       appliedSpeeds.flatMap(d => Vector(d._2, d._4)).writeToCSV(config.getString("output.output_prefix") + "_applied_amw_speeds.csv", rowNames=None, columnNames = Some(appliedSpeeds.flatMap(d => Vector(d._1, d._3))))
+
+      val averageAMWSpeeds: Vector[(String, Vector[(Double, Double, Double, Double)])] = resultsJson
+        .filter(_.amwData.isDefined)
+        .flatMap(_.amwData.get)
+        .groupBy(_.name)
+        .map(kv => (kv._1, kv._2.flatMap(_.appliedPolicy).groupBy(_._1).toVector.map(speeds => (speeds._1, speeds._2.map(_._2).sum / speeds._2.size.toDouble, computeQuantile(25)(speeds._2.map(_._2)).value, computeQuantile(75)(speeds._2.map(_._2)).value)).sortBy(_._1)))
+        .toVector
+        .sortBy(_._1)
+
+
+        val averageSpeedHeaders = averageAMWSpeeds.flatMap(s => Vector(s._1 + "_t", s._1 + "_s", s._1 + "_lq", s._1 + "_uq"))
+
+      averageAMWSpeeds
+        .flatMap(m => Vector(m._2.map(_._1), m._2.map(_._2), m._2.map(_._3), m._2.map(_._4)))
+        .writeToCSV(config.getString("output.output_prefix") + "_amw-applied-average-speed.csv", columnNames = Some(averageSpeedHeaders), rowNames = None)
+
+
 
       // writes the expected data to separate csv files
       val expectedSpeeds: Map[(String, String), Vector[(String, Vector[Double], String, Vector[Double])]] = resultsJson
@@ -440,6 +488,52 @@ object RunSimulation extends App with StrictLogging {
       })
  }
 
+
+    // ******************************************************************************************
+    //                                        Pedestrian flows
+    // ******************************************************************************************
+
+    if (true) {
+      val intervals: Vector[Time] = 27600.to(27900).by(10).map(v => Time(v.toDouble)).toVector
+      //val zoneProcessor: ZoneProcessingNew = new ZoneProcessingNew("E:\\PhD\\hub-simulator\\piw-corridor\\graph.json")
+      val amw1Routes = Vector(Vector("bc1","c1","dc1"), Vector("bc2","c2","dc2"), Vector("amw11","amw12"))/*.map(r => r.map(zoneProcessor.vertices))*/
+      val amw2Routes = Vector(Vector("amw21", "amw22"), Vector("d15","e15"), Vector("d15","e2"), Vector("d2","e2"), Vector("d2","e15"))/*.map(r => r.map(zoneProcessor.vertices))*/
+
+      val amwRoutes: Map[String, Vector[Vector[String]]] =  Map("amw1p" -> amw1Routes, "amw2p" -> amw2Routes, "amw1n" -> amw1Routes.map(_.reverse), "amw2n" -> amw2Routes.map(_.reverse))
+      //val amwRoutes: Map[String, Vector[Vector[String]]] =  Map("j1" -> Vector(Vector("11a","11b"), Vector("12a", "12b"), Vector("14","14a"), Vector("13","13a")), "j34" -> Vector(Vector("9a", "9b"), Vector("10a", "10b")), "j56" -> Vector(Vector("8a", "8b"), Vector("7a", "7b")), "j78" -> Vector(Vector("6a", "6b"), Vector("5a", "5b"), Vector("a", "b1"), Vector("a", "b15"), Vector("a", "b2")))
+
+      val amwFlows: Vector[((String, String), Vector[(Time, Int)])] = resultsJson.flatMap(r => {
+     r.tt.flatMap(p => {
+          val rNames = p.route.map(_.node)
+          amwRoutes
+            .flatMap(rt => rt._2.map(r => rNames.indexOfSlice(r) match {case -1 => None case other => Some((rt._1, other))}))
+            .collect{case Some(s) => s}
+            .map(kv => (kv._1, p.route(kv._2), intervals.indexWhere(_.value > p.route(kv._2).t)-1))
+        })
+          .groupBy(g => (g._1, g._3))
+          .map(g => (intervals(g._1._2), g._1._1, g._2.size))
+          .groupBy(_._2)
+          .map(g => (r.id, g._1) -> g._2.map(gg => (gg._1, gg._3)).toVector.sortBy(_._1))
+          .toVector
+      }).sortBy(_._1)
+
+      val headers: Vector[String] = amwFlows.flatMap(h => Vector(h._1._1 + "_" + h._1._2 + "_t", h._1._1 + "_" + h._1._2 + "_f"))
+
+      val tmp: Vector[Vector[Double]] = amwFlows.map(_._2)
+        .flatMap(v => Vector(v.map(_._1.value.toDouble), v.map(_._2.toDouble)))
+
+      tmp.writeToCSV(config.getString("output.output_prefix") + "_simplified-flows.csv", columnNames = Some(headers), rowNames = None)
+
+      val averageFlows = amwFlows.groupBy(g => g._1._2)
+        .toVector
+        .map(m => (m._1, m._2.flatMap(n => n._2).groupBy(_._1).map(g => (g._1, g._2.map(_._2).sum.toDouble / g._2.size.toDouble, computeQuantile(25)(g._2.map(_._2)).value, computeQuantile(75)(g._2.map(_._2)).value)).toVector.sortBy(_._1)))
+        .sortBy(_._1)
+
+      val headersAverage = averageFlows.flatMap(m => Vector(m._1 + "_t", m._1 + "_f", m._1 + "_lq", m._1 + "_uq"))
+
+      averageFlows.flatMap(m => Vector(m._2.map(_._1), m._2.map(_._2), m._2.map(_._3), m._2.map(_._4)))
+        .writeToCSV(config.getString("output.output_prefix") + "_simplified-average-flows.csv", columnNames = Some(headersAverage), rowNames = None)
+    }
 
     // ******************************************************************************************
     //                                  Processing for TRANS-FORM
