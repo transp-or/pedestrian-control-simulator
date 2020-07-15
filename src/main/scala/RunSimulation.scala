@@ -1,5 +1,4 @@
 
-import com.typesafe.config.Config
 import hubmodel.DES._
 import hubmodel._
 import hubmodel.demand.{DemandData, DemandSet, readDemandSets}
@@ -22,6 +21,7 @@ import scala.collection.parallel.immutable.{ParSeq, ParVector}
 import scala.collection.parallel.CollectionConverters._
 import scala.collection.parallel.ForkJoinTaskSupport
 import scala.io.BufferedSource
+import com.typesafe.config.Config
 
 
 /**
@@ -203,18 +203,20 @@ object RunSimulation extends App with StrictLogging {
     if (config.getBoolean("output.density.individual-75") && resultsJson.nonEmpty) {
       // writes the applied data to the same csv file
       val individualDensitiesQuantile: Vector[(String, Vector[Double], String, Vector[Double])] = resultsJson
-        .filter(_.monitoredAreaIndividualDensity.isDefined)
-        .flatMap(v => v.monitoredAreaIndividualDensity.get.toVector.map(vv => (v.id, vv)))
-        .sortBy(s => (s._1, s._2._1._1))
-        .map(d => (d._1 + "_" + d._2._1._1 + "_t", d._2._2.map(v => v._1.value.toDouble), d._1 + "_" + d._2._1._1 + "_d", d._2._2.map(v => if (v._2.isEmpty) {Double.NaN} else {computeQuantile(75)(v._2).value})))
+        .filter(_.monitoredAreaDensity.isDefined)
+        .flatMap(v => v.monitoredAreaDensity.get.toVector.map(vv => (v.id, vv._1, vv._2.disaggregateMeasurements)))
+        .sortBy(s => (s._1, s._2))
+        .map(d => (d._1 + "_" + d._2 + "_t", d._3.map(v => v._1), d._1 + "_" + d._2 + "_d", d._3.map(v => if (v._2.isEmpty) {Double.NaN} else {computeQuantile(75)(v._2).value})))
 
       individualDensitiesQuantile.flatMap(d => Vector(d._2, d._4)).writeToCSV(config.getString("output.output_prefix") + "_individual_density_75.csv", rowNames=None, columnNames = Some(individualDensitiesQuantile.flatMap(d => Vector(d._1, d._3))))
 
       val averageDensities: Vector[(String, Vector[(Double, Double, Double, Double)])] = resultsJson
-        .filter(_.monitoredAreaIndividualDensity.isDefined)
-        .flatMap(_.monitoredAreaIndividualDensity.get)
-        .groupBy(_._1._1)
-        .map(kv => (kv._1, kv._2.flatMap(d => d._2.map(v => (v._1, if (v._2.isEmpty) {0.0} else {computeQuantile(75)(v._2).value}))).groupBy(_._1).toVector.map(d =>  (d._1.value.toDouble, d._2.map(_._2).sum / d._2.size.toDouble, computeQuantile(25)(d._2.map(_._2)).value, computeQuantile(75)(d._2.map(_._2)).value)).sortBy(_._1)))
+        .filter(_.monitoredAreaDensity.isDefined)
+        .flatMap(_.monitoredAreaDensity.get)
+        .groupBy(_._1)
+        .map(kv => (kv._1, kv._2
+            .flatMap(data => data._2.disaggregateMeasurements.map(v => (v._1, if (v._2.isEmpty) {0.0} else {computeQuantile(75)(v._2).value})))
+            .groupBy(_._1).toVector.map(d =>  (d._1, d._2.map(_._2).sum / d._2.size.toDouble, computeQuantile(25)(d._2.map(_._2)).value, computeQuantile(75)(d._2.map(_._2)).value)).sortBy(_._1)))
         .toVector
         .sortBy(_._1)
 
@@ -224,6 +226,16 @@ object RunSimulation extends App with StrictLogging {
       averageDensities
         .flatMap(m => Vector(m._2.map(_._1), m._2.map(_._2), m._2.map(_._3), m._2.map(_._4)))
         .writeToCSV(config.getString("output.output_prefix") + "_average-individual_density_75.csv", columnNames = Some(averageDensitiesHeaders), rowNames = None)
+    }
+
+    if (config.getBoolean("output.density.mean-individual-75-integral") && resultsJson.nonEmpty) {
+      val densityIntegrals: Vector[Double] = resultsJson
+        .filter(_.monitoredAreaDensity.isDefined)
+        .map(d => d.monitoredAreaDensity.get.map(d => d._2.integratedIndividualDensity).sum)
+
+      Vector(computeBoxPlotData(densityIntegrals).toCSV)
+        .writeToCSV("test.csv")
+
     }
 
     // computes statistics on travel times and writes them

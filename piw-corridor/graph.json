@@ -928,7 +928,7 @@
       "y3": 16,
       "x4": 21,
       "y4": 16,
-      "target_density": 1.4
+      "target_density": 1.08
     },
     {
       "name": "junction-56",
@@ -940,7 +940,7 @@
       "y3": 16,
       "x4": 36.0,
       "y4": 16,
-      "target_density": 1.4
+      "target_density": 1.08
     },
     {
       "name": "junction-34",
@@ -952,7 +952,7 @@
       "y3": 16,
       "x4": 51,
       "y4": 16,
-      "target_density": 1.4
+      "target_density": 1.08
     },
     {
       "name": "junction-1",
@@ -964,7 +964,7 @@
       "y3": 17,
       "x4": 72,
       "y4": 17,
-      "target_density": 1.4
+      "target_density": 1.08
     }
       ],
   "binary_gates": [

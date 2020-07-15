@@ -18,6 +18,7 @@ import scala.collection.parallel.CollectionConverters._
 import scala.collection.parallel.ForkJoinTaskSupport
 import myscala.math.stats.{ComputeQuantiles, ComputeStats, computeQuantile}
 import tools.cells.Vertex
+import tools.math.integration.rectangleIntegration
 
 import scala.util.{Failure, Success, Try}
 
@@ -287,13 +288,12 @@ class PredictWithGroundTruth(private val sim: PedestrianSimulation) extends Stat
             Map(
               "throughput" -> inflow.view.filterKeys(_ > 0).map(kv => kv._2 - outflow.getOrElse(kv._1, 0)).sum,
               "meanTT" -> pop.map(p => p.travelTime.value.toDouble).sum / pop.size,
-              "density" -> s.criticalAreas.toVector.flatMap(a => a._2.paxIndividualDensityHistory.map(d => d._1.value.toDouble * {if (d._2.isEmpty){0.0} else {math.max(0.0, computeQuantile(75)(d._2).value - 1.2)}})).sum
+              "density" -> s.criticalAreas.toVector.map(a => a._2.integratedIndividualDensity).sum
             )
           }
         )
       }
     }
-
   }
 
   def computeObjectives: Map[String, Vector[Double]] = {

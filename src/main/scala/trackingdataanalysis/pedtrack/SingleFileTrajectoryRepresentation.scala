@@ -22,7 +22,7 @@ class SingleFileTrajectoryRepresentation(file: String) extends TrajectoryProcess
   // read the data file and build the population
   val population: Map[Int, hubmodel.ped.Pedestrian] = buildPedestrianTrajectories(dataType)
 
-  println("debug")
+  //println("debug")
 
   population.head._2.entryTime
   val (start, end) = population.values.foldRight((population.head._2.entryTime.value,population.head._2.exitTime.value))((ped, acc) => (acc._1.min(ped.entryTime.value), acc._2.max(ped.exitTime.value)))

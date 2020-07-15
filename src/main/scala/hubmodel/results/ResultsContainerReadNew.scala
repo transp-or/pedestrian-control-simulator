@@ -1,6 +1,6 @@
 package hubmodel.results
 
-import hubmodel.io.input.JSONReaders.{AMWData_JSON, PedestrianResults_JSON}
+import hubmodel.io.input.JSONReaders.{AMWData_JSON, DensityData_JSON, PedestrianResults_JSON}
 
 /** Container for the results from a simulation. This type should be modified if the collectResults function is modified.
   *
@@ -10,13 +10,14 @@ import hubmodel.io.input.JSONReaders.{AMWData_JSON, PedestrianResults_JSON}
   */
 class ResultsContainerReadNew(val id: String,
                                val tt: Vector[PedestrianResults_JSON],
-                              val monitoredAreaDensity: Option[Map[String, Vector[(tools.Time, Double)]]],
-                              val monitoredAreaIndividualDensity: Option[Map[(String, String), Vector[(tools.Time, Vector[Double])]]],
+                              val monitoredAreaDensity: Option[Map[String, DensityData_JSON]],
+                              //val monitoredAreaIndividualDensity: Option[Map[(String, String), Vector[(tools.Time, Vector[Double])]]],
                               val amwData: Option[Vector[AMWData_JSON]]) {
 
   def addDemandFile(ff: String): ResultsContainerReadWithDemandSetNew = {
-    new ResultsContainerReadWithDemandSetNew(this.id, this.tt, this.monitoredAreaDensity, this.monitoredAreaIndividualDensity, ff)
+    new ResultsContainerReadWithDemandSetNew(this.id, this.tt, this.monitoredAreaDensity, ff)
   }
+
 
 }
 

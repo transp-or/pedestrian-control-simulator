@@ -2,7 +2,9 @@ package tools.cells
 
 import hubmodel.Position
 import hubmodel.control.ControlDeviceComponent
+import myscala.math.stats.computeQuantile
 import tools.Time
+import tools.math.integration.rectangleIntegration
 
 /** Area in which the pedestrian density is computed.
   *
@@ -35,6 +37,8 @@ class DensityMeasuredArea(name: String, A: Position, B: Position, C: Position, D
     inflowHistory.append((startTime, 0.0))
     paxIndividualDensityHistory.append((startTime, Vector()))
   }
+
+  def integratedIndividualDensity: Double = rectangleIntegration(this.paxIndividualDensityHistory.map(d => (d._1.value.toDouble, {if (d._2.isEmpty){0.0} else {math.max(0.0, computeQuantile(75)(d._2).value - this.targetDensity)}})).toVector, this.paxIndividualDensityHistory.minBy(_._1)._1.value.toDouble, this.paxIndividualDensityHistory.maxBy(_._1)._1.value.toDouble)
 
   //var regulatorIntegralAction: Double = 0.0
 

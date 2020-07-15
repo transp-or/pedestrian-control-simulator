@@ -132,10 +132,13 @@ class ALNS(function: StatePrediction, initialPolicy: Iterable[ControlDevicePolic
         accepted = true
       }
 
-      if (stringify(xNew._1) == stringify(this.bestx._1)) {
+      if (stringify(xNew._1) == stringify(this.bestx._1) && isBestSolution(xNew)) {
+        this.bestx = evaluatedSolutions.minBy(s => computeObjective(s._2._1._1))._2._1
+        score = weightScores("newBest")
+      } else if (stringify(xNew._1) == stringify(this.bestx._1) && !isBestSolution(xNew)) {
         this.bestx = evaluatedSolutions.minBy(s => computeObjective(s._2._1._1))._2._1
         score = weightScores("improvement")
-      } else if ( isBestSolution(xNew) ) {
+      } else if (isBestSolution(xNew)) {
         this.bestx = xNew
         score = weightScores("newBest")
       }

@@ -15,6 +15,7 @@ import scala.io.BufferedSource
 import scala.jdk.CollectionConverters._
 import org.apache.commons.math3.stat.inference.TTest
 import tools.Time
+import tools.math.integration.rectangleIntegration
 
 
 object CompareTravelTimeResultsPIW extends App {
@@ -117,27 +118,27 @@ object CompareTravelTimeResultsPIW extends App {
 
 
 
-  def computeDensityIntegral(individiualDensityData: Map[(String, String), Vector[(tools.Time, Vector[Double])]]): Double = {
-    individiualDensityData.toVector.flatMap(a => a._2.map(d => d._1.value.toDouble * {if (d._2.isEmpty){0.0} else {math.max(0.0, computeQuantile(75)(d._2).value - 1.2)}})).sum
-  }
+  /*def computeDensityIntegral(individiualDensityData: Map[(String, String), Vector[(Double, Vector[Double])]]): Double = {
+    rectangleIntegration(individiualDensityData.toVector.flatMap(a => a._2.map(d => d._1 * {if (d._2.isEmpty){0.0} else {math.max(0.0, computeQuantile(75)(d._2).value - 1.08)}})), , )
+  }*/
 
-  def computeDensityQuantile(individiualDensityData: Map[(String, String), Vector[(tools.Time, Vector[Double])]]): Map[(String, String), Vector[(tools.Time, Double)]] = {
+  def computeDensityQuantile(individiualDensityData: Map[(String, String), Vector[(Double, Vector[Double])]]): Map[(String, String), Vector[(Double, Double)]] = {
     individiualDensityData.view.mapValues(a => a.map(d => (d._1, if (d._2.isEmpty) {0.0} else {computeQuantile(75)(d._2).value}))).toMap
   }
 
   val resultsByODRef: Map[String, Map[String, (TT, Double, TD, Speed, Size)]] = TTresultsByOD(resultsRef)
   val resultsByODOther: Map[String, Map[String, (TT, Double, TD, Speed, Size)]] = TTresultsByOD(resultsOther)
 
-  def densityResultsByZone(results: Vector[ResultsContainerReadNew]): Vector[(String, Vector[(Time, Double)])] = {
+  def densityResultsByZone(results: Vector[ResultsContainerReadNew]): Vector[(String, Vector[(Double, Double)])] = {
     results.collect{
-        case r: ResultsContainerReadNew if r.monitoredAreaIndividualDensity.isDefined => "all" -> computeDensityQuantile(r.monitoredAreaIndividualDensity.get)//.view.mapValues(v => v.map(r => (r._1, computeQuantile(75)(r._2).value))).to(Map)
-        case r: ResultsContainerReadWithDemandSetNew if r.monitoredAreaIndividualDensity.isDefined => r.demandFile -> computeDensityQuantile(r.monitoredAreaIndividualDensity.get)
-      }.flatMap(v => v._2.map(vv => v._1 + "_" + vv._1._1 -> vv._2))
+        case r: ResultsContainerReadNew if r.monitoredAreaDensity.isDefined => "all" -> computeDensityQuantile(r.monitoredAreaDensity.get.map(d => (d._1, d._2.id) -> d._2.disaggregateMeasurements))
+      case r: ResultsContainerReadWithDemandSetNew if r.monitoredAreaDensity.isDefined => r.demandFile -> computeDensityQuantile(r.monitoredAreaDensity.get.map(d => (d._1, d._2.id) -> d._2.disaggregateMeasurements))
+    }.flatMap(v => v._2.map(vv => v._1 + "_" + vv._1._1 -> vv._2))
   }
 
-  val resultsDensityRef: Map[String, Statistics[Double]] = resultsRef
+  /*val resultsDensityRef: Map[String, Statistics[Double]] = resultsRef
     .collect{
-      case r: ResultsContainerReadNew if r.monitoredAreaIndividualDensity.isDefined => "all" -> computeDensityIntegral(r.monitoredAreaIndividualDensity.get)
+      case r: ResultsContainerReadNew if r.monitoredAreaIndividualDensity.isDefined => "all" -> r.monitoredAreaDensity.
       case r:ResultsContainerReadWithDemandSetNew if r.monitoredAreaIndividualDensity.isDefined => r.demandFile -> computeDensityIntegral(r.monitoredAreaIndividualDensity.get)
     }
     .groupBy(_._1)
@@ -158,8 +159,8 @@ object CompareTravelTimeResultsPIW extends App {
 
   (resultsDensityRef ++ resultsDensityOther).toVector.map(kv => (kv._1, kv._2.toCSV))
     .writeToCSV("density-integral-stats.csv", columnNames=Some(Vector("name") ++ resultsDensityRef.head._2.CSVColumnNames.split(",")), rowNames = None)
-
-  val densityResultsByZoneRef: Vector[(String, Vector[(Time, Double)])] = densityResultsByZone(resultsRef).sortBy(_._1)
+*/
+  /*val densityResultsByZoneRef: Vector[(String, Vector[(Time, Double)])] = densityResultsByZone(resultsRef).sortBy(_._1)
   val densityResultsByZoneOther: Vector[(String, Vector[(Time, Double)])] = densityResultsByZone(resultsOther).sortBy(_._1)
 
   val headersDensity = densityResultsByZoneRef.flatMap(v => Vector(v._1 + "_t", v._1 + "_d"))
@@ -177,7 +178,7 @@ object CompareTravelTimeResultsPIW extends App {
   val headersDensityAverage = avergaeDensityResultsByZoneRef.flatMap(v => Vector(v._1 + "_t", v._1 + "_d"))
   avergaeDensityResultsByZoneRef.flatMap(v => Vector(v._2.map(_._1.value.toDouble), v._2.map(_._2))).writeToCSV("average-density-over-time-" + config.getString("files_1.output_prefix") + ".csv", columnNames = Some(headersDensityAverage), rowNames = None)
   avergaeDensityResultsByZoneOther.flatMap(v => Vector(v._2.map(_._1.value.toDouble), v._2.map(_._2))).writeToCSV("average-density-over-time-" + config.getString("files_2.output_prefix") +".csv", columnNames = Some(headersDensityAverage), rowNames = None)
-
+*/
 
   def WelchTTest(m1: Double, sd1:Double, size1: Int, m2: Double, sd2:Double, size2: Int): (Double, Double) = {
     val nu = math.pow(sd1*sd1/size1 + sd2*sd2/size2, 2) / (math.pow(sd1, 4) / (size1*size1*(size1-1.0)) + math.pow(sd2, 4) / (size2*size2*(size2-1.0)))
@@ -225,7 +226,7 @@ object CompareTravelTimeResultsPIW extends App {
     }) //(v._3-v._2)/v._2)//v._1)
     // .filterNot(v => v._9 == "other")
     //.map(v => {if (v._2.contains("7") || v._2.contains("8")){0} else {1}})
-    .sortBy(v => (ODPairsSorting(v._2), v._2))
+    .sortBy(v => ODPairsSorting(v._2) + v._2)
     .zipWithIndex
     .map(v => (v._2, v._1._1, v._1._2, v._1._3, v._1._4, 100.0*(v._1._4-v._1._3)/v._1._3 , if (v._1._5 <= 0.05 && v._1._10 >= 100 && v._1._11 >= 100){"sigLarge"} else if (v._1._5 <= 0.05 && (v._1._10 < 100 || v._1._11 <100)) {"sigSmall"} else if (v._1._5 > 0.05 && v._1._10 > 100 && v._1._11 > 100) {"nonSigLarge"} else {"nonSigSmall"}, v._1._6, v._1._7, v._1._8, v._1._9, v._1._10, v._1._11, v._1._5, ODPairsSorting(v._1._2)))
     .writeToCSV(config.getString("files_1.output_prefix") + "_VS_" + config.getString("files_2.output_prefix") + "_walking_time_distributions_by_OD.csv", columnNames = Some(Vector("idx", "demandFile", "odGroup", "refTT", "otherTT","relativeTTDiff" , "TTequalMeanPValue", "refTravelDistance", "otherTravelDistance", "refMeanSpeed", "otherMeanSpeed", "refPopulationSize", "otherPopulationSize", "pvalue", "MISC")), rowNames = None)

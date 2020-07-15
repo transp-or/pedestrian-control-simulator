@@ -3,10 +3,12 @@ package hubmodel.io.input
 
 import hubmodel.Position
 import hubmodel.supply.{NodeIDOld, TrackIDOld}
+import myscala.math.stats.computeQuantile
 import play.api.libs.functional.syntax._
 import play.api.libs.json.Reads.minLength
 import play.api.libs.json._
 import tools.Time
+import tools.math.integration.rectangleIntegration
 
 package object JSONReaders {
 
@@ -597,11 +599,15 @@ package object JSONReaders {
     ) (AMWData_JSON.apply _)
 
 
-  case class DensityData_JSON(id: String, name: String, aggregateMeasurement: Vector[(Double, Double)], disaggregateMeasurements: Vector[(Double, Vector[Double])])
+  case class DensityData_JSON(id: String, name: String, targetDensity:Double, aggregateMeasurement: Vector[(Double, Double)], disaggregateMeasurements: Vector[(Double, Vector[Double])]) {
+    def integratedIndividualDensity: Double = rectangleIntegration(this.disaggregateMeasurements.map(d => (d._1, {if (d._2.isEmpty){0.0} else {math.max(0.0, computeQuantile(75)(d._2).value - this.targetDensity)}})).toVector, this.disaggregateMeasurements.minBy(_._1)._1, this.disaggregateMeasurements.maxBy(_._1)._1)
+
+  }
 
   implicit val DensityData_JSON_Reads: Reads[DensityData_JSON] = (
     (JsPath \ "ID").read[String] and
       (JsPath \ "name").read[String] and
+      (JsPath \ "target-density").read[Double] and
       (JsPath \ "density-measurements").read[Vector[Tuple2[Double, Double]]] and
       (JsPath \ "density-individual-measurements").read[Vector[Tuple2[Double, Vector[Double]]]]
     ) (DensityData_JSON.apply _)

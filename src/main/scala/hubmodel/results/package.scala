@@ -387,8 +387,8 @@ package object results {
       new ResultsContainerReadNew(
         str._1,
         tt,
-        densities.map(d => d.map(dd => dd.name -> dd.aggregateMeasurement.map(v => (Time(v._1), v._2))).toMap),
-        densities.map(d => d.map(dd => (dd.name, dd.id) -> dd.disaggregateMeasurements.map(v =>  (Time(v._1), v._2))).toMap),
+        densities.map(d => d.map(data => data.name -> data).toMap),
+        //densities.map(d => d.map(dd => (dd.name, dd.id) -> dd.disaggregateMeasurements.map(v =>  (Time(v._1), v._2))).toMap),
         amw)
     })
   }

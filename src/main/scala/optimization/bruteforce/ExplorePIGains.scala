@@ -38,7 +38,7 @@ object ExplorePIGains extends App {
     val r = readResultsJson(config.getString("output.dir"), files._1._3 + "_params_", Vector()).toVector
     val tt = r.flatMap(_.tt.map(_.tt))
     val data = tt.statistics
-    (files._1._1, files._1._2, r.map(d => computeDensityIntegral(d.monitoredAreaIndividualDensity.get)).sum/r.size.toDouble)
+    (files._1._1, files._1._2, r.flatMap(d => d.monitoredAreaDensity.get.map(v => v._2.integratedIndividualDensity)).sum/r.size.toDouble)
     //(files._1._1, files._1._2, computeQuantile(25)(tt).value)
     //(files._1._1, files._1._2, data.mean)
   })
