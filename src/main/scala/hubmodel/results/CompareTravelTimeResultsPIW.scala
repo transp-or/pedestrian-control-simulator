@@ -102,13 +102,13 @@ object CompareTravelTimeResultsPIW extends App {
           .map(group => {
             val dataByGroup = group._2.flatMap(d => d._2)
 
-            val ttData = dataByGroup.map(d => d.tt).statistics
+            val ttData = dataByGroup.map(d => d.tt).cutOfAfterQuantile(95).statistics
 
             group._1 -> (
-              ttData.median,
+              ttData.mean,
               ttData.variance,
-              dataByGroup.map(d => d.td).statistics.median,
-              dataByGroup.map(d => d.tt / d.td).statistics.median,
+              dataByGroup.map(d => d.td).statistics.mean,
+              dataByGroup.map(d => d.tt / d.td).statistics.mean,
               dataByGroup.size
             )
           })
@@ -221,7 +221,6 @@ object CompareTravelTimeResultsPIW extends App {
   }, rrr._6, rrr._7, rrr._8, rrr._9, rrr._10, rrr._11))).toVector
     .filterNot(v => v._3.isNaN || v._4.isNaN)
     .sortBy(v => {
-      println(v._2)
       amwCountByOD(v._2)
     }) //(v._3-v._2)/v._2)//v._1)
     // .filterNot(v => v._9 == "other")

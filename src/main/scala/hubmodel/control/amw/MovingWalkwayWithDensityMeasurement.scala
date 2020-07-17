@@ -115,9 +115,7 @@ class MovingWalkwayWithDensityMeasurement[T <: Density, U <: MovingWalkwaySpeed]
 
 
       this.setControlPolicy(
-        newPolicy._1.collect { case w: AMWPolicy if w.name == this.name => {
-          w
-        }
+        newPolicy._1.collect { case w: AMWPolicy if w.name == this.name => {w}
         }, newPolicy._2.find(_.name == this.name)
       )
       this.insertChangeSpeed(sim)

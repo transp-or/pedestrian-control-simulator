@@ -55,8 +55,8 @@ class MovingWalkwayAbstract(val name: String, val firstVertex: Vertex, val secon
     *
     * @param s new speed of the walkway
     */
-  def updateSpeed(s: Double): Unit = {
-    this._previousSpeed = this._nextSpeed
+  def updateSpeed(s: Double, t: Time): Unit = {
+    this._previousSpeed = this.speed(t)
     this._nextSpeed = s
   }
 
@@ -236,7 +236,7 @@ class MovingWalkwayAbstract(val name: String, val firstVertex: Vertex, val secon
       //if (sim.verbose) {println("old speed for " + speedToSet.name + "@" + sim.currentTime  + ": " + _nextSpeed)}
 
       // Set the new speed for the walkway
-      outer.updateSpeed(speedToSet.speed)
+      outer.updateSpeed(speedToSet.speed, sim.currentTime)
 
       outer.accStartTime = speedToSet.start
       outer.accEndTime = speedToSet.start + Time(math.abs(outer._nextSpeed - outer._previousSpeed)/outer.acc)
