@@ -506,13 +506,15 @@ object RunSimulation extends App with StrictLogging {
     // ******************************************************************************************
 
     if (true) {
-      val intervals: Vector[Time] = 27600.to(27900).by(10).map(v => Time(v.toDouble)).toVector
+      val interval: Int = 10
+      val intervals: Vector[Time] = 27600.to(27900).by(interval).map(v => Time(v.toDouble)).toVector
       //val zoneProcessor: ZoneProcessingNew = new ZoneProcessingNew("E:\\PhD\\hub-simulator\\piw-corridor\\graph.json")
       val amw1Routes = Vector(Vector("bc1","c1","dc1"), Vector("bc2","c2","dc2"), Vector("amw11","amw12"))/*.map(r => r.map(zoneProcessor.vertices))*/
       val amw2Routes = Vector(Vector("amw21", "amw22"), Vector("d15","e15"), Vector("d15","e2"), Vector("d2","e2"), Vector("d2","e15"))/*.map(r => r.map(zoneProcessor.vertices))*/
 
-      val amwRoutes: Map[String, Vector[Vector[String]]] =  Map("amw1p" -> amw1Routes, "amw2p" -> amw2Routes, "amw1n" -> amw1Routes.map(_.reverse), "amw2n" -> amw2Routes.map(_.reverse))
+      //val amwRoutes: Map[String, Vector[Vector[String]]] =  Map("amw1p" -> amw1Routes, "amw2p" -> amw2Routes, "amw1n" -> amw1Routes.map(_.reverse), "amw2n" -> amw2Routes.map(_.reverse))
       //val amwRoutes: Map[String, Vector[Vector[String]]] =  Map("j1" -> Vector(Vector("11a","11b"), Vector("12a", "12b"), Vector("14","14a"), Vector("13","13a")), "j34" -> Vector(Vector("9a", "9b"), Vector("10a", "10b")), "j56" -> Vector(Vector("8a", "8b"), Vector("7a", "7b")), "j78" -> Vector(Vector("6a", "6b"), Vector("5a", "5b"), Vector("a", "b1"), Vector("a", "b15"), Vector("a", "b2")))
+      val amwRoutes: Map[String, Vector[Vector[String]]] =  Map("amw1p" -> Vector(Vector("b", "c", "d")), "amw1n" -> Vector(Vector("d", "c", "b")), "amw2p" -> Vector(Vector("d", "e")), "amw2n" -> Vector(Vector("e", "d")))
 
       val amwFlows: Vector[((String, String), Vector[(Time, Int)])] = resultsJson.flatMap(r => {
      r.tt.flatMap(p => {
@@ -538,7 +540,7 @@ object RunSimulation extends App with StrictLogging {
 
       val averageFlows = amwFlows.groupBy(g => g._1._2)
         .toVector
-        .map(m => (m._1, m._2.flatMap(n => n._2).groupBy(_._1).map(g => (g._1, g._2.map(_._2).sum.toDouble / g._2.size.toDouble, computeQuantile(25)(g._2.map(_._2)).value, computeQuantile(75)(g._2.map(_._2)).value)).toVector.sortBy(_._1)))
+        .map(m => (m._1, m._2.flatMap(n => n._2).groupBy(_._1).map(g => (g._1, g._2.map(_._2).sum.toDouble / (interval * g._2.size.toDouble), computeQuantile(25)(g._2.map(_._2)).value/interval.toDouble, computeQuantile(75)(g._2.map(_._2)).value/interval.toDouble)).toVector.sortBy(_._1)))
         .sortBy(_._1)
 
       val headersAverage = averageFlows.flatMap(m => Vector(m._1 + "_t", m._1 + "_f", m._1 + "_lq", m._1 + "_uq"))

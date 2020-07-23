@@ -102,7 +102,7 @@ object CompareTravelTimeResultsPIW extends App {
           .map(group => {
             val dataByGroup = group._2.flatMap(d => d._2)
 
-            val ttData = dataByGroup.map(d => d.tt).cutOfAfterQuantile(95).statistics
+            val ttData = dataByGroup.map(d => d.tt).statistics
 
             group._1 -> (
               ttData.mean,
@@ -227,6 +227,6 @@ object CompareTravelTimeResultsPIW extends App {
     //.map(v => {if (v._2.contains("7") || v._2.contains("8")){0} else {1}})
     .sortBy(v => ODPairsSorting(v._2) + v._2)
     .zipWithIndex
-    .map(v => (v._2, v._1._1, v._1._2, v._1._3, v._1._4, 100.0*(v._1._4-v._1._3)/v._1._3 , if (v._1._5 <= 0.05 && v._1._10 >= 100 && v._1._11 >= 100){"sigLarge"} else if (v._1._5 <= 0.05 && (v._1._10 < 100 || v._1._11 <100)) {"sigSmall"} else if (v._1._5 > 0.05 && v._1._10 > 100 && v._1._11 > 100) {"nonSigLarge"} else {"nonSigSmall"}, v._1._6, v._1._7, v._1._8, v._1._9, v._1._10, v._1._11, v._1._5, ODPairsSorting(v._1._2)))
+    .map(v => (v._2, v._1._1, v._1._2, v._1._3, v._1._4, 100.0*(v._1._4-v._1._3)/v._1._3 , if (v._1._5 <= 0.05 && v._1._10 >= 5*resultsRef.size && v._1._11 >= 5*resultsOther.size){"sigLarge"} else if (v._1._5 <= 0.05 && (v._1._10 < 5*resultsRef.size || v._1._11 <5*resultsOther.size)) {"sigSmall"} else if (v._1._5 > 0.05 && v._1._10 > 5*resultsRef.size && v._1._11 > 5*resultsOther.size) {"nonSigLarge"} else {"nonSigSmall"}, v._1._6, v._1._7, v._1._8, v._1._9, v._1._10, v._1._11, v._1._5, ODPairsSorting(v._1._2)))
     .writeToCSV(config.getString("files_1.output_prefix") + "_VS_" + config.getString("files_2.output_prefix") + "_walking_time_distributions_by_OD.csv", columnNames = Some(Vector("idx", "demandFile", "odGroup", "refTT", "otherTT","relativeTTDiff" , "TTequalMeanPValue", "refTravelDistance", "otherTravelDistance", "refMeanSpeed", "otherMeanSpeed", "refPopulationSize", "otherPopulationSize", "pvalue", "MISC")), rowNames = None)
 }
