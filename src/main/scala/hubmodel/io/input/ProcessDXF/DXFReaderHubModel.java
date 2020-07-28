@@ -254,6 +254,15 @@ public class DXFReaderHubModel extends DXFReader {
 				} else if (l_g.get(i).getLineWeight() == 9) {
 					edgeType = UNI_DIR_DOWN;
 					levelChanges.add(new Edge(l_g.get(i).getStartPoint(), l_g.get(i).getEndPoint(), o, d, edgeType));
+				} else if (l_g.get(i).getLineWeight() == 18) {
+					edgeType = BI_DIR;
+					levelChanges.add(new Edge(l_g.get(i).getStartPoint(), l_g.get(i).getEndPoint(), o, d, edgeType));
+					levelChanges.add(new Edge(l_g.get(i).getEndPoint(), l_g.get(i).getStartPoint(), d, o, edgeType));
+				} else {
+					System.out.print("wrong edge type :" + l_g.get(i).getLineWeight() + " start and end: " + l_g.get(i).getStartPoint() + ", " + l_g.get(i).getEndPoint() + "\n");
+					System.out.print("defaulting to bidirectional edge type");
+					edges.add(new Edge(l_g.get(i).getStartPoint(), l_g.get(i).getEndPoint(), o, d, edgeType));
+					edges.add(new Edge(l_g.get(i).getEndPoint(), l_g.get(i).getStartPoint(), d, o, edgeType));
 				}
 			}
 		}
@@ -294,7 +303,7 @@ public class DXFReaderHubModel extends DXFReader {
 			}
 		}
 
-		String str = "{\"location\": \"lausanne\", \"sublocation\": \"test\",\"nodes\":[ ";
+		String str = "{\"amws_mode\": \"reactive\", \"location\": \"lausanne\", \"sublocation\": \"test\",\"nodes\":[ ";
 
 
 		for (int i = 0; i < zones.size(); i++) {
@@ -312,7 +321,7 @@ public class DXFReaderHubModel extends DXFReader {
 				str += ",";
 			}
 		}
-		str += "], \"flow_gates\": [], \"controlled_areas\": [], \"binary_gates\": [], \"flow_separators\": [], \"moving_walkways\": [], \"alternate_graphs\": [], \"connectivity_level_change\": [";
+		str += "], \"flow_gates\": [], \"controlled_areas\": [], \"binary_gates\": [], \"flow_separators\": [], \"flow_lines\": [], \"moving_walkways\": [], \"alternate_graphs\": [], \"destination_groups\": [], \"connectivity_level_change\": [";
 
 		for (int i = 0; i < levelChangeConnections.size(); i++) {
 			str += levelChangeConnections.get(i).toJSON();

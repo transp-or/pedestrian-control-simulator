@@ -102,15 +102,18 @@ package object DES {
     println("Reading and creating initial data")
 
     // Builds the set of walls used by the Social force model
+    println(" * Reading and creating walls")
     val infraSF = new ReadContinuousSpace(config.getString("files.walls"))
 
     // Builds the graph used for route choice. This Graph is composed of multiple different link types.
+    println(" * Reading and creating graph and control devices")
     val (routeGraph, controlDevices) = readGraph(config.getString("files.graph"), config.getBoolean("sim.use_flow_gates"), config.getBoolean("sim.use_binary_gates"), config.getBoolean("sim.use_amw"), config.getBoolean("sim.use_flow_sep"), config.getBoolean("sim.fixed_flow_sep"), config.getBoolean("sim.measure_density"), config.getBoolean("sim.use_alternate_graphs"), (config.getString("sim.amws_mode"), config.getString("sim.amws_reactive_mode")))
 
     // Reads the pedestrian flows which are modelled as flows (i.e. aggregate)
     val flows = getAggregateFlows(config)
 
     // Reads the PT timetable. The aggregate flows are needed to filter the PT vehicles.
+    println(" * Reading and creating PT schedule")
     val (timeTable, stop2Vertex) = getPTSchedule(config, demandSet, flows._2.nonEmpty)
 
 

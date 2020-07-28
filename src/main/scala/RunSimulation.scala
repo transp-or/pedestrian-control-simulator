@@ -505,7 +505,7 @@ object RunSimulation extends App with StrictLogging {
     //                                        Pedestrian flows
     // ******************************************************************************************
 
-    if (true) {
+    if (config.getBoolean("output.flows")) {
       val interval: Int = 10
       val intervals: Vector[Time] = 27600.to(27900).by(interval).map(v => Time(v.toDouble)).toVector
       //val zoneProcessor: ZoneProcessingNew = new ZoneProcessingNew("E:\\PhD\\hub-simulator\\piw-corridor\\graph.json")

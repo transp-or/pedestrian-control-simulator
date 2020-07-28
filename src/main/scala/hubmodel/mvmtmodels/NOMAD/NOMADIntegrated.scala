@@ -27,14 +27,21 @@ class NOMADIntegrated(sim: NOMADGraphSimulator) extends Action {
   val isolatedTimeStepSeconds: Double = sim.motionModelUpdateInterval.value.toDouble //NomadModel.model.simTime.getTimeStepSeconds
 
   //val rangeTimeStepMillis: Double = this.isolatedTimeStepMillis * 0.2 //NOMAD.defaults.IN_RANGE_FRACTION.round
-  val rangeTimeStepSeconds: Double = isolatedTimeStepSeconds * 0.2 //isolatedTimeStepSeconds * 0.2 // SimulationTime.convertSimTime(this.rangeTimeStepMillis)
+
+  val rangeSteps: Double = 5.0
+  val collisionSteps: Double = 10.0
+
+  val rangeTimeStepSeconds: Double = isolatedTimeStepSeconds / rangeSteps //isolatedTimeStepSeconds * 0.2 // SimulationTime.convertSimTime(this.rangeTimeStepMillis)
+  // IF THE RATIO BETWEEN THE RANGE AND COLLISION STEPS CHANGES FROM 2, THEN LINE 428 MUST BE UPDATED
+
+
 
   //this.inRangeSteps = (int) Math.floor(this.isolatedTimeStepMillis/this.rangeTimeStepMillis);
   //val remainderInRangeMillis: Double = this.isolatedTimeStepMillis % this.rangeTimeStepMillis
   val remainderInRangeSeconds: Double = 0.0 //this.isolatedTimeStepSeconds % this.rangeTimeStepSeconds // SimulationTime.convertSimTime(this.remainderInRangeMillis)
 
   //val collisionTimeStepMillis: Double = this.isolatedTimeStepMillis * 0.1 // NOMAD.defaults.IN_COLLISION_FRACTION.round
-  val collisionTimeStepSeconds: Double = this.isolatedTimeStepSeconds * 0.1 // SimulationTime.convertSimTime(this.collisionTimeStepMillis)
+  val collisionTimeStepSeconds: Double = this.isolatedTimeStepSeconds / collisionSteps  // SimulationTime.convertSimTime(this.collisionTimeStepMillis)
   //val remainderInCollisionMillis: Double = this.isolatedTimeStepMillis % this.collisionTimeStepMillis
   val remainderInCollisionSeconds: Double = 0.0 //this.isolatedTimeStepSeconds % this.collisionTimeStepSeconds // SimulationTime.convertSimTime(this.remainderInCollisionMillis)
 
@@ -334,7 +341,7 @@ override def deepCopy(simulator: PedestrianPrediction): Option[A] = {
     }*/
 
 
-    val acc: Vector2D =
+    val acc: Vector2D = {
       strayingAccelerationFixedTau( new Vector2D(ped.currentVelocity.X, ped.currentVelocity.Y), ped.desiredWalkingSpeed, new Vector2D(ped.desiredDirection.X, ped.desiredDirection.Y), ped.tau) + {
         if (pedestrians != null && !pedestrians.isEmpty) {
           pedsRepellingPhysicalAcceleration(
@@ -344,11 +351,14 @@ override def deepCopy(simulator: PedestrianPrediction): Option[A] = {
           )
         } else { new ZeroVector2D}
       }
+    }
 
     /*infrastructure repulsion */
-    val obstAcc: Vector2D = if (obstacles != null && !obstacles.isEmpty) {
-      obstacleRepulsionAndPhysical(ped, ped.currentPosition, new Vector2D(ped.desiredDirection.X, ped.desiredDirection.Y), obstacles)
-    } else {new ZeroVector2D}
+    val obstAcc: Vector2D = {
+      if (obstacles != null && !obstacles.isEmpty) {
+        obstacleRepulsionAndPhysical(ped, ped.currentPosition, new Vector2D(ped.desiredDirection.X, ped.desiredDirection.Y), obstacles)
+      } else {new ZeroVector2D}
+    }
 
     calculateNextPosition(acc + obstAcc, new ZeroVector2D, ped, dt, ped.currentPosition, new Vector2D(ped.currentVelocity.X, ped.currentVelocity.Y))
   }
@@ -373,7 +383,7 @@ override def deepCopy(simulator: PedestrianPrediction): Option[A] = {
       //if (Pedestrian.isParallel) Pedestrian.updateParallel(this.pedestrianToMoveInRange)
 
       (this.pedestrianToMoveInRange ++ this.pedestrianToMoveInIsolation).foreach(ped => {
-        ped.currentPosition = ped.nextPosition
+        ped.setCurrentPosition(ped.nextPosition)
         ped.currentVelocity = ped.nextVelocity
         ped.travelDistance += (ped.currentPosition - ped.previousPosition).norm
         ped.previousPosition = ped.currentPosition
@@ -398,43 +408,37 @@ override def deepCopy(simulator: PedestrianPrediction): Option[A] = {
   private def moveInCollisionStep(): Unit = {
 
     //println(this.pedestrianToMoveInIsolation.size, this.pedestrianToMoveInRange.size, pedestrianToMoveInCollision.size, sim.population.size)
-    var rangeStep = this.rangeTimeStepSeconds
+    var  rangeStep = this.rangeTimeStepSeconds
     // ask the pedestrians in isolation to move but do not update their position
     // in case of parallel walking
     this.pedestrianToMoveInIsolation.foreach(ped => {
       walkPedestrian(ped, getPedInLevelVicinity_3D(ped, sim.population), getClosestCoordinates3D(ped), this.isolatedTimeStepSeconds)
     })
-    //walkPedestrians(this.pedestrianToMoveInIsolation, this.isolatedTimeStepSeconds, currentTime)
     // for each in collision step
     var colStep = this.collisionTimeStepSeconds
     var colCounter: Int = 0
+
     //var rangeCounter: Int = 1
-    while ( {
-      colCounter < 10 //colStep <= this.isolatedTimeStepSeconds
-    }) { // move the pedestrians in queues
+    while ( {colCounter < 10  }) { // move the pedestrians in queues
       //movePedestriansInQueues(this.collisionTimeStepSeconds, currentTime)
       // ask the in collision pedestrians to perform the activity(walking included)
       this.pedestrianToMoveInCollision.foreach(ped => {
         walkPedestrian(ped, getPedInLevelVicinity_3D(ped, ped.closePeds), getClosestCoordinates3D(ped), this.collisionTimeStepSeconds)
+
       })
-      //walkPedestrians(this.pedestrianToMoveInCollision, this.collisionTimeStepSeconds, currentTime)
       // check if the range step is reached
-      if (colStep % this.rangeTimeStepSeconds == 0) {
+      if (colCounter % (collisionSteps/rangeStep).toInt == 0) {//if (colStep % this.rangeTimeStepSeconds == 0) {
         this.pedestrianToMoveInRange.foreach(ped => {
           walkPedestrian(ped, getPedInLevelVicinity_3D(ped, this.pedestrianToMoveInRange), getClosestCoordinates3D(ped), this.rangeTimeStepSeconds)
+
         })
-        //walkPedestrians(this.pedestrianToMoveInRange, this.rangeTimeStepSeconds, currentTime)
         rangeStep += this.rangeTimeStepSeconds
-        //println("range step process in collison", rangeStep)
       }
-      // if it is a parallel update then update the next position of pedestrians
-      /*if (Pedestrian.isParallel) {
-        Pedestrian.updateParallel(this.pedestrianToMoveInCollision)
-        Pedestrian.updateParallel(this.pedestrianToMoveInRange)
-      }*/
+
+
 
       sim.population.foreach(ped => {
-        ped.currentPosition = ped.nextPosition
+        ped.setCurrentPosition(ped.nextPosition)
         ped.currentVelocity = ped.nextVelocity
         ped.travelDistance += (ped.currentPosition - ped.previousPosition).norm
         ped.previousPosition = ped.currentPosition
@@ -934,26 +938,12 @@ override def deepCopy(simulator: PedestrianPrediction): Option[A] = {
 
     pedestrian.nextVelocity = nextSpeed
     pedestrian.acceleration = (nextSpeed * 2.0 / nextSpeed.norm) -  speed
-    pedestrian.nextPosition = position + nextSpeed*dt + pedestrian.baseVelocity(sim.currentTime)*dt
+    pedestrian.setNextPosition(position + nextSpeed*dt + pedestrian.baseVelocity(sim.currentTime)*dt)
 
-
-    /*if (Pedestrian.isParallel) { // if it is parallel update
-      // use the next speed and next position of the pedestrian
-      // that will be updated only after the current step
-      if (Pedestrian.isNextSpeed) { // if it is the time integration using the new speed (next speed)
-        nextCoordinate = new Coordinate(position.x + nextSpeed.x * dt, position.y + nextSpeed.y * dt, position.z)
-      }
-      else { // use the time integration using the average speed
-        nextCoordinate = new Coordinate(position.x + (speed.x + acceleration.x * 0.5) * dt, position.y + (speed.y + acceleration.y * 0.5) * dt, position.z)
-      }
+    if (pedestrian.nextPosition.distanceTo(pedestrian.currentPosition) > 1.0) {
+      println("debug1")
     }
-    else {*/
-    // if the update is sequential then immediately update the position (and speed)
-    /*if (Pedestrian.isNextSpeed) */
-    //nextCoordinate = new Coordinate(position.x + nextSpeed.x * dt, position.y + nextSpeed.y * dt, position.z)
-    //else nextCoordinate = new Coordinate(position.x + (speed.x + acceleration.x * 0.5) * dt, position.y + (speed.y + acceleration.y * 0.5) * dt, position.z)
-    //}
-    //new WalkingStateStructure(pedestrian, nextCoordinate, nextSpeed)
+
   }
 
 

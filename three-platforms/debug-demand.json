@@ -1,0 +1,21 @@
+{
+  "location": "corridor",
+  "PTflows": [],
+  "flows": [],
+  "function_flows": [
+    {
+      "origin": "entrance-bottom-corr-right",
+      "destination": "plat2-a",
+      "linear": [ ],
+      "constant": [
+        {
+          "start": "00:00:00",
+          "end": "00:00:10",
+          "rate": 1.0
+
+        }
+      ],
+      "sine": [ ]
+    }
+  ]
+}

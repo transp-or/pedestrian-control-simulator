@@ -52,7 +52,12 @@ class PedestrianSim(val origin: Vertex,
   /** current position of the pedestrian
     *
     */
-  var currentPosition: Position = origin.uniformSamplePointInside
+  var _currentPosition: Position = origin.uniformSamplePointInside
+
+  def currentPosition: Position = this._currentPosition
+  def setCurrentPosition(x: Position): Unit = {
+    this._currentPosition = x
+  }
 
   /** Previous position of the pedestrian. This avoids using an list or array if the full trajectory of the pedestrian
     * is not of interest.
@@ -291,7 +296,7 @@ class PedestrianSim(val origin: Vertex,
     */
   def this(oZone: Vertex, dZone: Vertex, entryTime: Time, posO: Position, logFullHistory: Boolean, isTransfer: Boolean) {
     this(oZone, dZone, entryTime, logFullHistory, isTransfer)
-    this.currentPosition = posO
+    this.setCurrentPosition(posO)
   }
 
 
@@ -307,7 +312,7 @@ class PedestrianSim(val origin: Vertex,
     */
   def this(previousZone: Vertex, nextZone: Vertex, route: List[Vertex], dZone: Vertex, entryTime: Time, posO: Position, velO: Velocity, logFullHistory: Boolean, isTransfer: Boolean) {
     this(previousZone, dZone, entryTime, logFullHistory, isTransfer)
-    this.currentPosition = posO
+    this.setCurrentPosition(posO)
     this.currentVelocity = velO
     this.route = route
     this.nextZone = nextZone

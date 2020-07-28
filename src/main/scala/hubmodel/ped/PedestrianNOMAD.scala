@@ -22,7 +22,12 @@ class PedestrianNOMAD(oZone: Vertex, dZone: Vertex, entryTime: Time, posO: Posit
   var acceleration: Acceleration = new ZeroVector2D
 
   // Next position this pedestrian will move to. This is needed if parallel updates are used
-  var nextPosition: Vector2D = this.currentPosition
+  private var _nextPosition: Position = this.currentPosition
+
+  def nextPosition: Position = this._nextPosition
+  def setNextPosition(x: Position): Unit = {
+    this._nextPosition = x
+  }
 
   // Next velocity this pedestrian will have. This is needed if parallel updates are used
   var nextVelocity: Vector2D = new ZeroVector2D
@@ -142,7 +147,7 @@ class PedestrianNOMAD(oZone: Vertex, dZone: Vertex, entryTime: Time, posO: Posit
            isTransfer: Boolean,
            isolationData: (Int, Double, Int, Double)) {
     this(origin, dZone, entryTime, posO, logFullHistory, isTransfer)
-    this.currentPosition = posO
+    this.setCurrentPosition(posO)
     this.currentVelocity = velO
     this.route = route
     this.nextZone = nextZone
