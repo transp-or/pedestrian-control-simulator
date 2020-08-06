@@ -297,6 +297,14 @@ package hubmodel {
       ) (Pedestrian_JSON.apply _)
 
 
+    implicit val PedestrianJSONWrites: Writes[Pedestrian_JSON] = (
+      (JsPath \ "ID").write[String] and
+        (JsPath \ "O").write[String] and
+        (JsPath \ "D").write[String] and
+        (JsPath \ "entryTime").write[Double] and
+        (JsPath \ "exitTime").write[Double]
+      ) (unlift(Pedestrian_JSON.unapply))
+
     /** Reads the PT schedule which is formatted as:
       *
       * {{{
