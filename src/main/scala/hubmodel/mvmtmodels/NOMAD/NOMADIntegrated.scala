@@ -427,7 +427,7 @@ override def deepCopy(simulator: PedestrianPrediction): Option[A] = {
 
       })
       // check if the range step is reached
-      if (colCounter % (collisionSteps/rangeStep).toInt == 0) {//if (colStep % this.rangeTimeStepSeconds == 0) {
+      if (colCounter % (collisionSteps/rangeSteps).toInt == 0) {//if (colStep % this.rangeTimeStepSeconds == 0) {
         this.pedestrianToMoveInRange.foreach(ped => {
           walkPedestrian(ped, getPedInLevelVicinity_3D(ped, this.pedestrianToMoveInRange), getClosestCoordinates3D(ped), this.rangeTimeStepSeconds)
 

@@ -3093,6 +3093,20 @@
       "overriden_zones_2": [],
       "overriden_connections": [
         {
+          "node": "plat-1-center",
+          "connected_to": [
+            "plat-1-top-corr-2",
+            "plat-1-bottom-corr-1"
+          ]
+        },
+        {
+          "node": "plat-2-center",
+          "connected_to": [
+            "plat-2-top-corr-2",
+            "plat-2-bottom-corr-1"
+          ]
+        },
+        {
           "node": "amw1-m-start",
           "connected_to": [
             "plat-1-top-corr-1",
@@ -3416,6 +3430,20 @@
             "plat-1-bottom-corr-1",
             "plat-3-bottom-corr-1"
           ]
+        },
+        {
+          "node": "plat-1-center",
+          "connected_to": [
+            "plat-1-top-corr-2",
+            "plat-1-bottom-corr-1"
+          ]
+        },
+        {
+          "node": "plat-2-center",
+          "connected_to": [
+            "plat-2-top-corr-2",
+            "plat-2-bottom-corr-1"
+          ]
         }
       ],
       "parallel_flows": [
@@ -3611,6 +3639,20 @@
             "plat-3-center",
             "plat-2-bottom-corr-1",
             "amw3-m-end-top"
+          ]
+        },
+        {
+          "node": "plat-2-center",
+          "connected_to": [
+            "plat-2-top-corr-2",
+            "plat-2-bottom-corr-1"
+          ]
+        },
+        {
+          "node": "plat-3-center",
+          "connected_to": [
+            "plat-3-top-corr-2",
+            "plat-3-bottom-corr-1"
           ]
         }
       ],
