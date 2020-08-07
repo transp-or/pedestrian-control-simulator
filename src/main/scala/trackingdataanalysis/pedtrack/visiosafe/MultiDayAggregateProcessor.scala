@@ -51,8 +51,8 @@ class MultiDayAggregateProcessor(files: Vector[String], zoneFile: String, tolera
 
   def writePedestriansToJSON(fileName: String): Unit = {
 
-    ped.foreach(pop => {
-      val file = new File(pop._1.toString + "-" + fileName)
+    ped.foreach(popDay => {
+      val file = new File(popDay._1.toString + "-" + fileName)
       val bw = new BufferedWriter(new FileWriter(file))
 
       def helper(data: Iterable[Pedestrian]): Unit = {
@@ -65,7 +65,7 @@ class MultiDayAggregateProcessor(files: Vector[String], zoneFile: String, tolera
       }
 
       bw.write("[")
-      helper(pop._2.values.toVector.sortBy(_.ID))
+      helper(popDay._2.values.toVector.sortBy(_.ID))
       bw.write("]")
       bw.close()
     })
