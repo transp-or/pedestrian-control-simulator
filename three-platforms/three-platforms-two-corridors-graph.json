@@ -114,9 +114,9 @@
       "y": 0.0,
       "x1": 22.1,
       "y1": 32.1,
-      "x2": 25.900000000000002,
+      "x2": 25.9,
       "y2": 32.1,
-      "x3": 25.900000000000002,
+      "x3": 25.9,
       "y3": 33.1,
       "x4": 22.1,
       "y4": 33.1,
@@ -129,9 +129,9 @@
       "y": 0.0,
       "x1": 22.1,
       "y1": 39.9,
-      "x2": 25.900000000000002,
+      "x2": 25.9,
       "y2": 39.9,
-      "x3": 25.900000000000002,
+      "x3": 25.9,
       "y3": 40.9,
       "x4": 22.1,
       "y4": 40.9,
@@ -2228,7 +2228,6 @@
         "GoGOPhHckp",
         "vISAZVYJTe",
         "IpzwrYgLDR",
-        "XDXWiPxhdz",
         "entrance-top-corr-right",
         "jbDyANtZZi"
       ]
@@ -2292,7 +2291,6 @@
         "GrpKHXdGlS",
         "ghNOFYgEWK",
         "vsFIuprjqg",
-        "qosVximywY",
         "entrance-bottom-corr-right",
         "jbDyANtZZi"
       ]
@@ -2652,8 +2650,7 @@
         "AccfCUaOLZ",
         "FsXkzkmeaL",
         "entrance-bottom-corr-left",
-        "HIJdqjkLeF",
-        "wZJYfPMMrC"
+        "HIJdqjkLeF"
       ]
     },
     {
@@ -2827,11 +2824,327 @@
     }
   ],
   "flow_gates": [],
-  "controlled_areas": [],
+  "controlled_areas": [
+    {
+      "name": "A",
+      "x1": 20.0,
+      "y1": 32.0,
+      "x2": 24.0,
+      "y2": 32.0,
+      "x3": 24.0,
+      "y3": 41.0,
+      "x4": 20.0,
+      "y4": 41.0,
+      "target_density": 1.08
+    },
+    {
+      "name": "B",
+      "x1": 60.0,
+      "y1": 32.0,
+      "x2": 68.0,
+      "y2": 32.0,
+      "x3": 68.0,
+      "y3": 41.0,
+      "x4": 60.0,
+      "y4": 41.0,
+      "target_density": 1.08
+    }
+  ],
   "binary_gates": [],
   "flow_separators": [],
-  "flow_lines": [],
-  "moving_walkways": [],
+  "flow_lines": [
+    {
+      "name": "a",
+      "x1": 20,
+      "y1": 41,
+      "x2": 20,
+      "y2": 32
+    },
+    {
+      "name": "b",
+      "x1": 22,
+      "y1": 32,
+      "x2": 26,
+      "y2": 32
+    },
+    {
+      "name": "c",
+      "x1": 26,
+      "y1": 41,
+      "x2": 22,
+      "y2": 41
+    },
+    {
+      "name": "d",
+      "x1": 66,
+      "y1": 41,
+      "x2": 62,
+      "y2": 41
+    },
+    {
+      "name": "e",
+      "x1": 62,
+      "y1": 32,
+      "x2": 66,
+      "y2": 32
+    },
+    {
+      "name": "f",
+      "x1": 68,
+      "y1": 32,
+      "x2": 68,
+      "y2": 41
+    }
+
+  ],
+  "moving_walkways": [
+    {
+      "name": "amw1",
+      "x1": 27,
+      "y1": 36.5,
+      "x2": 61,
+      "y2": 36.5,
+      "width": 1.2,
+      "start_area": ["A"],
+      "end_area": ["B"],
+      "overriden_zones_1": [
+        {
+          "name": "amw1-m-start",
+          "x1": 22.0,
+          "y1": 36.0,
+          "x2": 26.0,
+          "y2": 36.0,
+          "x3": 26.0,
+          "y3": 37.0,
+          "x4": 22.0,
+          "y4": 37.0,
+          "overrides": "DRGCrZDCmn",
+          "OD": false,
+          "maximum_rate": null
+        },
+        {
+          "name": "amw1-m-end",
+          "x1": 62.0,
+          "y1": 36.0,
+          "x2": 66.0,
+          "y2": 36.0,
+          "x3": 66.0,
+          "y3": 37.0,
+          "x4": 62.0,
+          "y4": 37.0,
+          "overrides": "GoGOPhHckp",
+          "OD": false,
+          "maximum_rate": null
+        },
+        {
+          "name": "plat-1-top-corr-2",
+          "x1": 22.0,
+          "y1": 33,
+          "x2": 26.0,
+          "y2": 33,
+          "x3": 26.0,
+          "y3": 35.5,
+          "x4": 22.0,
+          "y4": 35.5,
+          "overrides": "NAsmytEDoM",
+          "OD": false,
+          "maximum_rate": null
+        },
+        {
+          "name": "plat-1-top-corr-1",
+          "x1": 22.0,
+          "y1": 37.5,
+          "x2": 26.0,
+          "y2": 37.5,
+          "x3": 26.0,
+          "y3": 40,
+          "x4": 22.0,
+          "y4": 40,
+          "overrides": "IKePOMJZZs",
+          "OD": false,
+          "maximum_rate": null
+        },
+        {
+          "name": "plat-2-top-corr-2",
+          "x1": 42.0,
+          "y1": 33,
+          "x2": 46.0,
+          "y2": 33,
+          "x3": 46.0,
+          "y3": 35.5,
+          "x4": 42.0,
+          "y4": 35.5,
+          "overrides": "YIaceeSmRl",
+          "OD": false,
+          "maximum_rate": null
+        },
+        {
+          "name": "plat-2-top-corr-1",
+          "x1": 42.0,
+          "y1": 37.5,
+          "x2": 46.0,
+          "y2": 37.5,
+          "x3": 46.0,
+          "y3": 40,
+          "x4": 42.0,
+          "y4": 40,
+          "overrides": "gIuOIzfuCn",
+          "OD": false,
+          "maximum_rate": null
+        },
+        {
+          "name": "plat-3-top-corr-2",
+          "x1": 62.0,
+          "y1": 33,
+          "x2": 66.0,
+          "y2": 33,
+          "x3": 66.0,
+          "y3": 35.5,
+          "x4": 62.0,
+          "y4": 35.5,
+          "overrides": "vISAZVYJTe",
+          "OD": false,
+          "maximum_rate": null
+        },
+        {
+          "name": "plat-3-top-corr-1",
+          "x1": 62.0,
+          "y1": 37.5,
+          "x2": 66.0,
+          "y2": 37.5,
+          "x3": 66.0,
+          "y3": 40,
+          "x4": 62.0,
+          "y4": 40,
+          "overrides": "IpzwrYgLDR",
+          "OD": false,
+          "maximum_rate": null
+        },
+        {
+          "name": "null",
+          "x1": 0,
+          "y1": 0,
+          "x2": 1,
+          "y2": 0,
+          "x3": 1,
+          "y3": 1,
+          "x4": 0,
+          "y4": 1,
+          "overrides": "nMnzCSiprN",
+          "OD": true,
+          "maximum_rate": null
+        }
+      ],
+      "overriden_zones_2": [],
+      "overriden_connections": [
+        {
+          "node": "amw1-m-start",
+          "connected_to": [
+            "plat-1-top-corr-1",
+            "plat-1-top-corr-2",
+            "amw11",
+            "wZJYfPMMrC"
+          ]
+        },
+        {
+          "node": "amw1-m-end",
+          "connected_to": [
+            "plat-3-top-corr-1",
+            "plat-3-top-corr-2",
+            "amw12",
+            "qosVximywY"
+          ]
+        },
+        {
+          "node": "amw11",
+          "connected_to": [
+            "amw1-m-start"
+          ]
+        },
+        {
+          "node": "amw12",
+          "connected_to": [
+            "amw1-m-end"
+          ]
+        },
+        {
+          "node": "plat-1-top-corr-1",
+          "connected_to": [
+            "plat-1-top-corr-top",
+            "amw1-m-start",
+            "wZJYfPMMrC"
+          ]
+        },
+        {
+          "node": "plat-1-top-corr-2",
+          "connected_to": [
+            "plat-1-center",
+            "amw1-m-start",
+            "wZJYfPMMrC",
+            "plat-2-top-corr-2"
+          ]
+        },
+        {
+          "node": "plat-2-top-corr-2",
+          "connected_to": [
+            "plat-2-center",
+            "plat-1-top-corr-2",
+            "plat-3-top-corr-2"
+          ]
+        },
+        {
+          "node": "plat-2-top-corr-1",
+          "connected_to": [
+            "plat-2-top-corr-top",
+            "plat-1-top-corr-1",
+            "plat-3-top-corr-1"
+          ]
+        },
+        {
+          "node": "plat-3-top-corr-2",
+          "connected_to": [
+            "plat-2-top-corr-2",
+            "qosVximywY",
+            "amw1-m-end",
+            "plat-3-center"
+          ]
+        },{
+          "node": "plat-3-top-corr-1",
+          "connected_to": [
+            "plat-3-top-corr-top",
+            "amw1-m-end",
+            "qosVximywY",
+            "plat-2-top-corr-1"
+          ]
+        },
+        {
+          "node": "qosVximywY",
+          "connected_to": [
+            "plat-3-top-corr-1",
+            "plat-3-top-corr-2",
+            "amw1-m-end",
+            "entrance-top-corr-right",
+            "jbDyANtZZi"
+          ]
+        },
+        {
+          "node": "wZJYfPMMrC",
+          "connected_to": [
+            "plat-1-top-corr-1",
+            "plat-1-top-corr-1",
+            "amw1-m-end",
+            "entrance-top-corr-left",
+            "HIJdqjkLeF"
+          ]
+        }
+      ],
+      "parallel_flows": [
+        ["amw1-m-start", "amw1-m-end"]
+      ],
+      "inflow_lines_start": [["a",1.0], ["b",1.0], ["c",1.0]],
+      "inflow_lines_end": [["d",1.0], ["e",1.0], ["f",1.0]]
+    }
+  ],
   "alternate_graphs": [],
   "destination_groups": [],
   "connectivity_level_change": [

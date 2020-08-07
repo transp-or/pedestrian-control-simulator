@@ -169,15 +169,23 @@ package object results {
         }
       }
 
-      val file = new File(prefix + "ods-with-amws_" + simulator.ID + ".json")
+      if (false) {
 
-      val bw = new BufferedWriter(new FileWriter(file))
-      bw.write("[{")
-      bw.write(simulator.graph.computeODsWithAMWs
-        .map(kv => "\"o\":\"" + kv._1._1 + "\",\"d\":\"" + kv._1._2 + "\",\"amws\":[" + {if (kv._2.nonEmpty) {"\"" + kv._2.mkString("\",\"") + "\""} else {""} } + "]")
+        val file = new File(prefix + "ods-with-amws_" + simulator.ID + ".json")
+        val bw = new BufferedWriter(new FileWriter(file))
+        bw.write("[{")
+        bw.write(simulator.graph.computeODsWithAMWs
+          .map(kv => "\"o\":\"" + kv._1._1 + "\",\"d\":\"" + kv._1._2 + "\",\"amws\":[" + {
+            if (kv._2.nonEmpty) {
+              "\"" + kv._2.mkString("\",\"") + "\""
+            } else {
+              ""
+            }
+          } + "]")
           .mkString("},{"))
-      bw.write("}]")
-      bw.close()
+        bw.write("}]")
+        bw.close()
+      }
     }
 
     if (writeTrajectoriesVS) {
