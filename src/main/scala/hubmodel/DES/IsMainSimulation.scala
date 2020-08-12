@@ -128,7 +128,7 @@ trait IsMainSimulation {
               Vector()
             }
           }
-          w.setControlPolicy(policy, Some(eventData.getOrElse(MovingWalkwayControlEvents(w.name)).copy(openTime = (eventData.get.openTime ++ additionalOpenTime).distinct)))
+          w.setControlPolicy(policy, Some(eventData.getOrElse(MovingWalkwayControlEvents(w.name)).copy(openTime = (eventData.getOrElse(MovingWalkwayControlEvents(w.name)).openTime ++ additionalOpenTime).distinct)))
           w.insertChangeSpeed(this.sim)
         })
 
