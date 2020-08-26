@@ -312,8 +312,8 @@ package object DES {
     * @return one or two pedestrians depending on whether a pedestrian has been added or not.
     */
   def increaseDemand(ratio: Double, pedestrian: (String, String, Option[Time])): Iterable[(String, String, Option[Time])] = {
-    if (ThreadLocalRandom.current().nextDouble() > (1.0 - ratio / 100.0)) {
-      Iterable(pedestrian, (pedestrian._1, pedestrian._2, Option(pedestrian._3.get.addDouble(ThreadLocalRandom.current().nextDouble(-15, 15)))))
+    if (ThreadLocalRandom.current().nextDouble() > (1.0 - (ratio / 100.0))) {
+      Iterable(pedestrian, (pedestrian._1, pedestrian._2, Option(pedestrian._3.get.addDouble(ThreadLocalRandom.current().nextDouble(-5, 5)))))
     } else {
       Iterable(pedestrian)
     }

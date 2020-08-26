@@ -20,7 +20,7 @@ case class ALNSParameters(maxIterations: Int = 150,
                           initialScore: Double = 5.0,
                           maxScore: Double = 20,
                           minScore: Double = 0.5,
-                          SATypicalIncrease: Double = 1.0)
+                          SATypicalIncrease: Double = 0.01)
 
 class ALNS(function: StatePrediction, initialPolicy: Iterable[ControlDevicePolicy], _operators: Vector[OperatorGenerator with RandomChange], constraints: Vector[Constraint], stochasticReduction: FunctionEvaluation => FunctionEvaluationReduced, parameters: ALNSParameters = new ALNSParameters) {
 
@@ -45,7 +45,13 @@ class ALNS(function: StatePrediction, initialPolicy: Iterable[ControlDevicePolic
   private def stringify(x: Vector[ControlDevicePolicy]): String = x.sorted.map(dv => dv.nameToString + dv.decisionVariable.toString).mkString("-")
 
   private def computeObjective(x: Vector[ControlDevicePolicy]): Double = {
-    stochasticReduction(evaluatedSolutions(stringify(x))._2)("density")
+    {
+      if (referenceValues("density") > 0) {stochasticReduction(evaluatedSolutions(stringify(x))._2)("density") / referenceValues("density")} else {0.0}
+    }
+  } +
+    {
+      if (referenceValues("meanTT") > 0) {stochasticReduction(evaluatedSolutions(stringify(x))._2)("meanTT") / referenceValues("meanTT")}
+      else {0.0}
   }
 
   private def getOF(x: Vector[ControlDevicePolicy]): FunctionEvaluation = evaluatedSolutions(stringify(x))._2
@@ -89,8 +95,9 @@ class ALNS(function: StatePrediction, initialPolicy: Iterable[ControlDevicePolic
 
   private def acceptanceCriteriaSA(i: Int, x: Vector[ControlDevicePolicy]): (Boolean, Double) = {
     val T: Double = -parameters.SATypicalIncrease/math.log(0.99 + (0.00001-0.99)*i/this.maxIterations)
-    if (computeObjective(x) < computeObjective(this.currentx._1)) {(true, T)}
-    else {
+    if (computeObjective(x) < computeObjective(this.currentx._1)) {
+      (true, T)
+    } else {
       (math.exp((computeObjective(this.currentx._1) - computeObjective(x))/T) > ThreadLocalRandom.current.nextDouble(), T)
     }
   }
@@ -127,7 +134,9 @@ class ALNS(function: StatePrediction, initialPolicy: Iterable[ControlDevicePolic
 
       if ( accept) {
         score = weightScores("accepted")
-        if (computeObjective(xNew._1) < computeObjective(this.currentx._1)) { score = weightScores("improvement")}
+        if (computeObjective(xNew._1) < computeObjective(this.currentx._1)) {
+          score = weightScores("improvement")
+        }
         this.currentx = xNew
         accepted = true
       }
@@ -164,11 +173,13 @@ class ALNS(function: StatePrediction, initialPolicy: Iterable[ControlDevicePolic
       .writeToCSV(file, rowNames = None, columnNames = Some(Vector("it", "temp", "operator", "accepted") ++ header ++ objectiveHeader ++ objectiveHeader.map(_ ++ "_current") ++ objectiveHeader.map(_ ++ "_best") ++ weightHeader.map(_ ++ "_weight")))
   }
 
+
+  /*  ------------------- ATTRIBUTES --------------------*/
+
   println("Starting optimization for simulation")
   println(" * start time = " + this.function.predictionStartTime)
   println(" * end time = " + this.function.predictionEndTime)
   println(" * replications = " + this.function.replications)
-
 
   val weightMin: Double = parameters.minScore
   val weightMax: Double = parameters.maxScore
@@ -183,6 +194,7 @@ class ALNS(function: StatePrediction, initialPolicy: Iterable[ControlDevicePolic
 
   private val evaluatedSolutions: collection.mutable.Map[String, (Solution, FunctionEvaluation, Vector[StateGroundTruthPredicted])] = collection.mutable.Map(stringify(x0) -> ((x0, Vector()), function.computeObjectives, function.getPredictedStateData))
 
+  private lazy val referenceValues: Map[String, Double] = stochasticReduction(evaluatedSolutions(stringify(x0))._2)
 
   private var bestx: Solution = (x0, Vector())
   private var currentx: Solution = (x0, Vector())

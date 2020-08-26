@@ -307,7 +307,7 @@ class PredictWithGroundTruth(private val sim: PedestrianSimulation) extends Stat
 
     val keys: Vector[String] = data.flatMap(_.keys).distinct
 
-    keys.map(k => k -> /*computeQuantile(75)(*/ data.map(m => m(k)) /*.value*/).toMap
+    keys.map(k => k -> data.map(m => m(k)) ).toMap
   }
 }
 
