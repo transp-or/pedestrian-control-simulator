@@ -56,6 +56,7 @@ class PedestrianSim(val origin: Vertex,
 
   def currentPosition: Position = this._currentPosition
   def setCurrentPosition(x: Position): Unit = {
+
     this._currentPosition = x
   }
 

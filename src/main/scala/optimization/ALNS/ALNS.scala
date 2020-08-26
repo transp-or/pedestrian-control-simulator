@@ -44,14 +44,22 @@ class ALNS(function: StatePrediction, initialPolicy: Iterable[ControlDevicePolic
 
   private def stringify(x: Vector[ControlDevicePolicy]): String = x.sorted.map(dv => dv.nameToString + dv.decisionVariable.toString).mkString("-")
 
+
+
   private def computeObjective(x: Vector[ControlDevicePolicy]): Double = {
-    {
-      if (referenceValues("density") > 0) {stochasticReduction(evaluatedSolutions(stringify(x))._2)("density") / referenceValues("density")} else {0.0}
+
+    def normalizeQuantity(name: String): Double = {
+      {
+        if (referenceValuesMin(name) > 0) {
+          (stochasticReduction(evaluatedSolutions(stringify(x))._2)(name) - referenceValuesMin(name)) / (referenceValuesMax(name) - referenceValuesMin(name))
+        } else {
+          0.0
+        }
+      }
     }
-  } +
-    {
-      if (referenceValues("meanTT") > 0) {stochasticReduction(evaluatedSolutions(stringify(x))._2)("meanTT") / referenceValues("meanTT")}
-      else {0.0}
+
+    normalizeQuantity("density") + normalizeQuantity("meanTT")
+
   }
 
   private def getOF(x: Vector[ControlDevicePolicy]): FunctionEvaluation = evaluatedSolutions(stringify(x))._2
@@ -128,6 +136,12 @@ class ALNS(function: StatePrediction, initialPolicy: Iterable[ControlDevicePolic
         )
       )
 
+      evaluatedSolutions.head._2._2.keys.foreach(k => {
+        referenceValuesMin.update(k, math.min(referenceValuesMin(k), evaluatedSolutions(stringify(xNew._1))._2(k).min))
+        referenceValuesMax.update(k, math.max(referenceValuesMax(k), evaluatedSolutions(stringify(xNew._1))._2(k).max))
+      })
+
+
       var accepted = false
       var score: Double = weightScores("rejected")
       val (accept, temp) = acceptanceCriteriaSA(it, xNew._1)
@@ -194,7 +208,8 @@ class ALNS(function: StatePrediction, initialPolicy: Iterable[ControlDevicePolic
 
   private val evaluatedSolutions: collection.mutable.Map[String, (Solution, FunctionEvaluation, Vector[StateGroundTruthPredicted])] = collection.mutable.Map(stringify(x0) -> ((x0, Vector()), function.computeObjectives, function.getPredictedStateData))
 
-  private lazy val referenceValues: Map[String, Double] = stochasticReduction(evaluatedSolutions(stringify(x0))._2)
+  private lazy val referenceValuesMin: collection.mutable.Map[String, Double] = collection.mutable.Map() ++ stochasticReduction(evaluatedSolutions(stringify(x0))._2)
+  private lazy val referenceValuesMax: collection.mutable.Map[String, Double] = collection.mutable.Map() ++ stochasticReduction(evaluatedSolutions(stringify(x0))._2)
 
   private var bestx: Solution = (x0, Vector())
   private var currentx: Solution = (x0, Vector())

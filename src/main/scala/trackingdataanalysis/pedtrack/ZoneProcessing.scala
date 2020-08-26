@@ -42,13 +42,17 @@ import scala.annotation.tailrec
     * @param mapZones Map storing the zones
     * @return Int naming the zone, -1 if none found
     */
-  @tailrec private def findZoneOwnership(pos: (Double, Double), mapZones: Map[Int, Rectangle]): Int = {
-    if (this.zones.isEmpty) -1
-    else {
-      val pair = this.zones.head
-      if (pair._2.isInside(new Position(pos._1, pos._2), false)) {pair._1}
-      else {findZoneOwnership(pos, this.zones.tail)}
+  private def findZoneOwnership(pos: (Double, Double), mapZones: Map[Int, Rectangle]): Int = {
+    @tailrec def helper(zoneCollection: Map[Int, Rectangle]): Int = {
+      if (zoneCollection.isEmpty) {-1}
+      else {
+        val pair = zoneCollection.head
+        if (pair._2.isInside(new Position(pos._1, pos._2), false)) {pair._1}
+        else {helper(zoneCollection.tail)}
+      }
     }
+    helper(this.zones)
+
   }
 
   /** Returns a copy of a pedestrian with the zone, travel time and travel distance set.
