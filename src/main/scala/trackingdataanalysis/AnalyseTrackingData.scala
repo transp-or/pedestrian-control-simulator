@@ -111,15 +111,15 @@ object AnalyseTrackingData extends App {
     case data: SingleDayAggregateProcessor => {
 
       // Reads ares to compute indicatros inside
-      val monitoredZone = new MonitoredAreaReader(config.getString("files.monitored-zones"))
+      /*val monitoredZone = new MonitoredAreaReader(config.getString("files.monitored-zones"))
       val mainZone = monitoredZone.monitoredArea
-      println("Main zone area is " + mainZone.area + "[m^2]")
+      println("Main zone area is " + mainZone.area + "[m^2]")*/
 
-      val ODPairsToAnalyse: Iterable[(Int, Int)] = config.getStringList("results-analysis.o_nodes").asScala.zip(config.getStringList("results-analysis.d_nodes").asScala).map(t => (t._1.toInt, t._2.toInt))
+      //val ODPairsToAnalyse: Iterable[(Int, Int)] = config.getStringList("results-analysis.o_nodes").asScala.zip(config.getStringList("results-analysis.d_nodes").asScala).map(t => (t._1.toInt, t._2.toInt))
 
 
-      //data.writePedestriansToJSON("test.json")
-
+      data.writePedestriansToJSON("test.json")
+/*
       def flattenTuple[T: Numeric](t: (Int, Int, (Int, Double, Double, Double, T, T))): (Int, Int, Int, Double, Double, Double, T, T) = (t._1, t._2, t._3._1, t._3._2, t._3._3, t._3._4, t._3._5, t._3._6)
 
       (for (od <- ODPairsToAnalyse.toVector) yield {
@@ -211,7 +211,7 @@ object AnalyseTrackingData extends App {
               data.timeMapFuncVal(timesMiddles),
               timesMiddles)
       */
-
+*/
     }
     case data: MultiDayAggregateProcessor => {
 
