@@ -346,6 +346,8 @@ package object results {
 
     filesJson.map(str => {
 
+      println(str)
+
       val tt: Vector[PedestrianResults_JSON] = {
         val source: BufferedSource = scala.io.Source.fromFile(str._2("tt"))
         val input: JsValue = Json.parse(try source.mkString finally source.close)
