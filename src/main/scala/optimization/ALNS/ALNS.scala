@@ -48,7 +48,7 @@ class ALNS(function: StatePrediction, initialPolicy: Iterable[ControlDevicePolic
 
   private def computeObjective(x: Vector[ControlDevicePolicy]): Double = {
 
-    def normalizeQuantity(name: String): Double = {
+    def normalizeQuantityMinMax(name: String): Double = {
       {
         if (referenceValuesMin(name) > 0) {
           (stochasticReduction(evaluatedSolutions(stringify(x))._2)(name) - referenceValuesMin(name)) / (referenceValuesMax(name) - referenceValuesMin(name))
@@ -58,7 +58,17 @@ class ALNS(function: StatePrediction, initialPolicy: Iterable[ControlDevicePolic
       }
     }
 
-    normalizeQuantity("density") + normalizeQuantity("meanTT")
+    def normalizeQuantityRef(name: String): Double = {
+      {
+        if (referenceValues(name) > 0) {
+          (stochasticReduction(evaluatedSolutions(stringify(x))._2)(name) - referenceValuesMin(name)) / (referenceValuesMax(name) - referenceValuesMin(name))
+        } else {
+          0.0
+        }
+      }
+    }
+
+    normalizeQuantityRef("density") + normalizeQuantityRef("meanTT")
 
   }
 
