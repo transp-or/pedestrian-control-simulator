@@ -600,7 +600,7 @@ package object JSONReaders {
 
 
   case class DensityData_JSON(id: String, name: String, targetDensity:Double, aggregateMeasurement: Vector[(Double, Double)], disaggregateMeasurements: Vector[(Double, Vector[Double])]) {
-    def integratedIndividualDensity: Double = rectangleIntegration(this.disaggregateMeasurements.map(d => (d._1, {if (d._2.isEmpty){0.0} else {math.max(0.0, computeQuantile(75)(d._2).value - 0.0)}})).toVector, this.disaggregateMeasurements.minBy(_._1)._1, this.disaggregateMeasurements.maxBy(_._1)._1)
+    def integratedIndividualDensity: Double = rectangleIntegration(this.disaggregateMeasurements.map(d => (d._1, {if (d._2.isEmpty){0.0} else {math.max(0.0, computeQuantile(75)(d._2).value - 1.08)}})).toVector, this.disaggregateMeasurements.minBy(_._1)._1, this.disaggregateMeasurements.maxBy(_._1)._1)
   }
 
   implicit val DensityData_JSON_Reads: Reads[DensityData_JSON] = (
