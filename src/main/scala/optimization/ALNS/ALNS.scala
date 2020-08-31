@@ -49,9 +49,16 @@ class ALNS(function: StatePrediction, initialPolicy: Iterable[ControlDevicePolic
   private def computeObjective(x: Vector[ControlDevicePolicy]): Double = {
 
     def normalizeQuantity(name: String): Double = {
-      {
-        if (referenceValuesMin(name) > 0) {
+      /*{
+        if (referenceValuesMax(name) > 0) {
           (stochasticReduction(evaluatedSolutions(stringify(x))._2)(name) - referenceValuesMin(name)) / (referenceValuesMax(name) - referenceValuesMin(name))
+        } else {
+          0.0
+        }
+      }*/
+      {
+        if (referenceValues(name) > 0) {
+          stochasticReduction(evaluatedSolutions(stringify(x))._2)(name) / referenceValues(name)
         } else {
           0.0
         }
@@ -137,8 +144,9 @@ class ALNS(function: StatePrediction, initialPolicy: Iterable[ControlDevicePolic
       )
 
       evaluatedSolutions.head._2._2.keys.foreach(k => {
-        referenceValuesMin.update(k, math.min(referenceValuesMin(k), evaluatedSolutions(stringify(xNew._1))._2(k).min))
-        referenceValuesMax.update(k, math.max(referenceValuesMax(k), evaluatedSolutions(stringify(xNew._1))._2(k).max))
+        val objectiveFunctionReduced: FunctionEvaluationReduced = stochasticReduction(evaluatedSolutions(stringify(xNew._1))._2)
+        referenceValuesMin.update(k, math.min(referenceValuesMin(k), objectiveFunctionReduced(k)))
+        referenceValuesMax.update(k, math.max(referenceValuesMax(k), objectiveFunctionReduced(k)))
       })
 
 
@@ -155,13 +163,13 @@ class ALNS(function: StatePrediction, initialPolicy: Iterable[ControlDevicePolic
         accepted = true
       }
 
-      if (stringify(xNew._1) == stringify(this.bestx._1) && isBestSolution(xNew)) {
+      if (accept && stringify(xNew._1) == stringify(this.bestx._1) && isBestSolution(xNew)) {
         this.bestx = evaluatedSolutions.minBy(s => computeObjective(s._2._1._1))._2._1
         score = weightScores("newBest")
-      } else if (stringify(xNew._1) == stringify(this.bestx._1) && !isBestSolution(xNew)) {
+      } else if (accept && stringify(xNew._1) == stringify(this.bestx._1) && !isBestSolution(xNew)) {
         this.bestx = evaluatedSolutions.minBy(s => computeObjective(s._2._1._1))._2._1
         score = weightScores("improvement")
-      } else if (isBestSolution(xNew)) {
+      } else if (accept && isBestSolution(xNew)) {
         this.bestx = xNew
         score = weightScores("newBest")
       }
@@ -169,7 +177,7 @@ class ALNS(function: StatePrediction, initialPolicy: Iterable[ControlDevicePolic
       operatorWeights.update(op, math.max(weightMin, math.min(weightMax, operatorWeights(op) * lambda  + (1.0-lambda) * score)))
 
       println(this.evaluatedSolutions(stringify(xNew._1))._3.size, computeObjective(xNew._1), computeObjective(this.currentx._1), computeObjective(this.bestx._1))
-      this.iterations.append((it, temp, xNew, accepted, op, stochasticReduction(this.getOF(xNew._1)), stochasticReduction(this.getOF(this.currentx._1)), stochasticReduction(this.getOF(this.bestx._1)), operatorWeights.toMap))
+      this.iterations.append((it, temp, xNew, accepted, op, computeObjective(xNew._1), stochasticReduction(this.getOF(xNew._1)), stochasticReduction(this.getOF(this.currentx._1)), stochasticReduction(this.getOF(this.bestx._1)), operatorWeights.toMap))
 
       it = it + 1
     }
@@ -177,12 +185,12 @@ class ALNS(function: StatePrediction, initialPolicy: Iterable[ControlDevicePolic
   }
 
   def writeIterationsToCSV(file: String, path: String = ""): Unit = {
-    val objectiveHeader: Vector[String] = this.iterations.head._6.keys.toVector.sorted
+    val objectiveHeader: Vector[String] = this.iterations.head._7.keys.toVector.sorted
     val header: Vector[String] = this.iterations.head._3._1.sorted.map(_.nameToString)
-    val weightHeader: Vector[String] = this.iterations.head._9.keys.toVector
+    val weightHeader: Vector[String] = this.iterations.head._10.keys.toVector
 
     this.iterations.toVector
-      .map(v => Vector(v._1, v._2, v._5, v._4) ++ v._3._1.sorted.map(_.decisionVariable) ++ objectiveHeader.map(v._6) ++ objectiveHeader.map(v._7) ++ objectiveHeader.map(v._8) ++ weightHeader.map(v._9) )
+      .map(v => Vector(v._1, v._2, v._5, v._4) ++ v._3._1.sorted.map(_.decisionVariable) ++ objectiveHeader.map(v._7) ++ objectiveHeader.map(v._8) ++ objectiveHeader.map(v._9) ++ weightHeader.map(v._10) )
       .transpose
       .writeToCSV(file, rowNames = None, columnNames = Some(Vector("it", "temp", "operator", "accepted") ++ header ++ objectiveHeader ++ objectiveHeader.map(_ ++ "_current") ++ objectiveHeader.map(_ ++ "_best") ++ weightHeader.map(_ ++ "_weight")))
   }
@@ -210,14 +218,15 @@ class ALNS(function: StatePrediction, initialPolicy: Iterable[ControlDevicePolic
 
   private lazy val referenceValuesMin: collection.mutable.Map[String, Double] = collection.mutable.Map() ++ stochasticReduction(evaluatedSolutions(stringify(x0))._2)
   private lazy val referenceValuesMax: collection.mutable.Map[String, Double] = collection.mutable.Map() ++ stochasticReduction(evaluatedSolutions(stringify(x0))._2)
+  private lazy val referenceValues: Map[String, Double] = stochasticReduction(evaluatedSolutions(stringify(x0))._2)
 
   private var bestx: Solution = (x0, Vector())
   private var currentx: Solution = (x0, Vector())
 
   type OperatorWeights = Map[String, Double]
 
-  private val iterations: collection.mutable.ArrayBuffer[(Iteration, Temperature, Solution, Boolean, OperatorName, FunctionEvaluationReduced, FunctionEvaluationReduced, FunctionEvaluationReduced, OperatorWeights)] =
-    collection.mutable.ArrayBuffer((0, Double.NaN, bestx, true, "", stochasticReduction(getOF(x0)), stochasticReduction(getOF(x0)), stochasticReduction(getOF(x0)), operatorWeights.toMap))
+  private val iterations: collection.mutable.ArrayBuffer[(Iteration, Temperature, Solution, Boolean, OperatorName, Double, FunctionEvaluationReduced, FunctionEvaluationReduced, FunctionEvaluationReduced, OperatorWeights)] =
+    collection.mutable.ArrayBuffer((0, Double.NaN, bestx, true, "", computeObjective(x0), stochasticReduction(getOF(x0)), stochasticReduction(getOF(x0)), stochasticReduction(getOF(x0)), operatorWeights.toMap))
 
   //val lowerBoundRandomFraction: Double = 0.2
   //val upperBoundRandomFraction: Double = 0.4
