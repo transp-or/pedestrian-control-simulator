@@ -134,6 +134,9 @@ class ALNS(function: StatePrediction, initialPolicy: Iterable[ControlDevicePolic
       println("Evaluating solution: " + xNew._1.map(_.decisionVariable))
       function.predict(xNew._1, xNew._2)
 
+      println("Before update evalutated solutions: " +  computeObjective(this.bestx._1))
+      val tmpOFBeforeUpdate = computeObjective(this.bestx._1)
+
       evaluatedSolutions.update(
         stringify(xNew._1),
         (xNew,
@@ -148,30 +151,41 @@ class ALNS(function: StatePrediction, initialPolicy: Iterable[ControlDevicePolic
         referenceValuesMax.update(k, math.max(referenceValuesMax(k), objectiveFunctionReduced(k)))
       })
 
+      val tmpOFAfterUpdate = computeObjective(this.bestx._1)
+      if (tmpOFAfterUpdate > tmpOFBeforeUpdate) {
+        println("debug")
+      }
 
       var accepted = false
       var score: Double = weightScores("rejected")
       val (accept, temp) = acceptanceCriteriaSA(it, xNew._1)
 
+      // update current solution
       if ( accept) {
-        score = weightScores("accepted")
-        if (computeObjective(xNew._1) < computeObjective(this.currentx._1)) {
-          score = weightScores("improvement")
-        }
         this.currentx = xNew
         accepted = true
       }
 
-      if (accept && stringify(xNew._1) == stringify(this.bestx._1) && isBestSolution(xNew)) {
-        this.bestx = evaluatedSolutions.minBy(s => computeObjective(s._2._1._1))._2._1
-        score = weightScores("newBest")
-      } else if (accept && stringify(xNew._1) == stringify(this.bestx._1) && !isBestSolution(xNew)) {
-        this.bestx = evaluatedSolutions.minBy(s => computeObjective(s._2._1._1))._2._1
+      // compute operator score if accepted
+      if ( accept && computeObjective(xNew._1) <= computeObjective(this.currentx._1)) {
         score = weightScores("improvement")
-      } else if (accept && isBestSolution(xNew)) {
-        this.bestx = xNew
+      } else if (accept && computeObjective(xNew._1) > computeObjective(this.currentx._1)) {
+        score = weightScores("accepted")
+      }
+
+      // compute operator score if new best
+      if ( accept && isBestSolution(xNew)) {
         score = weightScores("newBest")
       }
+
+      updateBestX(evaluatedSolutions.minBy(s => computeObjective(s._2._1._1))._2._1)
+
+      val tmpOFBeforeScoreUpdate = computeObjective(this.bestx._1)
+
+
+
+      println("After best update: " +  computeObjective(this.bestx._1))
+      val tmpAfterScoreUpdate = computeObjective(this.bestx._1)
 
       operatorWeights.update(op, math.max(weightMin, math.min(weightMax, operatorWeights(op) * lambda  + (1.0-lambda) * score)))
 
@@ -219,7 +233,11 @@ class ALNS(function: StatePrediction, initialPolicy: Iterable[ControlDevicePolic
   private lazy val referenceValuesMax: collection.mutable.Map[String, Double] = collection.mutable.Map() ++ stochasticReduction(evaluatedSolutions(stringify(x0))._2)
   private lazy val referenceValues: Map[String, Double] = stochasticReduction(evaluatedSolutions(stringify(x0))._2)
 
-  private var bestx: Solution = (x0, Vector())
+  //private var bestx: Solution = (x0, Vector())
+  private var _bestX: Solution = (x0, Vector())
+  private def bestx: Solution = this._bestX
+  private def updateBestX(x: Solution): Unit = {this._bestX = x}
+
   private var currentx: Solution = (x0, Vector())
 
   type OperatorWeights = Map[String, Double]

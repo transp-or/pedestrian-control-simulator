@@ -29,7 +29,10 @@ package object ALNS {
 
   type AMWSpeedRange = Set[Double]
 
-  val SPEED_INCREMENT: Double = 0.5
+  val SPEED_INCREMENT: Double = 0.25
+
+  val MINIMUM_SPEED: Double = -3.0
+  val MAXIMUM_SPEED: Double = 3.0
 
 
   def groupAMWPolicies(x: Vector[ControlDevicePolicy]): (Map[String, Vector[AMWPolicy]], Vector[ControlDevicePolicy]) = {

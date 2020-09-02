@@ -1,6 +1,7 @@
 package optimization.ALNS
 
 import java.util.concurrent.ThreadLocalRandom
+import java.util.function.DoubleToLongFunction
 
 import hubmodel.control.ControlDevicePolicy
 import hubmodel.control.amw.AMWPolicy
@@ -298,4 +299,39 @@ object DownstreamDensityUpdate extends OperatorGenerator with RandomChange {
   type T = DownstreamDensityUpdate
 
   def returnOperator(x: Vector[ControlDevicePolicy], iterable: Vector[StateGroundTruthPredicted]): T = new DownstreamDensityUpdate(iterable.head.densitiesInsideAreas.amwsZones, iterable.map(_.densitiesInsideAreas.quantile75DensityByArea), iterable.head.intervals)
+}
+
+/** Randomly set constant speed of moving walkways.
+  *
+  */
+class RandomSetSpeed extends Operator {
+
+  def xprime(x: Vector[ControlDevicePolicy]): Vector[ControlDevicePolicy] = {
+
+    val policyByAMW: Map[String, Vector[ControlDevicePolicy]] = x.groupBy(_.name)
+
+    val amwToChange = policyByAMW.keys.filter(n => ThreadLocalRandom.current().nextDouble() > 0.5).toVector
+
+    val possibleSpeeds: Vector[Double] = (BigDecimal(MINIMUM_SPEED) to BigDecimal(MAXIMUM_SPEED) by SPEED_INCREMENT).map(_.toDouble).toVector
+
+    (policyByAMW.collect{
+      case policy if amwToChange.contains(policy._1) => {
+        val newSpeed = Random.shuffle(possibleSpeeds).head
+        policy._2.collect{
+          case amw: AMWPolicy => amw.copy(speed = newSpeed)
+          case other => other
+        }
+      }
+      case other => other._2
+    }).flatten.toVector
+  }
+}
+
+object RandomSetSpeed extends OperatorGenerator with RandomChange {
+  val probability: Double = 0.075
+  val name: String = "RandomSetSpeed"
+
+  type T = RandomSetSpeed
+
+  def returnOperator(x: Vector[ControlDevicePolicy], iterable: Vector[StateGroundTruthPredicted]): T = new RandomSetSpeed
 }
