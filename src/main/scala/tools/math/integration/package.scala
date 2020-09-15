@@ -20,11 +20,13 @@ package object integration {
 
 
   def rectangleIntegration(f: Vector[(Double, Double)], a: Double, b: Double): Double = {
-
-    ((f.head._1 - a) + 0.5*(f.tail.head._1 - f.head._1) * f.head._2 +
-    (b - f.last._1) + 0.5*(f.last._1 - f.dropRight(1).last._1) * f.last._2 +
-    f.sliding(3).foldLeft(BigDecimal(0.0))((s,x) => s + (x(1)._2 * 0.5*(x(2)._1 - x(0)._1)))).toDouble
-
+    if (f.size < 3 || a >= b) {
+      0.0
+    } else {
+      ((f.head._1 - a) + 0.5 * (f.tail.head._1 - f.head._1) * f.head._2 +
+        (b - f.last._1) + 0.5 * (f.last._1 - f.dropRight(1).last._1) * f.last._2 +
+        f.sliding(3).foldLeft(BigDecimal(0.0))((s, x) => s + (x(1)._2 * 0.5 * (x(2)._1 - x(0)._1)))).toDouble
+    }
   }
 
 }

@@ -117,7 +117,7 @@ package object DES {
     val (timeTable, stop2Vertex) = getPTSchedule(config, demandSet, flows._2.nonEmpty)
 
 
-    val disaggPopulation = getDisaggregateFlows(config, demandSet)
+    val disaggPopulation: Vector[(String, String, Option[Time])] = getDisaggregateFlows(config, demandSet)
     /*if (demandSet.isEmpty) { // no
 
       }/* else if (flows_TF_file.nonEmpty && timetable_TF_file.isEmpty) {
@@ -144,7 +144,8 @@ package object DES {
       Time(config.getDouble("sim.prediction.density-msmt-update")),
       config.getInt("sim.prediction.replications"),
       config.getInt("sim.prediction.threads"),
-      ALNSParameters
+      ALNSParameters,
+      if (config.getIsNull("sim.prediction.pred-sf-dt")) {None} else {Some(Time(config.getDouble("sim.prediction.pred-sf-dt")))},
     )
 
     val simulationParameters: SimulationInputParameters = new SimulationInputParameters(

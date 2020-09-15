@@ -59,7 +59,7 @@ class FlowVariation(flowInterval: Double, config: Config, lowerBoundFlow: Double
 
     val devices = defaultParameters.controlDevices.deepCopy
 
-    defaultParameters.deepCopy(defaultParameters.graph.deepCopy2AlternateGraphs(devices, 0.05),devices)
+    defaultParameters.deepCopy(defaultParameters.graph.deepCopy2AlternateGraphs(devices, 0.05), devices, None)
 
     /*new SimulationInputParameters(
       defaultParameters._1,

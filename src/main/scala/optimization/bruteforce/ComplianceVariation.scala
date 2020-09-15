@@ -29,7 +29,7 @@ class ComplianceVariation(complianceInterval: Double, c: Config, upperBoundCompl
 
     val devices = defaultParameters.controlDevices.deepCopy
 
-    defaultParameters.deepCopy(defaultParameters.graph.deepCopy2AlternateGraphs(devices, paramMods.complianceRate), devices)
+    defaultParameters.deepCopy(defaultParameters.graph.deepCopy2AlternateGraphs(devices, paramMods.complianceRate), devices, None)
 
   }
 

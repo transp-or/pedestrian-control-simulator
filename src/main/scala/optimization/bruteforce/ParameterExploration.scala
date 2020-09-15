@@ -58,7 +58,7 @@ class ParameterExploration(config: Config) extends GridSearch {
                       Vector()
                     }, defaultParameters.controlDevices.binaryGates.map(_.deepCopy), defaultParameters.controlDevices.flowSeparators.map(_.deepCopy), defaultParameters.controlDevices.fixedFlowSeparators, defaultParameters.controlDevices.flowLines.map(_.deepCopy))
 
-      val sim = new PedestrianSimulation(defaultParameters.deepCopy(defaultParameters.graph.deepCopy(newDevices), newDevices))
+      val sim = new PedestrianSimulation(defaultParameters.deepCopy(defaultParameters.graph.deepCopy(newDevices), newDevices, None))
 
       runAndWriteResults(sim, t._1.toString + "_" + t._2.toString + "_params_", config.getString("output.dir"))
 

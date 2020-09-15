@@ -17,5 +17,6 @@ class PredictionInputParameters(val horizon: Time,
                                 val densityUpdateInterval: Time,
                                 val replications: Int,
                                 val threads: Int,
-                                val ALNSParameters: ALNSParameters
+                                val ALNSParameters: ALNSParameters,
+                                val sfUpdate: Option[Time]
 )

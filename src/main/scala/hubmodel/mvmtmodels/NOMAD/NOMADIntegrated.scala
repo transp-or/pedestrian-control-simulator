@@ -939,11 +939,6 @@ override def deepCopy(simulator: PedestrianPrediction): Option[A] = {
     pedestrian.nextVelocity = nextSpeed
     pedestrian.acceleration = (nextSpeed * 2.0 / nextSpeed.norm) -  speed
     pedestrian.setNextPosition(position + nextSpeed*dt + pedestrian.baseVelocity(sim.currentTime)*dt)
-
-    if (pedestrian.nextPosition.distanceTo(pedestrian.currentPosition) > 1.0) {
-      println("debug1")
-    }
-
   }
 
 

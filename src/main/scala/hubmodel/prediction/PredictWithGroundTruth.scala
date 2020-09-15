@@ -49,7 +49,7 @@ class PredictWithGroundTruth(private val sim: PedestrianSimulation) extends Stat
 
           val graph: GraphContainer = sim.graph.deepCopy(stateData.controlDevices)
 
-          val predictionParameters: SimulationInputParameters = sim.getSetupArgumentsNew.deepCopy(graph, stateData.controlDevices)
+          val predictionParameters: SimulationInputParameters = sim.getSetupArgumentsNew.deepCopy(graph, stateData.controlDevices, sim.predictionInputParameters.sfUpdate)
           predictionParameters.trackDensityInterval = Some(this.sim.predictionInputParameters.densityUpdateInterval)
 
           predictionParameters.startTime = sim.currentTime
@@ -87,7 +87,7 @@ class PredictWithGroundTruth(private val sim: PedestrianSimulation) extends Stat
 
         val graph: GraphContainer = sim.graph.deepCopy(stateData.controlDevices)
 
-        val predictionParameters: SimulationInputParameters = sim.getSetupArgumentsNew.deepCopy(graph, stateData.controlDevices)
+        val predictionParameters: SimulationInputParameters = sim.getSetupArgumentsNew.deepCopy(graph, stateData.controlDevices, sim.predictionInputParameters.sfUpdate)
         predictionParameters.trackDensityInterval = Some(this.sim.predictionInputParameters.densityUpdateInterval)
 
         predictionParameters.startTime = sim.currentTime

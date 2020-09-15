@@ -172,7 +172,7 @@ package object DSA {
 
 
           val sim = new PedestrianSimulation(
-            defaultParameters.deepCopy(defaultParameters.graph.deepCopy(newControlDevices), newControlDevices)
+            defaultParameters.deepCopy(defaultParameters.graph.deepCopy(newControlDevices), newControlDevices, None)
           )
 
           val flows = getAggregateFlows(config)

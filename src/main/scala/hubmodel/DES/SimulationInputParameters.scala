@@ -53,11 +53,11 @@ class SimulationInputParameters(var startTime: Time,
     * @param devices control devices to use
     * @return
     */
-  def deepCopy(g: GraphContainer, devices: ControlDevices): SimulationInputParameters = {
+  def deepCopy(g: GraphContainer, devices: ControlDevices, motionUpdate: Option[Time]): SimulationInputParameters = {
     val params: SimulationInputParameters = new SimulationInputParameters(
       this.startTime,
       this.endTime,
-      this.motionModelUpdateInterval,
+      motionUpdate.getOrElse(this.motionModelUpdateInterval),
       this.updateRoutesInterval,
       this.spaceMicro,
       g,
