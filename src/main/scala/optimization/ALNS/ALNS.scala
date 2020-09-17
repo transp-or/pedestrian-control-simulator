@@ -167,10 +167,13 @@ class ALNS(function: StatePrediction, initialPolicy: Iterable[ControlDevicePolic
       val (accept, temp) = acceptanceCriteriaSA(it, xNew._1)
 
       // compute operator score if accepted
+      if (accept) {
+        score = weightScores("accepted")
+      }
+
+      // compute operator score if improvement
       if ( accept && computeObjective(xNew._1) <= computeObjective(this.currentx._1)) {
         score = weightScores("improvement")
-      } else if (accept && computeObjective(xNew._1) > computeObjective(this.currentx._1)) {
-        score = weightScores("accepted")
       }
 
       // compute operator score if new best
