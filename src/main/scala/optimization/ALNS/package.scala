@@ -29,7 +29,7 @@ package object ALNS {
 
   type AMWSpeedRange = Set[Double]
 
-  val SPEED_INCREMENT: Double = 0.25
+  val SPEED_INCREMENT: Double = 0.5
 
   val MINIMUM_SPEED: Double = -3.0
   val MAXIMUM_SPEED: Double = 3.0
@@ -49,7 +49,7 @@ package object ALNS {
   }
 
   def roundToSpeedValues(x: Double): Double = {
-    (x * 4.0).round / 4.0
+    (x * (1.0/SPEED_INCREMENT)).round / (1.0/SPEED_INCREMENT)
   }
 
   def enforceSpeedChangeIntoPolicy(x: Vector[ControlDevicePolicy], initialAMWSpeed: Map[String, Double]): (Vector[ControlDevicePolicy], Vector[MovingWalkwayControlEvents]) = {

@@ -124,7 +124,7 @@ object RandomChangeDirection extends OperatorGenerator with RandomChange {
   * are decreased by SPEED_INCREMENT.
   *
   */
-class RandomIncreaseAllSpeeds extends Operator {
+class AccelerateAllSpeeds extends Operator {
 
   def xprime(x: Vector[ControlDevicePolicy]): Vector[ControlDevicePolicy] = {
     val tmp = x.map {
@@ -141,12 +141,12 @@ class RandomIncreaseAllSpeeds extends Operator {
   }
 }
 
-object RandomIncreaseAllSpeeds extends OperatorGenerator with RandomChange {
+object AccelerateAllSpeeds extends OperatorGenerator with RandomChange {
   val name: String = "IncreaseAllSpeeds"
 
-  type T = RandomIncreaseAllSpeeds
+  type T = AccelerateAllSpeeds
 
-  def returnOperator(x: Vector[ControlDevicePolicy], iterable: Vector[StateGroundTruthPredicted]): T = new RandomIncreaseAllSpeeds
+  def returnOperator(x: Vector[ControlDevicePolicy], iterable: Vector[StateGroundTruthPredicted]): T = new AccelerateAllSpeeds
 }
 
 /** Sets the direction to match the pedestrian flow measured parallel to AMWs. The speed magnitude is set to the
@@ -350,9 +350,10 @@ class RandomSetSpeed extends Operator {
 
     val policyByAMW: Map[String, Vector[ControlDevicePolicy]] = x.groupBy(_.name)
 
-    val amwToChange = policyByAMW.keys.filter(n => ThreadLocalRandom.current().nextDouble() > 0.5).toVector
+    val amwToChange: Vector[String] = policyByAMW.keys.filter(n => ThreadLocalRandom.current().nextDouble() > 0.5).toVector
 
     val possibleSpeeds: Vector[Double] = (BigDecimal(MINIMUM_SPEED) to BigDecimal(MAXIMUM_SPEED) by SPEED_INCREMENT).map(_.toDouble).toVector
+
 
     (policyByAMW.collect{
       case policy if amwToChange.contains(policy._1) => {

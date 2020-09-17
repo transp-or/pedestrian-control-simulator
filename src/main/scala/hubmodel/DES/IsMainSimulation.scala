@@ -5,7 +5,7 @@ import hubmodel.control.{ControlDevicePolicy, EvaluateState, UpdateGates}
 import hubmodel.io.output.video.MovingPedestriansWithDensityWithWallVideo
 import hubmodel.prediction.{AMWFlowsFromGroundTruth, CongestionDataFromGroundTruth, PredictWithGroundTruth, StatePrediction}
 import hubmodel.supply.continuous.MovableWall
-import optimization.ALNS.{ALNS, ALNSParameters, DirectionMatchFlow, DirectionMatchFlowCombinedSpeedUpdates, DownstreamDensityUpdate, FunctionEvaluation, MinimumDurationSameDirection, RandomChangeDirection, RandomDecreaseSpeed, RandomIncreaseAllSpeeds, RandomIncreaseSpeed, RandomSetSpeed, SpeedLowerBound, SpeedUpperBound}
+import optimization.ALNS.{ALNS, ALNSParameters, DirectionMatchFlow, DirectionMatchFlowCombinedSpeedUpdates, DownstreamDensityUpdate, FunctionEvaluation, MinimumDurationSameDirection, RandomChangeDirection, RandomDecreaseSpeed, AccelerateAllSpeeds, RandomIncreaseSpeed, RandomSetSpeed, SpeedLowerBound, SpeedUpperBound}
 import tools.Time
 import myscala.math.stats.{ComputeQuantiles, ComputeStats, computeQuantile}
 import hubmodel.AMW_ACCELERATION_AMPLITUDE
@@ -102,7 +102,7 @@ trait IsMainSimulation {
       val horizonOptimization: ALNS = new ALNS(
         new PredictWithGroundTruth(sim),
         initialControlPolicy,
-        Vector(RandomIncreaseSpeed, RandomDecreaseSpeed, MinimumDurationSameDirection, RandomIncreaseAllSpeeds, DirectionMatchFlow, DownstreamDensityUpdate, RandomSetSpeed, DirectionMatchFlowCombinedSpeedUpdates),
+        Vector(RandomIncreaseSpeed, RandomDecreaseSpeed, MinimumDurationSameDirection, AccelerateAllSpeeds, DownstreamDensityUpdate, RandomSetSpeed, DirectionMatchFlowCombinedSpeedUpdates),
         Vector(SpeedUpperBound, SpeedLowerBound),
         f,
         sim.predictionInputParameters.ALNSParameters
