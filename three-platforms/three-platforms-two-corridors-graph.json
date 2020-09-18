@@ -4100,76 +4100,16 @@
   "alternate_graphs": [],
   "destination_groups": [
     {
-      "name": "plat-1-top-left",
-      "zones": ["plat1-a", "plat1-b","plat1-d"]
+      "name": "platform-1",
+      "zones": ["plat1-a", "plat1-b","plat1-c", "plat1-d", "plat1-e","plat1-f", "plat1-g", "plat1-h","plat1-i", "plat1-j", "plat1-k" ,"plat1-l"]
     },
     {
-      "name": "plat-1-top-right",
-      "zones": ["plat1-a", "plat1-c","plat1-d"]
+      "name": "platform-2",
+      "zones": ["plat2-a", "plat2-b","plat2-c", "plat2-d", "plat2-e","plat2-f", "plat2-g", "plat2-h","plat2-i", "plat2-j", "plat2-k" ,"plat2-l"]
     },
     {
-      "name": "plat-1-middle-left",
-      "zones": ["plat1-d", "plat1-e", "plat1-g", "plat1-i"]
-    },
-    {
-      "name": "plat-1-middle-right",
-      "zones": ["plat1-d", "plat1-f", "plat1-h", "plat1-i"]
-    },
-    {
-      "name": "plat-1-bottom-left",
-      "zones": ["plat1-i", "plat1-j", "plat1-l"]
-    },
-    {
-      "name": "plat-1-bottom-right",
-      "zones": ["plat1-i", "plat1-k", "plat1-l"]
-    },
-    {
-      "name": "plat-2-top-left",
-      "zones": ["plat2-a", "plat2-b","plat2-d"]
-    },
-    {
-      "name": "plat-2-top-right",
-      "zones": ["plat2-a", "plat2-c","plat2-d"]
-    },
-    {
-      "name": "plat-2-middle-left",
-      "zones": ["plat2-d", "plat2-e", "plat2-g", "plat2-i"]
-    },
-    {
-      "name": "plat-2-middle-right",
-      "zones": ["plat2-d", "plat2-f", "plat2-h", "plat2-i"]
-    },
-    {
-      "name": "plat-2-bottom-left",
-      "zones": ["plat2-i", "plat2-j", "plat2-l"]
-    },
-    {
-      "name": "plat-2-bottom-right",
-      "zones": ["plat2-i", "plat2-k", "plat2-l"]
-    },
-    {
-      "name": "plat-3-top-left",
-      "zones": ["plat3-a", "plat3-b","plat3-d"]
-    },
-    {
-      "name": "plat-3-top-right",
-      "zones": ["plat3-a", "plat3-c","plat3-d"]
-    },
-    {
-      "name": "plat-3-middle-left",
-      "zones": ["plat3-d", "plat3-e", "plat3-g", "plat3-i"]
-    },
-    {
-      "name": "plat-3-middle-right",
-      "zones": ["plat3-d", "plat3-f", "plat3-h", "plat3-i"]
-    },
-    {
-      "name": "plat-3-bottom-left",
-      "zones": ["plat3-i", "plat3-j", "plat3-l"]
-    },
-    {
-      "name": "plat-3-bottom-right",
-      "zones": ["plat3-i", "plat3-k", "plat3-l"]
+      "name": "platform-3",
+      "zones": ["plat3-a", "plat3-b","plat3-c", "plat3-d", "plat3-e","plat3-f", "plat3-g", "plat3-h","plat3-i", "plat3-j", "plat3-k" ,"plat3-l"]
     }
   ],
   "connectivity_level_change": [
