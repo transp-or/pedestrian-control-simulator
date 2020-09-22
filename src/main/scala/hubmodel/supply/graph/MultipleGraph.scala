@@ -76,6 +76,7 @@ class MultipleGraph(fg: Iterable[FlowGate],
   // Get set of all edges
   def edges: Set[MyEdge] = this._graphCollection.flatMap(_._2._2.edgeCollection).toSet
 
+  val verticesToEdgesMap: Map[(Vertex,Vertex), MyEdge] = this.edges.map(e => ((e.startVertex, e.endVertex),e)).toMap
 
   private def sampleGraphs: String = {
     val vectorizedIds: Vector[(String, Double)] = this._graphCollection.map(v => (v._1, v._2._1)).toVector

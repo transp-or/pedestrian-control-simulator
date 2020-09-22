@@ -1890,7 +1890,8 @@
     },
     {
       "node": "rBEVzAMIzX",
-      "connected_to": [
+      "connected_to":
+      [
         "plat2-a",
         "kkporhOtrE",
         "QadpVydJgG"

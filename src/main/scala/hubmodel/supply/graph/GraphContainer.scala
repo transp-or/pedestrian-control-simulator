@@ -17,6 +17,17 @@ abstract class GraphContainer(protected val flowGates: Iterable[FlowGate],
 
   def edges: Set[MyEdge]
 
+  val verticesToEdgesMap: Map[(Vertex,Vertex), MyEdge]
+
+  // Stores the travel times per link for all pedestrians
+  val travelTimePerLinks: collection.mutable.Map[MyEdge, Vector[Time]] = collection.mutable.Map()
+
+  def addLinkTT(startV: Vertex, endV: Vertex, tt: Time): Unit = {
+    if (verticesToEdgesMap.keys.toSet.contains((startV, endV))) {
+      this.travelTimePerLinks.update(verticesToEdgesMap(startV, endV), this.travelTimePerLinks.getOrElse(verticesToEdgesMap(startV, endV), Vector()) :+ tt)
+    }
+    }
+
   def processIntermediateArrival(t: Time, ped: PedestrianNOMAD): Unit
 
   def processRouteOutOfZones(t: Time, ped: PedestrianNOMAD): Unit

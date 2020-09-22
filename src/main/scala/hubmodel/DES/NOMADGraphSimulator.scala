@@ -232,6 +232,17 @@ abstract class NOMADGraphSimulator(params: SimulationInputParameters) extends Pe
 
     override def execute(): Any = {
 
+      (sim.populationCompleted ++ sim.population).filter(_.accomplishedRoute.size > 1).foreach(ped =>
+        ped.accomplishedRoute.sliding(2).foreach(leg => {
+
+         /* val e: Option[MyEdge] = sim.graph.edges.find(e => e.startVertex == leg.head._2 && e.endVertex == leg.tail.head._2)
+          if (e.isDefined && )*/
+
+          sim.graph.addLinkTT(leg.head._2, leg.tail.head._2, leg.tail.head._1 - leg.head._1)
+        })
+      )
+
+
       sim.graph.edges.foreach(e => e.updateCost(sim.currentTime, e.cost))
 
     }

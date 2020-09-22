@@ -72,7 +72,8 @@ class ALNS(function: StatePrediction, initialPolicy: Iterable[ControlDevicePolic
       }
     }
 
-    normalizeQuantityMaxUtopia("density") + normalizeQuantityMaxUtopia("meanTT")
+    normalizeQuantityMaxUtopia("linkTT") + :normalizeQuantityMaxUtopia("density") + normalizeQuantityMaxUtopia("meanTT")
+    //normalizeQuantityMaxUtopia("density") + normalizeQuantityMaxUtopia("meanTT")
 
   }
 
@@ -238,7 +239,7 @@ class ALNS(function: StatePrediction, initialPolicy: Iterable[ControlDevicePolic
   private lazy val referenceValuesMin: collection.mutable.Map[String, Double] = collection.mutable.Map() ++ stochasticReduction(evaluatedSolutions(stringify(x0))._2)
   private lazy val referenceValuesMax: collection.mutable.Map[String, Double] = collection.mutable.Map() ++ stochasticReduction(evaluatedSolutions(stringify(x0))._2)
   private lazy val referenceValues: Map[String, Double] = stochasticReduction(evaluatedSolutions(stringify(x0))._2)
-  private lazy val utopiaValues: Map[String, Double] = Map("density" -> 0.0, "meanTT" -> 0.85 * referenceValues("meanTT"))
+  private lazy val utopiaValues: Map[String, Double] = Map("density" -> 0.0, "meanTT" -> 0.85 * referenceValues("meanTT"), "linkTT" -> 0.0)
 
   //private var bestx: Solution = (x0, Vector())
   private var _bestX: Solution = (x0, Vector())
