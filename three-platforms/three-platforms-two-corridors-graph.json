@@ -3294,7 +3294,9 @@
           "connected_to": [
             "plat-2-center",
             "plat-1-top-corr-2",
-            "plat-3-top-corr-2"
+            "plat-3-top-corr-2",
+            "amw1-m-end"
+
           ]
         },
         {
@@ -3302,7 +3304,8 @@
           "connected_to": [
             "plat-2-top-corr-top",
             "plat-1-top-corr-1",
-            "plat-3-top-corr-1"
+            "plat-3-top-corr-1",
+            "amw1-m-end"
           ]
         },
         {
@@ -3535,7 +3538,8 @@
           "connected_to": [
             "plat-2-center",
             "plat-1-top-corr-2",
-            "plat-3-top-corr-2"
+            "plat-3-top-corr-2",
+            "amw1-m-end"
           ]
         },
         {
@@ -3543,7 +3547,8 @@
           "connected_to": [
             "plat-2-top-corr-top",
             "plat-1-top-corr-1",
-            "plat-3-top-corr-1"
+            "plat-3-top-corr-1",
+            "amw1-m-end"
           ]
         },
         {
@@ -3814,7 +3819,8 @@
           "connected_to": [
             "plat-2-bottom-corr-bottom",
             "plat-1-bottom-corr-2",
-            "plat-3-bottom-corr-2"
+            "plat-3-bottom-corr-2",
+            "amw2-m-end"
           ]
         },
         {
@@ -3822,7 +3828,8 @@
           "connected_to": [
             "plat-2-center",
             "plat-1-bottom-corr-1",
-            "plat-3-bottom-corr-1"
+            "plat-3-bottom-corr-1",
+            "amw2-m-end"
           ]
         },
         {
@@ -4041,7 +4048,8 @@
           "connected_to": [
             "plat-2-bottom-corr-bottom",
             "plat-1-bottom-corr-2",
-            "plat-3-bottom-corr-2"
+            "plat-3-bottom-corr-2",
+            "amw2-m-end"
           ]
         },
         {
@@ -4049,7 +4057,8 @@
           "connected_to": [
             "plat-2-center",
             "plat-1-bottom-corr-1",
-            "plat-3-bottom-corr-1"
+            "plat-3-bottom-corr-1",
+            "amw2-m-end"
           ]
         },
         {

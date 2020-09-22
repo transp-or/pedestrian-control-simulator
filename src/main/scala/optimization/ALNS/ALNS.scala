@@ -72,7 +72,7 @@ class ALNS(function: StatePrediction, initialPolicy: Iterable[ControlDevicePolic
       }
     }
 
-    normalizeQuantityMaxUtopia("linkTT") + :normalizeQuantityMaxUtopia("density") + normalizeQuantityMaxUtopia("meanTT")
+    normalizeQuantityMaxUtopia("linkTT") + normalizeQuantityMaxUtopia("density") + normalizeQuantityMaxUtopia("meanTT")
     //normalizeQuantityMaxUtopia("density") + normalizeQuantityMaxUtopia("meanTT")
 
   }
