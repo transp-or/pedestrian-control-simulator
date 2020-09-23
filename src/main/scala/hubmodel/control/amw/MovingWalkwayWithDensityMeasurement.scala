@@ -6,6 +6,7 @@ import hubmodel.control.flowsep.FlowLine
 import hubmodel.control.{BidirectionalFlow, ControlDevicePolicy, Density, FunctionalForm, FunctionalFormMovingWalkwayDensity, Measurement, MovingWalkwaySpeed}
 import hubmodel.supply.graph.{GraphContainer, MyEdge, RouteGraph}
 import myscala.math.stats.Quantile
+import optimization.ALNS.Policy
 import tools.Time
 import tools.TimeNumeric.mkOrderingOps
 import tools.cells.{DensityMeasuredArea, Vertex}
@@ -108,7 +109,7 @@ class MovingWalkwayWithDensityMeasurement[T <: Density, U <: MovingWalkwaySpeed]
     * @param p
     * @return
     */
-  private def computeControlPolicy(t: Time, p: AMWPolicy): (Vector[ControlDevicePolicy], Vector[MovingWalkwayControlEvents]) = {
+  private def computeControlPolicy(t: Time, p: AMWPolicy): (Policy, Vector[MovingWalkwayControlEvents]) = {
     optimization.ALNS.enforceSpeedChangeIntoPolicy(Vector(p), Map(this.name -> this.speed(t)))
   }
 
@@ -119,7 +120,7 @@ class MovingWalkwayWithDensityMeasurement[T <: Density, U <: MovingWalkwaySpeed]
 
 
       this.setControlPolicy(
-        newPolicy._1.collect { case w: AMWPolicy if w.name == this.name => {w}
+        newPolicy._1.x.collect { case w: AMWPolicy if w.name == this.name => {w}
         }, newPolicy._2.find(_.name == this.name)
       )
       this.insertChangeSpeed(sim)

@@ -158,7 +158,7 @@ abstract class NOMADGraphSimulator(params: SimulationInputParameters) extends Pe
       if (this.sim.controlDevices.amwsMode._1 == "static") {
         val engineeringPolicy = new StaticEngineeringSolution(sim.graph.vertexMapNew, sim.controlDevices.amws).staticPolicyEngineeringSolution
         sim.controlDevices.amws.filter(_.noControlPolicy).foreach(w => {
-          val policy: Vector[AMWPolicy] = engineeringPolicy._1.collect { case p: AMWPolicy if p.name == w.name && p.start >= sim.startTime && p.end <= sim.finalTime => {
+          val policy: Vector[AMWPolicy] = engineeringPolicy._1.x.collect { case p: AMWPolicy if p.name == w.name && p.start >= sim.startTime && p.end <= sim.finalTime => {
             p
           }
           }

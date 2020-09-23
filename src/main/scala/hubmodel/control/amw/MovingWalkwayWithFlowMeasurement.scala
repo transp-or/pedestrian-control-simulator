@@ -5,6 +5,7 @@ import hubmodel.Position
 import hubmodel.control.{BidirectionalFlow, ControlDevicePolicy, FunctionalForm, FunctionalFormMovingWalkway, Measurement, MovingWalkwaySpeed, SeparatorPositionFraction}
 import hubmodel.control.flowsep.FlowLine
 import hubmodel.supply.graph.MyEdge
+import optimization.ALNS.Policy
 import tools.Time
 import tools.cells.Vertex
 
@@ -71,7 +72,7 @@ class MovingWalkwayWithFlowMeasurement[T <: Measurement, U <: MovingWalkwaySpeed
     * @param p
     * @return
     */
-  private def computeControlPolicy(t: Time, p: AMWPolicy): (Vector[ControlDevicePolicy], Vector[MovingWalkwayControlEvents]) = {
+  private def computeControlPolicy(t: Time, p: AMWPolicy): (Policy, Vector[MovingWalkwayControlEvents]) = {
     optimization.ALNS.enforceSpeedChangeIntoPolicy(Vector(p), Map(this.name -> this.speed(t)))
   }
 
@@ -79,7 +80,7 @@ class MovingWalkwayWithFlowMeasurement[T <: Measurement, U <: MovingWalkwaySpeed
 
     val newPolicy = computeControlPolicy(t, computeTargetSpeed(t, sim.finalTime))
     this.setControlPolicy(
-      newPolicy._1.collect{case w: AMWPolicy if w.name == this.name => {w}}, newPolicy._2.find(_.name == this.name)
+      newPolicy._1.x.collect{case w: AMWPolicy if w.name == this.name => {w}}, newPolicy._2.find(_.name == this.name)
     )
     this.insertChangeSpeed(sim)
   }

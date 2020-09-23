@@ -4,7 +4,8 @@ import hubmodel.Position
 import hubmodel.control.ControlDevicePolicy
 import hubmodel.prediction.AMWFlowsFromEmpiricalData
 import hubmodel.supply.graph.readGraph
-import optimization.ALNS.{DirectionMatchFlow, enforceSpeedChangeIntoPolicy}
+import optimization.ALNS.operators.DirectionMatchFlow
+import optimization.ALNS.{Policy, enforceSpeedChangeIntoPolicy}
 import tools.cells.Vertex
 import trackingdataanalysis.pedtrack.{ReadTrackingData, ZoneProcessingNew}
 
@@ -43,7 +44,7 @@ class StaticEngineeringSolution(vertices: Map[String, Vertex], amws: Iterable[Mo
     .flatMap(w => intervals.zip(Vector.fill(intervals.size)((w.name, w.length))).map(t => (t._2, t._1)))
     .map(t => AMWPolicy(t._1._1, t._2, t._2 + tools.Time(10), 0.0, t._1._2)).toVector
 
-  val staticPolicyEngineeringSolution: (Vector[ControlDevicePolicy], Vector[MovingWalkwayControlEvents]) =
+  val staticPolicyEngineeringSolution: (Policy, Vector[MovingWalkwayControlEvents]) =
     enforceSpeedChangeIntoPolicy(new DirectionMatchFlow(Vector(r.aggregateFlowsByAMW), intervals).xprime(initialControlPolicy), Map("amw1" -> 0.0, "amw2"-> 0.0))
 
   println(" done !")

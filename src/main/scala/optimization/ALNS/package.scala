@@ -19,7 +19,7 @@ package object ALNS {
 
   type FunctionEvaluationReduced = Map[String, Double]
 
-  type Solution = (Vector[ControlDevicePolicy], Vector[ControlDeviceData])
+  type Solution = (Policy, Vector[ControlDeviceData])
 
   type AMWSpeedIdx = (String, Int)
 
@@ -52,7 +52,7 @@ package object ALNS {
     (x * (1.0/SPEED_INCREMENT)).round / (1.0/SPEED_INCREMENT)
   }
 
-  def enforceSpeedChangeIntoPolicy(x: Vector[ControlDevicePolicy], initialAMWSpeed: Map[String, Double]): (Vector[ControlDevicePolicy], Vector[MovingWalkwayControlEvents]) = {
+  def enforceSpeedChangeIntoPolicy(x: Vector[ControlDevicePolicy], initialAMWSpeed: Map[String, Double]): (Policy, Vector[MovingWalkwayControlEvents]) = {
 
     /** Returns the indices where there is a change in direction in the AMW.
       *
@@ -247,7 +247,7 @@ package object ALNS {
     })
 
     (
-      other ++ tmp.flatMap(_._2._1), tmp.map(_._2._2).toVector
+      new Policy(other ++ tmp.flatMap(_._2._1)), tmp.map(_._2._2).toVector
     )
   }
 }
