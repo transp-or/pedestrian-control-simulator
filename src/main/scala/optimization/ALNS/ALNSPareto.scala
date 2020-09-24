@@ -1,5 +1,7 @@
 package optimization.ALNS
 
+import java.io.{BufferedWriter, File, FileWriter}
+
 import hubmodel.control.{ControlDeviceData, ControlDevicePolicy}
 import hubmodel.prediction.StatePrediction
 import hubmodel.prediction.state.StateGroundTruthPredicted
@@ -53,12 +55,22 @@ class ALNSPareto(f: StatePrediction,
   }
 
 
+  private val objectiveHeader: Vector[String] = this.iterations.head._6.keys.toVector.sorted
+  private val headerDV: Vector[String] = this.iterations.head._2.x.sorted.map(_.nameToString)
+  private val weightHeader: Vector[String] = this.iterations.head._7.keys.toVector
+
+  val iterationsHeader: String = (Vector("it", "operator", "accepted") ++ headerDV ++ objectiveHeader ++ weightHeader.map(_ ++ "_weight")).mkString(", ")
+
 
   protected def getOF(x: Policy): FunctionEvaluation = {this.paretoSet(x)._2}
 
   protected def getStateData(x: Policy): Vector[StateGroundTruthPredicted] = {this.paretoSet(x)._3}
 
-  def optimize(): Unit = {
+  def optimize(iterationsFile: String, path: String = ""): Unit = {
+    val file = new File(path + iterationsFile)
+    val bw = new BufferedWriter(new FileWriter(file))
+    bw.write(iterationsHeader + "\n")
+
     var it: Int = 1
     while (it <= maxIterations) {
       println(" --------------------------------------------------------------------------------------------------------------------- ")
@@ -91,10 +103,13 @@ class ALNSPareto(f: StatePrediction,
       }
 
       this.iterations.append((it, xNew._1, scoreText, op, Double.NaN, stochasticReduction(function.computeObjectives), operatorWeights.toMap))
+      bw.write((Vector(it, op, scoreText) ++ xNew._1.x.sorted.map(_.decisionVariable) ++ objectiveHeader.map(stochasticReduction(function.computeObjectives)) ++ weightHeader.map(operatorWeights)).mkString(", ") + "\n")
+      bw.flush()
       this.updateBestX(this.selectSolution)
 
       it = it + 1
     }
+    bw.close()
     print("\n")
   }
 

@@ -94,6 +94,6 @@ abstract class MetaHeuristic(val function: StatePrediction,
   protected val weightMax: Double// = parameters.maxScore
   protected val lambda: Double// = parameters.lambda
 
-  def optimize(): Unit
+  def optimize(iterationFile: String, path: String = ""): Unit
 
 }

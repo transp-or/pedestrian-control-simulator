@@ -141,7 +141,7 @@ class ALNSLinearCombination(f: StatePrediction,
 
   def optimalSolution: (Policy, FunctionEvaluation, Vector[ControlDeviceData]) = (this.bestx, this.getOF(this.bestx), this.evaluatedSolutions(this.bestx)._1)
 
-  def optimize(): Unit = {
+  def optimize(iterationFile: String, path: String = ""): Unit = {
     var it: Int = 1
     while (it <= maxIterations && evaluatedSolutions(this.bestx)._2.size/function.replications < 0.3*maxIterations) {
       println(" --------------------------------------------------------------------------------------------------------------------- ")
