@@ -3,6 +3,7 @@ package optimization.ALNS
 import hubmodel.control.{ControlDeviceData, ControlDevicePolicy}
 import hubmodel.prediction.StatePrediction
 import hubmodel.prediction.state.StateGroundTruthPredicted
+import myscala.output.SeqOfSeqExtensions.SeqOfSeqWriter
 import optimization.ALNS.constraints.Constraint
 import optimization.ALNS.operators.{OperatorGenerator, RandomChange}
 
@@ -30,6 +31,28 @@ class ALNSPareto(f: StatePrediction,
 
   function.predict(xInit.toVector.sorted, Vector())
   this.insert(new Policy(xInit.toVector), Vector(), function.computeObjectives, function.getPredictedStateData)
+
+
+  private val iterations: collection.mutable.ArrayBuffer[(Iteration, Policy, String, OperatorName, Double, FunctionEvaluationReduced, OperatorWeights)] =
+    collection.mutable.ArrayBuffer((0, bestx, "accepted", "", Double.NaN, stochasticReduction(getOF(new Policy(xInit.toVector))), operatorWeights.toMap))
+
+
+  // -----------------------------------------------------------------------------------------------------------------//
+  // ---------------------------- METHODS ----------------------------------------------------------------------------//
+  // -----------------------------------------------------------------------------------------------------------------//
+
+  def writeIterationsToCSV(file: String, path: String = ""): Unit = {
+    val objectiveHeader: Vector[String] = this.iterations.head._6.keys.toVector.sorted
+    val headerDV: Vector[String] = this.iterations.head._2.x.sorted.map(_.nameToString)
+    val weightHeader: Vector[String] = this.iterations.head._7.keys.toVector
+
+    this.iterations.toVector
+      .map(v => Vector(v._1, v._4, v._3, this.paretoSet.keySet.contains(v._2)) ++ v._2.x.sorted.map(_.decisionVariable) ++ objectiveHeader.map(v._6) ++ weightHeader.map(v._7) )
+      .transpose
+      .writeToCSV(file, rowNames = None, columnNames = Some(Vector("it", "operator", "accepted", "pareto") ++ headerDV ++ objectiveHeader ++ weightHeader.map(_ ++ "_weight")))
+  }
+
+
 
   protected def getOF(x: Policy): FunctionEvaluation = {this.paretoSet(x)._2}
 
@@ -60,25 +83,28 @@ class ALNSPareto(f: StatePrediction,
       operatorWeights.update(op, math.max(weightMin, math.min(weightMax, operatorWeights(op) * lambda  + (1.0-lambda) * score)))
 
       if (scoreText == "accepted") {
-      val solutionReplications: Int = this.paretoSet(xNew._1)._3.size
+        val solutionReplications: Int = this.paretoSet(xNew._1)._3.size
       stochasticReduction(this.paretoSet(xNew._1)._2).map(kv => kv._1 + ": " + kv._2.toString).mkString(", ")
       println(s" * repl.: $solutionReplications, operator score: $scoreText, objectives: " + stochasticReduction(this.paretoSet(xNew._1)._2).map(kv => kv._1 + ": " + kv._2.toString).mkString(", "))
       } else {
         println("rejected")
       }
 
+      this.iterations.append((it, xNew._1, scoreText, op, Double.NaN, stochasticReduction(function.computeObjectives), operatorWeights.toMap))
+      this.updateBestX(this.selectSolution)
 
       it = it + 1
     }
     print("\n")
   }
 
-  def writeIterationsToCSV(file: String, path: String = ""): Unit = { }
+
+
 
   def optimalSolution: (Policy, FunctionEvaluation, Vector[ControlDeviceData]) = {
     val tmp = this.selectSolution
-    this.updateBestX(tmp, this.paretoSet(tmp)._1)
-    (this.bestx._1, this.getOF(this.bestx._1), this.bestx._2)
+    this.updateBestX(tmp)
+    (this.bestx, this.getOF(this.bestx), this.paretoSet(this.bestx)._1)
   }
 
 

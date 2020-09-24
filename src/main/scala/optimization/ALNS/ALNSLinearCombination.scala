@@ -136,14 +136,14 @@ class ALNSLinearCombination(f: StatePrediction,
 
 
   private def isBestSolution(x: Solution): Boolean = {
-    computeObjective(x._1) < computeObjective(this.bestx._1)
+    computeObjective(x._1) < computeObjective(this.bestx)
   }
 
-  def optimalSolution: (Policy, FunctionEvaluation, Vector[ControlDeviceData]) = (this.bestx._1, this.getOF(this.bestx._1), this.bestx._2)
+  def optimalSolution: (Policy, FunctionEvaluation, Vector[ControlDeviceData]) = (this.bestx, this.getOF(this.bestx), this.evaluatedSolutions(this.bestx)._1)
 
   def optimize(): Unit = {
     var it: Int = 1
-    while (it <= maxIterations && evaluatedSolutions(this.bestx._1)._2.size/function.replications < 0.3*maxIterations) {
+    while (it <= maxIterations && evaluatedSolutions(this.bestx)._2.size/function.replications < 0.3*maxIterations) {
       println(" --------------------------------------------------------------------------------------------------------------------- ")
       print("\r * Running simulation " + it + "/" + maxIterations)
       println("")
@@ -198,17 +198,17 @@ class ALNSLinearCombination(f: StatePrediction,
 
 
       val newBest = evaluatedSolutions.minBy(s => computeObjective(s._1))
-      updateBestX(newBest._1, newBest._2._1)
+      updateBestX(newBest._1)
 
       operatorWeights.update(op, math.max(weightMin, math.min(weightMax, operatorWeights(op) * lambda  + (1.0-lambda) * score)))
 
       val solutionReplications: Int = this.evaluatedSolutions(xNew._1)._3.size
       val OF: Double = computeObjective(xNew._1)
       val currentOF: Double = computeObjective(this.currentx)
-      val bestOF: Double = computeObjective(this.bestx._1)
+      val bestOF: Double = computeObjective(this.bestx)
       println(s" * repl.: $solutionReplications, OF: $OF, current OF: $currentOF, best OF: $bestOF, operator score: $score" )
 
-      this.iterations.append((it, temp, xNew, accept, op, computeObjective(xNew._1), stochasticReduction(this.getOF(xNew._1)), stochasticReduction(this.getOF(this.currentx)), stochasticReduction(this.getOF(this.bestx._1)), operatorWeights.toMap))
+      this.iterations.append((it, temp, xNew._1, accept, op, computeObjective(xNew._1), stochasticReduction(this.getOF(xNew._1)), stochasticReduction(this.getOF(this.currentx)), stochasticReduction(this.getOF(this.bestx)), operatorWeights.toMap))
 
       it = it + 1
     }
@@ -217,11 +217,11 @@ class ALNSLinearCombination(f: StatePrediction,
 
   def writeIterationsToCSV(file: String, path: String = ""): Unit = {
     val objectiveHeader: Vector[String] = this.iterations.head._7.keys.toVector.sorted
-    val header: Vector[String] = this.iterations.head._3._1.x.sorted.map(_.nameToString)
+    val header: Vector[String] = this.iterations.head._3.x.sorted.map(_.nameToString)
     val weightHeader: Vector[String] = this.iterations.head._10.keys.toVector
 
     this.iterations.toVector
-      .map(v => Vector(v._1, v._2, v._5, v._4) ++ v._3._1.x.sorted.map(_.decisionVariable) ++ objectiveHeader.map(v._7) ++ objectiveHeader.map(v._8) ++ objectiveHeader.map(v._9) ++ weightHeader.map(v._10) )
+      .map(v => Vector(v._1, v._2, v._5, v._4) ++ v._3.x.sorted.map(_.decisionVariable) ++ objectiveHeader.map(v._7) ++ objectiveHeader.map(v._8) ++ objectiveHeader.map(v._9) ++ weightHeader.map(v._10) )
       .transpose
       .writeToCSV(file, rowNames = None, columnNames = Some(Vector("it", "temp", "operator", "accepted") ++ header ++ objectiveHeader ++ objectiveHeader.map(_ ++ "_current") ++ objectiveHeader.map(_ ++ "_best") ++ weightHeader.map(_ ++ "_weight")))
   }
@@ -271,7 +271,7 @@ class ALNSLinearCombination(f: StatePrediction,
   protected val operatorWeights: collection.mutable.TreeMap[String, Double] = collection.mutable.TreeMap.from(operators.map(o => o.name -> parameters.initialScore))
 
 
-  private val iterations: collection.mutable.ArrayBuffer[(Iteration, Temperature, Solution, Boolean, OperatorName, Double, FunctionEvaluationReduced, FunctionEvaluationReduced, FunctionEvaluationReduced, OperatorWeights)] =
+  private val iterations: collection.mutable.ArrayBuffer[(Iteration, Temperature, Policy, Boolean, OperatorName, Double, FunctionEvaluationReduced, FunctionEvaluationReduced, FunctionEvaluationReduced, OperatorWeights)] =
     collection.mutable.ArrayBuffer((0, Double.NaN, bestx, true, "", computeObjective(x0), stochasticReduction(getOF(x0)), stochasticReduction(getOF(x0)), stochasticReduction(getOF(x0)), operatorWeights.toMap))
 
 

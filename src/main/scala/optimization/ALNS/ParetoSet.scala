@@ -6,9 +6,15 @@ import hubmodel.prediction.state.StateGroundTruthPredicted
 import scala.annotation.tailrec
 import scala.util.Random
 
+/** Container for the control device policy.
+  *
+  * The equality has been defined correctly for this container, therefore this class can be used as keys in maps.
+  *
+  * @param x control device policy
+  */
 class Policy(val x: Vector[ControlDevicePolicy]) {
 
-  private def stringify: String = this.x.sortBy(p => (p.name, p.start)) .map(dv => dv.nameToString + (10.0*dv.decisionVariable).round.toInt.toString).mkString("-")
+  private def stringify: String = this.x.sortBy(p => (p.name, p.start)).map(dv => dv.nameToString + (10.0 * dv.decisionVariable).round.toInt.toString).mkString("-")
 
 
   /** Checks whether another object equals this one
@@ -29,8 +35,8 @@ class Policy(val x: Vector[ControlDevicePolicy]) {
     * @return true if the comparison is authorized
     */
   def canEqual(other: Any): Boolean = {
-      other.isInstanceOf[Policy]
-    }
+    other.isInstanceOf[Policy]
+  }
 
 
   /** Definition of equality.
@@ -62,14 +68,16 @@ trait ParetoSet {
     *
     * @return
     */
-  def selectSolution: Policy = { Random.shuffle(this.paretoSet).head._1 }
+  def selectSolution: Policy = {
+    Random.shuffle(this.paretoSet.toVector).head._1
+  }
 
   /**
     *
-    * @param x policy to insert
+    * @param x           policy to insert
     * @param controlData associated control data
-    * @param ofs objective functions after function evalutation
-    * @param stateData state data for solution x
+    * @param ofs         objective functions after function evalutation
+    * @param stateData   state data for solution x
     * @return string indicating whether the solution was accepted or rejected
     */
   def insert(x: Policy, controlData: Vector[ControlDeviceData], ofs: FunctionEvaluation, stateData: Vector[StateGroundTruthPredicted]): String = {
@@ -77,15 +85,20 @@ trait ParetoSet {
     /**
       *
       * @param dominatedBy x is dominated by these solutions
-      * @param dominating x is dominating these soluations
-      * @param solutions set of solutions to check
+      * @param dominating  x is dominating these soluations
+      * @param solutions   set of solutions to check
       * @return the set of dominatedBy and dominating solutions
       */
-    @tailrec def helper(dominatedBy: Vector[Policy], dominating: Vector[Policy], solutions: List[Policy]): (Vector[Policy], Vector[Policy]) = {
+    @tailrec def helper(dominatedBy: Vector[Policy],
+                        dominating: Vector[Policy],
+                        solutions: List[Policy],
+                        controlData: Vector[ControlDeviceData],
+                        ofs: FunctionEvaluation,
+                        stateData: Vector[StateGroundTruthPredicted]): (Vector[Policy], Vector[Policy]) = {
       if (solutions.isEmpty) { // if the set of pareto solution is empty, then return the dominated and dominating sets
         (dominatedBy, dominating)
       } else { // otherwise extract the first element from the pareto set and start processing it
-        val that::solutionsTail = solutions
+        val that :: solutionsTail = solutions
 
         if (that == x) { // if the solution to insert is the same as an already existing solution, then update it.
 
@@ -98,18 +111,23 @@ trait ParetoSet {
           )
 
           // after updating the solution, we must restart the insertion process as the solution has moved.
-          helper(Vector(), Vector(), this.paretoSet.keys.filterNot(sol => sol == x).toList)
+          val updatedSolution: (Vector[ControlDeviceData], FunctionEvaluation, Vector[StateGroundTruthPredicted]) = this.paretoSet.remove(x).get
+
+          //insert(x, updatedSolution._1, updatedSolution._2, updatedSolution._3)
+          helper(Vector(), Vector(), this.paretoSet.keys.toList, updatedSolution._1, updatedSolution._2, updatedSolution._3)
+
         } else if (thisDominatesThat(stochasticReduction(ofs), stochasticReduction(this.paretoSet(that)._2))) {
-          helper(dominatedBy, dominating :+ that, solutionsTail)
+          helper(dominatedBy, dominating :+ that, solutionsTail, controlData, ofs, stateData)
         } else if (thisDominatesThat(stochasticReduction(this.paretoSet(that)._2), stochasticReduction(ofs))) {
-          helper(dominatedBy :+ that, dominating, solutionsTail)
+          helper(dominatedBy :+ that, dominating, solutionsTail, controlData, ofs, stateData)
         } else {
-          helper(dominatedBy, dominating, solutionsTail)
+          helper(dominatedBy, dominating, solutionsTail, controlData, ofs, stateData)
         }
       }
     }
 
-    val (dominatedBy, dominating) = helper(Vector(), Vector(), this.paretoSet.keys.toList)
+    // calls the helper function to insert the new solution in the pareto set
+    val (dominatedBy, dominating) = helper(Vector(), Vector(), this.paretoSet.keys.toList, controlData, ofs, stateData)
 
     // if x is dominated by nothing, then add x and remove all solutions that x is dominating
     if (dominatedBy.isEmpty) {
@@ -119,7 +137,6 @@ trait ParetoSet {
     } else {
       "rejected"
     }
-
   }
 
   /** Returns true if thisSol dominates thatSol, false otherwise.
@@ -132,4 +149,5 @@ trait ParetoSet {
   private def thisDominatesThat(thisSol: FunctionEvaluationReduced, thatSol: FunctionEvaluationReduced): Boolean = {
     !thisSol.exists(thisOF => thisOF._2 > thatSol(thisOF._1))
   }
-  }
+
+}

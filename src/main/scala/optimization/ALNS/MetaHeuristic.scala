@@ -19,17 +19,16 @@ abstract class MetaHeuristic(val function: StatePrediction,
                              val stochasticReduction: FunctionEvaluation => FunctionEvaluationReduced) {
   metaheuristic =>
 
-
   type OperatorWeights = Map[String, Double]
 
-  protected var _bestX: Solution = (initialPolicy, Vector())
-  protected  def bestx: Solution = this._bestX
-  protected  def updateBestX(x: Solution): Unit = {this._bestX = x}
+  protected var _bestX: Policy = initialPolicy
+  protected  def bestx: Policy = this._bestX
+  protected  def updateBestX(x: Policy): Unit = {this._bestX = x}
 
   private class ExploreBestSolution extends Operator {
 
     def xprime(x: Vector[ControlDevicePolicy]): Vector[ControlDevicePolicy] = {
-      metaheuristic.bestx._1.x
+      metaheuristic.bestx.x
     }
   }
 
