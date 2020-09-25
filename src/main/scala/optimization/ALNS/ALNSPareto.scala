@@ -10,6 +10,7 @@ import optimization.ALNS.constraints.Constraint
 import optimization.ALNS.operators.{OperatorGenerator, RandomChange}
 
 import scala.collection.mutable
+import scala.util.Random
 
 
 class ALNSPareto(f: StatePrediction,
@@ -32,7 +33,7 @@ class ALNSPareto(f: StatePrediction,
   protected val lambda: Double = parameters.lambda
 
   function.predict(xInit.toVector.sorted, Vector())
-  this.insert(new Policy(xInit.toVector), Vector(), function.computeObjectives, function.getPredictedStateData)
+  this.insert(new Policy(xInit.toVector), Vector(), function.computeObjectives, function.getPredictedStateData, Double.NaN)
 
 
   private val iterations: collection.mutable.ArrayBuffer[(Iteration, Policy, String, OperatorName, Double, FunctionEvaluationReduced, OperatorWeights)] =
@@ -76,21 +77,24 @@ class ALNSPareto(f: StatePrediction,
       println(" --------------------------------------------------------------------------------------------------------------------- ")
       print("\r * Running simulation " + it + "/" + maxIterations)
       println("")
-      val (xNewRaw, op): (Solution, String) = changeSolution(this.currentx, this.getStateData(this.currentx))
+
+      val (policy: Policy, fraction: Double) = this.selectSolution
+      this.updateCurrent(policy)
+
+      val (xNewRaw, op): (Solution, String) = changeSolution(this.currentx, this.getStateData(this.currentx), OperatorParameters(Some(fraction)))
       val xNew: Solution = (applyConstraints(this.constraints, xNewRaw._1), xNewRaw._2)
 
       println(" * current solution:")
       println(this.currentx.x.map(_.decisionVariable))
-      println(" * new solution after operator: " + op)
+      println(s" * new solution after operator: $op with fraction: $fraction")
       println(xNew._1.x.map(_.decisionVariable))
 
       function.predict(xNew._1.x, xNew._2)
 
-      val scoreText: String = this.insert(xNew._1, xNew._2, function.computeObjectives, function.getPredictedStateData)
+      val scoreText: String = this.insert(xNew._1, xNew._2, function.computeObjectives, function.getPredictedStateData, fraction)
       val score = weightScores(scoreText)
 
       // updates the next solution to use a source for generation
-      this.updateCurrent(this.selectSolution)
 
       operatorWeights.update(op, math.max(weightMin, math.min(weightMax, operatorWeights(op) * lambda  + (1.0-lambda) * score)))
 
@@ -105,7 +109,7 @@ class ALNSPareto(f: StatePrediction,
       this.iterations.append((it, xNew._1, scoreText, op, Double.NaN, stochasticReduction(function.computeObjectives), operatorWeights.toMap))
       bw.write((Vector(it, op, scoreText) ++ xNew._1.x.sorted.map(_.decisionVariable) ++ objectiveHeader.map(stochasticReduction(function.computeObjectives)) ++ weightHeader.map(operatorWeights)).mkString(", ") + "\n")
       bw.flush()
-      this.updateBestX(this.selectSolution)
+      this.updateBestX(Random.shuffle(this.paretoSet.keys.toVector).head)
 
       it = it + 1
     }
@@ -117,7 +121,7 @@ class ALNSPareto(f: StatePrediction,
 
 
   def optimalSolution: (Policy, FunctionEvaluation, Vector[ControlDeviceData]) = {
-    val tmp = this.selectSolution
+    val tmp = Random.shuffle(this.paretoSet.keys.toVector).head
     this.updateBestX(tmp)
     (this.bestx, this.getOF(this.bestx), this.paretoSet(this.bestx)._1)
   }

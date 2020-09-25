@@ -62,14 +62,37 @@ trait ParetoSet {
   // collection of pareto solutions
   protected val paretoSet: collection.mutable.Map[Policy, (Vector[ControlDeviceData], FunctionEvaluation, Vector[StateGroundTruthPredicted])] = collection.mutable.Map()
 
+  private val exploredSolutions: collection.mutable.Map[Policy, Vector[Double]] = collection.mutable.Map()
+
+  private var nextSelectSolutions: List[(Policy, Double)] = List()
+
+  private def removeExploredSolution(x:Policy): Unit = {
+    this.exploredSolutions.remove(x)
+    if (this.nextSelectSolutions.nonEmpty && this.nextSelectSolutions.head._1 == x) {
+      this.nextSelectSolutions = List()
+    }
+  }
+
+  private def addExploredSolution(policy: Policy, rand: Double): Unit = {
+    this.exploredSolutions.update(policy, this.exploredSolutions.getOrElse(policy, Vector()) :+ rand)
+  }
+
   /** Selection of one solution with the set to use for the generation of new solutions.
     *
     * Currently this selects randomly a solution
     *
     * @return
     */
-  def selectSolution: Policy = {
-    Random.shuffle(this.paretoSet.toVector).head._1
+  def selectSolution: (Policy, Double) = {
+    if (nextSelectSolutions.nonEmpty) {
+      val next :: tail = nextSelectSolutions
+      this.nextSelectSolutions = tail
+      next
+    } else {
+      val nextPolicy: Policy = Random.shuffle(this.exploredSolutions.filter(s => s._2.size == exploredSolutions.map(_._2.size).min).keys.toVector).head
+      this.nextSelectSolutions = List.fill(7)(nextPolicy).zip(List(0.1,0.15,0.2,0.3,0.5,0.7,0.9))
+      (nextPolicy, 0.05)
+    }
   }
 
   /**
@@ -80,7 +103,7 @@ trait ParetoSet {
     * @param stateData   state data for solution x
     * @return string indicating whether the solution was accepted or rejected
     */
-  def insert(x: Policy, controlData: Vector[ControlDeviceData], ofs: FunctionEvaluation, stateData: Vector[StateGroundTruthPredicted]): String = {
+  def insert(x: Policy, controlData: Vector[ControlDeviceData], ofs: FunctionEvaluation, stateData: Vector[StateGroundTruthPredicted], rand: Double): String = {
 
     /**
       *
@@ -112,6 +135,7 @@ trait ParetoSet {
 
           // after updating the solution, we must restart the insertion process as the solution has moved.
           val updatedSolution: (Vector[ControlDeviceData], FunctionEvaluation, Vector[StateGroundTruthPredicted]) = this.paretoSet.remove(x).get
+          removeExploredSolution(x)
 
           //insert(x, updatedSolution._1, updatedSolution._2, updatedSolution._3)
           helper(Vector(), Vector(), this.paretoSet.keys.toList, updatedSolution._1, updatedSolution._2, updatedSolution._3)
@@ -131,8 +155,12 @@ trait ParetoSet {
 
     // if x is dominated by nothing, then add x and remove all solutions that x is dominating
     if (dominatedBy.isEmpty) {
-      dominating.foreach(dom => this.paretoSet.remove(dom))
+      dominating.foreach(dom => {
+        this.paretoSet.remove(dom)
+        removeExploredSolution(dom)
+      })
       this.paretoSet.addOne((x, (controlData, ofs, stateData)))
+      this.addExploredSolution(x, rand)
       "accepted"
     } else {
       "rejected"
