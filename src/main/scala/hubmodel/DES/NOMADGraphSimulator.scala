@@ -158,7 +158,7 @@ abstract class NOMADGraphSimulator(params: SimulationInputParameters) extends Pe
       if (this.sim.controlDevices.amwsMode._1 == "static") {
         val engineeringPolicy = new StaticEngineeringSolution(sim.graph.vertexMapNew, sim.controlDevices.amws).staticPolicyEngineeringSolution
         sim.controlDevices.amws.filter(_.noControlPolicy).foreach(w => {
-          val policy: Vector[AMWPolicy] = engineeringPolicy._1.collect { case p: AMWPolicy if p.name == w.name && p.start >= sim.startTime && p.end <= sim.finalTime => {
+          val policy: Vector[AMWPolicy] = engineeringPolicy._1.x.collect { case p: AMWPolicy if p.name == w.name && p.start >= sim.startTime && p.end <= sim.finalTime => {
             p
           }
           }
@@ -231,6 +231,17 @@ abstract class NOMADGraphSimulator(params: SimulationInputParameters) extends Pe
   class EndSim(sim: NOMADGraphSimulator) extends GenericFinishSim(sim, sim.finalTime) {
 
     override def execute(): Any = {
+
+      (sim.populationCompleted ++ sim.population).filter(_.accomplishedRoute.size > 1).foreach(ped =>
+        ped.accomplishedRoute.sliding(2).foreach(leg => {
+
+         /* val e: Option[MyEdge] = sim.graph.edges.find(e => e.startVertex == leg.head._2 && e.endVertex == leg.tail.head._2)
+          if (e.isDefined && )*/
+
+          sim.graph.addLinkTT(leg.head._2, leg.tail.head._2, leg.tail.head._1 - leg.head._1)
+        })
+      )
+
 
       sim.graph.edges.foreach(e => e.updateCost(sim.currentTime, e.cost))
 

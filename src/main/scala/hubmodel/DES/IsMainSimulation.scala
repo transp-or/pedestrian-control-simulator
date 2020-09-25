@@ -5,10 +5,12 @@ import hubmodel.control.{ControlDevicePolicy, EvaluateState, UpdateGates}
 import hubmodel.io.output.video.MovingPedestriansWithDensityWithWallVideo
 import hubmodel.prediction.{AMWFlowsFromGroundTruth, CongestionDataFromGroundTruth, PredictWithGroundTruth, StatePrediction}
 import hubmodel.supply.continuous.MovableWall
-import optimization.ALNS.{ALNS, ALNSParameters, DirectionMatchFlow, DirectionMatchFlowCombinedSpeedUpdates, DownstreamDensityUpdate, FunctionEvaluation, MinimumDurationSameDirection, RandomChangeDirection, RandomDecreaseSpeed, AccelerateAllSpeeds, RandomIncreaseSpeed, RandomSetSpeed, SpeedLowerBound, SpeedUpperBound}
+import optimization.ALNS.{ALNSLinearCombination, ALNSParameters, ALNSPareto, FunctionEvaluation}
 import tools.Time
 import myscala.math.stats.{ComputeQuantiles, ComputeStats, computeQuantile}
 import hubmodel.AMW_ACCELERATION_AMPLITUDE
+import optimization.ALNS.constraints.{SpeedLowerBound, SpeedUpperBound}
+import optimization.ALNS.operators.{AccelerateAllSpeeds, DeccelerateAllSpeeds, DirectionMatchFlowCombinedSpeedUpdates, DownstreamDensityUpdate, RandomDecreaseSpeed, RandomIncreaseSpeed, RandomSetSpeed}
 
 trait IsMainSimulation {
 
@@ -99,24 +101,24 @@ trait IsMainSimulation {
       def f(x: FunctionEvaluation): Map[String, Double] = x.view.mapValues(v => v.sum/v.size.toDouble).toMap
 
 
-      val horizonOptimization: ALNS = new ALNS(
+      val horizonOptimization: ALNSPareto = new ALNSPareto(
         new PredictWithGroundTruth(sim),
         initialControlPolicy,
-        Vector(RandomIncreaseSpeed, RandomDecreaseSpeed, MinimumDurationSameDirection, AccelerateAllSpeeds, DownstreamDensityUpdate, RandomSetSpeed, DirectionMatchFlowCombinedSpeedUpdates),
+        Vector(RandomIncreaseSpeed, RandomDecreaseSpeed, AccelerateAllSpeeds, DeccelerateAllSpeeds, DownstreamDensityUpdate, RandomSetSpeed, DirectionMatchFlowCombinedSpeedUpdates),
         Vector(SpeedUpperBound, SpeedLowerBound),
         f,
         sim.predictionInputParameters.ALNSParameters
       )
 
-      horizonOptimization.optimize()
+      horizonOptimization.optimize("NS_points_" + sim.ID + "_" + sim.currentTime + "_" + (sim.currentTime + this.sim.predictionInputParameters.horizon) + "_" + this.sim.predictionInputParameters.decisionVariableLength + ".csv" ,"/home/nicholas/PhD/code/hub-simulator/")
 
-      horizonOptimization.writeIterationsToCSV("NS_points_" + sim.ID + "_" + sim.currentTime + "_" + (sim.currentTime + this.sim.predictionInputParameters.horizon) + "_" + this.sim.predictionInputParameters.decisionVariableLength + ".csv" ,"/home/nicholas/PhD/code/hub-simulator/")
+      //horizonOptimization.writeIterationsToCSV("NS_points_" + sim.ID + "_" + sim.currentTime + "_" + (sim.currentTime + this.sim.predictionInputParameters.horizon) + "_" + this.sim.predictionInputParameters.decisionVariableLength + ".csv" ,"/home/nicholas/PhD/code/hub-simulator/")
 
-      println(horizonOptimization.optimalSolution._1.sorted.map(_.decisionVariable))
+      println(horizonOptimization.optimalSolution._1.x.sorted.map(_.decisionVariable))
 
       this.sim.controlDevices.amws
         .foreach(w => {
-          val policy = horizonOptimization.optimalSolution._1.collect{case amw: AMWPolicy if amw.name == w.name => amw}
+          val policy = horizonOptimization.optimalSolution._1.x.collect{case amw: AMWPolicy if amw.name == w.name => amw}
           w.expectedPolicy.append(policy.map(p => (p.start, p.speed)))
           val eventData: Option[MovingWalkwayControlEvents] = horizonOptimization.optimalSolution._3.collect{case data: MovingWalkwayControlEvents => data}.find(_.name == w.name)
           val additionalOpenTime = {

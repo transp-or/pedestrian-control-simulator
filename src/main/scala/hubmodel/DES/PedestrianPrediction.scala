@@ -1,5 +1,7 @@
 package hubmodel.DES
 
+import hubmodel.supply.graph.MyEdge
+
 class PedestrianPrediction(params: SimulationInputParameters) extends NOMADGraphSimulator(params) with IsPrediction {
 
   val isPrediction: Boolean = true
@@ -15,5 +17,6 @@ class PedestrianPrediction(params: SimulationInputParameters) extends NOMADGraph
   class LogStatePrediction extends super.LogState() with super.LogStateDES
 
   insertStateEvaluationStart(new this.StateEvaluation)
+
 
 }

@@ -1,14 +1,15 @@
-package optimization.ALNS
+package optimization.ALNS.constraints
 
 import hubmodel.control.ControlDevicePolicy
 import hubmodel.control.amw.AMWPolicy
+import optimization.ALNS.Policy
 
 
 trait Constraint {
-  def checkFeasibility(DV: Vector[ControlDevicePolicy]): Boolean
-  protected def makeFeasible: Vector[ControlDevicePolicy]
+  def checkFeasibility(DV: Policy): Boolean
+  protected def makeFeasible: Policy
 
-  def feasibleSolution: Vector[ControlDevicePolicy] = this.makeFeasible.sorted
+  def feasibleSolution: Policy = this.makeFeasible
 }
 
 object SpeedUpperBound extends Constraint {
@@ -17,8 +18,8 @@ object SpeedUpperBound extends Constraint {
 
   private var DVSplit: (Vector[ControlDevicePolicy], Vector[ControlDevicePolicy]) =  (Vector(), Vector())
 
-  def checkFeasibility(DV: Vector[ControlDevicePolicy]): Boolean = {
-    DVSplit = DV.partition(dv => dv.decisionVariable <= 3.0)
+  def checkFeasibility(DV: Policy): Boolean = {
+    DVSplit = DV.x.partition(dv => dv.decisionVariable <= 3.0)
 
     if (DVSplit._2.nonEmpty) {
       numberOfIterationsWithoutFeasiblity += 1
@@ -27,10 +28,10 @@ object SpeedUpperBound extends Constraint {
     else {true}
   }
 
-  def makeFeasible: Vector[ControlDevicePolicy] = {
-    this.DVSplit._2.map {
+  def makeFeasible: Policy = {
+    new Policy(this.DVSplit._2.map {
       case amw: AMWPolicy => amw.copy(speed = 3.0)
-    } ++ this.DVSplit._1
+    } ++ this.DVSplit._1)
   }
 }
 
@@ -40,8 +41,8 @@ object SpeedLowerBound extends Constraint {
 
   private var DVSplit: (Vector[ControlDevicePolicy], Vector[ControlDevicePolicy]) =  (Vector(), Vector())
 
-  def checkFeasibility(DV: Vector[ControlDevicePolicy]): Boolean = {
-    DVSplit = DV.partition(dv => dv.decisionVariable >= - 3.0)
+  def checkFeasibility(DV: Policy): Boolean = {
+    DVSplit = DV.x.partition(dv => dv.decisionVariable >= - 3.0)
     if (DVSplit._2.nonEmpty) {
       numberOfIterationsWithoutFeasiblity += 1
       false
@@ -49,9 +50,9 @@ object SpeedLowerBound extends Constraint {
     else {true}
   }
 
-  def makeFeasible: Vector[ControlDevicePolicy] = {
-    this.DVSplit._2.map {
+  def makeFeasible: Policy = {
+    new Policy(this.DVSplit._2.map {
       case amw: AMWPolicy => amw.copy(speed = -3.0)
-    } ++ this.DVSplit._1
+    } ++ this.DVSplit._1)
   }
 }

@@ -1,15 +1,14 @@
-package optimization.ALNS
+package optimization.ALNS.operators
 
 import java.util.concurrent.ThreadLocalRandom
-import java.util.function.DoubleToLongFunction
 
 import hubmodel.control.ControlDevicePolicy
 import hubmodel.control.amw.AMWPolicy
-import hubmodel.prediction.AMWFlowsFromGroundTruth
 import hubmodel.prediction.state.StateGroundTruthPredicted
+import myscala.math.stats.ComputeStats
+import optimization.ALNS._
 import tools.Time
 import tools.TimeNumeric.mkOrderingOps
-import myscala.math.stats.ComputeStats
 
 import scala.collection.MapView
 import scala.util.Random
@@ -21,13 +20,15 @@ trait OperatorGenerator {
 
   type T <: Operator
 
-  def returnOperator(x: Vector[ControlDevicePolicy], iterable: Vector[StateGroundTruthPredicted]): T
+  def returnOperator(x: Policy, iterable: Vector[StateGroundTruthPredicted]): T
 }
 
 trait Operator {
   protected def xprime(x: Vector[ControlDevicePolicy]): Vector[ControlDevicePolicy]
 
-  def newSolution(x: Vector[ControlDevicePolicy], controlData: Map[String, Double]): Solution = enforceSpeedChangeIntoPolicy(this.xprime(x.sorted), controlData)
+  def newSolution(x: Policy, controlData: Map[String, Double]): Solution = {
+    enforceSpeedChangeIntoPolicy(this.xprime(x.x), controlData)
+  }
 }
 
 trait RandomChange
@@ -39,7 +40,7 @@ class RandomIncreaseSpeed extends Operator {
 
   def xprime(x: Vector[ControlDevicePolicy]): Vector[ControlDevicePolicy] = {
 
-    val fractionToChange: Int = ThreadLocalRandom.current().nextInt((x.size * 0.2).round.toInt, (x.size * 1.0).round.toInt)
+    val fractionToChange: Int = ThreadLocalRandom.current().nextInt((x.size.toDouble * 0.2).round.toInt, (x.size.toDouble * 0.8).round.toInt)
     val idxToChange: Vector[Int] = Random.shuffle(x.indices.toVector).take(fractionToChange)
 
     val tmp = x.zipWithIndex.map {
@@ -57,7 +58,7 @@ object RandomIncreaseSpeed extends OperatorGenerator with RandomChange {
   val name: String = "IncreaseSpeed"
   type T = RandomIncreaseSpeed
 
-  def returnOperator(x: Vector[ControlDevicePolicy], iterable: Vector[StateGroundTruthPredicted]): T = new RandomIncreaseSpeed
+  def returnOperator(x: Policy, iterable: Vector[StateGroundTruthPredicted]): T = new RandomIncreaseSpeed
 }
 
 /** Selected between 20% and 100% of all of the control policies and decreases the speed by SPEED_INCREMENT.
@@ -67,7 +68,7 @@ class RandomDecreaseSpeed extends Operator {
 
   def xprime(x: Vector[ControlDevicePolicy]): Vector[ControlDevicePolicy] = {
 
-    val fractionToChange: Int = ThreadLocalRandom.current().nextInt((x.size * 0.2).round.toInt, (x.size * 1.0).round.toInt)
+    val fractionToChange: Int = ThreadLocalRandom.current().nextInt((x.size.toDouble * 0.2).round.toInt, (x.size.toDouble * 0.8).round.toInt)
     val idxToChange: Vector[Int] = Random.shuffle(x.indices.toVector).take(fractionToChange)
 
     val tmp = x.zipWithIndex.map {
@@ -86,7 +87,7 @@ object RandomDecreaseSpeed extends OperatorGenerator with RandomChange {
 
   type T = RandomDecreaseSpeed
 
-  def returnOperator(x: Vector[ControlDevicePolicy], iterable: Vector[StateGroundTruthPredicted]): T = new RandomDecreaseSpeed
+  def returnOperator(x: Policy, iterable: Vector[StateGroundTruthPredicted]): T = new RandomDecreaseSpeed
 }
 
 
@@ -97,7 +98,7 @@ class RandomChangeDirection extends Operator {
 
   def xprime(x: Vector[ControlDevicePolicy]): Vector[ControlDevicePolicy] = {
 
-    val fractionToChange: Int = ThreadLocalRandom.current().nextInt((x.size * 0.2).round.toInt, (x.size * 1.0).round.toInt)
+    val fractionToChange: Int = ThreadLocalRandom.current().nextInt((x.size.toDouble * 0.2).round.toInt, (x.size.toDouble * 0.8).round.toInt)
     val idxToChange: Vector[Int] = Random.shuffle(x.indices.toVector).take(fractionToChange)
 
     val tmp = x.zipWithIndex.map {
@@ -117,7 +118,7 @@ object RandomChangeDirection extends OperatorGenerator with RandomChange {
 
   type T = RandomChangeDirection
 
-  def returnOperator(x: Vector[ControlDevicePolicy], iterable: Vector[StateGroundTruthPredicted]): T = new RandomChangeDirection
+  def returnOperator(x: Policy, iterable: Vector[StateGroundTruthPredicted]): T = new RandomChangeDirection
 }
 
 /** Increase the magnitude of all AMWs. Basically positive speeds are increased by SPEED_INCREMENT and negative speeds
@@ -127,14 +128,18 @@ object RandomChangeDirection extends OperatorGenerator with RandomChange {
 class AccelerateAllSpeeds extends Operator {
 
   def xprime(x: Vector[ControlDevicePolicy]): Vector[ControlDevicePolicy] = {
-    val tmp = x.map {
-      case amwP: AMWPolicy if (amwP.speed.sign > 0.0) => {
+
+    val fractionToChange: Int = ThreadLocalRandom.current().nextInt((x.size.toDouble * 0.2).round.toInt, (x.size.toDouble * 0.8).round.toInt)
+    val idxToChange: Vector[Int] = Random.shuffle(x.indices.toVector).take(fractionToChange)
+
+    val tmp = x.zipWithIndex.map {
+      case (amwP: AMWPolicy, idx: Int) if (amwP.speed.sign > 0.0 && idxToChange.contains(idx)) => {
         amwP.copy(speed = amwP.speed + SPEED_INCREMENT)
       }
-      case amwP: AMWPolicy if (amwP.speed.sign < 0.0) => {
+      case (amwP: AMWPolicy, idx: Int) if (amwP.speed.sign < 0.0 && idxToChange.contains(idx)) => {
         amwP.copy(speed = amwP.speed - SPEED_INCREMENT)
       }
-      case a: ControlDevicePolicy => a
+      case (a: ControlDevicePolicy, idx: Int) => a
     }
 
     tmp
@@ -142,15 +147,49 @@ class AccelerateAllSpeeds extends Operator {
 }
 
 object AccelerateAllSpeeds extends OperatorGenerator with RandomChange {
-  val name: String = "IncreaseAllSpeeds"
+  val name: String = "AccelerateAllSpeeds"
 
   type T = AccelerateAllSpeeds
 
-  def returnOperator(x: Vector[ControlDevicePolicy], iterable: Vector[StateGroundTruthPredicted]): T = new AccelerateAllSpeeds
+  def returnOperator(x: Policy, iterable: Vector[StateGroundTruthPredicted]): T = new AccelerateAllSpeeds
+}
+
+
+/** Decrease the magnitude of all AMWs. Basically positive speeds are decreased by SPEED_INCREMENT and negative speeds
+  * are increased by SPEED_INCREMENT.
+  *
+  */
+class DeccelerateAllSpeeds extends Operator {
+
+  def xprime(x: Vector[ControlDevicePolicy]): Vector[ControlDevicePolicy] = {
+
+    val fractionToChange: Int = ThreadLocalRandom.current().nextInt((x.size.toDouble * 0.2).round.toInt, (x.size.toDouble * 0.8).round.toInt)
+    val idxToChange: Vector[Int] = Random.shuffle(x.indices.toVector).take(fractionToChange)
+
+    val tmp = x.zipWithIndex.map {
+      case (amwP: AMWPolicy, idx: Int) if (amwP.speed.sign > 0.0 && idxToChange.contains(idx)) => {
+        amwP.copy(speed = amwP.speed - SPEED_INCREMENT)
+      }
+      case (amwP: AMWPolicy, idx: Int) if (amwP.speed.sign < 0.0 && idxToChange.contains(idx)) => {
+        amwP.copy(speed = amwP.speed + SPEED_INCREMENT)
+      }
+      case (a: ControlDevicePolicy, idx: Int) => a
+    }
+
+    tmp
+  }
+}
+
+object DeccelerateAllSpeeds extends OperatorGenerator with RandomChange {
+  val name: String = "DeccelerateAllSpeeds"
+
+  type T = DeccelerateAllSpeeds
+
+  def returnOperator(x: Policy, iterable: Vector[StateGroundTruthPredicted]): T = new DeccelerateAllSpeeds
 }
 
 /** Sets the direction to match the pedestrian flow measured parallel to AMWs. The speed magnitude is set to the
-  * maximum possible speed.
+  * maximum possible speed. Each moving walkway has a 60% chance of being selected
   *
   * This operator should be combined with one of the speed increase and/or decrease operators. Otherwise this operator
   * will yield very similar results.
@@ -163,10 +202,13 @@ class DirectionMatchFlow(val flowDataBySimulation: Vector[Map[(String, Int, Int)
   val flowData: Map[(String, Int, Int), Double] = flowDataBySimulation.flatMap(_.toVector).groupBy(_._1).view.mapValues(v => v.map(_._2).statistics.median).toMap
 
   def xprime(x: Vector[ControlDevicePolicy]): Vector[ControlDevicePolicy] = {
+
+    val amwToChange: Vector[String] = x.map(_.name).distinct.filter(n => ThreadLocalRandom.current().nextDouble() > 0.4)
+
     val tmp = x.map {
       case amw: AMWPolicy => {
         val flow = flowData.filter(v => v._1._1 == amw.name && timeIntervals(v._1._3) == amw.start).maxByOption(_._2)
-        if (flow.exists(f => f._1._2.sign != amw.speed.sign)) {
+        if (amwToChange.contains(amw.name) && flow.exists(f => f._1._2.sign != amw.speed.sign)) {
           amw.copy(speed = flow.get._1._2.sign * MAXIMUM_SPEED)
         }
         else {
@@ -184,7 +226,7 @@ object DirectionMatchFlow extends OperatorGenerator with RandomChange {
 
   type T = DirectionMatchFlow
 
-  def returnOperator(x: Vector[ControlDevicePolicy], iterable: Vector[StateGroundTruthPredicted]): T = new DirectionMatchFlow(iterable.map(_.amwFlows.aggregateFlowsByAMW), iterable.head.intervals)
+  def returnOperator(x: Policy, iterable: Vector[StateGroundTruthPredicted]): T = new DirectionMatchFlow(iterable.map(_.amwFlows.aggregateFlowsByAMW), iterable.head.intervals)
 }
 
 /** Combined match flow with the speed decrease and increase.
@@ -211,7 +253,7 @@ object DirectionMatchFlowCombinedSpeedUpdates extends OperatorGenerator with Ran
 
   type T = DirectionMatchFlowCombinedSpeedUpdates
 
-  def returnOperator(x: Vector[ControlDevicePolicy], iterable: Vector[StateGroundTruthPredicted]): T = new DirectionMatchFlowCombinedSpeedUpdates(iterable.map(_.amwFlows.aggregateFlowsByAMW), iterable.head.intervals)
+  def returnOperator(x: Policy, iterable: Vector[StateGroundTruthPredicted]): T = new DirectionMatchFlowCombinedSpeedUpdates(iterable.map(_.amwFlows.aggregateFlowsByAMW), iterable.head.intervals)
 }
 
 class MinimumDurationSameDirection(allPolicy: Vector[ControlDevicePolicy]) extends Operator {
@@ -288,7 +330,7 @@ object MinimumDurationSameDirection extends OperatorGenerator with RandomChange 
 
   type T = MinimumDurationSameDirection
 
-  def returnOperator(x: Vector[ControlDevicePolicy], iterable: Vector[StateGroundTruthPredicted]): T = new MinimumDurationSameDirection(x)
+  def returnOperator(x: Policy, iterable: Vector[StateGroundTruthPredicted]): T = new MinimumDurationSameDirection(x.x)
 }
 
 
@@ -336,7 +378,7 @@ object DownstreamDensityUpdate extends OperatorGenerator with RandomChange {
 
   type T = DownstreamDensityUpdate
 
-  def returnOperator(x: Vector[ControlDevicePolicy], iterable: Vector[StateGroundTruthPredicted]): T = new DownstreamDensityUpdate(iterable.head.densitiesInsideAreas.amwsZones, iterable.map(_.densitiesInsideAreas.quantile75DensityByArea), iterable.head.intervals)
+  def returnOperator(x: Policy, iterable: Vector[StateGroundTruthPredicted]): T = new DownstreamDensityUpdate(iterable.head.densitiesInsideAreas.amwsZones, iterable.map(_.densitiesInsideAreas.quantile75DensityByArea), iterable.head.intervals)
 }
 
   /** Randomly set constant speed of moving walkways.
@@ -373,5 +415,5 @@ object RandomSetSpeed extends OperatorGenerator with RandomChange {
 
   type T = RandomSetSpeed
 
-  def returnOperator(x: Vector[ControlDevicePolicy], iterable: Vector[StateGroundTruthPredicted]): T = new RandomSetSpeed
+  def returnOperator(x: Policy, iterable: Vector[StateGroundTruthPredicted]): T = new RandomSetSpeed
 }

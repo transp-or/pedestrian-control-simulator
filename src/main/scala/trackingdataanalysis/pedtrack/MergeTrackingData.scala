@@ -6,8 +6,8 @@ import hubmodel.prediction.AMWFlowsFromEmpiricalData
 import hubmodel.supply.graph.readGraph
 import tools.cells.Vertex
 import tools.Time
-import optimization.ALNS.DirectionMatchFlow
 import optimization.ALNS.enforceSpeedChangeIntoPolicy
+import optimization.ALNS.operators.DirectionMatchFlow
 
 object MergeTrackingData extends App {
 
