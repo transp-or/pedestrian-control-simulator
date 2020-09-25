@@ -10,7 +10,7 @@ import optimization.ALNS.operators.{Operator, OperatorGenerator, RandomChange}
 
 import scala.annotation.tailrec
 
-
+case class OperatorParameters(fraction: Option[Double] = None)
 
 abstract class MetaHeuristic(val function: StatePrediction,
                              val initialPolicy: Policy,
@@ -36,7 +36,7 @@ abstract class MetaHeuristic(val function: StatePrediction,
     val name: String = "ExploreBestSolution"
     type T = ExploreBestSolution
 
-    def returnOperator(x: Policy, iterable: Vector[StateGroundTruthPredicted]): T = new ExploreBestSolution
+    def returnOperator(x: Policy, iterable: Vector[StateGroundTruthPredicted], params: OperatorParameters): T = new ExploreBestSolution
   }
 
   protected def getOF(x: Policy): FunctionEvaluation
@@ -47,7 +47,9 @@ abstract class MetaHeuristic(val function: StatePrediction,
   def currentx: Policy = this._currentx
   private var _currentx: Policy = initialPolicy
 
-  protected def changeSolution(x: Policy, currentPredictedState: Vector[StateGroundTruthPredicted]): (Solution, String) = {
+
+
+  protected def changeSolution(x: Policy, currentPredictedState: Vector[StateGroundTruthPredicted], params: OperatorParameters): (Solution, String) = {
 
     val r: Double = ThreadLocalRandom.current.nextDouble()
 
@@ -64,7 +66,7 @@ abstract class MetaHeuristic(val function: StatePrediction,
 
     val tmp: Solution = /*op1Name match {
       case exploreBest if exploreBest == "ExploreBestSolution" => { op1.returnOperator(this.bestx._1, currentPredictedState).newSolution(x, function.getRealisedControlData._1) }
-      case _ => {    */op1.returnOperator(x, currentPredictedState).newSolution(x, function.getRealisedControlData._1)/* }
+      case _ => {    */op1.returnOperator(x, currentPredictedState, params).newSolution(x, function.getRealisedControlData._1)/* }
     }*/
 
     (tmp, op1.name)

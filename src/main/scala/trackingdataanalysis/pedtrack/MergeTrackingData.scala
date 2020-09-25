@@ -46,7 +46,7 @@ object MergeTrackingData extends App {
     .flatMap(w => intervals.zip(Vector.fill(intervals.size)((w.name, w.length))).map(t => (t._2, t._1)))
     .map(t => AMWPolicy(t._1._1, t._2, t._2 + tools.Time(10), 0.0, t._1._2)).toVector
 
-  val staticPolicyEngineeringSolution = enforceSpeedChangeIntoPolicy(new DirectionMatchFlow(Vector(r.aggregateFlowsByAMW), intervals).xprime(initialControlPolicy), Map("amw1" -> 0.0, "amw2"-> 0.0))
+  val staticPolicyEngineeringSolution = enforceSpeedChangeIntoPolicy(new DirectionMatchFlow(Vector(r.aggregateFlowsByAMW), intervals, Some(0.0)).xprime(initialControlPolicy), Map("amw1" -> 0.0, "amw2"-> 0.0))
 
 
 

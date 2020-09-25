@@ -10,7 +10,7 @@ import tools.Time
 import myscala.math.stats.{ComputeQuantiles, ComputeStats, computeQuantile}
 import hubmodel.AMW_ACCELERATION_AMPLITUDE
 import optimization.ALNS.constraints.{SpeedLowerBound, SpeedUpperBound}
-import optimization.ALNS.operators.{AccelerateAllSpeeds, DeccelerateAllSpeeds, DirectionMatchFlowCombinedSpeedUpdates, DownstreamDensityUpdate, RandomDecreaseSpeed, RandomIncreaseSpeed, RandomSetSpeed}
+import optimization.ALNS.operators.{AccelerateAllSpeeds, DeccelerateAllSpeeds, DirectionMatchFlowCombinedSpeedUpdates, DownstreamDensityUpdate, RandomDecreaseSpeed, RandomIncreaseSpeed, RandomSetSpeed, RandomSetSpeedSpeedUpdates}
 
 trait IsMainSimulation {
 
@@ -104,15 +104,15 @@ trait IsMainSimulation {
       val horizonOptimization: ALNSPareto = new ALNSPareto(
         new PredictWithGroundTruth(sim),
         initialControlPolicy,
-        Vector(RandomIncreaseSpeed, RandomDecreaseSpeed, AccelerateAllSpeeds, DeccelerateAllSpeeds, DownstreamDensityUpdate, RandomSetSpeed, DirectionMatchFlowCombinedSpeedUpdates),
+        Vector(RandomIncreaseSpeed, RandomDecreaseSpeed, AccelerateAllSpeeds, DeccelerateAllSpeeds, DownstreamDensityUpdate, RandomSetSpeed, DirectionMatchFlowCombinedSpeedUpdates, RandomSetSpeedSpeedUpdates),
         Vector(SpeedUpperBound, SpeedLowerBound),
         f,
         sim.predictionInputParameters.ALNSParameters
       )
 
-      horizonOptimization.optimize("NS_points_" + sim.ID + "_" + sim.currentTime + "_" + (sim.currentTime + this.sim.predictionInputParameters.horizon) + "_" + this.sim.predictionInputParameters.decisionVariableLength + ".csv" ,"/home/nicholas/PhD/code/hub-simulator/")
+      horizonOptimization.optimize("iterations_points_" + sim.ID + "_" + sim.currentTime + "_" + (sim.currentTime + this.sim.predictionInputParameters.horizon) + "_" + this.sim.predictionInputParameters.decisionVariableLength + ".csv")
 
-      //horizonOptimization.writeIterationsToCSV("NS_points_" + sim.ID + "_" + sim.currentTime + "_" + (sim.currentTime + this.sim.predictionInputParameters.horizon) + "_" + this.sim.predictionInputParameters.decisionVariableLength + ".csv" ,"/home/nicholas/PhD/code/hub-simulator/")
+      horizonOptimization.writeIterationsToCSV("a_posteriori_points_" + sim.ID + "_" + sim.currentTime + "_" + (sim.currentTime + this.sim.predictionInputParameters.horizon) + "_" + this.sim.predictionInputParameters.decisionVariableLength + ".csv")
 
       println(horizonOptimization.optimalSolution._1.x.sorted.map(_.decisionVariable))
 

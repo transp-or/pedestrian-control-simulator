@@ -147,7 +147,7 @@ class ALNSLinearCombination(f: StatePrediction,
       println(" --------------------------------------------------------------------------------------------------------------------- ")
       print("\r * Running simulation " + it + "/" + maxIterations)
       println("")
-      val (xNewRaw, op): (Solution, String) = changeSolution(this.currentx, this.getStateData(this.currentx))
+      val (xNewRaw, op): (Solution, String) = changeSolution(this.currentx, this.getStateData(this.currentx), OperatorParameters())
       val xNew: Solution = (applyConstraints(this.constraints, xNewRaw._1), xNewRaw._2)
 
       println(" * current solution:")
