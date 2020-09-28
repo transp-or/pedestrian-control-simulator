@@ -6,6 +6,8 @@ import myscala.math.stats.computeQuantile
 import tools.Time
 import tools.math.integration.rectangleIntegration
 
+import scala.util.{Failure, Success, Try}
+
 /** Area in which the pedestrian density is computed.
   *
   * @param name
@@ -38,7 +40,17 @@ class DensityMeasuredArea(name: String, A: Position, B: Position, C: Position, D
     paxIndividualDensityHistory.append((startTime, Vector()))
   }
 
-  def integratedIndividualDensity: Double = rectangleIntegration(this.paxIndividualDensityHistory.map(d => (d._1.value.toDouble, {if (d._2.isEmpty){0.0} else {math.max(0.0, computeQuantile(75)(d._2).value - this.targetDensity)}})).toVector, this.paxIndividualDensityHistory.minBy(_._1)._1.value.toDouble, this.paxIndividualDensityHistory.maxBy(_._1)._1.value.toDouble)
+  def integratedIndividualDensity: Double = {
+    Try(
+    rectangleIntegration(this.paxIndividualDensityHistory.map(d => (d._1.value.toDouble, {if (d._2.isEmpty){0.0} else {math.max(0.0, computeQuantile(75)(d._2).value - this.targetDensity)}})).toVector, this.paxIndividualDensityHistory.minBy(_._1)._1.value.toDouble, this.paxIndividualDensityHistory.maxBy(_._1)._1.value.toDouble)
+    ) match {
+      case Success(v) => {v}
+      case Failure(f) => {
+        println(this.paxIndividualDensityHistory.mkString("\n"))
+        throw f
+      }
+    }
+  }
 
   //var regulatorIntegralAction: Double = 0.0
 
