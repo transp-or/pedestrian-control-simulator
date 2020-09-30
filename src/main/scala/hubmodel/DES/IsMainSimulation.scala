@@ -9,6 +9,7 @@ import optimization.ALNS.{ALNSLinearCombination, ALNSParameters, ALNSPareto, Fun
 import tools.Time
 import myscala.math.stats.{ComputeQuantiles, ComputeStats, computeQuantile}
 import hubmodel.AMW_ACCELERATION_AMPLITUDE
+import myscala.output.SeqTuplesExtensions.SeqTuplesWriter
 import optimization.ALNS.constraints.{SpeedLowerBound, SpeedUpperBound}
 import optimization.ALNS.operators.{AccelerateAllSpeeds, DeccelerateAllSpeeds, DirectionMatchFlowCombinedSpeedUpdates, DownstreamDensityUpdate, RandomDecreaseSpeed, RandomIncreaseSpeed, RandomSetSpeed, RandomSetSpeedSpeedUpdates}
 
@@ -110,9 +111,17 @@ trait IsMainSimulation {
         sim.predictionInputParameters.ALNSParameters
       )
 
-      horizonOptimization.optimize("iterations_points_" + sim.ID + "_" + sim.currentTime + "_" + (sim.currentTime + this.sim.predictionInputParameters.horizon) + "_" + this.sim.predictionInputParameters.decisionVariableLength + ".csv")
+      horizonOptimization.optimize(sim.ID + "_" + sim.currentTime + "_" + (sim.currentTime + this.sim.predictionInputParameters.horizon) + "_" + this.sim.predictionInputParameters.decisionVariableLength)
 
       horizonOptimization.writeIterationsToCSV("a_posteriori_points_" + sim.ID + "_" + sim.currentTime + "_" + (sim.currentTime + this.sim.predictionInputParameters.horizon) + "_" + this.sim.predictionInputParameters.decisionVariableLength + ".csv")
+
+     /* (for (a <- horizonOptimization.getPoints; b <- horizonOptimization.getPoints if a._1 != b._1) yield {
+        (
+          math.pow(a._2.x.zip(b._2.x).map(t => math.pow((t._2.decisionVariable - t._1.decisionVariable), 2)).sum, 0.5),
+          math.pow(math.pow(b._3("meanTT") - a._3("meanTT"), 2) + math.pow(b._3("density") - a._3("density"), 2), 0.5)
+        )
+      }).writeToCSV("distance-policy-OFs_" + sim.ID + "_" + sim.currentTime + "_" + (sim.currentTime + this.sim.predictionInputParameters.horizon) + "_" + this.sim.predictionInputParameters.decisionVariableLength + ".csv")
+      */
 
       println(horizonOptimization.optimalSolution._1.x.sorted.map(_.decisionVariable))
 

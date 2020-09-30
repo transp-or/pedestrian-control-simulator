@@ -226,6 +226,10 @@ class ALNSLinearCombination(f: StatePrediction,
       .writeToCSV(file, rowNames = None, columnNames = Some(Vector("it", "temp", "operator", "accepted") ++ header ++ objectiveHeader ++ objectiveHeader.map(_ ++ "_current") ++ objectiveHeader.map(_ ++ "_best") ++ weightHeader.map(_ ++ "_weight")))
   }
 
+  def getPoints: Vector[(Int, Policy, FunctionEvaluationReduced)] = {
+    this.iterations.map(it => (it._1, it._3, it._7)).toVector
+  }
+
 
   /*  ------------------- ATTRIBUTES --------------------*/
 

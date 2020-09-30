@@ -98,4 +98,6 @@ abstract class MetaHeuristic(val function: StatePrediction,
 
   def optimize(iterationFile: String, path: String = ""): Unit
 
+  def getPoints: Vector[(Int, Policy, FunctionEvaluationReduced)]
+
 }
