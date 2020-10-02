@@ -67,10 +67,13 @@ class ALNSPareto(f: StatePrediction,
 
   protected def getStateData(x: Policy): Vector[StateGroundTruthPredicted] = {this.paretoSet(x)._3}
 
-  def optimize(iterationsFile: String, path: String = ""): Unit = {
-    val file = new File(path + iterationsFile)
+  def optimize(filePrefix: String, path: String = ""): Unit = {
+    val file = new File(path + "iterations_points_" + filePrefix + ".csv")
     val bw = new BufferedWriter(new FileWriter(file))
     bw.write(iterationsHeader + "\n")
+
+    val fileDistancePlot = new File(path + "euclidean-distance-policy-OF" + filePrefix + ".csv")
+    val fdp = new BufferedWriter(new FileWriter(fileDistancePlot))
 
     var it: Int = 1
     while (it <= maxIterations) {
@@ -109,6 +112,17 @@ class ALNSPareto(f: StatePrediction,
       this.iterations.append((it, xNew._1, scoreText, op, Double.NaN, stochasticReduction(function.computeObjectives), operatorWeights.toMap))
       bw.write((Vector(it, op, scoreText) ++ xNew._1.x.sorted.map(_.decisionVariable) ++ objectiveHeader.map(stochasticReduction(function.computeObjectives)) ++ weightHeader.map(operatorWeights)).mkString(", ") + "\n")
       bw.flush()
+
+      (for (other <- this.iterations.dropRight(1)) yield {
+        (
+          math.pow(this.iterations.last._2.x.sorted.zip(other._2.x.sorted).map(t => math.pow(t._2.decisionVariable - t._1.decisionVariable, 2)).sum, 0.5),
+          math.pow(math.pow(this.iterations.last._6("meanTT") - other._6("meanTT"), 2) + math.pow(this.iterations.last._6("density") - other._6("density"), 2), 0.5)
+          )
+      }).foreach(row => fdp.write(row._1 + ", " + row._2 + "\n"))
+
+      fdp.flush()
+
+
       this.updateBestX(Random.shuffle(this.paretoSet.keys.toVector).head)
 
       it = it + 1
@@ -126,5 +140,8 @@ class ALNSPareto(f: StatePrediction,
     (this.bestx, this.getOF(this.bestx), this.paretoSet(this.bestx)._1)
   }
 
+  def getPoints: Vector[(Int, Policy, FunctionEvaluationReduced)] = {
+    this.iterations.map(it => (it._1, it._2, it._6)).toVector
+  }
 
 }
