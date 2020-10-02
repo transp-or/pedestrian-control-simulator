@@ -61,6 +61,11 @@ package object hubmodel {
   // AMW acceleration amplitude.
   val AMW_ACCELERATION_AMPLITUDE: Double = 0.25
 
+  val SPEED_INCREMENT: Double = 1.0
+
+  val MINIMUM_SPEED: Double = -3.0
+  val MAXIMUM_SPEED: Double = 3.0
+
   /** Samples a pedestrian free flow walking speed.
     *
     * Either use the standard mean of 1.34 m/s. Otherwise to match the tracking data use 1.10 as a mean.
