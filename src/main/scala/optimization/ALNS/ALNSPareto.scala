@@ -116,7 +116,8 @@ class ALNSPareto(f: StatePrediction,
       (for (other <- this.iterations.dropRight(1)) yield {
         (
           math.pow(this.iterations.last._2.x.sorted.zip(other._2.x.sorted).map(t => math.pow(t._2.decisionVariable - t._1.decisionVariable, 2)).sum, 0.5),
-          math.pow(math.pow(this.iterations.last._6("meanTT") - other._6("meanTT"), 2) + math.pow(this.iterations.last._6("density") - other._6("density"), 2), 0.5)
+         // math.abs(this.iterations.last._6("density") - other._6("density")),
+          math.abs(this.iterations.last._6("meanTT") - other._6("meanTT"))
           )
       }).foreach(row => fdp.write(row._1 + ", " + row._2 + "\n"))
 

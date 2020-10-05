@@ -47,6 +47,8 @@ class DensityMeasuredArea(name: String, A: Position, B: Position, C: Position, D
       case Success(v) => {v}
       case Failure(f) => {
         println(this.paxIndividualDensityHistory.mkString("\n"))
+        println(this.paxIndividualDensityHistory.map(d => (d._1.value.toDouble, {if (d._2.isEmpty){0.0} else {math.max(0.0, computeQuantile(75)(d._2).value - this.targetDensity)}})).toVector)
+        println(this.paxIndividualDensityHistory.minBy(_._1)._1.value.toDouble, this.paxIndividualDensityHistory.maxBy(_._1)._1.value.toDouble)
         throw f
       }
     }

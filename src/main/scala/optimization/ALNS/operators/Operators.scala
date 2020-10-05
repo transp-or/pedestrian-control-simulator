@@ -2,6 +2,7 @@ package optimization.ALNS.operators
 
 import java.util.concurrent.ThreadLocalRandom
 
+import hubmodel.{MAXIMUM_SPEED, MINIMUM_SPEED, SPEED_INCREMENT}
 import hubmodel.control.ControlDevicePolicy
 import hubmodel.control.amw.AMWPolicy
 import hubmodel.prediction.state.StateGroundTruthPredicted
