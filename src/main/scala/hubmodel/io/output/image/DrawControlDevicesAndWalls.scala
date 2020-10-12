@@ -71,6 +71,21 @@ class DrawControlDevicesAndWalls(filename: String = "",
     })
 
 
+    devices.monitoredAreas.foreach(area => {
+
+      // draw the box
+      gImage.drawPolygon(area.corners.map(_.X).map(mappingFunctions._1).toArray, area.corners.map(_.Y).map(mappingFunctions._2).map(verticalTransformation).toArray, 4)
+
+      // draw name in the middle of the box
+      gImage.drawString(
+        area.name,
+        (mappingFunctions._1(area.corners(1).X) + mappingFunctions._1(area.corners(0).X)) / 2,
+        verticalTransformation((mappingFunctions._2(area.corners(1).Y) + mappingFunctions._2(area.corners(1).Y)) / 2)
+      )
+
+    })
+
+
     devices.flowGates.foreach(fg => {
 
       // draws flow gate as line

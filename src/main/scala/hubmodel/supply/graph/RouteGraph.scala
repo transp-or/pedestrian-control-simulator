@@ -1,12 +1,14 @@
 package hubmodel.supply.graph
 
+import java.util.concurrent.ThreadLocalRandom
+
 import hubmodel.control.ControlDevices
 import hubmodel.control.amw.{IN, MovingWalkwayAbstract, OUT}
 import hubmodel.control.flowgate.{BinaryGate, FlowGate}
 import hubmodel.control.flowsep.FlowSeparator
 import hubmodel.ped.PedestrianNOMAD
 import myscala.math.vector.ZeroVector2D
-import org.jgrapht.alg.shortestpath.{DijkstraShortestPath, KShortestPaths}
+import org.jgrapht.alg.shortestpath.{DijkstraShortestPath, KShortestPaths, KShortestSimplePaths, YenKShortestPath}
 import org.jgrapht.graph.DefaultDirectedWeightedGraph
 import tools.Time
 import tools.cells.Vertex
@@ -72,9 +74,9 @@ class RouteGraph(protected val baseVertices: Iterable[Vertex],
       || flowSeparators.flatMap(_.associatedConnectivity.map(_.startVertex.name)).toVector.contains(e.endVertex.name)
     ) ++ flowSeparators.flatMap(_.associatedConnectivity)) ++ edges2Add) -- edges2Remove*/
 
-  val edgeCollectionWithoutAMW: Set[MyEdge] = (standardEdges ++ flowGates ++ binaryGates ++ levelChanges).toSet
+  //val edgeCollectionWithoutAMW: Set[MyEdge] = (standardEdges ++ flowGates ++ binaryGates ++ levelChanges).toSet
 
-  val edgeCollection: Set[MyEdge] = ((edgeCollectionWithoutAMW ++ movingWalkways.flatMap(_.graphEdges)
+  val edgeCollection: Set[MyEdge] = (((standardEdges ++ flowGates ++ binaryGates ++ levelChanges).toSet ++ movingWalkways.flatMap(_.graphEdges)
     .filterNot(e =>
       flowSeparators.flatMap(fs => fs.overridenZones).toVector.contains(e.startVertex.name)
         || flowSeparators.flatMap(fs => fs.overridenZones).toVector.contains(e.endVertex.name)
@@ -82,7 +84,7 @@ class RouteGraph(protected val baseVertices: Iterable[Vertex],
         || movingWalkways.flatMap(amw => amw.droppedVertices).toVector.contains(e.endVertex.name)
     ) ++ flowSeparators.flatMap(_.associatedConnectivity) ++ movingWalkways.flatMap(_.associatedConnectivity)) ++ edges2Add) -- edges2Remove
 
-
+  val edgeCollectionWithoutAMW: Set[MyEdge] = edgeCollection.filterNot(e => movingWalkwayVertices.contains(e.startVertex) && movingWalkwayVertices.contains(e.endVertex))
 
   //def edges: Set[MyEdge] = edgeCollection
 
@@ -106,6 +108,7 @@ class RouteGraph(protected val baseVertices: Iterable[Vertex],
 
   // object used to get the shortest path in the network
   private var shortestPathBuilder: DijkstraShortestPath[Vertex, MyEdge] = new DijkstraShortestPath[Vertex, MyEdge](network)
+  private var KShortestPathBuilder: KShortestSimplePaths[Vertex, MyEdge] = new KShortestSimplePaths[Vertex, MyEdge](network, 3)
 
 
 
@@ -119,7 +122,9 @@ class RouteGraph(protected val baseVertices: Iterable[Vertex],
     //this.edgeCollection.foreach(e => e.updateCost(e.length))
     //this.edgeCollection.foreach(e => println(e.startVertex, e.endVertex, e.cost))
     this.edgeCollection.foreach(e => network.setEdgeWeight(e, e.cost))
+    //println(this.network.edgeSet().asScala.toVector.map(v => (v.ID, v.costHistory)).sortBy(_._1).head)
     this.shortestPathBuilder = new DijkstraShortestPath[Vertex, MyEdge](network)
+    this.KShortestPathBuilder = new KShortestPaths[Vertex, MyEdge](network, 3)
     //this.multipleShortestPathsBuilder = new KShortestPaths[Vertex, MyEdge](network, 5)
   }
 
@@ -131,16 +136,24 @@ class RouteGraph(protected val baseVertices: Iterable[Vertex],
     */
   private def getShortestPath(o: Vertex, d: Vertex): (Double, List[Vertex]) = {
 
-    // Chooses the route between the five shortest ones and selects it using the logit model with equal weights.
-    /*val paths: Seq[GraphPath[Rectangle, MyEdge]] = this.multipleShortestPathsBuilder.getPaths(o, d).asScala.toVector
-    val weightsSum = paths.map(v => math.exp(-math.log(v.getWeight))).sum
-    val probabilities: Seq[Double] = paths.map(p => math.exp(-math.log(p.getWeight))/weightsSum)
-    val path = paths(probabilities.scanLeft(0.0)(_ + _).tail.indexWhere(p => ThreadLocalRandom.current().nextDouble() < p)).getVertexList*/
-
-    // println(o,d)
     Try(shortestPathBuilder.getPath(o, d)) match {
       case Success(s) if (s.getVertexList.size() > 0) => {
         (s.getWeight, s.getVertexList.asScala.toList)
+      }
+      case Failure(f) => {
+        throw f
+      }
+      case _ => {
+        throw new IllegalAccessError("No route from " + o + " to " + d)
+      }
+    }
+  }
+
+  private def getKShortestPath(o: Vertex, d: Vertex): Vector[(Double, List[Vertex])] = {
+
+    Try(KShortestPathBuilder.getPaths(o, d)) match {
+      case Success(paths) if (paths.size() > 0) => {
+        paths.asScala.toVector.map(s => (s.getWeight, s.getVertexList.asScala.toList))
       }
       case Failure(f) => {
         throw f
@@ -162,11 +175,40 @@ class RouteGraph(protected val baseVertices: Iterable[Vertex],
 
 
   def updateRouteOutsideZones(t: Time, p: PedestrianNOMAD): Unit = {
-    p.route = destination2EquivalentDestinationsFunc(p.finalDestination).filter(_ != p.origin).map(d => this.getShortestPath(p.previousZone, d)).minBy(_._1)._2.tail
+    p.route = routeChoicePathSize(p.origin, p.finalDestination, 0.5)._2.tail
     p.finalDestination = p.route.last
     p.nextZone = p.route.head
     p.route = p.route.tail
     p.setCurrentDestination(p.nextZone.uniformSamplePointInside)
+  }
+
+  /** Path size computation according to
+    * "DISCRETE CHOICE MODELS WITH APPLICATIONS TO DEPARTURE TIME AND ROUTE CHOICEMoshe Ben-Akiva and Michel Bierlaire"
+    * equation 3 page 22.
+    *
+    * @param routes
+    * @return
+    */
+  def pathSize(routes: Vector[(List[Vertex], Double)]): Vector[Double] = {
+    val shortestPath = routes.minBy(_._2)
+    routes.map(r => {
+      r._1.sliding(2).map(e => {
+        val edgeCost: Double = this.edgeCollection.find(edge => edge.startVertex == e(0) && edge.endVertex == e(1)).get.cost
+        val denom: Double = routes.filter(rr => rr._1.containsSlice(e)).map(rr => shortestPath._2 / rr._2).sum
+        (edgeCost / r._2)/(denom)
+      }).sum
+    })
+  }
+
+
+  def routeChoicePathSize(origin: Vertex, destination: Vertex, beta: Double) = {
+    val routes: Vector[(Double, List[Vertex])] = destination2EquivalentDestinationsFunc(destination).filter(_ != origin).flatMap(d => this.getKShortestPath(origin, d)).sortBy(_._1)
+    val routesWithPathSizes = routes.zip(pathSize(routes.map(_.swap)))
+    val denom = routesWithPathSizes.map(t => t._2 * math.exp(-beta * t._1._1)).sum
+    val p: Double = ThreadLocalRandom.current().nextDouble()
+    val tmp = routesWithPathSizes.map(t => t._2 * math.exp(-beta * t._1._1) / denom).scanLeft(0.0)(_ + _)
+    val selected: Int = routesWithPathSizes.map(t => t._2 * math.exp(-beta * t._1._1) / denom).scanLeft(0.0)(_ + _).zipWithIndex.takeWhile(_._1 < p).last._2
+    routes(selected)
   }
 
   /**
@@ -177,7 +219,7 @@ class RouteGraph(protected val baseVertices: Iterable[Vertex],
   def processIntermediateArrival(t: Time, p: PedestrianNOMAD): Unit = {
     //println(p.route)
     if (p.route.isEmpty) {
-      p.route = destination2EquivalentDestinationsFunc(p.finalDestination).filter(_ != p.origin).map(d => this.getShortestPath(p.origin, d)).minBy(_._1)._2.tail
+      p.route = routeChoicePathSize(p.origin, p.finalDestination, 0.5)._2.tail
       p.finalDestination = p.route.last
       p.nextZone = p.route.head
       p.route = p.route.tail
@@ -187,13 +229,13 @@ class RouteGraph(protected val baseVertices: Iterable[Vertex],
       p.setCurrentPosition(p.route.head.uniformSamplePointInside)
       p.previousPosition = p.currentPosition
       p.nextZone = p.route.tail.head
-      val tmpRoute = destination2EquivalentDestinationsFunc(p.finalDestination).filter(_ != p.origin).map(d => this.getShortestPath(p.nextZone, d)).minBy(_._1)._2
+      val tmpRoute = routeChoicePathSize(p.origin, p.finalDestination, 0.5)._2
       p.route = tmpRoute.tail
       p.finalDestination = tmpRoute.last
     }
     else {
       p.previousZone = p.nextZone
-      p.route = destination2EquivalentDestinationsFunc(p.finalDestination).filter(_ != p.origin).map(d => this.getShortestPath(p.previousZone, d)).minBy(_._1)._2.tail
+      p.route = routeChoicePathSize(p.origin, p.finalDestination, 0.5)._2.tail
       p.finalDestination = p.route.last
       p.nextZone = p.route.head
       p.route = p.route.tail

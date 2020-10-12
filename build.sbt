@@ -11,7 +11,7 @@ javaOptions in run ++= Seq(
 // Dependencies taken from maven
 libraryDependencies ++= Seq(
   "com.typesafe.play" %% "play-json" % "2.7.4",
-  "org.jgrapht" % "jgrapht-core" % "1.0.1",
+  "org.jgrapht" % "jgrapht" % "1.5.0",
   "com.github.scopt" %% "scopt" % "3.7.1",
   "org.jcodec" % "jcodec-javase" % "0.2.0",
   "com.typesafe" % "config" % "1.3.1",
@@ -58,7 +58,8 @@ libraryDependencies ++= {
 // Extra places to look for libraries  (useful for the scala-custom, avoids waiting for new versions to be copied to maven central
 resolvers ++= Seq(
   "Typesafe Repo" at "http://repo.typesafe.com/typesafe/releases/",
-  "Sonatype OSS Snapshots" at "https://oss.sonatype.org/content/repositories/releases/"
+  "Sonatype OSS Snapshots" at "https://oss.sonatype.org/content/repositories/releases/",
+  "mvnrepository" at "https://repo1.maven.org/maven2/"
 )
 
 // euh.. I think is obsolete

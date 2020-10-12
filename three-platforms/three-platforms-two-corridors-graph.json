@@ -2827,7 +2827,7 @@
   "flow_gates": [],
   "controlled_areas": [
     {
-      "name": "2",
+      "name": "a2",
       "x1": 20.0,
       "y1": 32.0,
       "x2": 24.0,
@@ -2839,7 +2839,7 @@
       "target_density": 1.08
     },
     {
-      "name": "4",
+      "name": "a4",
       "x1": 60.0,
       "y1": 32.0,
       "x2": 68.0,
@@ -2851,7 +2851,7 @@
       "target_density": 1.08
     },
     {
-      "name": "6",
+      "name": "a6",
       "x1": 6.0,
       "y1": 8.0,
       "x2": 12.0,
@@ -2863,7 +2863,7 @@
       "target_density": 1.08
     },
     {
-      "name": "8",
+      "name": "a8",
       "x1": 41.0,
       "y1": 8.0,
       "x2": 47.0,
@@ -2875,7 +2875,7 @@
       "target_density": 1.08
     },
     {
-      "name": "10",
+      "name": "a10",
       "x1": 76.0,
       "y1": 8.0,
       "x2": 83.0,
@@ -2887,7 +2887,7 @@
       "target_density": 1.08
     },
     {
-      "name": "1",
+      "name": "a1",
       "x1": 6.0,
       "y1": 32.0,
       "x2": 12.0,
@@ -2899,7 +2899,7 @@
       "target_density": 1.08
     },
     {
-      "name": "3",
+      "name": "a3",
       "x1": 41.0,
       "y1": 32.0,
       "x2": 47.0,
@@ -2911,7 +2911,7 @@
       "target_density": 1.08
     },
     {
-      "name": "5",
+      "name": "a5",
       "x1": 76.0,
       "y1": 32.0,
       "x2": 83.0,
@@ -2923,7 +2923,7 @@
       "target_density": 1.08
     },
     {
-      "name": "7",
+      "name": "a7",
       "x1": 20.0,
       "y1": 8.0,
       "x2": 24.0,
@@ -2935,7 +2935,7 @@
       "target_density": 1.08
     },
     {
-      "name": "9",
+      "name": "a9",
       "x1": 60.0,
       "y1": 8.0,
       "x2": 68.0,
@@ -3057,8 +3057,8 @@
       "x2": 41,
       "y2": 36.5,
       "width": 1.2,
-      "start_area": ["1"],
-      "end_area": ["3"],
+      "start_area": ["a1"],
+      "end_area": ["a3"],
       "overriden_zones_1": [
         {
           "name": "amw1-m-start",
@@ -3359,8 +3359,8 @@
       "x2": 77,
       "y2": 36.5,
       "width": 1.2,
-      "start_area": ["3"],
-      "end_area": ["5"],
+      "start_area": ["a3"],
+      "end_area": ["a5"],
       "overriden_zones_1": [
         {
           "name": "amw4-m-end",
@@ -3618,8 +3618,8 @@
       "x2": 41,
       "y2": 11.5,
       "width": 1.2,
-      "start_area": ["6"],
-      "end_area": ["8"],
+      "start_area": ["a6"],
+      "end_area": ["a8"],
       "overriden_zones_1": [
         {
           "name": "amw2-m-start-top",
@@ -3877,8 +3877,8 @@
       "x2": 77,
       "y2": 11.5,
       "width": 1.2,
-      "start_area": ["8"],
-      "end_area": ["10"],
+      "start_area": ["a8"],
+      "end_area": ["a10"],
       "overriden_zones_1": [
         {
           "name": "amw3-m-end-top",
