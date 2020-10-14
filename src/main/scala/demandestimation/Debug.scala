@@ -7,7 +7,7 @@ import demandestimation.assignment.Assignment
 import demandestimation.network.NetworkLausanne
 import hubmodel.parseConfigFile
 import myscala.math.stats.ComputeStats
-import org.jgrapht.alg.interfaces.MinimumVertexCoverAlgorithm.VertexCover
+//import org.jgrapht.alg.interfaces.MinimumVertexCoverAlgorithm.VertexCover
 
 import com.github.fommil.netlib.NativeSystemBLAS
 

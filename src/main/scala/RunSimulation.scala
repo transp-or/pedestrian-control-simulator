@@ -500,9 +500,25 @@ object RunSimulation extends App with StrictLogging {
       })
  }
 
+    // ******************************************************************************************
+    //                                    Route choice data
+    // ******************************************************************************************
+
+    val totalNumberPeds: Int = resultsJson.map(_.tt.size).sum
+
+    resultsJson
+      .flatMap(r => r.tt.map(p => p.route.map(_.node).mkString("-")))
+      .groupBy(g => g)
+      .view
+      .mapValues(v => (v.size.toDouble/totalNumberPeds, v.size))
+      .to(Map)
+      .map(v => (v._1, v._2._1, v._2._2))
+      .toVector.writeToCSV(config.getString("output.output_prefix") + "_routes_usage" + ".csv", rowNames=None, columnNames=Some(Vector("route", "fraction", "count")))
+
+
 
     // ******************************************************************************************
-    //                                        Pedestrian flows
+    //                                    Pedestrian flows
     // ******************************************************************************************
 
     if (config.getBoolean("output.flows")) {

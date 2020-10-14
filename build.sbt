@@ -5,13 +5,13 @@ scalaVersion := "2.13.3"
 fork in run := true
 
 javaOptions in run ++= Seq(
-  "-Xms2G", "-Xmx14G", "-XX:+UseConcMarkSweepGC"
+  "-Xms2G", "-Xmx14G"
 )
 
 // Dependencies taken from maven
 libraryDependencies ++= Seq(
   "com.typesafe.play" %% "play-json" % "2.7.4",
-  "org.jgrapht" % "jgrapht" % "1.5.0",
+  "org.jgrapht" % "jgrapht-core" % "1.5.0",
   "com.github.scopt" %% "scopt" % "3.7.1",
   "org.jcodec" % "jcodec-javase" % "0.2.0",
   "com.typesafe" % "config" % "1.3.1",
@@ -20,7 +20,6 @@ libraryDependencies ++= Seq(
   "org.scalactic" %% "scalactic" % "3.0.8",
   "transpor.tools" % "power-voronoi" % "1.0",
   "com.github.NicholasMolyneaux" %% "scala-custom" % "1.3.4",
-  "transpor.tools" % "dxf-parser" % "1.0",
   "org.scala-lang.modules" %% "scala-parser-combinators" % "1.1.2",
   "org.apache.commons" % "commons-lang3" % "3.8",
   "org.apache.commons" % "commons-math3" % "3.6",
@@ -39,7 +38,7 @@ libraryDependencies += "junit" % "junit" % "4.12" % "test"
 // Dependencies installed manually with sbt
 libraryDependencies ++= Seq(
   "transpor.tools" % "power-voronoi" % "1.0",
-  "transpor.tools" % "dxf-parser" % "1.0"
+  "transpor.tools" % "dxf-parser" % "1.0-SNAPSHOT"
 )
 
 // Extra places to look for libraries  (useful for the scala-custom, avoids waiting for new versions to be copied to maven central
@@ -85,9 +84,9 @@ lazy val confFiles = Array("den-haag-integration.conf")
 lazy val distribution = taskKey[Unit]("Copies all the required files and builds a standalone jar to distribute.")
 
 // Actions to perform when invoking the "distribution" task.
-distribution := {
+/*distribution := {
   IO.copyFile(assembly.value.getAbsoluteFile, baseDirectory.value.getAbsoluteFile / "distribution/hub-model.jar") // gets the jar
   dataFolders.foreach(df => IO.copyDirectory(baseDirectory.value / df, baseDirectory.value / "distribution" / df)) // copies everything from the data folde to the distributed folder
   confFiles.foreach(f => IO.copyFile(baseDirectory.value / "resources/simulation" / f, baseDirectory.value / "distribution" / f)) // copies the configuration files
-}
+}*/
 

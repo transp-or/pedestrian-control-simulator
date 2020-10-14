@@ -8,7 +8,7 @@ import hubmodel.control.flowgate.{BinaryGate, FlowGate}
 import hubmodel.control.flowsep.FlowSeparator
 import hubmodel.ped.PedestrianNOMAD
 import myscala.math.vector.ZeroVector2D
-import org.jgrapht.alg.shortestpath.{DijkstraShortestPath, KShortestPaths, KShortestSimplePaths, YenKShortestPath}
+import org.jgrapht.alg.shortestpath.{DijkstraShortestPath, YenKShortestPath}
 import org.jgrapht.graph.DefaultDirectedWeightedGraph
 import tools.Time
 import tools.cells.Vertex
@@ -108,7 +108,7 @@ class RouteGraph(protected val baseVertices: Iterable[Vertex],
 
   // object used to get the shortest path in the network
   private var shortestPathBuilder: DijkstraShortestPath[Vertex, MyEdge] = new DijkstraShortestPath[Vertex, MyEdge](network)
-  private var KShortestPathBuilder: KShortestSimplePaths[Vertex, MyEdge] = new KShortestSimplePaths[Vertex, MyEdge](network, 3)
+  private var KShortestPathBuilder: YenKShortestPath[Vertex, MyEdge] = new YenKShortestPath[Vertex, MyEdge](network)
 
 
 
@@ -124,7 +124,7 @@ class RouteGraph(protected val baseVertices: Iterable[Vertex],
     this.edgeCollection.foreach(e => network.setEdgeWeight(e, e.cost))
     //println(this.network.edgeSet().asScala.toVector.map(v => (v.ID, v.costHistory)).sortBy(_._1).head)
     this.shortestPathBuilder = new DijkstraShortestPath[Vertex, MyEdge](network)
-    this.KShortestPathBuilder = new KShortestPaths[Vertex, MyEdge](network, 3)
+    this.KShortestPathBuilder = new YenKShortestPath[Vertex, MyEdge](network)
     //this.multipleShortestPathsBuilder = new KShortestPaths[Vertex, MyEdge](network, 5)
   }
 
@@ -151,7 +151,7 @@ class RouteGraph(protected val baseVertices: Iterable[Vertex],
 
   private def getKShortestPath(o: Vertex, d: Vertex): Vector[(Double, List[Vertex])] = {
 
-    Try(KShortestPathBuilder.getPaths(o, d)) match {
+    Try(KShortestPathBuilder.getPaths(o, d, 3)) match {
       case Success(paths) if (paths.size() > 0) => {
         paths.asScala.toVector.map(s => (s.getWeight, s.getVertexList.asScala.toList))
       }
@@ -175,7 +175,7 @@ class RouteGraph(protected val baseVertices: Iterable[Vertex],
 
 
   def updateRouteOutsideZones(t: Time, p: PedestrianNOMAD): Unit = {
-    p.route = routeChoicePathSize(p.origin, p.finalDestination, 0.5)._2.tail
+    p.route = routeChoicePathSize(p.previousZone, p.finalDestination)._2.tail
     p.finalDestination = p.route.last
     p.nextZone = p.route.head
     p.route = p.route.tail
@@ -201,12 +201,12 @@ class RouteGraph(protected val baseVertices: Iterable[Vertex],
   }
 
 
-  def routeChoicePathSize(origin: Vertex, destination: Vertex, beta: Double) = {
+  def routeChoicePathSize(origin: Vertex, destination: Vertex) = {
+    val beta: Double = 0.7
     val routes: Vector[(Double, List[Vertex])] = destination2EquivalentDestinationsFunc(destination).filter(_ != origin).flatMap(d => this.getKShortestPath(origin, d)).sortBy(_._1)
     val routesWithPathSizes = routes.zip(pathSize(routes.map(_.swap)))
     val denom = routesWithPathSizes.map(t => t._2 * math.exp(-beta * t._1._1)).sum
     val p: Double = ThreadLocalRandom.current().nextDouble()
-    val tmp = routesWithPathSizes.map(t => t._2 * math.exp(-beta * t._1._1) / denom).scanLeft(0.0)(_ + _)
     val selected: Int = routesWithPathSizes.map(t => t._2 * math.exp(-beta * t._1._1) / denom).scanLeft(0.0)(_ + _).zipWithIndex.takeWhile(_._1 < p).last._2
     routes(selected)
   }
@@ -219,7 +219,7 @@ class RouteGraph(protected val baseVertices: Iterable[Vertex],
   def processIntermediateArrival(t: Time, p: PedestrianNOMAD): Unit = {
     //println(p.route)
     if (p.route.isEmpty) {
-      p.route = routeChoicePathSize(p.origin, p.finalDestination, 0.5)._2.tail
+      p.route = routeChoicePathSize(p.origin, p.finalDestination)._2.tail
       p.finalDestination = p.route.last
       p.nextZone = p.route.head
       p.route = p.route.tail
@@ -229,13 +229,13 @@ class RouteGraph(protected val baseVertices: Iterable[Vertex],
       p.setCurrentPosition(p.route.head.uniformSamplePointInside)
       p.previousPosition = p.currentPosition
       p.nextZone = p.route.tail.head
-      val tmpRoute = routeChoicePathSize(p.origin, p.finalDestination, 0.5)._2
+      val tmpRoute = routeChoicePathSize(p.nextZone, p.finalDestination)._2
       p.route = tmpRoute.tail
       p.finalDestination = tmpRoute.last
     }
     else {
       p.previousZone = p.nextZone
-      p.route = routeChoicePathSize(p.origin, p.finalDestination, 0.5)._2.tail
+      p.route = routeChoicePathSize(p.previousZone, p.finalDestination)._2.tail
       p.finalDestination = p.route.last
       p.nextZone = p.route.head
       p.route = p.route.tail
@@ -256,6 +256,7 @@ class RouteGraph(protected val baseVertices: Iterable[Vertex],
   }
 
   def changeAMWStatus(ped: PedestrianNOMAD): Unit = {
+
     val nextZoneIsAMW = this.movingWalkways.find(w => (w.firstVertex == ped.previousZone && w.secondVertex == ped.nextZone) || (w.secondVertex == ped.previousZone && w.firstVertex == ped.nextZone))
     val leavingAMW = this.movingWalkways.find(w => (w.secondVertex == ped.previousZone && w.firstVertex != ped.nextZone) || (w.firstVertex == ped.previousZone && w.secondVertex != ped.nextZone))
 
@@ -281,7 +282,7 @@ class RouteGraph(protected val baseVertices: Iterable[Vertex],
   def computeODs: Map[(String, String), Vector[String]] = {
     // Construction for getting k shortest paths between and origin and a destination in the graph
     this.movingWalkways.foreach(w => w.graphEdges.foreach(e => e.updateCost(Time(-1), 0.0)))
-    val multipleShortestPathsBuilder: KShortestPaths[Vertex, MyEdge] = new KShortestPaths[Vertex, MyEdge](network, 5)
+    val multipleShortestPathsBuilder: YenKShortestPath[Vertex, MyEdge] = new YenKShortestPath[Vertex, MyEdge](network)
 
     val amwEdgesIDs: Map[String, String] = this.movingWalkways.flatMap(w => w.graphEdges.map(e => e.ID -> w.name)).toMap
 
@@ -290,7 +291,7 @@ class RouteGraph(protected val baseVertices: Iterable[Vertex],
       .keys.toVector
       .combinations(2)
       .flatMap(od => Vector( (od(0), od(1)) , (od(1), od(0)) ) )
-      .map(od => od -> multipleShortestPathsBuilder.getPaths(vertexCollection(od._1), vertexCollection(od._2))).toMap
+      .map(od => od -> multipleShortestPathsBuilder.getPaths(vertexCollection(od._1), vertexCollection(od._2), 5)).toMap
       .view
       .mapValues(rc => rc.asScala.toVector.flatMap(r => r.getEdgeList.asScala.toVector.map(_.ID).intersect(amwEdgesIDs.keys.toVector).map(amwEdgesIDs)).distinct)
       .to(Map)
