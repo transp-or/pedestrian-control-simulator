@@ -1,4 +1,4 @@
-package optimization.bruteforce
+package optimization.bruteforce.explorations
 
 import java.io.File
 
@@ -30,7 +30,9 @@ trait GridSearch {
 
   def extractFileGroup2Parameters(f: File): Option[(Double, Double, String)] = {
     val endParams: Int = f.getName.indexOf("_params_")
-    if (endParams == -1) {None}
+    if (endParams == -1) {
+      None
+    }
     else {
       val paramsRaw = f.getName.substring(0, endParams).split("_").map(_.toDouble).toVector
       Some((paramsRaw(0), paramsRaw(1), f.getName.substring(0, endParams)))

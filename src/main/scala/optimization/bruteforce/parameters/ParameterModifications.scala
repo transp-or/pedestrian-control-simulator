@@ -1,0 +1,3 @@
+package optimization.bruteforce.parameters
+
+trait ParameterModifications

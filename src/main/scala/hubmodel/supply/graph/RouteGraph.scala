@@ -38,7 +38,8 @@ class RouteGraph(protected val baseVertices: Iterable[Vertex],
                  protected val flowSeparators: Iterable[FlowSeparator[_, _]],
                  val edges2Add: Set[MyEdge] = Set(),
                  val edges2Remove: Set[MyEdge] = Set(),
-                 val destinationGroups: Iterable[(String, Vector[String])]) {
+                 val destinationGroups: Iterable[(String, Vector[String])],
+                 val beta: Double) {
 
   private val movingWalkwayVertices: Vector[Vertex] = movingWalkways.flatMap(w => Vector(w.firstVertex, w.secondVertex)).toVector
 
@@ -202,13 +203,13 @@ class RouteGraph(protected val baseVertices: Iterable[Vertex],
 
 
   def routeChoicePathSize(origin: Vertex, destination: Vertex) = {
-    val beta: Double = 0.7
     val routes: Vector[(Double, List[Vertex])] = destination2EquivalentDestinationsFunc(destination).filter(_ != origin).flatMap(d => this.getKShortestPath(origin, d)).sortBy(_._1)
     val routesWithPathSizes = routes.zip(pathSize(routes.map(_.swap)))
     val denom = routesWithPathSizes.map(t => t._2 * math.exp(-beta * t._1._1)).sum
     val p: Double = ThreadLocalRandom.current().nextDouble()
     val selected: Int = routesWithPathSizes.map(t => t._2 * math.exp(-beta * t._1._1) / denom).scanLeft(0.0)(_ + _).zipWithIndex.takeWhile(_._1 < p).last._2
     routes(selected)
+    //this.getShortestPath(origin, destination)
   }
 
   /**
@@ -307,6 +308,6 @@ class RouteGraph(protected val baseVertices: Iterable[Vertex],
     * @return Copy of the graph.
     */
   def clone(devices: ControlDevices): RouteGraph = new RouteGraph(
-    this.baseVertices, this.standardEdges, this.levelChanges, devices.flowGates, devices.binaryGates, devices.amws, devices.flowSeparators, destinationGroups = this.destinationGroups
+    this.baseVertices, this.standardEdges, this.levelChanges, devices.flowGates, devices.binaryGates, devices.amws, devices.flowSeparators, destinationGroups = this.destinationGroups, beta = this.beta
   )
 }

@@ -1,14 +1,10 @@
-package optimization.bruteforce
+package optimization.bruteforce.explorations
 
 import com.typesafe.config.Config
 import hubmodel.DES.{SimulationInputParameters, getAggregateFlows}
-import hubmodel._
 import hubmodel.demand.{PedestrianFlowFunction_New, PedestrianFlowPT_New, PedestrianFlow_New}
+import optimization.bruteforce.parameters.ParameterModificationsFlow
 import tools.Time
-
-import scala.collection.GenIterable
-import scala.collection.parallel.ForkJoinTaskSupport
-import scala.collection.parallel.CollectionConverters._
 
 class FlowVariation(flowInterval: Double, config: Config, lowerBoundFlow: Double = 1, upperBoundFlow: Double = 2) extends GridSearchNew[ParameterModificationsFlow](config) {
 

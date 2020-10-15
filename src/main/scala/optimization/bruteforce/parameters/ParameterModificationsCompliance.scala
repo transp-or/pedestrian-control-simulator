@@ -1,4 +1,4 @@
-package optimization.bruteforce
+package optimization.bruteforce.parameters
 
 case class ParameterModificationsCompliance(complianceRate: Double) extends ParameterModifications
 

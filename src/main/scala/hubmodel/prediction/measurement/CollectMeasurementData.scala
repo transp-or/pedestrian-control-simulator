@@ -44,7 +44,7 @@ class CollectMeasurementData(sim: NOMADGraphSimulator) extends Action {
             (sim.currentTime, voronoiTessellations.filter(s => isInVertex(zone)(Vector2D(s.x, s.y))).foldLeft(0.0)((acc: Double, n: Site) => acc + 1.0 / (nbrPaxInZone * n.getPolygon.getArea)))
           )
           zone.paxIndividualDensityHistory.append(
-            (sim.currentTime, voronoiTessellations.filter(s => isInVertex(zone)(Vector2D(s.x, s.y))).map(1.0 / _.getPolygon.getArea))
+            (sim.currentTime, voronoiTessellations.filter(s => isInVertex(zone)(Vector2D(s.x, s.y))).filter(_.getPolygon.getArea>0).map(1.0 / _.getPolygon.getArea))
           )
         } catch {
           case e: Exception => {

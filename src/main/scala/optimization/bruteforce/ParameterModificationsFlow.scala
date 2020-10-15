@@ -1,3 +1,0 @@
-package optimization.bruteforce
-
-case class ParameterModificationsFlow(maximumFlow: Double) extends ParameterModifications

@@ -24,7 +24,16 @@ package object graph {
     *
     * @param graphSpecificationFile JSON file containing the graph specification
     */
-  def readGraph(graphSpecificationFile: String, useFlowGates: Boolean, useBinarygates: Boolean, useAMWs: Boolean, useFlowSep: Boolean, fixedFlowSep: Boolean, measureDensity: Boolean, useAlternatGraphs: Boolean, amwsMode: (String, String)): (GraphContainer, ControlDevices) = {
+  def readGraph(graphSpecificationFile: String,
+                useFlowGates: Boolean,
+                useBinarygates: Boolean,
+                useAMWs: Boolean,
+                useFlowSep: Boolean,
+                fixedFlowSep: Boolean,
+                measureDensity: Boolean,
+                useAlternatGraphs: Boolean,
+                amwsMode: (String, String),
+               routeChoiceBeta: Double): (GraphContainer, ControlDevices) = {
 
 
     val source: BufferedSource = scala.io.Source.fromFile(graphSpecificationFile)

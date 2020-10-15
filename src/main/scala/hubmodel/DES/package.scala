@@ -107,7 +107,20 @@ package object DES {
 
     // Builds the graph used for route choice. This Graph is composed of multiple different link types.
     println(" * Reading and creating graph and control devices")
-    val (routeGraph, controlDevices) = readGraph(config.getString("files.graph"), config.getBoolean("sim.use_flow_gates"), config.getBoolean("sim.use_binary_gates"), config.getBoolean("sim.use_amw"), config.getBoolean("sim.use_flow_sep"), config.getBoolean("sim.fixed_flow_sep"), config.getBoolean("sim.measure_density"), config.getBoolean("sim.use_alternate_graphs"), (config.getString("sim.amws_mode"), config.getString("sim.amws_reactive_mode")))
+    val (routeGraph, controlDevices) = readGraph(
+      config.getString("files.graph"),
+      config.getBoolean("sim.use_flow_gates"),
+      config.getBoolean("sim.use_binary_gates"),
+      config.getBoolean("sim.use_amw"),
+      config.getBoolean("sim.use_flow_sep"),
+      config.getBoolean("sim.fixed_flow_sep"),
+      config.getBoolean("sim.measure_density"),
+      config.getBoolean("sim.use_alternate_graphs"),
+      (
+        config.getString("sim.amws_mode"),
+        config.getString("sim.amws_reactive_mode")
+      ),
+      config.getDouble("sim.route_choice_beta"))
 
     // Reads the pedestrian flows which are modelled as flows (i.e. aggregate)
     val flows = getAggregateFlows(config)

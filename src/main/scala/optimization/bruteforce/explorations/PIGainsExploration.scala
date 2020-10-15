@@ -1,15 +1,9 @@
-package optimization.bruteforce
+package optimization.bruteforce.explorations
 
 import com.typesafe.config.Config
-import hubmodel.DES.{SimulationInputParameters, createRunWriteSimulation, getDisaggregateFlows}
-import hubmodel.control.{ControlDevicePolicy, ControlDevices}
+import hubmodel.DES.SimulationInputParameters
 import hubmodel.demand.{PedestrianFlowFunction_New, PedestrianFlowPT_New, PedestrianFlow_New}
-
-import scala.collection.parallel.ForkJoinTaskSupport
-import scala.collection.parallel.immutable.ParVector
-import scala.collection.parallel.immutable.{ParSeq, ParVector}
-import scala.collection.parallel.CollectionConverters._
-import scala.collection.parallel.ForkJoinTaskSupport
+import optimization.bruteforce.parameters.ParameterModificationsPIGains
 
 class PIGainsExploration(minP: Double, maxP:Double, minI: Double, maxI: Double, interval: Double, c: Config) extends GridSearchNew[ParameterModificationsPIGains](c) {
 

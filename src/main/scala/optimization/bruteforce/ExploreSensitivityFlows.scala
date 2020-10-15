@@ -6,6 +6,7 @@ import myscala.math.stats.bootstrap.bootstrapMSE
 import myscala.math.stats.{computeBoxPlotData, computeQuantile}
 import myscala.output.SeqTuplesExtensions.SeqTuplesWriter
 import myscala.math.stats._
+import optimization.bruteforce.explorations.FlowVariation
 
 object ExploreSensitivityFlows extends App {
 

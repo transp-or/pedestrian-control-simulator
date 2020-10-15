@@ -13,7 +13,7 @@ import hubmodel.ped.PedestrianNOMAD
 import hubmodel.results.{ResultsContainerRead, ResultsContainerReadNew, readResults, readResultsJson}
 import tools.exceptions.{ControlDevicesException, IllegalPhysicalQuantity}
 import myscala.math.stats.{ComputeStats, Statistics, computeQuantile}
-import optimization.bruteforce.ParameterModifications
+import optimization.bruteforce.parameters.ParameterModifications
 
 import scala.collection.GenIterable
 

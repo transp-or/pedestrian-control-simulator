@@ -1,6 +1,7 @@
 package optimization.bruteforce
 
 import com.typesafe.config.{Config, ConfigFactory}
+import optimization.bruteforce.explorations.ParameterExploration
 
 object ReadExploreParametersResults extends App {
 

@@ -1,19 +1,18 @@
-package optimization.bruteforce
+package optimization.bruteforce.explorations
 
 import java.io.File
 
 import com.typesafe.config.Config
-import hubmodel.DES.{NOMADGraphSimulator, _}
+import hubmodel.DES._
 import hubmodel._
 import hubmodel.control.flowgate.FlowGateFunctional
 import hubmodel.control.{ControlDevices, Density, Flow, FunctionalFormGating}
-import hubmodel.ped.PedestrianNOMAD
 import myscala.math.stats.ComputeStats
 import myscala.output.SeqTuplesExtensions.SeqTuplesWriter
 import trackingdataanalysis.visualization.{HeatMap, PlotOptions}
 
-import scala.collection.parallel.CollectionConverters._
 import scala.collection.immutable.NumericRange
+import scala.collection.parallel.CollectionConverters._
 import scala.collection.parallel.ForkJoinTaskSupport
 
 class ParameterExploration(config: Config) extends GridSearch {

@@ -1,13 +1,9 @@
-package optimization.bruteforce
+package optimization.bruteforce.explorations
 
 import com.typesafe.config.Config
 import hubmodel.DES.{SimulationInputParameters, getAggregateFlows}
-import hubmodel.SimulatorParameters
 import hubmodel.demand.{PedestrianFlowFunction_New, PedestrianFlowPT_New, PedestrianFlow_New}
-
-import scala.collection.GenIterable
-import scala.collection.parallel.CollectionConverters._
-import scala.collection.parallel.ForkJoinTaskSupport
+import optimization.bruteforce.parameters.ParameterModificationsCompliance
 
 class ComplianceVariation(complianceInterval: Double, c: Config, upperBoundCompliance: Double = 0.5) extends GridSearchNew[ParameterModificationsCompliance](c) {
 

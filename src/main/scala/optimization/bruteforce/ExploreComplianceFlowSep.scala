@@ -5,6 +5,7 @@ import hubmodel.parseConfigFile
 import myscala.math.stats.bootstrap.bootstrapMSE
 import myscala.math.stats.{computeBoxPlotData, computeQuantile}
 import myscala.output.SeqTuplesExtensions.SeqTuplesWriter
+import optimization.bruteforce.explorations.ComplianceVariation
 
 object ExploreComplianceFlowSep extends App {
 

@@ -8,6 +8,7 @@ import hubmodel.results.readResultsJson
 import myscala.math.stats.bootstrap.bootstrapMSE
 import myscala.math.stats.{computeBoxPlotData, computeQuantile}
 import myscala.math.stats.ComputeStats
+import optimization.bruteforce.explorations.PIGainsExploration
 import trackingdataanalysis.visualization.HeatMap
 
 object ExplorePIGains extends App {

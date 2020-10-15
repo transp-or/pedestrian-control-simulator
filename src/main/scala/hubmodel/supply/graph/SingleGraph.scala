@@ -15,9 +15,10 @@ class SingleGraph(private val baseVertices: Iterable[Vertex],
                   fg: Iterable[FlowGate],
                   bg: Iterable[BinaryGate],
                   mw: Iterable[MovingWalkwayAbstract],
-                  fs: Iterable[FlowSeparator[_, _]]) extends GraphContainer(fg, bg, mw, fs) {
+                  fs: Iterable[FlowSeparator[_, _]],
+                  routeChoiceBeta: Double = 0.5) extends GraphContainer(fg, bg, mw, fs) {
 
-  private val graph = new RouteGraph(baseVertices, standardEdges, levelChanges, this.flowGates, this.binaryGates, this.movingWalkways, this.flowSeparators, destinationGroups = destinationGroups)
+  private val graph = new RouteGraph(baseVertices, standardEdges, levelChanges, this.flowGates, this.binaryGates, this.movingWalkways, this.flowSeparators, destinationGroups = destinationGroups, beta = routeChoiceBeta)
 
 
   def updateGraphCosts(): Unit = {
@@ -55,11 +56,23 @@ class SingleGraph(private val baseVertices: Iterable[Vertex],
     * @return Copy of the graph.
     */
   def deepCopy(devices: ControlDevices): T = new SingleGraph(
-    this.baseVertices.map(_.deepCopy), this.standardEdges.map(_.deepCopy), this.levelChanges.map(_.deepCopy), this.destinationGroups, devices.flowGates, devices.binaryGates, devices.amws, devices.flowSeparators
+    this.baseVertices.map(_.deepCopy), this.standardEdges.map(_.deepCopy), this.levelChanges.map(_.deepCopy), this.destinationGroups, devices.flowGates, devices.binaryGates, devices.amws, devices.flowSeparators, this.routeChoiceBeta
   )
 
   def deepCopy2AlternateGraphs(devices: ControlDevices, popFraction: Double): T = new SingleGraph(
-    this.baseVertices.map(_.deepCopy), this.standardEdges.map(_.deepCopy), this.levelChanges.map(_.deepCopy), this.destinationGroups, devices.flowGates, devices.binaryGates, devices.amws, devices.flowSeparators
+    this.baseVertices.map(_.deepCopy), this.standardEdges.map(_.deepCopy), this.levelChanges.map(_.deepCopy), this.destinationGroups, devices.flowGates, devices.binaryGates, devices.amws, devices.flowSeparators, this.routeChoiceBeta
+  )
+
+  def deepCopyChangeRouteChoiceBeta(devices: ControlDevices, beta: Double): T = new SingleGraph(
+    this.baseVertices.map(_.deepCopy),
+    this.standardEdges.map(_.deepCopy),
+    this.levelChanges.map(_.deepCopy),
+    this.destinationGroups,
+    devices.flowGates,
+    devices.binaryGates,
+    devices.amws,
+    devices.flowSeparators,
+    beta
   )
 
   override def toString: String = {

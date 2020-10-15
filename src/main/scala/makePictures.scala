@@ -51,7 +51,7 @@ object makePictures extends App {
 
       val tmpConfig: Config = ConfigFactory.load(ConfigFactory.parseFile(config.configFile))
 
-      val infraGraph = readGraph(tmpConfig.getString("files.graph"), tmpConfig.getBoolean("sim.use_flow_gates"), tmpConfig.getBoolean("sim.use_binary_gates"), tmpConfig.getBoolean("sim.use_amw"), tmpConfig.getBoolean("sim.use_flow_sep"), tmpConfig.getBoolean("sim.fixed_flow_sep"), tmpConfig.getBoolean("sim.measure_density"), tmpConfig.getBoolean("sim.use_alternate_graphs"), (tmpConfig.getString("sim.amws_mode"),tmpConfig.getString("sim.amws_reactive_mode")))
+      val infraGraph = readGraph(tmpConfig.getString("files.graph"), tmpConfig.getBoolean("sim.use_flow_gates"), tmpConfig.getBoolean("sim.use_binary_gates"), tmpConfig.getBoolean("sim.use_amw"), tmpConfig.getBoolean("sim.use_flow_sep"), tmpConfig.getBoolean("sim.fixed_flow_sep"), tmpConfig.getBoolean("sim.measure_density"), tmpConfig.getBoolean("sim.use_alternate_graphs"), (tmpConfig.getString("sim.amws_mode"),tmpConfig.getString("sim.amws_reactive_mode")), tmpConfig.getDouble("sim.route_choice_beta"))
 
       val parserCont = new ReadContinuousSpace(tmpConfig.getString("files.walls"))
       val infraSF = parserCont.continuousSpace

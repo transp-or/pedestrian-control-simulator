@@ -57,4 +57,12 @@ abstract class GraphContainer(protected val flowGates: Iterable[FlowGate],
     */
   def deepCopy2AlternateGraphs(devices: ControlDevices, populationFraction: Double): T
 
+  /** Creates as copy of the graph with the route choice parameter set to beta
+    *
+    * @param devices new copy of the control devices
+    * @param beta new beta
+    * @return deep copy of the graph
+    */
+  def deepCopyChangeRouteChoiceBeta(devices: ControlDevices, beta: Double): T
+
 }

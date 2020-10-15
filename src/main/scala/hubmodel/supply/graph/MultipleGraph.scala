@@ -13,7 +13,8 @@ import tools.cells.Vertex
 class MultipleGraph(fg: Iterable[FlowGate],
                     bg: Iterable[BinaryGate],
                     mw: Iterable[MovingWalkwayAbstract],
-                    fs: Iterable[FlowSeparator[_, _]]
+                    fs: Iterable[FlowSeparator[_, _]],
+                    routeChoiceBeta: Double = 0.5
                    ) extends GraphContainer(fg, bg, mw, fs) {
 
 
@@ -50,7 +51,7 @@ class MultipleGraph(fg: Iterable[FlowGate],
       throw new Exception("ID is not unique for graph ! " + id)
     }
     else {
-      this._graphCollection += id -> (frac, new RouteGraph(vertices, edges, lc, this.flowGates, this.binaryGates, this.movingWalkways, this.flowSeparators, edges2Add, edges2Remove, destinationGroups = destinationGroups))
+      this._graphCollection += id -> (frac, new RouteGraph(vertices, edges, lc, this.flowGates, this.binaryGates, this.movingWalkways, this.flowSeparators, edges2Add, edges2Remove, destinationGroups = destinationGroups, beta = routeChoiceBeta))
     }
   }
 
@@ -131,6 +132,9 @@ class MultipleGraph(fg: Iterable[FlowGate],
     }
     graphs
   }
+
+  def deepCopyChangeRouteChoiceBeta(devices: ControlDevices, beta: Double): T = ???
+
 
   override def toString: String = {
     this._graphCollection.toString

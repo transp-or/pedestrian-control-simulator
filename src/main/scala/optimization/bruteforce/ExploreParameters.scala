@@ -2,6 +2,7 @@ package optimization.bruteforce
 
 import com.typesafe.config.Config
 import hubmodel.parseConfigFile
+import optimization.bruteforce.explorations.ParameterExploration
 
 object ExploreParameters extends App {
 

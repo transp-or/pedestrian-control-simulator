@@ -1,20 +1,18 @@
-package optimization.bruteforce
+package optimization.bruteforce.explorations
 
 import java.io.File
 import java.nio.file.{Files, Path, Paths}
 
 import com.typesafe.config.Config
-import hubmodel.DES.{NOMADGraphSimulator, _}
+import hubmodel.DES._
 import hubmodel._
 import hubmodel.demand.{AggregateFlows, PedestrianFlowFunction_New, PedestrianFlowPT_New, PedestrianFlow_New}
-import hubmodel.ped.PedestrianNOMAD
 import myscala.math.stats.ComputeStats
+import optimization.bruteforce.parameters.ParameterModifications
 
-import scala.collection.GenIterable
-import scala.collection.parallel.immutable.ParVector
-import scala.collection.parallel.immutable.{ParSeq, ParVector}
 import scala.collection.parallel.CollectionConverters._
 import scala.collection.parallel.ForkJoinTaskSupport
+import scala.collection.parallel.immutable.ParVector
 
 abstract class GridSearchNew[T <: ParameterModifications](val config: Config) extends GridSearch {
 
@@ -36,7 +34,7 @@ abstract class GridSearchNew[T <: ParameterModifications](val config: Config) ex
 
   def runSimulations(): Unit = {
 
-    if (config.getBoolean("execution.parallel")) {
+    if (config.getBoolean("execution.parallel") && simulationRunsParameters.nonEmpty) {
       val parallelRuns: ParVector[T] = simulationRunsParameters.par
       parallelRuns.tasksupport = new ForkJoinTaskSupport(new java.util.concurrent.ForkJoinPool(math.min(simulationRunsParameters.size, config.getInt("execution.threads"))))
 
@@ -60,7 +58,7 @@ abstract class GridSearchNew[T <: ParameterModifications](val config: Config) ex
         System.gc()
       })
     }
-    else {
+    else if (simulationRunsParameters.nonEmpty) {
       simulationRunsParameters.foreach(s => {
 
         val parameters: SimulationInputParameters = getParameters(s)
