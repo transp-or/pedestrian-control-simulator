@@ -507,7 +507,7 @@ object RunSimulation extends App with StrictLogging {
     val totalNumberPeds: Int = resultsJson.map(_.tt.size).sum
 
     resultsJson
-      .flatMap(r => r.tt.map(p => p.route.map(_.node).distinct.mkString("-")))
+      .flatMap(r => r.tt.filter(_.exit.isDefined).map(p => p.route.map(_.node).distinct.mkString("-")))
       .groupBy(g => g)
       .view
       .mapValues(v => (v.size.toDouble/totalNumberPeds, v.size))
