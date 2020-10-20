@@ -8,12 +8,12 @@ import optimization.bruteforce.parameters.ParameterModificationRouteChoice
 import myscala.output.SeqTuplesExtensions.SeqTuplesWriter
 import myscala.output.SeqOfSeqExtensions.SeqOfSeqWriter
 
-class RouteChoiceBetaExploration(c: Config, lowerBound: Double, upperBound: Double, interval: Double = 0.1) extends GridSearchNew[ParameterModificationRouteChoice](c) {
+class RouteChoiceBetaExploration(c: Config, parameters: Vector[Double]) extends GridSearchNew[ParameterModificationRouteChoice](c) {
 
   override val simulationRunsParameters: Vector[ParameterModificationRouteChoice] = {
-    (for (i <- BigDecimal(lowerBound) to BigDecimal(upperBound) by BigDecimal(interval); k <- 1 to config.getInt("sim.nb_runs")) yield {
+    (for (i <- parameters; k <- 1 to config.getInt("sim.nb_runs")) yield {
       ParameterModificationRouteChoice(i.toDouble)
-    }).toVector
+    })
   }
 
   override def getParameters(paramMods: ParameterModificationRouteChoice): SimulationInputParameters = {
@@ -32,11 +32,11 @@ class RouteChoiceBetaExploration(c: Config, lowerBound: Double, upperBound: Doub
   }
 
   def results(refData: Map[String, Double] = Map()): Unit = {
-    val parameters = (for (i <- BigDecimal(lowerBound) to BigDecimal(upperBound) by BigDecimal(interval)) yield {
+    val params = (for (i <- parameters) yield {
       ParameterModificationRouteChoice(i.toDouble)
     }).toVector
 
-    val data: Vector[Vector[(String, Int, Double)]] = parameters.map(p => {
+    val data: Vector[Vector[(String, Int, Double)]] = params.map(p => {
       System.gc()
       println("Processing results for beta=" + p.beta)
       val r = readResultsJson(config.getString("output.dir"), getRunPrefix(p), false, false).map(_.tt)
@@ -53,7 +53,11 @@ class RouteChoiceBetaExploration(c: Config, lowerBound: Double, upperBound: Doub
     (
       Vector(rows.map(r => refData.getOrElse(r, Double.NaN))) ++
         data.map(d => rows.map(r => d.find(_._1 == r).getOrElse((r, 0, Double.NaN))._3))
-    ).writeToCSV(config.getString("output.output_prefix") + "_routes_usage" + ".csv", rowNames=Some(rows), columnNames=Some(Vector("route", "ref") ++ parameters.map(_.beta.toString)))
+    ).writeToCSV(config.getString("output.output_prefix") + "_routes_usage" + ".csv", rowNames=Some(rows), columnNames=Some(Vector("route", "ref") ++ params.map(_.beta.toString)))
+  }
+
+  def this(config: Config, lowerBound: Double, upperBound: Double, interval: Double = 0.1) {
+    this(config, (BigDecimal(lowerBound) to BigDecimal(upperBound) by BigDecimal(interval)).map(_.toDouble).toVector)
   }
 
 }
