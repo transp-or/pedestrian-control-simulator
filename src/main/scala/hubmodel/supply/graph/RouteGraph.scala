@@ -203,13 +203,13 @@ class RouteGraph(protected val baseVertices: Iterable[Vertex],
 
 
   def routeChoicePathSize(origin: Vertex, destination: Vertex) = {
-    val routes: Vector[(Double, List[Vertex])] = destination2EquivalentDestinationsFunc(destination).filter(_ != origin).flatMap(d => this.getKShortestPath(origin, d)).sortBy(_._1)
+    /*val routes: Vector[(Double, List[Vertex])] = destination2EquivalentDestinationsFunc(destination).filter(_ != origin).flatMap(d => this.getKShortestPath(origin, d)).sortBy(_._1)
     val routesWithPathSizes = routes.zip(pathSize(routes.map(_.swap)))
     val denom = routesWithPathSizes.map(t => t._2 * math.exp(-beta * t._1._1)).sum
     val p: Double = ThreadLocalRandom.current().nextDouble()
     val selected: Int = routesWithPathSizes.map(t => t._2 * math.exp(-beta * t._1._1) / denom).scanLeft(0.0)(_ + _).zipWithIndex.takeWhile(_._1 < p).last._2
-    routes(selected)
-    //this.getShortestPath(origin, destination)
+    routes(selected)*/
+    this.getShortestPath(origin, destination)
   }
 
   /**

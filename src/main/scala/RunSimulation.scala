@@ -512,10 +512,10 @@ object RunSimulation extends App with StrictLogging {
       .view
       .mapValues(v => (v.size.toDouble/totalNumberPeds, v.size))
       .to(Map)
-      .map(v => (v._1, v._2._1, v._2._2))
+      .map(v => (v._1, v._2._1))
       .toVector
       .sortBy(_._1)
-      .writeToCSV(config.getString("output.output_prefix") + "_routes_usage" + ".csv", rowNames=None, columnNames=Some(Vector("route", "fraction", "count")))
+      .writeToCSV(config.getString("output.output_prefix") + "_routes_usage" + ".csv", rowNames=None, columnNames=Some(Vector("route", "fraction")))
 
 
 
