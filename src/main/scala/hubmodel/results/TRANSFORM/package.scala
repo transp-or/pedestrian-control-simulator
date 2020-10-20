@@ -2,6 +2,7 @@ package hubmodel.io.output
 
 import java.io.{BufferedWriter, File, FileWriter}
 
+import hubmodel.io.input.JSONReaders.PedestrianResults_JSON
 import hubmodel.ped.PedestrianTrait
 import hubmodel.supply.graph.Stop2Vertex
 import hubmodel.{GroupID, VertexID}
@@ -13,13 +14,13 @@ import tools.TimeNumeric.mkOrderingOps
 
 package object TRANSFORM {
 
-  implicit class PopulationProcessingTRANSFORM[T <: PedestrianTrait](pop: Iterable[T]) {
+  implicit class PopulationProcessingTRANSFORM[T <: PedestrianResults_JSON](pop: Iterable[T]) {
 
     def computeTT4TRANSFORM(quantiles: Seq[BigDecimal], startTime: Time, endTime: Time, fileName: String, startDay: String = "1970-01-01", endDay: String = "2100-12-31"): Unit = {
       val res: collection.mutable.Map[(String, String), collection.mutable.ArrayBuffer[Double]] = collection.mutable.Map()
       pop.foreach(p => {
-        if (p.entryTime >= startTime || p.exitTime <= endTime) {
-          res.getOrElseUpdate((p.origin.name, p.finalDestination.name), collection.mutable.ArrayBuffer()).append(p.travelTime.value.toDouble)
+        if (Time(p.entry) >= startTime || Time(p.exit.getOrElse(Double.PositiveInfinity)) <= endTime) {
+          res.getOrElseUpdate((p.d, p.d), collection.mutable.ArrayBuffer()).append(p.tt)
         }
       })
       val file = new File(fileName)

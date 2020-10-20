@@ -108,6 +108,7 @@ package object results {
         bw.close()
       }
 
+      /*
         (
           simulator.population
             .map(p => (p.origin.name, "", p.travelTime.value, p.entryTime.value, Double.NaN, p.travelDistance)).toSeq
@@ -116,7 +117,8 @@ package object results {
               .map(p => (p.origin.name, p.finalDestination.name, p.travelTime.value, p.entryTime.value, p.exitTime.value, p.travelDistance))
           )
           .writeToCSV(prefix + "tt_" + simulator.ID + ".csv", columnNames = Some(Vector("origin", "destination", "travelTime", "entryTime", "exitTime", "travelDistance")), rowNames = None, path = path)
-      }
+      */
+    }
 
     // write only the transferring pedestrians to file.
     if (writeTransfers) {
@@ -127,7 +129,7 @@ package object results {
     }
 
       // Writes the data for the defined measurement areas.
-      Try(
+      /*Try(
         if (simulator.criticalAreas.nonEmpty) {
           (simulator.criticalAreas.head._2.densityHistory.map(_._1.value).toVector +: simulator.criticalAreas.map(_._2.densityHistory.map(_._2).toVector).toVector).writeToCSV(prefix + "density_" + simulator.ID + ".csv", path)
           simulator.criticalAreas.head._2.paxIndividualDensityHistory.flatMap(v => Vector.fill(v._2.size)(v._1.value).zip(v._2)).toVector.writeToCSV(prefix + "individual_densities_" + simulator.ID + ".csv", path)
@@ -140,7 +142,7 @@ package object results {
           println("Failed writing critical zones")
           throw f
         }
-    }
+    }*/
 
     // Writes the edge data to JSON
     Try {
@@ -222,7 +224,7 @@ package object results {
     * @param path dir where the files are located
     * @return Iterable containing the results
     */
-  def readResults(dir: String, prefix: String): Iterable[ResultsContainerRead] = {
+    @deprecated def readResults(dir: String, prefix: String): Iterable[ResultsContainerRead] = {
     val path: String = dir
     /*match {
          case Some(str) => str
@@ -248,7 +250,7 @@ package object results {
     files.map(sr => {
 
       // process travel times file
-      val tt: Vector[(String, String, Double, Double, Double, Double)] = {
+      lazy val tt: Vector[(String, String, Double, Double, Double, Double)] = {
         val in = scala.io.Source.fromFile(sr._2("tt"))
         val data = (for (line <- in.getLines.drop(1)) yield {
           val cols = line.split(",").map(_.trim)
@@ -265,7 +267,7 @@ package object results {
       }
 
       // process density file
-      val density: Option[(Vector[Double], Vector[Vector[Double]])] =
+      lazy val density: Option[(Vector[Double], Vector[Vector[Double]])] =
         if (sr._2.keySet.contains("density")) {
           val in = scala.io.Source.fromFile(sr._2("density"))
           val data = (for (line <- in.getLines) yield {
@@ -279,7 +281,7 @@ package object results {
 
 
       // process individual density measurements
-      val densityPerIndividual: Option[Vector[(BigDecimal, BigDecimal)]] =
+      lazy val densityPerIndividual: Option[Vector[(BigDecimal, BigDecimal)]] =
         if (sr._2.keySet.contains("individual_densities")) {
           val in = scala.io.Source.fromFile(sr._2("individual_densities"))
           val data = (for (line <- in.getLines if !line.contains("Infinity")) yield {
@@ -316,7 +318,7 @@ package object results {
     }
   }
 
-  def readResultsJson(dir: String, prefix: String): Iterable[ResultsContainerReadNew] = {
+  def readResultsJson(dir: String, prefix: String, densityFlag: Boolean = true, amwFlag: Boolean = true): Iterable[ResultsContainerReadNew] = {
     val path: String = dir
     /*match {
          case Some(str) => str
@@ -344,11 +346,11 @@ package object results {
       ).toMap
       )
 
-    filesJson.map(str => {
+    filesJson.flatMap(str => Try{
 
-      println(str)
+      print("Reading: " + str._1 + "...")
 
-      val tt: Vector[PedestrianResults_JSON] = {
+      lazy val tt: Vector[PedestrianResults_JSON] = {
         val source: BufferedSource = scala.io.Source.fromFile(str._2("tt"))
         val input: JsValue = Json.parse(try source.mkString finally source.close)
         input.validate[Vector[PedestrianResults_JSON]] match {
@@ -359,8 +361,8 @@ package object results {
         }
       }
 
-      val densities: Option[Vector[DensityData_JSON]] = {
-        if (str._2.keySet.contains("density")) {
+      lazy val densities: Option[Vector[DensityData_JSON]] = {
+        if (str._2.keySet.contains("density") && densityFlag) {
           val source: BufferedSource = scala.io.Source.fromFile(str._2("density"))
           val input: JsValue = Json.parse(try source.mkString finally source.close)
           input.validate[Vector[DensityData_JSON]] match {
@@ -376,8 +378,8 @@ package object results {
       }
 
 
-      val amw: Option[Vector[AMWData_JSON]] = {
-        if (str._2.keySet.contains("amw")) {
+      lazy val amw: Option[Vector[AMWData_JSON]] = {
+        if (str._2.keySet.contains("amw") && amwFlag) {
           val source: BufferedSource = scala.io.Source.fromFile(str._2("amw"))
           val input: JsValue = Json.parse(try source.mkString finally source.close)
           input.validate[Vector[AMWData_JSON]] match {
@@ -398,8 +400,18 @@ package object results {
         str._1,
         tt,
         densities.map(d => d.map(data => data.name -> data).toMap),
-        //densities.map(d => d.map(dd => (dd.name, dd.id) -> dd.disaggregateMeasurements.map(v =>  (Time(v._1), v._2))).toMap),
         amw)
+    }
+    match {
+      case Success(s) => {
+        println(" successful !")
+        Some(s)
+      }
+      case Failure(f) => {
+        println(" failed !")
+        println(f)
+        None
+      }
     })
   }
 

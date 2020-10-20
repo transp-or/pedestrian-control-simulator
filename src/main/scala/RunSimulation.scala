@@ -3,9 +3,9 @@ import hubmodel.DES._
 import hubmodel._
 import hubmodel.demand.{DemandData, DemandSet, readDemandSets}
 import hubmodel.io.input.JSONReaders.ODGroup_JSON
-import hubmodel.io.output.TRANSFORM.PopulationSummaryProcessingTRANSFORM
+import hubmodel.io.output.TRANSFORM.{PopulationProcessingTRANSFORM, PopulationSummaryProcessingTRANSFORM}
 import hubmodel.prediction.{AMWFlowsFromEmpiricalData, AMWFlowsFromGroundTruthProcessor}
-import hubmodel.results.{ResultsContainerRead, ResultsContainerReadNew, ResultsContainerReadWithDemandSet, ResultsContainerReadWithDemandSetNew, readResults, readResultsJson}
+import results.{ResultsContainerReadNew, ResultsContainerReadWithDemandSetNew, readResultsJson}
 import hubmodel.supply.graph.readPTStop2GraphVertexMap
 import tools.Time
 import myscala.math.stats.bootstrap.bootstrapMSE
@@ -92,11 +92,11 @@ object RunSimulation extends App with StrictLogging {
   }
 
   // Reads intermediate results
-  val results: Vector[ResultsContainerRead] = if (demandSets.isDefined) {
+  /*val results: Vector[ResultsContainerRead] = if (demandSets.isDefined) {
     readResults(config.getString("output.dir") + demandSets.get.head.dir.getFileName + "/", config.getString("output.output_prefix"), demandSets.get.map(_.flowFile.getFileName.toString.replace(".json", "") + "/")).toVector
   } else {
     readResults(config.getString("output.dir"), config.getString("output.output_prefix")).toVector
-  }
+  }*/
 
   val resultsJson: Vector[ResultsContainerReadNew] = if (demandSets.isDefined) {
     readResultsJson(config.getString("output.dir") + demandSets.get.head.dir.getFileName + "/", config.getString("output.output_prefix"), demandSets.get.map(_.flowFile.getFileName.toString.replace(".json", "") + "/")).toVector
@@ -105,7 +105,7 @@ object RunSimulation extends App with StrictLogging {
   }
 
 
-  if (results.nonEmpty) {
+  if (resultsJson.nonEmpty) {
 
 
     // Processing results
@@ -122,10 +122,10 @@ object RunSimulation extends App with StrictLogging {
       rowNames = None
     )*/
 
-    if (config.getBoolean("output.write_densities") && results.nonEmpty) {
+    /*if (config.getBoolean("output.write_densities") && resultsJson.nonEmpty) {
 
       // Collects times at which densities where measured
-      val densityTimes: Vector[Time] = results.head.monitoredAreaDensity.get._1.map(Time(_))
+      val densityTimes: Vector[Time] = resultsJson.head.monitoredAreaDensity.get.map(_._2.aggregateMeasurement.map(t => Time(t._1)))
 
       // writes densities to csv, first column is time, second column is mean, third column is var, then all individual densities
       if (config.getBoolean("output.write_densities") && config.getBoolean("sim.measure_density")) {
@@ -148,9 +148,9 @@ object RunSimulation extends App with StrictLogging {
           )
         }
       }
-    }
+    }*/
 
-    if (config.getBoolean("output.write_density_stats") && results.nonEmpty) {
+    /*if (config.getBoolean("output.write_density_stats") && results.nonEmpty) {
 
       /* analyse traj data per density threshold */
       val targetDensityRange = BigDecimal(1.0) to BigDecimal(4.0) by BigDecimal(0.25)
@@ -198,7 +198,7 @@ object RunSimulation extends App with StrictLogging {
         (i, computeBoxPlotData(dataDisagg.map(d => computeQuantile(i)(d).value.toDouble)).toCSV, 1)
       }).writeToCSV(config.getString("output.output_prefix") + "-individual-densities-boxplot-per-quantile.csv", rowNames = None, columnNames = Some(Vector("quantile", "mean", "median", "lq", "uq", "lw", "uw", "outliersize", "boxplotwidth")))
 
-    }
+    }*/
 
     if (config.getBoolean("output.density.individual-75") && resultsJson.nonEmpty) {
       // writes the applied data to the same csv file
@@ -239,11 +239,11 @@ object RunSimulation extends App with StrictLogging {
     }
 
     // computes statistics on travel times and writes them
-    if (config.getBoolean("output.write_tt_stats") && results.nonEmpty) {
+    if (config.getBoolean("output.write_tt_stats") && resultsJson.nonEmpty) {
 
       // writes stattistcs about each run
-      val statsPerRun = results.map(r => {
-        r.tt.map(_._3) /*.cutOfAfterQuantile(99.9)*/ .statistics
+      val statsPerRun = resultsJson.map(r => {
+        r.tt.map(_.tt).statistics
       })
 
       Vector((0.0, computeBoxPlotData(statsPerRun.map(_.mean)).toCSV, 0.8)).writeToCSV(config.getString("output.output_prefix") + "-travel-time-mean-boxplot.csv", rowNames = None, columnNames = Some(Vector("pos", "mean", "median", "lq", "uq", "lw", "uw", "outliersize", "boxplotwidth")))
@@ -259,7 +259,7 @@ object RunSimulation extends App with StrictLogging {
       //println(statsPerRun.map(_.median).zipWithIndex.sortBy(_._1))
 
       val quant: Double = 75
-      (for (i <- 1 to results.size by 2) yield {
+      (for (i <- 1 to resultsJson.size by 2) yield {
         val mseResults = for (j <- 1 to 100) yield {
           bootstrapMSE(util.Random.shuffle(statsPerRun).take(i).map(_.median), mean)
         }
@@ -268,18 +268,18 @@ object RunSimulation extends App with StrictLogging {
 
 
       // Collects then writes individual travel times to csv
-      if (config.getBoolean("output.travel-time.disaggregate") && results.nonEmpty) {
-        results
-          .map(r => r.tt.map(_._3))
+      if (config.getBoolean("output.travel-time.disaggregate") && resultsJson.nonEmpty) {
+        resultsJson
+          .map(r => r.tt.map(_.tt))
           .writeToCSV(
             config.getString("output.output_prefix") + "_travel_times.csv",
-            columnNames = Some(Vector.fill(results.size)("r").zipWithIndex.map(t => t._1 + t._2.toString)),
+            columnNames = Some(Vector.fill(resultsJson.size)("r").zipWithIndex.map(t => t._1 + t._2.toString)),
             rowNames = None
           )
       }
 
       // creates hist data for all TT aggregated together
-      val data: Seq[Double] = results.flatMap(_.tt.map(_._3))
+      val data: Seq[Double] = resultsJson.flatMap(_.tt.map(_.tt))
       val binSize = 1.0
       val opts = PlotOptions(xmin = Some(10), xmax = Some(50), ymax = Some(0.25), width = 700, height = 400)
       new Histogram(config.getString("output.output_prefix") + "_travel_times_hist.png", data, binSize, "travel times [s]", "Fixed separator", opts)
@@ -287,28 +287,28 @@ object RunSimulation extends App with StrictLogging {
     }
 
     // Writes the travel time distribution of each simulation two a csv file.
-    if (config.getBoolean("output.travel-time.per-simulation-distributions") && results.nonEmpty) {
-      val r: collection.immutable.Seq[collection.immutable.Seq[Double]] = (BigDecimal(0.0) to BigDecimal(200.0) by BigDecimal(2.0)).map(_.toDouble) +: results.map(r => {
-        val data = r.tt.map(_._3) //.cutOfAfterQuantile(99)
+    if (config.getBoolean("output.travel-time.per-simulation-distributions") && resultsJson.nonEmpty) {
+      val r: collection.immutable.Seq[collection.immutable.Seq[Double]] = (BigDecimal(0.0) to BigDecimal(200.0) by BigDecimal(2.0)).map(_.toDouble) +: resultsJson.map(r => {
+        val data = r.tt.map(_.tt) //.cutOfAfterQuantile(99)
         computeHistogramDataWithXValues(data, 2.0, Some(0), Some(200), normalized = false).map(_._2)
       })
       r.writeToCSV(config.getString("output.output_prefix") + "_travel_times_distributions.csv")
     }
 
     // Writes the median travel times to a csv file
-    if (config.getBoolean("output.travel-time.per-simulation-median") && results.nonEmpty) {
-      results.map(r => r.tt.map(_._3).statistics.median).writeToCSV(config.getString("output.output_prefix") + "_median-travel-time-per-simulation.csv")
+    if (config.getBoolean("output.travel-time.per-simulation-median") && resultsJson.nonEmpty) {
+      resultsJson.map(r => r.tt.map(_.tt).statistics.median).writeToCSV(config.getString("output.output_prefix") + "_median-travel-time-per-simulation.csv")
     }
 
     // Writes the box plot of the mean travel per simulation to a csv file
-    if (config.getBoolean("output.travel-time.per-simulation-mean-boxplot") && results.nonEmpty) {
-      results.map(r => (computeBoxPlotData(r.tt.map(_._3)).toCSV, 1.0))
+    if (config.getBoolean("output.travel-time.per-simulation-mean-boxplot") && resultsJson.nonEmpty) {
+      resultsJson.map(r => (computeBoxPlotData(r.tt.map(_.tt)).toCSV, 1.0))
         .writeToCSV(config.getString("output.output_prefix") + "_mean-travel-time-per-simulation-boxplot-data.csv", rowNames = None, columnNames = Some(Vector("mean", "median", "lq", "uq", "lw", "uw", "outliersize", "boxplotwidth")))
     }
 
     // Writes the box plot of the mean travel per simulation to a csv file
-    if (config.getBoolean("output.travel-time.mean-boxplot") && results.nonEmpty) {
-      Vector((computeBoxPlotData(results.map(r => r.tt.map(_._3).statistics.mean)).toCSV, 1.0))
+    if (config.getBoolean("output.travel-time.mean-boxplot") && resultsJson.nonEmpty) {
+      Vector((computeBoxPlotData(resultsJson.map(r => r.tt.map(_.tt).statistics.mean)).toCSV, 1.0))
         .writeToCSV(config.getString("output.output_prefix") + "_mean-travel-time-boxplot-data.csv", rowNames = None, columnNames = Some(Vector("mean", "median", "lq", "uq", "lw", "uw", "outliersize", "boxplotwidth")))
     }
 
@@ -331,7 +331,7 @@ object RunSimulation extends App with StrictLogging {
     }
 
 
-    if (config.getBoolean("output.travel-time.per-simulation-median-by-OD-groups") && results.nonEmpty) {
+    if (config.getBoolean("output.travel-time.per-simulation-median-by-OD-groups") && resultsJson.nonEmpty) {
 
       // each group becomes one column. The columns are sorted alphabetically.
       val columnNames: Vector[String] = resultsJson.head.tt.groupBy(p => groupsReversed((p.o, p.d))).keys.toVector.sortBy(a => a)
@@ -352,7 +352,7 @@ object RunSimulation extends App with StrictLogging {
     }
 
     // write travel time mean by all existing OD pairs.
-    if (config.getBoolean("output.travel-time.per-simulation-mean-by-OD") && results.nonEmpty) {
+    if (config.getBoolean("output.travel-time.per-simulation-mean-by-OD") && resultsJson.nonEmpty) {
 
       // each od pair becomes one column. The columns are sorted alphabetically.
       val columnNames: Vector[String] = resultsJson.head.tt.groupBy(p => p.o + "->" +  p.d).keys.toVector.sorted
@@ -405,19 +405,19 @@ object RunSimulation extends App with StrictLogging {
 
 
     val entranceTimes: Iterable[Time] =
-    results.flatMap(_.tt.map(t => Time(t._4)))
+      resultsJson.flatMap(_.tt.map(t => Time(t.entry)))
     val ttMin: Time = entranceTimes.min
     val ttMax: Time = entranceTimes.max
-    val binnedData: Iterable[Seq[(Int, Double, Double)]] = results.map(r => computeHistogramDataWithXValues(r.tt.map(_._4), 60, Some(math.floor(ttMin.value.toDouble / 60.0) * 60.0), Some(ttMax.value.toDouble), normalized = false))
+    val binnedData: Iterable[Seq[(Int, Double, Double)]] = resultsJson.map(r => computeHistogramDataWithXValues(r.tt.map(_.entry), 60, Some(math.floor(ttMin.value.toDouble / 60.0) * 60.0), Some(ttMax.value.toDouble), normalized = false))
     (binnedData.head.map(_._2) +: binnedData.map(_.map(_._3)).toVector).writeToCSV(config.getString("output.output_prefix") + "_entrance_times_distribution.csv")
 
 
-    results.collect({ case f: ResultsContainerReadWithDemandSet => {
+    resultsJson.collect({ case f: ResultsContainerReadWithDemandSetNew => {
       f
     }
     })
       .groupBy(_.demandFile)
-      .foreach(g => println((g._2.map(_.tt.map(_._3).cutOfAfterQuantile(99.5).statistics.median).statistics.median, g._2.map(_.tt.map(_._3).cutOfAfterQuantile(99.5).statistics.variance).statistics.median)))
+      .foreach(g => println((g._2.map(_.tt.map(_.tt).cutOfAfterQuantile(99.5).statistics.median).statistics.median, g._2.map(_.tt.map(_.tt).cutOfAfterQuantile(99.5).statistics.variance).statistics.median)))
 
 
     // Analyse pedestrian data like travel time and walking speed by departure time interval.
@@ -504,18 +504,20 @@ object RunSimulation extends App with StrictLogging {
     //                                    Route choice data
     // ******************************************************************************************
 
-    val totalNumberPeds: Int = resultsJson.map(_.tt.size).sum
+    if (resultsJson.nonEmpty && config.getBoolean("output.routes-usage")) {
+      val totalNumberPeds: Int = resultsJson.map(_.tt.size).sum
 
-    resultsJson
-      .flatMap(r => r.tt.map(p => p.route.map(_.node).distinct.mkString("-")))
-      .groupBy(g => g)
-      .view
-      .mapValues(v => (v.size.toDouble/totalNumberPeds, v.size))
-      .to(Map)
-      .map(v => (v._1, v._2._1, v._2._2))
-      .toVector
-      .sortBy(_._1)
-      .writeToCSV(config.getString("output.output_prefix") + "_routes_usage" + ".csv", rowNames=None, columnNames=Some(Vector("route", "fraction", "count")))
+      resultsJson
+        .flatMap(r => r.tt.collect{case p if p.exit.isDefined => Vector(p.route.head.node, p.route.last.node )/*p.route.map(_.node).distinct*/.mkString("-")})
+        .groupBy(g => g)
+        .view
+        .mapValues(v => (v.size.toDouble / totalNumberPeds, v.size))
+        .to(Map)
+        .map(v => (v._1, v._2._1, v._2._2))
+        .toVector
+        .sortBy(_._1)
+        .writeToCSV(config.getString("output.output_prefix") + "_routes_usage" + ".csv", rowNames = None, columnNames = Some(Vector("route", "fraction", "count")))
+    }
 
 
 
@@ -571,15 +573,15 @@ object RunSimulation extends App with StrictLogging {
     //                                  Processing for TRANS-FORM
     // ******************************************************************************************
 
-    if (config.getBoolean("output.write_tt_4_transform") && results.nonEmpty) {
+    /*if (config.getBoolean("output.write_tt_4_transform") && resultsJson.nonEmpty) {
 
       val stop2Vertex = readPTStop2GraphVertexMap(config.getString("files.zones_to_vertices_map"))
 
-      val resultsByOD = results
-        .flatten(_.tt)
+      val resultsByOD = resultsJson
+        .flatMap(_.tt)
         .computeTT4TRANSFORM(BigDecimal(0.0).to(BigDecimal(100.0)).by(config.getDouble("output.write_tt_4_transform_quantile_interval")), simulationStartTime, simulationEndTime, config.getString("output.write_tt_4_transform_file_name"), stop2Vertex)
 
       resultsByOD.map(r => (r._1 + "->" + r._2, r._3.stats)).toVector.sortBy(_._1).map(v => (v._1, v._2._1, v._2._2, v._2._3, v._2._4, v._2._5, v._2._6)).writeToCSV(config.getString("output.output_prefix") + "_walking_time_distributions_by_OD.csv")
-    }
+    }*/
   }
 }

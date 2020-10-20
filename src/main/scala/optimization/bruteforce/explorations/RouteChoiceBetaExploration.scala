@@ -37,9 +37,11 @@ class RouteChoiceBetaExploration(c: Config, lowerBound: Double, upperBound: Doub
     }).toVector
 
     val data: Vector[Vector[(String, Int, Double)]] = parameters.map(p => {
-      val r = readResultsJson(config.getString("output.dir"), getRunPrefix(p)).map(_.tt)
+      System.gc()
+      println("Processing results for beta=" + p.beta)
+      val r = readResultsJson(config.getString("output.dir"), getRunPrefix(p), false, false).map(_.tt)
       val pop: Int = r.flatten.size
-      r.flatMap(_.map(_.route.map(_.node).distinct.mkString("-")))
+      r.flatMap(tts => tts.collect{case ped if ped.exit.isDefined => Vector(ped.route.head.node, ped.route.last.node)/*.map(_.node).distinct*/.mkString("-")})
         .groupBy(s => s)
         .view
         .mapValues(_.size)
