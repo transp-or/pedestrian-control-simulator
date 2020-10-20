@@ -31,7 +31,7 @@ class RouteChoiceBetaExploration(c: Config, lowerBound: Double, upperBound: Doub
     getAggregateFlows(config)
   }
 
-  def results = {
+  def results(refData: Map[String, Double] = Map()): Unit = {
     val parameters = (for (i <- BigDecimal(lowerBound) to BigDecimal(upperBound) by BigDecimal(interval)) yield {
       ParameterModificationRouteChoice(i.toDouble)
     }).toVector
@@ -48,10 +48,12 @@ class RouteChoiceBetaExploration(c: Config, lowerBound: Double, upperBound: Doub
         .map(g => (g._1, g._2, g._2.toDouble/pop))
         .toVector
     })
+
     val rows = data.flatMap(d => d.map(_._1)).distinct.sorted
-    data
-      .map(d => rows.map(r => d.find(_._1 == r).getOrElse((r, 0, Double.NaN))._3))
-      .writeToCSV(config.getString("output.output_prefix") + "_routes_usage" + ".csv", rowNames=Some(rows), columnNames=Some(Vector("route") ++ parameters.map(_.beta.toString)))
+    (
+      Vector(rows.map(r => refData.getOrElse(r, Double.NaN))) ++
+        data.map(d => rows.map(r => d.find(_._1 == r).getOrElse((r, 0, Double.NaN))._3))
+    ).writeToCSV(config.getString("output.output_prefix") + "_routes_usage" + ".csv", rowNames=Some(rows), columnNames=Some(Vector("route", "ref") ++ parameters.map(_.beta.toString)))
   }
 
 }
