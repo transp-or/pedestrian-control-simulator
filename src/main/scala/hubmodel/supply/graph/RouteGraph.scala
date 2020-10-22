@@ -39,7 +39,7 @@ class RouteGraph(protected val baseVertices: Iterable[Vertex],
                  val edges2Add: Set[MyEdge] = Set(),
                  val edges2Remove: Set[MyEdge] = Set(),
                  val destinationGroups: Iterable[(String, Vector[String])],
-                 val beta: Double) {
+                 val betas: (Double, Double)) {
 
   private val movingWalkwayVertices: Vector[Vertex] = movingWalkways.flatMap(w => Vector(w.firstVertex, w.secondVertex)).toVector
 
@@ -190,7 +190,7 @@ class RouteGraph(protected val baseVertices: Iterable[Vertex],
     * @param routes
     * @return
     */
-  def pathSize(routes: Vector[(List[Vertex], Double)]): Vector[Double] = {
+  @deprecated def pathSizeBi(routes: Vector[(List[Vertex], Double)]): Vector[Double] = {
     val shortestPath = routes.minBy(_._2)
     routes.map(r => {
       r._1.sliding(2).map(e => {
@@ -201,15 +201,31 @@ class RouteGraph(protected val baseVertices: Iterable[Vertex],
     })
   }
 
+  /** Path size computation according to
+    * https://www.sciencedirect.com/science/article/pii/S1361920920306787#b0110 and
+    * https://reader.elsevier.com/reader/sd/pii/S1755534513700058?token=6556F81A7B4A410080CCA5825F57F5DBBA69B103DA09A43F78F17E0BA5E0C9595925647DFBC628803F79226CAA78DC64
+    *
+    * @param routes
+    * @return
+    */
+  def pathSizePr(routes: Vector[(List[Vertex], Double)]): Vector[Double] = {
+    val shortestPath = routes.minBy(_._2)
+    routes.map(r => {
+      r._1.sliding(2).map(e => {
+        val edgeCost: Double = this.edgeCollection.find(edge => edge.startVertex == e(0) && edge.endVertex == e(1)).get.cost
+        val prod: Double = routes.count(rr => rr._1.containsSlice(e))
+        (edgeCost / r._2)*math.log(prod)
+      }).sum
+    })
+  }
 
-  def routeChoicePathSize(origin: Vertex, destination: Vertex) = {
+  def routeChoicePathSize(origin: Vertex, destination: Vertex): (Double, List[Vertex]) = {
     val routes: Vector[(Double, List[Vertex])] = destination2EquivalentDestinationsFunc(destination).filter(_ != origin).flatMap(d => this.getKShortestPath(origin, d)).sortBy(_._1)
-    val routesWithPathSizes = routes.zip(pathSize(routes.map(_.swap)))
-    val denom = routesWithPathSizes.map(t => t._2 * math.exp(-beta * t._1._1)).sum
+    val routesWithPathSizes = routes.zip(pathSizePr(routes.map(_.swap)))
+    val denom = routesWithPathSizes.map(t => math.exp(betas._1 * t._1._1 * 1.34 + betas._2 * t._2)).sum
     val p: Double = ThreadLocalRandom.current().nextDouble()
-    val selected: Int = routesWithPathSizes.map(t => t._2 * math.exp(-beta * t._1._1) / denom).scanLeft(0.0)(_ + _).zipWithIndex.takeWhile(_._1 < p).last._2
+    val selected: Int = routesWithPathSizes.map(t => math.exp(betas._1 * t._1._1 * 1.34 + betas._2 * t._2) / denom).scanLeft(0.0)(_ + _).zipWithIndex.takeWhile(_._1 < p).last._2
     routes(selected)
-    //this.getShortestPath(origin, destination)
   }
 
   /**
@@ -308,6 +324,6 @@ class RouteGraph(protected val baseVertices: Iterable[Vertex],
     * @return Copy of the graph.
     */
   def clone(devices: ControlDevices): RouteGraph = new RouteGraph(
-    this.baseVertices, this.standardEdges, this.levelChanges, devices.flowGates, devices.binaryGates, devices.amws, devices.flowSeparators, destinationGroups = this.destinationGroups, beta = this.beta
+    this.baseVertices, this.standardEdges, this.levelChanges, devices.flowGates, devices.binaryGates, devices.amws, devices.flowSeparators, destinationGroups = this.destinationGroups, betas = this.betas
   )
 }

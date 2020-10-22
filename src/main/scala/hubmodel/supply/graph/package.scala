@@ -33,7 +33,7 @@ package object graph {
                 measureDensity: Boolean,
                 useAlternatGraphs: Boolean,
                 amwsMode: (String, String),
-               routeChoiceBeta: Double): (GraphContainer, ControlDevices) = {
+               routeChoiceBetas: (Double, Double)): (GraphContainer, ControlDevices) = {
 
 
     val source: BufferedSource = scala.io.Source.fromFile(graphSpecificationFile)
@@ -296,9 +296,9 @@ package object graph {
         val graph: Try[GraphContainer] = Try(
           if (!useAlternatGraphs && s.get.alternateConnections.isEmpty) {
             //tagT.runtimeClass.getConstructors()(0).newInstance(v, baseEdgeCollection, levelChanges, fg, bg, mv, flowSeparators).asInstanceOf[T]
-            new SingleGraph(v, baseEdgeCollection, levelChanges, s.get.destinationEquivalencies.map(r => (r.name, r.zones)), fg, bg, mv, flowSeparators)
+            new SingleGraph(v, baseEdgeCollection, levelChanges, s.get.destinationEquivalencies.map(r => (r.name, r.zones)), fg, bg, mv, flowSeparators, routeChoiceBetas)
           } else if (useAlternatGraphs && s.get.alternateConnections.nonEmpty) {
-            val graphs = new MultipleGraph(fg, bg, mv, flowSeparators)
+            val graphs = new MultipleGraph(fg, bg, mv, flowSeparators, routeChoiceBetas)
             graphs.addGraph("reference", 1.0 - s.get.alternateConnections.foldLeft(0.0)((a, b) => a + b.frac), v, baseEdgeCollection, Set(), Set(), levelChanges, s.get.destinationEquivalencies.map(r => (r.name, r.zones)))
             s.get.alternateConnections.foreach(g => {
               graphs.addGraph(g.name, g.frac, v, baseEdgeCollection, connections2Edges[MyEdge](g.conn2Add), connections2Edges[MyEdge](g.conn2Remove), levelChanges, s.get.destinationEquivalencies.map(r => (r.name, r.zones)))
@@ -313,7 +313,7 @@ package object graph {
           graph match {
             case Success(g) => g
             case Failure(f) => {
-              new SingleGraph(v, baseEdgeCollection, levelChanges, s.get.destinationEquivalencies.map(r => (r.name, r.zones)), fg, bg, mv, flowSeparators)
+              new SingleGraph(v, baseEdgeCollection, levelChanges, s.get.destinationEquivalencies.map(r => (r.name, r.zones)), fg, bg, mv, flowSeparators, routeChoiceBetas)
             }
           }
           ,

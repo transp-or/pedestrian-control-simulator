@@ -63,6 +63,6 @@ abstract class GraphContainer(protected val flowGates: Iterable[FlowGate],
     * @param beta new beta
     * @return deep copy of the graph
     */
-  def deepCopyChangeRouteChoiceBeta(devices: ControlDevices, beta: Double): T
+  def deepCopyChangeRouteChoiceBeta(devices: ControlDevices, beta: (Double, Double)): T
 
 }

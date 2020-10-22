@@ -20,7 +20,7 @@ class RouteChoiceBetaExploration(c: Config, parameters: Vector[Double]) extends 
 
     val devices = defaultParameters.controlDevices.deepCopy
 
-    defaultParameters.deepCopy(defaultParameters.graph.deepCopyChangeRouteChoiceBeta(devices, paramMods.beta), devices, None)
+    defaultParameters.deepCopy(defaultParameters.graph.deepCopyChangeRouteChoiceBeta(devices, (paramMods.beta, paramMods.beta)), devices, None)
   }
 
   override def getRunPrefix(paramMods: ParameterModificationRouteChoice): String = {

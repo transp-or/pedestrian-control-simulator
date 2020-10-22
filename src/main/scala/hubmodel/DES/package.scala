@@ -120,7 +120,8 @@ package object DES {
         config.getString("sim.amws_mode"),
         config.getString("sim.amws_reactive_mode")
       ),
-      config.getDouble("sim.route_choice_beta"))
+      (config.getDouble("sim.route_choice_TD_beta"), config.getDouble("sim.route_choice_PSC_beta"))
+    )
 
     // Reads the pedestrian flows which are modelled as flows (i.e. aggregate)
     val flows = getAggregateFlows(config)

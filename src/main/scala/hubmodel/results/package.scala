@@ -346,7 +346,7 @@ package object results {
       ).toMap
       )
 
-    filesJson.flatMap(str => Try{
+    filesJson.take(50).flatMap(str => Try{
 
       print("Reading: " + str._1 + "...")
 

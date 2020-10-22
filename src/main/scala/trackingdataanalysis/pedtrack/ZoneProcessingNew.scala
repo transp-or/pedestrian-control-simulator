@@ -32,6 +32,6 @@ class ZoneProcessingNew(val vertices: Map[String, Vertex]) {
   }
 
   def this(zoneFile: String) {
-    this(readGraph(zoneFile, false, false, false, false, false, false, false, ("static", "flow"), 0)._1.vertexMapNew)
+    this(readGraph(zoneFile, false, false, false, false, false, false, false, ("static", "flow"), (0, 0))._1.vertexMapNew)
   }
 }

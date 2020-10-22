@@ -16,9 +16,9 @@ class SingleGraph(private val baseVertices: Iterable[Vertex],
                   bg: Iterable[BinaryGate],
                   mw: Iterable[MovingWalkwayAbstract],
                   fs: Iterable[FlowSeparator[_, _]],
-                  routeChoiceBeta: Double = 0.5) extends GraphContainer(fg, bg, mw, fs) {
+                  routeChoiceBeta: (Double, Double)) extends GraphContainer(fg, bg, mw, fs) {
 
-  private val graph = new RouteGraph(baseVertices, standardEdges, levelChanges, this.flowGates, this.binaryGates, this.movingWalkways, this.flowSeparators, destinationGroups = destinationGroups, beta = routeChoiceBeta)
+  private val graph = new RouteGraph(baseVertices, standardEdges, levelChanges, this.flowGates, this.binaryGates, this.movingWalkways, this.flowSeparators, destinationGroups = destinationGroups, betas = routeChoiceBeta)
 
 
   def updateGraphCosts(): Unit = {
@@ -63,7 +63,7 @@ class SingleGraph(private val baseVertices: Iterable[Vertex],
     this.baseVertices.map(_.deepCopy), this.standardEdges.map(_.deepCopy), this.levelChanges.map(_.deepCopy), this.destinationGroups, devices.flowGates, devices.binaryGates, devices.amws, devices.flowSeparators, this.routeChoiceBeta
   )
 
-  def deepCopyChangeRouteChoiceBeta(devices: ControlDevices, beta: Double): T = new SingleGraph(
+  def deepCopyChangeRouteChoiceBeta(devices: ControlDevices, betas: (Double, Double)): T = new SingleGraph(
     this.baseVertices.map(_.deepCopy),
     this.standardEdges.map(_.deepCopy),
     this.levelChanges.map(_.deepCopy),
@@ -72,7 +72,7 @@ class SingleGraph(private val baseVertices: Iterable[Vertex],
     devices.binaryGates,
     devices.amws,
     devices.flowSeparators,
-    beta
+    betas
   )
 
   override def toString: String = {
