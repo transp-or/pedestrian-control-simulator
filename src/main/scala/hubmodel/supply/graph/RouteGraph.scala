@@ -214,7 +214,7 @@ class RouteGraph(protected val baseVertices: Iterable[Vertex],
       r._1.sliding(2).map(e => {
         val edgeCost: Double = this.edgeCollection.find(edge => edge.startVertex == e(0) && edge.endVertex == e(1)).get.cost
         val prod: Double = routes.count(rr => rr._1.containsSlice(e))
-        (edgeCost / r._2)*math.log(prod)
+        -(edgeCost / r._2)*math.log(prod)
       }).sum
     })
   }
