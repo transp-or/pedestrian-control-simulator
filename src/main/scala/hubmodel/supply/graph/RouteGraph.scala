@@ -152,7 +152,7 @@ class RouteGraph(protected val baseVertices: Iterable[Vertex],
 
   private def getKShortestPath(o: Vertex, d: Vertex): Vector[(Double, List[Vertex])] = {
 
-    Try(KShortestPathBuilder.getPaths(o, d, 3)) match {
+    Try(KShortestPathBuilder.getPaths(o, d, 2)) match {
       case Success(paths) if (paths.size() > 0) => {
         paths.asScala.toVector.map(s => (s.getWeight, s.getVertexList.asScala.toList))
       }
@@ -209,12 +209,11 @@ class RouteGraph(protected val baseVertices: Iterable[Vertex],
     * @return
     */
   def pathSizePr(routes: Vector[(List[Vertex], Double)]): Vector[Double] = {
-    val shortestPath = routes.minBy(_._2)
     routes.map(r => {
       r._1.sliding(2).map(e => {
         val edgeCost: Double = this.edgeCollection.find(edge => edge.startVertex == e(0) && edge.endVertex == e(1)).get.cost
-        val prod: Double = routes.count(rr => rr._1.containsSlice(e))
-        -(edgeCost / r._2)*math.log(prod)
+        val deltaSum: Double = routes.count(rr => rr._1.containsSlice(e))
+        -(edgeCost / r._2)*math.log(deltaSum)
       }).sum
     })
   }
@@ -224,7 +223,8 @@ class RouteGraph(protected val baseVertices: Iterable[Vertex],
     val routesWithPathSizes = routes.zip(pathSizePr(routes.map(_.swap)))
     val denom = routesWithPathSizes.map(t => math.exp(betas._1 * t._1._1 * 1.34 + betas._2 * t._2)).sum
     val p: Double = ThreadLocalRandom.current().nextDouble()
-    val selected: Int = routesWithPathSizes.map(t => math.exp(betas._1 * t._1._1 * 1.34 + betas._2 * t._2) / denom).scanLeft(0.0)(_ + _).zipWithIndex.takeWhile(_._1 < p).last._2
+    val tmp = routesWithPathSizes.map(t => math.exp(betas._1 * t._1._1 * 1.34 + betas._2 * t._2) / denom)
+    val selected: Int = tmp.scanLeft(0.0)(_ + _).zipWithIndex.takeWhile(_._1 < p).last._2
     routes(selected)
   }
 
