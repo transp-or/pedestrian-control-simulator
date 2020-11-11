@@ -131,6 +131,8 @@ class MovingWalkwayAbstract(val name: String, val firstVertex: Vertex, val secon
 
   val expectedPolicy: collection.mutable.ArrayBuffer[Vector[(Time, Double)]] = collection.mutable.ArrayBuffer()
 
+  def getControlPolicy: Vector[AMWPolicy] = this.controlPolicy.toVector.sortBy(_.start)
+
   def noControlPolicy: Boolean = this.controlPolicy.isEmpty
 
   private var nextSpeedUpdate: Option[MyEvent] = None

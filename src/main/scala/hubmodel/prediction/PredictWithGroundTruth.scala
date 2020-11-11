@@ -284,13 +284,15 @@ class PredictWithGroundTruth(private val sim: PedestrianSimulation) extends Stat
 
             val inflow: Map[Int, Int] = populationMvmtIdxs.groupBy(_._1).view.mapValues(_.size).toMap
             val outflow: Map[Int, Int] = populationMvmtIdxs.groupBy(_._2).view.mapValues(_.size).toMap
-
+            val densitiesPerZone = s.criticalAreas.toVector.map(a =>a._1 -> a._2.integratedIndividualDensity).toMap
             Map(
               //"throughput" -> inflow.view.filterKeys(_ > 0).map(kv => kv._2 - outflow.getOrElse(kv._1, 0)).sum, // NOT USED BECAUSE SAME AS meanTT
               "meanTT" -> pop.map(p => p.travelTime.value.toDouble).sum / pop.size,
               //"density" -> s.criticalAreas.toVector.map(a => a._2.integratedIndividualDensity).sum,
-              //"linkTT" -> s.graph.travelTimePerLinks.map(link => math.max(0.0,math.pow((link._2.map(_.value.toDouble).sum/link._2.size)/(link._1.length/1.34), 1.0) - 1.0)).sum
-            ) ++ s.criticalAreas.toVector.map(a =>a._1 -> a._2.integratedIndividualDensity).toMap
+              //"linkTT" -> s.graph.travelTimePerLinks.map(link => math.max(0.0,math.pow((link._2.map(_.value.toDouble).sum/link._2.size)/(link._1.length/1.34), 1.0) - 1.0)).sum,
+              "averageDensityInZones" -> densitiesPerZone.values.sum/densitiesPerZone.size,
+              "diffMaxToAverageDensityInZones" -> (densitiesPerZone.values.max - (densitiesPerZone.values.sum/densitiesPerZone.size))
+            )
           }
         )
       }
