@@ -90,8 +90,8 @@ trait ParetoSet {
       next
     } else {
       val nextPolicy: Policy = Random.shuffle(this.exploredSolutions.filter(s => s._2.size == exploredSolutions.map(_._2.size).min).keys.toVector).head
-      this.nextSelectSolutions = List.fill(7)(nextPolicy).zip(List(0.1,0.15,0.2,0.3,0.5,0.7,0.9))
-      (nextPolicy, 0.05)
+      this.nextSelectSolutions = List.fill(7)(nextPolicy).zip(List(0.2,0.3,0.5,0.7,0.9))
+      (nextPolicy, 0.1)
     }
   }
 

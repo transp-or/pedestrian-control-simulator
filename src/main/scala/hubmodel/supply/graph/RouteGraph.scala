@@ -38,7 +38,7 @@ class RouteGraph(protected val baseVertices: Iterable[Vertex],
                  protected val flowSeparators: Iterable[FlowSeparator[_, _]],
                  val edges2Add: Set[MyEdge] = Set(),
                  val edges2Remove: Set[MyEdge] = Set(),
-                 val destinationGroups: Iterable[(String, Vector[String])],
+                 val destinationGroups: Iterable[(String, Vector[String], Boolean)],
                  val betas: (Double, Double)) {
 
   private val movingWalkwayVertices: Vector[Vertex] = movingWalkways.flatMap(w => Vector(w.firstVertex, w.secondVertex)).toVector

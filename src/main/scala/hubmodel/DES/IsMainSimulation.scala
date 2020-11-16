@@ -79,7 +79,7 @@ trait IsMainSimulation {
 
       println("writing main simulation from " + previousIntervalStart + " to " + sim.currentTime)
       new MovingPedestriansWithDensityWithWallVideo(
-        "E:\\PhD\\hub-simulator\\MAIN_SIMULATION_" + sim.ID + "_" + previousIntervalStart.value.toString() + "_" + sim.currentTime +  ".mp4",
+        sim.ID + "_" + previousIntervalStart.value.toString() + "_" + sim.currentTime +  ".mp4",
         sim.walls.filterNot(_.isInstanceOf[MovableWall]),
         math.max((1.0 / 0.1).toInt, 1),
         sim.populationCompleted ++ sim.population,

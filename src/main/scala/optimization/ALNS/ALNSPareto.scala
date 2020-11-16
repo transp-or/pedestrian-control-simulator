@@ -109,7 +109,7 @@ class ALNSPareto(f: StatePrediction,
           stochasticReduction(this.paretoSet(xNew._1)._2).map(kv => kv._1 + ": " + kv._2.toString).mkString(", ")
           println(s" * accepted: repl.: $solutionReplications, operator score: $scoreText, objectives: " + stochasticReduction(this.paretoSet(xNew._1)._2).map(kv => kv._1 + ": " + kv._2.toString).mkString(", "))
         } else {
-          println(s" * rejected: operator score: $scoreText, objectives: " + stochasticReduction(this.paretoSet(xNew._1)._2).map(kv => kv._1 + ": " + kv._2.toString).mkString(", "))
+          println(s" * rejected: operator score: $scoreText, objectives: " + stochasticReduction(function.computeObjectives).map(kv => kv._1 + ": " + kv._2.toString).mkString(", "))
         }
 
         this.iterations.append((it, xNew._1, scoreText, op, Double.NaN, stochasticReduction(function.computeObjectives), operatorWeights.toMap))
@@ -146,7 +146,7 @@ class ALNSPareto(f: StatePrediction,
 
 
   def optimalSolution: (Policy, FunctionEvaluation, Vector[ControlDeviceData]) = {
-    val tmp = Random.shuffle(this.paretoSet.keys.toVector).head
+    val tmp = this.paretoSet.map(s => (s._1, stochasticReduction(s._2._2))).minBy(_._2("meanTT"))._1
     this.updateBestX(tmp)
     (this.bestx, this.getOF(this.bestx), this.paretoSet(this.bestx)._1)
   }
