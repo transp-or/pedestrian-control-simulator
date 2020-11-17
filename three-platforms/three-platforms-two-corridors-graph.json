@@ -3279,7 +3279,9 @@
             "amw11",
             "amw1-m-start-top",
             "amw1-m-start-bottom",
-            "entrance-top-corr-left-middle"
+            "entrance-top-corr-left-top",
+            "entrance-top-corr-left-middle",
+            "entrance-top-corr-left-bottom"
           ]
         },
         {
@@ -3300,7 +3302,9 @@
         {
           "node": "amw12",
           "connected_to": [
-            "amw1-m-end"
+            "amw1-m-end",
+            "plat-2-top-corr-2",
+            "plat-2-top-corr-1"
           ]
         },
         {
@@ -3356,12 +3360,15 @@
             "entrance-top-corr-left",
             "amw1-m-start-bottom",
             "amw2-m-start-top",
-            "entrance-bottom-corr-left-bottom"
+            "entrance-bottom-corr-left-bottom",
+            "entrance-top-corr-left-bottom"
           ]
         },
         {
           "node": "amw1-m-start-bottom",
           "connected_to": [
+            "entrance-top-corr-left-top",
+            "entrance-top-corr-left-middle",
             "entrance-top-corr-left-bottom",
             "amw1-m-start",
             "plat-1-top-corr-2",
@@ -3372,6 +3379,8 @@
           "node": "amw1-m-start-top",
           "connected_to": [
             "entrance-top-corr-left-top",
+            "entrance-top-corr-left-middle",
+            "entrance-top-corr-left-bottom",
             "amw1-m-start",
             "plat-1-top-corr-1"
           ]
@@ -3605,14 +3614,18 @@
           "connected_to": [
             "amw4-m-end-top",
             "amw4-m-end-bottom",
+            "entrance-top-corr-right-top",
             "entrance-top-corr-right-middle",
+            "entrance-top-corr-right-bottom",
             "amw42"
           ]
         },
         {
           "node": "amw41",
           "connected_to": [
-            "amw1-m-end"
+            "amw1-m-end",
+            "plat-2-top-corr-2",
+            "plat-2-top-corr-1"
           ]
         },
         {
@@ -3681,6 +3694,8 @@
           "connected_to": [
             "plat-3-top-corr-1",
             "entrance-top-corr-right-top",
+            "entrance-top-corr-right-middle",
+            "entrance-top-corr-right-bottom",
             "amw4-m-end"
           ]
         },
@@ -3688,6 +3703,8 @@
           "node": "amw4-m-end-bottom",
           "connected_to": [
             "plat-3-top-corr-2",
+            "entrance-top-corr-right-top",
+            "entrance-top-corr-right-middle",
             "entrance-top-corr-right-bottom",
             "amw4-m-end",
             "jbDyANtZZi"
@@ -3897,7 +3914,9 @@
         {
           "node": "amw2-m-start",
           "connected_to": [
+            "entrance-bottom-corr-left-top",
             "entrance-bottom-corr-left-middle",
+            "entrance-bottom-corr-left-bottom",
             "amw21",
             "amw2-m-start-bottom",
           "amw2-m-start-top"
@@ -3907,6 +3926,8 @@
           "node": "amw2-m-start-bottom",
           "connected_to": [
             "amw2-m-start",
+            "entrance-bottom-corr-left-top",
+            "entrance-bottom-corr-left-middle",
             "entrance-bottom-corr-left-bottom",
           "plat-1-bottom-corr-2"
           ]
@@ -3916,6 +3937,8 @@
           "connected_to": [
             "amw2-m-start",
             "entrance-bottom-corr-left-top",
+            "entrance-bottom-corr-left-middle",
+            "entrance-bottom-corr-left-bottom",
           "HIJdqjkLeF",
             "plat-1-bottom-corr-1"
           ]
@@ -3938,7 +3961,9 @@
         {
           "node": "amw22",
           "connected_to": [
-            "amw2-m-end"
+            "amw2-m-end",
+            "plat-2-bottom-corr-2",
+            "plat-2-bottom-corr-1"
           ]
         },
         {
@@ -4200,7 +4225,9 @@
         {
           "node": "amw3-m-end",
           "connected_to": [
+            "entrance-bottom-corr-right-top",
             "entrance-bottom-corr-right-middle",
+            "entrance-bottom-corr-right-bottom",
             "amw3-m-end-top",
             "amw3-m-end-bottom",
             "amw32"
@@ -4209,6 +4236,8 @@
         {
           "node": "amw3-m-end-bottom",
           "connected_to": [
+            "entrance-bottom-corr-right-top",
+            "entrance-bottom-corr-right-middle",
             "entrance-bottom-corr-right-bottom",
             "plat-3-bottom-corr-2",
             "amw3-m-end"
@@ -4218,6 +4247,8 @@
           "node": "amw3-m-end-top",
           "connected_to": [
             "entrance-bottom-corr-right-top",
+            "entrance-bottom-corr-right-middle",
+            "entrance-bottom-corr-right-bottom",
             "jbDyANtZZi",
             "plat-3-bottom-corr-1",
             "amw3-m-end"
@@ -4260,7 +4291,9 @@
         {
           "node": "amw31",
           "connected_to": [
-            "amw2-m-end"
+            "amw2-m-end",
+            "plat-2-bottom-corr-2",
+            "plat-2-bottom-corr-1"
           ]
         },
         {
