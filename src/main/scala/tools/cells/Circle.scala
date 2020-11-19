@@ -4,7 +4,7 @@ import java.util.concurrent.ThreadLocalRandom
 
 import hubmodel.Position
 
-class Circle(val name: String, val center: Position, radius: Double, val isOD: Boolean, genRate: Option[Double]) extends Vertex {
+class Circle(val name: String, val center: Position, val radius: Double, val isOD: Boolean, genRate: Option[Double]) extends Vertex {
 
   // Area of the circle
   val area: Double = 0.5 * this.radius * this.radius * math.Pi

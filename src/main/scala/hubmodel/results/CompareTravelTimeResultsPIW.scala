@@ -1,5 +1,6 @@
 package hubmodel.results
 
+import java.io.{BufferedWriter, File, FileWriter}
 import java.nio.file.{Files, Paths}
 
 import com.typesafe.config.Config
@@ -71,10 +72,29 @@ object CompareTravelTimeResultsPIW extends App {
   val resultsOther: Vector[ResultsContainerReadNew] = readResultsJson(config.getString("files_2.dir"), config.getString("files_2.output_prefix"), demandSets).toVector
 
 
+  val mapping: String => String = str => Map(
+    "entrance-bottom-corr-right-top" ->    "entrance-bottom-corr-right",
+    "entrance-bottom-corr-right-middle" -> "entrance-bottom-corr-right",
+    "entrance-bottom-corr-right-bottom" -> "entrance-bottom-corr-right",
+    "entrance-bottom-corr-left-top" ->    "entrance-bottom-corr-left",
+    "entrance-bottom-corr-left-middle" -> "entrance-bottom-corr-left",
+    "entrance-bottom-corr-left-bottom" -> "entrance-bottom-corr-left",
+    "entrance-top-corr-right-top" ->    "entrance-top-corr-right",
+    "entrance-top-corr-right-middle" -> "entrance-top-corr-right",
+    "entrance-top-corr-right-bottom" -> "entrance-top-corr-right",
+    "entrance-top-corr-left-top" ->    "entrance-top-corr-left",
+    "entrance-top-corr-left-middle" -> "entrance-top-corr-left",
+    "entrance-top-corr-left-bottom" -> "entrance-top-corr-left"
+  ).getOrElse(str, str)
+
+
+
   def TTresultsByOD(results: Vector[ResultsContainerReadNew]): Map[String, Map[String, (TT, Double, TD, Speed, Size)]] = {
     val (noDemandSets, withDemandSets) = (results.partitionMap {
       case b: ResultsContainerReadWithDemandSetNew => Right(b.asInstanceOf[ResultsContainerReadWithDemandSetNew])
-      case a: ResultsContainerReadNew => Left(a)
+      case a: ResultsContainerReadNew => Left({
+        new ResultsContainerReadNew(a.id, a.tt.map(tt => tt.copy(o = mapping(tt.o), d = mapping(tt.d))), a.monitoredAreaDensity, a.amwData)
+      })
     })
 
 
@@ -192,11 +212,32 @@ object CompareTravelTimeResultsPIW extends App {
     val input: JsValue = Json.parse(try source.mkString finally source.close)
     input.validate[Vector[ODPair_JSON_with_AMW]] match {
       case s: JsSuccess[Vector[ODPair_JSON_with_AMW]] => {
-        s.get.map(r => r.o + "->" + r.d -> r.amws.size).toMap
+
+        /*{
+          val file = new File("od-groups-by-amws-count.json")
+          val bw = new BufferedWriter(new FileWriter(file))
+          bw.write("[{")
+
+          s.get
+            .map(r => (r.o, r.d, r.amws.size))
+            .groupBy(_._3)
+            .foreach(g => {
+              bw.write("\"name\":" + "\"" + g._1 + "\",\n\"ods\": [" )
+              bw.write(g._2.map(od => {
+                "{" + "\"o\":\"" + od._1 + "\", \"d\":\"" + od._2 + "\"}"
+              }).mkString(",\n"))
+              bw.write("]},\n{")
+            })
+          bw.write("}]")
+          bw.close()
+        }*/
+
+        s.get.map(r => mapping(r.o) + "->" + mapping(r.d) -> r.amws.size).toMap
       }
       case e: JsError => throw new Error("Error while parsing amws by ods: " + JsError.toJson(e).toString())
     }
   }
+
 
 
   val resultsTTCompared: Map[String, Seq[(String, Double, Double, Double, Double, Double, Double, Double, Double, Int, Int)]] =
@@ -219,10 +260,9 @@ object CompareTravelTimeResultsPIW extends App {
     val (t, nu) = WelchTTest(rrr._2, rrr._4, rrr._10, rrr._3, rrr._5, rrr._11)
     new TDistribution(nu).density(t)
   }, rrr._6, rrr._7, rrr._8, rrr._9, rrr._10, rrr._11))).toVector
-    .filterNot(v => v._3.isNaN || v._4.isNaN)
-    .sortBy(v => {
-      amwCountByOD(v._2)
-    }) //(v._3-v._2)/v._2)//v._1)
+    .filterNot(v => (v._3.isNaN || v._4.isNaN))
+    //.filter(v => amwCountByOD.keySet.contains(v._2))
+    //.sortBy(v => {amwCountByOD(v._2)}) //(v._3-v._2)/v._2)//v._1)
     // .filterNot(v => v._9 == "other")
     //.map(v => {if (v._2.contains("7") || v._2.contains("8")){0} else {1}})
     .sortBy(v => ODPairsSorting(v._2) + v._2)

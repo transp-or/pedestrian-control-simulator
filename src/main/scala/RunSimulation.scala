@@ -105,6 +105,10 @@ object RunSimulation extends App with StrictLogging {
   }
 
 
+  def findInterval(bins: Vector[Double])(value: Double): (Int, Double) = {
+    bins.zipWithIndex(bins.indexWhere(_ > value) - 1).swap
+  }
+
   if (resultsJson.nonEmpty) {
 
 
@@ -420,6 +424,21 @@ object RunSimulation extends App with StrictLogging {
       .foreach(g => println((g._2.map(_.tt.map(_.tt).cutOfAfterQuantile(99.5).statistics.median).statistics.median, g._2.map(_.tt.map(_.tt).cutOfAfterQuantile(99.5).statistics.variance).statistics.median)))
 
 
+    // ******************************************************************************************
+    //                                   Travel time by intervals
+    // ******************************************************************************************
+
+    if (config.getBoolean("output.travel-time.mean-by-intervals")) {
+      val intervals = (simulationStartTime.value to simulationEndTime.value by 15.0).map(_.toDouble).toVector
+      def findTimeInterval(v: Double) = findInterval(intervals)(v)
+      resultsJson.flatMap(r => {
+        val demand = r.tt.groupBy(v => findTimeInterval(v.entry)._1).view.mapValues(_.size).toVector.toMap
+        val tt = r.tt.filter(_.exit.isDefined).groupBy(v => findTimeInterval(v.exit.get)._1).view.mapValues(g => g.map(_.tt).sum/g.size).toVector.toMap
+        intervals.sliding(2).map(v => (v(0) + v(1))/2).zipWithIndex.map(i => (i._1, demand.getOrElse(i._2,0), tt.getOrElse(i._2,0)))
+      }).writeToCSV(config.getString("output.output_prefix") + "_demand_mean_tt_intervals.csv", columnNames=Some(resultsJson.flatMap(r => Vector(r.id + "_interval", r.id + "_demand", r.id + "_mean_tt"))), rowNames = None)
+    }
+
+
     // Analyse pedestrian data like travel time and walking speed by departure time interval.
     //if (!config.getStringList("results-analysis.o_nodes").isEmpty && !config.getStringList("results-analysis.d_nodes").isEmpty) {
     //val ODPairsToAnalyse: Iterable[(String, String)] = config.getStringList("results-analysis.o_nodes").asScala.zip(config.getStringList("results-analysis.d_nodes").asScala).map(t => (t._1, t._2))
@@ -431,9 +450,7 @@ object RunSimulation extends App with StrictLogging {
 
     def makeStringODGroups(group: (Seq[String], Seq[String])): String = group._1.mkString("_") + "_TO_" + group._2.mkString("_")
 
-    def findInterval(t: Double, times: Vector[BigDecimal]): Double = {
-      times(times.indexWhere(_ > t)).toDouble
-    }
+
 
     def pedWindows: Tuple5[String, String, Double, Double, Double] => Double = ped => findInterval(ped._4, (simulationStartTime.value to simulationEndTime.value by evaluationInterval.value).toVector)
 
@@ -464,8 +481,8 @@ object RunSimulation extends App with StrictLogging {
     if (config.getBoolean("output.amws.control-policy")) {
       // writes the applied data to the same csv file
       val appliedSpeeds: Vector[(String, Vector[Double], String, Vector[Double])] = resultsJson
-        .sortBy(_.id)
         .filter(_.amwData.isDefined)
+        .sortBy(_.id)
         .flatMap(v => v.amwData.get.map(vv => (v.id, vv)))
         .map(w => ((w._1 + "_" + w._2.name + "_t", w._2.appliedPolicy.map(_._1), w._1 + "_" + w._2.name + "_s", w._2.appliedPolicy.map(_._2))))
 

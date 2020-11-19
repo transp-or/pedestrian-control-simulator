@@ -296,9 +296,14 @@ class RouteGraph(protected val baseVertices: Iterable[Vertex],
     }
   }
 
+  /** Computes the 5 shortest path between all pairs of O and D nodes in the graph.
+    *
+    * @return
+    */
   def computeODs: Map[(String, String), Vector[String]] = {
     // Construction for getting k shortest paths between and origin and a destination in the graph
     this.movingWalkways.foreach(w => w.graphEdges.foreach(e => e.updateCost(Time(-1), 0.0)))
+    this.updateGraph()
     val multipleShortestPathsBuilder: YenKShortestPath[Vertex, MyEdge] = new YenKShortestPath[Vertex, MyEdge](network)
 
     val amwEdgesIDs: Map[String, String] = this.movingWalkways.flatMap(w => w.graphEdges.map(e => e.ID -> w.name)).toMap
