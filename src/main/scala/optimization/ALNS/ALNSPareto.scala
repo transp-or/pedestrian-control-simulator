@@ -94,42 +94,53 @@ class ALNSPareto(f: StatePrediction,
 
       function.predict(xNew._1.x, xNew._2)
 
-      val scoreText: String = this.insert(xNew._1, xNew._2, function.computeObjectives, function.getPredictedStateData, fraction)
-      val score = weightScores(scoreText)
+      if (function.computeObjectives.nonEmpty) {
 
-      // updates the next solution to use a source for generation
 
-      operatorWeights.update(op, math.max(weightMin, math.min(weightMax, operatorWeights(op) * lambda  + (1.0-lambda) * score)))
+        val scoreText: String = this.insert(xNew._1, xNew._2, function.computeObjectives, function.getPredictedStateData, fraction)
+        val score = weightScores(scoreText)
 
-      if (scoreText == "accepted") {
-        val solutionReplications: Int = this.paretoSet(xNew._1)._3.size
-      stochasticReduction(this.paretoSet(xNew._1)._2).map(kv => kv._1 + ": " + kv._2.toString).mkString(", ")
-      println(s" * repl.: $solutionReplications, operator score: $scoreText, objectives: " + stochasticReduction(this.paretoSet(xNew._1)._2).map(kv => kv._1 + ": " + kv._2.toString).mkString(", "))
-      } else {
-        println("rejected")
-      }
+        // updates the next solution to use a source for generation
 
-      this.iterations.append((it, xNew._1, scoreText, op, Double.NaN, stochasticReduction(function.computeObjectives), operatorWeights.toMap))
-      bw.write((Vector(it, op, scoreText) ++ xNew._1.x.sorted.map(_.decisionVariable) ++ objectiveHeader.map(stochasticReduction(function.computeObjectives)) ++ weightHeader.map(operatorWeights)).mkString(", ") + "\n")
-      bw.flush()
+        operatorWeights.update(op, math.max(weightMin, math.min(weightMax, operatorWeights(op) * lambda + (1.0 - lambda) * score)))
 
-      (for (other <- this.iterations.dropRight(1)) yield {
-        (
-          math.pow(this.iterations.last._2.x.sorted.zip(other._2.x.sorted).map(t => math.pow(t._2.decisionVariable - t._1.decisionVariable, 2)).sum, 0.5),
-         // math.abs(this.iterations.last._6("density") - other._6("density")),
-          math.abs(this.iterations.last._6("meanTT") - other._6("meanTT"))
+        if (scoreText == "accepted") {
+          val solutionReplications: Int = this.paretoSet(xNew._1)._3.size
+          stochasticReduction(this.paretoSet(xNew._1)._2).map(kv => kv._1 + ": " + kv._2.toString).mkString(", ")
+          println(s" * accepted: repl.: $solutionReplications, operator score: $scoreText, objectives: " + stochasticReduction(this.paretoSet(xNew._1)._2).map(kv => kv._1 + ": " + kv._2.toString).mkString(", "))
+        } else {
+          //println(s" * rejected: operator score: $scoreText, objectives: " + stochasticReduction(this.paretoSet(xNew._1)._2).map(kv => kv._1 + ": " + kv._2.toString).mkString(", "))
+          println(" * rejected")
+        }
+
+        this.iterations.append((it, xNew._1, scoreText, op, Double.NaN, stochasticReduction(function.computeObjectives), operatorWeights.toMap))
+        bw.write((Vector(it, op, scoreText) ++ xNew._1.x.sorted.map(_.decisionVariable) ++ objectiveHeader.map(stochasticReduction(function.computeObjectives)) ++ weightHeader.map(operatorWeights)).mkString(", ") + "\n")
+        bw.flush()
+
+        (for (other <- this.iterations.dropRight(1)) yield {
+          (
+            math.pow(this.iterations.last._2.x.sorted.zip(other._2.x.sorted).map(t => math.pow(t._2.decisionVariable - t._1.decisionVariable, 2)).sum, 0.5),
+            // math.abs(this.iterations.last._6("density") - other._6("density")),
+            math.abs(this.iterations.last._6("meanTT") - other._6("meanTT"))
           )
-      }).foreach(row => fdp.write(row._1 + ", " + row._2 + "\n"))
+        }).foreach(row => fdp.write(row._1 + ", " + row._2 + "\n"))
 
-      fdp.flush()
+        fdp.flush()
 
 
-      this.updateBestX(Random.shuffle(this.paretoSet.keys.toVector).head)
+        this.updateBestX(Random.shuffle(this.paretoSet.keys.toVector).head)
 
-      it = it + 1
+        it = it + 1
+
+      print("\n")
+    } else {
+        println(" iteration dropped ! No simulations completed ! ")
+        print("\n")
+    }
+
     }
     bw.close()
-    print("\n")
+
   }
 
 

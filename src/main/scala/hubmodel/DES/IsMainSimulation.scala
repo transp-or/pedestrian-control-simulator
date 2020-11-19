@@ -93,9 +93,13 @@ trait IsMainSimulation {
 
       val timeIntervals: Vector[Time] = sim.currentTime.value.until((sim.currentTime + this.sim.predictionInputParameters.horizon).value).by(this.sim.predictionInputParameters.decisionVariableLength.value).toVector.map(v => Time(v.toDouble))
 
-      val initialControlPolicy = sim.controlDevices.amws
+      val tmp = sim.controlDevices.amws.flatMap(w => w.getControlPolicy)
+
+      val initialControlPolicy: Iterable[ControlDevicePolicy] = (sim.controlDevices.amws
         .flatMap(w => timeIntervals.zip(Vector.fill(timeIntervals.size)((w.name, w.length))).map(t => (t._2, t._1)))
-        .map(t => AMWPolicy(t._1._1, t._2, t._2 + this.sim.predictionInputParameters.decisionVariableLength, 0.0, t._1._2))
+        //.filterNot(w => tmp.exists(p => p.name == w._1._1 && p.start == w._2))
+        .map(t => AMWPolicy(t._1._1, t._2, t._2 + this.sim.predictionInputParameters.decisionVariableLength, 0.0, t._1._2))/* ++
+        tmp*/).toVector.sorted
 
 
 
