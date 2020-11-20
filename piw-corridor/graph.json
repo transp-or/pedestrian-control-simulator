@@ -2197,19 +2197,25 @@
   "destination_groups": [
     {
       "name": "plat34",
-      "zones": ["9", "10"]
+      "zones": ["9", "10"],
+      "replace": false
     },
     {
       "name": "plat56",
-      "zones": ["7", "8"]
+      "zones": ["7", "8"],
+      "replace": false
+
     },
     {
       "name": "plat78",
-      "zones": ["5", "6"]
+      "zones": ["5", "6"],
+      "replace": false
+
     },
     {
       "name": "plat1",
-      "zones": ["11", "12"]
+      "zones": ["11", "12"],
+      "replace": false
     }
   ]
 }

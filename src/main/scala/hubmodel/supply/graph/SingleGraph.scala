@@ -11,12 +11,12 @@ import tools.cells.Vertex
 class SingleGraph(private val baseVertices: Iterable[Vertex],
                   private val standardEdges: Iterable[MyEdge],
                   private val levelChanges: Iterable[MyEdgeLevelChange],
-                  private val destinationGroups: Iterable[(String, Vector[String])],
+                  private val destinationGroups: Iterable[(String, Vector[String], Boolean)],
                   fg: Iterable[FlowGate],
                   bg: Iterable[BinaryGate],
                   mw: Iterable[MovingWalkwayAbstract],
                   fs: Iterable[FlowSeparator[_, _]],
-                  routeChoiceBeta: (Double, Double)) extends GraphContainer(fg, bg, mw, fs) {
+                  routeChoiceBeta: (Double, Double)) extends GraphContainer(fg, bg, mw, fs, destinationGroups) {
 
   private val graph = new RouteGraph(baseVertices, standardEdges, levelChanges, this.flowGates, this.binaryGates, this.movingWalkways, this.flowSeparators, destinationGroups = destinationGroups, betas = routeChoiceBeta)
 
@@ -45,6 +45,7 @@ class SingleGraph(private val baseVertices: Iterable[Vertex],
   def computeODsWithAMWs: Map[(String, String), Vector[String]] = {
     this.graph.computeODs
   }
+
 
   type T = SingleGraph
 

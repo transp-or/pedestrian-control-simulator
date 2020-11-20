@@ -14,8 +14,9 @@ class MultipleGraph(fg: Iterable[FlowGate],
                     bg: Iterable[BinaryGate],
                     mw: Iterable[MovingWalkwayAbstract],
                     fs: Iterable[FlowSeparator[_, _]],
-                    routeChoiceBeta: (Double, Double)
-                   ) extends GraphContainer(fg, bg, mw, fs) {
+                    routeChoiceBeta: (Double, Double),
+                    destinationGroups: Iterable[(String, Vector[String], Boolean)],
+                   ) extends GraphContainer(fg, bg, mw, fs, destinationGroups) {
 
 
   type PopulationFraction = Double
@@ -46,7 +47,7 @@ class MultipleGraph(fg: Iterable[FlowGate],
    }*/
 
   // Adds a new [[RouteGraph]] object to the collection.
-  def addGraph(id: String, frac: PopulationFraction, vertices: Iterable[Vertex], edges: Iterable[MyEdge], edges2Add: Set[MyEdge], edges2Remove: Set[MyEdge], lc: Iterable[MyEdgeLevelChange], destinationGroups: Iterable[(String, Vector[String])]): Unit = {
+  def addGraph(id: String, frac: PopulationFraction, vertices: Iterable[Vertex], edges: Iterable[MyEdge], edges2Add: Set[MyEdge], edges2Remove: Set[MyEdge], lc: Iterable[MyEdgeLevelChange], destinationGroups: Iterable[(String, Vector[String], Boolean)]): Unit = {
     if (this._graphCollection.keySet.contains(id)) {
       throw new Exception("ID is not unique for graph ! " + id)
     }
@@ -102,7 +103,7 @@ class MultipleGraph(fg: Iterable[FlowGate],
     */
   def deepCopy(devices: ControlDevices): T = {
 
-    val graphs = new MultipleGraph(devices.flowGates, devices.binaryGates, devices.amws, devices.flowSeparators, this.routeChoiceBeta)
+    val graphs = new MultipleGraph(devices.flowGates, devices.binaryGates, devices.amws, devices.flowSeparators, this.routeChoiceBeta, this.destinationGroups)
     this._graphCollection.foreach(g => {
       graphs.addGraph(g._1, g._2._1, g._2._2.vertexCollection.values.map(_.deepCopy), g._2._2.edgeCollection.map(_.deepCopy), Set(), Set(), g._2._2.levelChanges.map(_.deepCopy), g._2._2.destinationGroups)
     })
@@ -122,7 +123,7 @@ class MultipleGraph(fg: Iterable[FlowGate],
       throw new Exception("Number of graphs is wrong for using this function !")
     }
 
-    val graphs = new MultipleGraph(devices.flowGates, devices.binaryGates, devices.amws, devices.flowSeparators, this.routeChoiceBeta)
+    val graphs = new MultipleGraph(devices.flowGates, devices.binaryGates, devices.amws, devices.flowSeparators, this.routeChoiceBeta, this.destinationGroups)
     val refGraph = this._graphCollection("reference")
     graphs.addGraph("reference", 1.0 - populationFraction, refGraph._2.vertexCollection.values, refGraph._2.edgeCollection.map(_.deepCopy), Set(), Set(), refGraph._2.levelChanges.map(_.deepCopy), refGraph._2.destinationGroups)
 

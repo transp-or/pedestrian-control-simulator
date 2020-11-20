@@ -422,14 +422,15 @@ package object JSONReaders {
     * @param name  name of the destination group
     * @param zones vector of zone ids
     */
-  private[JSONReaders] case class destinationGroup_JSON(name: String, zones: Vector[String])
+  private[JSONReaders] case class destinationGroup_JSON(name: String, zones: Vector[String], replace: Boolean)
 
   /**
     * Reads the JSON structure into a [[destinationGroup_JSON]] object. No validation on arguments is done.
     */
   implicit val destinationGroup_JSONReads: Reads[destinationGroup_JSON] = (
     (JsPath \ "name").read[String] and
-      (JsPath \ "zones").read[Vector[String]]
+      (JsPath \ "zones").read[Vector[String]] and
+      (JsPath \ "replace").read[Boolean]
     ) (destinationGroup_JSON.apply _)
   destinationGroup_JSON
 

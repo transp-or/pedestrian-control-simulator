@@ -6,6 +6,7 @@ import hubmodel.ped.PedestrianNOMAD
 import hubmodel.supply.continuous.ReadContinuousSpace
 import hubmodel.supply.graph.readGraph
 import hubmodel.io.output.tikz.writeEdgesAsTikz
+import tools.cells.Rectangle
 
 
 object makePictures extends App {
@@ -71,10 +72,9 @@ object makePictures extends App {
       val graphImage = new DrawGraph(infraGraph._1.edges.map(e => (e.startVertex, e.endVertex)).toVector, prefixToAdd + "graphImage.png", showNames = showNamesOnFigures)
       val fullImage = new DrawWallsAndGraph(infraSF.walls, infraGraph._1.edges.map(e => (e.startVertex, e.endVertex)).toVector, prefixToAdd + "wallAndGraphImage.png", showNames = showNamesOnFigures)
 
-      writeEdgesAsTikz(prefixToAdd + "edges.tex", infraGraph._1.edges, infraGraph._1.vertexMapNew.values, infraSF.walls)
+      writeEdgesAsTikz(prefixToAdd + "edges.tex", infraGraph._1.edges, infraGraph._1.vertexMapNew.values, infraSF.walls, infraGraph._2)
 
     case None => println("Probably an error when passing the parameters, or an unknown parameter was given.")
 
   }
-
 }

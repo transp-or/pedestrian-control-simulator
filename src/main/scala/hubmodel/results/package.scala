@@ -79,6 +79,26 @@ package object results {
       }
     }*/
 
+    // computes all ODs and writes a file containing the lis of AMWs which each OD can use.
+    if (false) {
+
+      val file = new File(prefix + "ods-with-amws_" + simulator.ID + ".json")
+      val bw = new BufferedWriter(new FileWriter(file))
+      bw.write("[{")
+      bw.write(simulator.graph.computeODsWithAMWs
+        .map(kv => "\"o\":\"" + kv._1._1 + "\",\"d\":\"" + kv._1._2 + "\",\"amws\":[" + {
+          if (kv._2.nonEmpty) {
+            "\"" + kv._2.mkString("\",\"") + "\""
+          } else {
+            ""
+          }
+        } + "]")
+        .mkString("},{"))
+      bw.write("}]")
+      bw.close()
+    }
+
+
     // Writes the results to files based on the config file.
     if (simulator.exitCode == 0) { // only write results if simulation completed successfully.
 
@@ -171,23 +191,8 @@ package object results {
         }
       }
 
-      if (false) {
 
-        val file = new File(prefix + "ods-with-amws_" + simulator.ID + ".json")
-        val bw = new BufferedWriter(new FileWriter(file))
-        bw.write("[{")
-        bw.write(simulator.graph.computeODsWithAMWs
-          .map(kv => "\"o\":\"" + kv._1._1 + "\",\"d\":\"" + kv._1._2 + "\",\"amws\":[" + {
-            if (kv._2.nonEmpty) {
-              "\"" + kv._2.mkString("\",\"") + "\""
-            } else {
-              ""
-            }
-          } + "]")
-          .mkString("},{"))
-        bw.write("}]")
-        bw.close()
-      }
+
     }
 
     if (writeTrajectoriesVS) {

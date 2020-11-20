@@ -11,7 +11,9 @@ import tools.cells.Vertex
 abstract class GraphContainer(protected val flowGates: Iterable[FlowGate],
                               protected val binaryGates: Iterable[BinaryGate],
                               protected val movingWalkways: Iterable[MovingWalkwayAbstract],
-                              protected val flowSeparators: Iterable[FlowSeparator[_, _]]) {
+                              protected val flowSeparators: Iterable[FlowSeparator[_, _]],
+                              destinationGroups: Iterable[(String, Vector[String], Boolean)],
+                             ) {
 
   def vertexMapNew: Map[String, Vertex]
 
@@ -37,6 +39,10 @@ abstract class GraphContainer(protected val flowGates: Iterable[FlowGate],
   def computeODsWithAMWs: Map[(String, String), Vector[String]]
 
   def updateGraphCosts(): Unit
+
+  private val destination2EquivalentDestinations: Map[String, Vector[String]] = (destinationGroups.filter(_._3).map(kv => kv._1 -> kv._2) ++ destinationGroups.filterNot(_._3).flatMap(kv =>  kv._2.map(r => r -> kv._2))).toMap
+  def destination2EquivalentDestinationsFunc(zone: Vertex): Vector[Vertex] = destination2EquivalentDestinations.getOrElse(zone.name, Vector(zone.name)).map(zID => this.vertexMapNew(zID))
+  def destination2EquivalentDestinationsFunc(zone: String): Vector[Vertex] = destination2EquivalentDestinations.getOrElse(zone, Vector(zone)).map(zID => this.vertexMapNew(zID))
 
   type T <: GraphContainer
 
