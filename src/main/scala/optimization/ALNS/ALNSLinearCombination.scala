@@ -85,6 +85,7 @@ class ALNSLinearCombination(f: StatePrediction,
   protected def getOF(x: Policy): FunctionEvaluation = {
     evaluatedSolutions(x)._2
   }
+
   protected def getStateData(x: Policy): Vector[StateGroundTruthPredicted] = {
     evaluatedSolutions(x)._3
   }

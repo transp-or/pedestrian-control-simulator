@@ -84,7 +84,43 @@ object CompareTravelTimeResultsPIW extends App {
     "entrance-top-corr-right-bottom" -> "entrance-top-corr-right",
     "entrance-top-corr-left-top" ->    "entrance-top-corr-left",
     "entrance-top-corr-left-middle" -> "entrance-top-corr-left",
-    "entrance-top-corr-left-bottom" -> "entrance-top-corr-left"
+    "entrance-top-corr-left-bottom" -> "entrance-top-corr-left",
+    "plat1-a" -> "plat1-top",
+    "plat1-b" -> "plat1-top",
+    "plat1-c" -> "plat1-top",
+    "plat1-d" -> "plat1-middle",
+    "plat1-e" -> "plat1-middle",
+    "plat1-f" -> "plat1-middle",
+    "plat1-g" -> "plat1-middle",
+    "plat1-h" -> "plat1-middle",
+    "plat1-i" -> "plat1-middle",
+    "plat1-j" -> "plat1-bottom",
+    "plat1-k" -> "plat1-bottom",
+    "plat1-l" -> "plat1-bottom",
+    "plat2-a" -> "plat2-top",
+    "plat2-b" -> "plat2-top",
+    "plat2-c" -> "plat2-top",
+    "plat2-d" -> "plat2-middle",
+    "plat2-e" -> "plat2-middle",
+    "plat2-f" -> "plat2-middle",
+    "plat2-g" -> "plat2-middle",
+    "plat2-h" -> "plat2-middle",
+    "plat2-i" -> "plat2-middle",
+    "plat2-j" -> "plat2-bottom",
+    "plat2-k" -> "plat2-bottom",
+    "plat2-l" -> "plat2-bottom",
+    "plat3-a" -> "plat3-top",
+    "plat3-b" -> "plat3-top",
+    "plat3-c" -> "plat3-top",
+    "plat3-d" -> "plat3-middle",
+    "plat3-e" -> "plat3-middle",
+    "plat3-f" -> "plat3-middle",
+    "plat3-g" -> "plat3-middle",
+    "plat3-h" -> "plat3-middle",
+    "plat3-i" -> "plat3-middle",
+    "plat3-j" -> "plat3-bottom",
+    "plat3-k" -> "plat3-bottom",
+    "plat3-l" -> "plat3-bottom"
   ).getOrElse(str, str)
 
 
@@ -206,6 +242,17 @@ object CompareTravelTimeResultsPIW extends App {
     (t,nu)
   }
 
+  def labelling(pValue: Double, countRef: Int, countOther: Int): String = {
+    val largeIf: Int = 5
+    if (countRef >= largeIf * this.resultsRef.size && countOther >= largeIf * this.resultsOther.size){
+      if (pValue < 0.05) {"sigLarge"}
+      else {"nonSigLarge"}
+    } else {
+      if (pValue < 0.05) {"sigSmall"}
+      else {"nonSigSmall"}
+    }
+  }
+
 
   lazy val amwCountByOD: Map[String, Int] = {
     val source: BufferedSource = scala.io.Source.fromFile(config.getString("sim.amws_by_OD"))
@@ -267,6 +314,13 @@ object CompareTravelTimeResultsPIW extends App {
     //.map(v => {if (v._2.contains("7") || v._2.contains("8")){0} else {1}})
     .sortBy(v => ODPairsSorting(v._2) + v._2)
     .zipWithIndex
-    .map(v => (v._2, v._1._1, v._1._2, v._1._3, v._1._4, 100.0*(v._1._4-v._1._3)/v._1._3 , if (v._1._5 <= 0.05 && v._1._10 >= 5*resultsRef.size && v._1._11 >= 5*resultsOther.size){"sigLarge"} else if (v._1._5 <= 0.05 && (v._1._10 < 5*resultsRef.size || v._1._11 <5*resultsOther.size)) {"sigSmall"} else if (v._1._5 > 0.05 && v._1._10 > 5*resultsRef.size && v._1._11 > 5*resultsOther.size) {"nonSigLarge"} else {"nonSigSmall"}, v._1._6, v._1._7, v._1._8, v._1._9, v._1._10, v._1._11, v._1._5, ODPairsSorting(v._1._2)))
+    .map(v => (
+      v._2, v._1._1, v._1._2, v._1._3, v._1._4,
+      100.0*(v._1._4-v._1._3)/v._1._3,
+      labelling(v._1._5, v._1._10, v._1._11),
+      v._1._6, v._1._7, v._1._8, v._1._9, v._1._10, v._1._11, v._1._5, ODPairsSorting(v._1._2)
+    ))
     .writeToCSV(config.getString("files_1.output_prefix") + "_VS_" + config.getString("files_2.output_prefix") + "_walking_time_distributions_by_OD.csv", columnNames = Some(Vector("idx", "demandFile", "odGroup", "refTT", "otherTT","relativeTTDiff" , "TTequalMeanPValue", "refTravelDistance", "otherTravelDistance", "refMeanSpeed", "otherMeanSpeed", "refPopulationSize", "otherPopulationSize", "pvalue", "MISC")), rowNames = None)
+
+
 }

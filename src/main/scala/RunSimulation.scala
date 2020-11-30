@@ -109,6 +109,57 @@ object RunSimulation extends App with StrictLogging {
     bins.zipWithIndex(bins.indexWhere(_ > value) - 1).swap
   }
 
+  val zoneSimplificationMapping: String => String = str => Map(
+    "entrance-bottom-corr-right-top" ->    "entrance-bottom-corr-right",
+    "entrance-bottom-corr-right-middle" -> "entrance-bottom-corr-right",
+    "entrance-bottom-corr-right-bottom" -> "entrance-bottom-corr-right",
+    "entrance-bottom-corr-left-top" ->    "entrance-bottom-corr-left",
+    "entrance-bottom-corr-left-middle" -> "entrance-bottom-corr-left",
+    "entrance-bottom-corr-left-bottom" -> "entrance-bottom-corr-left",
+    "entrance-top-corr-right-top" ->    "entrance-top-corr-right",
+    "entrance-top-corr-right-middle" -> "entrance-top-corr-right",
+    "entrance-top-corr-right-bottom" -> "entrance-top-corr-right",
+    "entrance-top-corr-left-top" ->    "entrance-top-corr-left",
+    "entrance-top-corr-left-middle" -> "entrance-top-corr-left",
+    "entrance-top-corr-left-bottom" -> "entrance-top-corr-left",
+    "plat1-a" -> "plat1-top",
+    "plat1-b" -> "plat1-top",
+    "plat1-c" -> "plat1-top",
+    "plat1-d" -> "plat1-middle",
+    "plat1-e" -> "plat1-middle",
+    "plat1-f" -> "plat1-middle",
+    "plat1-g" -> "plat1-middle",
+    "plat1-h" -> "plat1-middle",
+    "plat1-i" -> "plat1-middle",
+    "plat1-j" -> "plat1-bottom",
+    "plat1-k" -> "plat1-bottom",
+    "plat1-l" -> "plat1-bottom",
+    "plat2-a" -> "plat2-top",
+    "plat2-b" -> "plat2-top",
+    "plat2-c" -> "plat2-top",
+    "plat2-d" -> "plat2-middle",
+    "plat2-e" -> "plat2-middle",
+    "plat2-f" -> "plat2-middle",
+    "plat2-g" -> "plat2-middle",
+    "plat2-h" -> "plat2-middle",
+    "plat2-i" -> "plat2-middle",
+    "plat2-j" -> "plat2-bottom",
+    "plat2-k" -> "plat2-bottom",
+    "plat2-l" -> "plat2-bottom",
+    "plat3-a" -> "plat3-top",
+    "plat3-b" -> "plat3-top",
+    "plat3-c" -> "plat3-top",
+    "plat3-d" -> "plat3-middle",
+    "plat3-e" -> "plat3-middle",
+    "plat3-f" -> "plat3-middle",
+    "plat3-g" -> "plat3-middle",
+    "plat3-h" -> "plat3-middle",
+    "plat3-i" -> "plat3-middle",
+    "plat3-j" -> "plat3-bottom",
+    "plat3-k" -> "plat3-bottom",
+    "plat3-l" -> "plat3-bottom"
+  ).getOrElse(str, str)
+
   if (resultsJson.nonEmpty) {
 
 
@@ -430,9 +481,6 @@ object RunSimulation extends App with StrictLogging {
 
     if (config.getBoolean("output.travel-time.mean-by-intervals")) {
 
-
-
-
       val intervals: Vector[Double] = (simulationStartTime.value to simulationEndTime.value by 15.0).map(_.toDouble).toVector
       def findTimeInterval(v: Double): (Int, Double) = findInterval(intervals)(v)
       val data: Vector[Vector[(Double, Int, Double)]] = resultsJson.map(r => {
@@ -452,6 +500,24 @@ object RunSimulation extends App with StrictLogging {
         .map(data => (data._1, data._2.map(_._2).sum / data._2.size.toDouble, computeQuantile(25)(data._2.map(_._2)).value, computeQuantile(75)(data._2.map(_._2)).value, data._2.map(_._3.toDouble).toVector.sum / data._2.size.toDouble, computeQuantile(25)(data._2.map(_._3)).value, computeQuantile(75)(data._2.map(_._3)).value))
         .sortBy(_._1)
         .writeToCSV(config.getString("output.output_prefix") + "_demand_mean_tt_intervals_mean_lq_uq.csv", columnNames=Some(Vector("t", "inflow_m", "inflow_lq", "inflow_uq", "tt_m", "tt_lq", "tt_uq")), rowNames = None)
+
+      val inflowZones: Vector[String] = resultsJson.flatMap(r => r.tt.map(p => zoneSimplificationMapping(p.o))).distinct
+      val inflowData: Map[String, Vector[(Double, Int, Int)]] = resultsJson.flatMap(r => {
+        val demand: Map[(String, Int), Int] = r.tt.groupBy(v => (zoneSimplificationMapping(v.o), findTimeInterval(v.entry)._1)).view.mapValues(_.size).toVector.toMap
+        intervals.sliding(2).map(v => (v(0) + v(1))/2).zipWithIndex.flatMap(i =>inflowZones.map(z => (z, i._2, demand.getOrElse((z, i._2),0)))).toVector
+      }).groupBy(g => (g._1, g._2))
+          .view
+          .mapValues(d => d.map(_._3))
+          .mapValues(data => (data.sum / data.size.toDouble, computeQuantile(25)(data).value, computeQuantile(75)(data).value))
+          .toVector
+          .groupBy(_._1._1)
+          .map(t => t._1 -> t._2.sortBy(idx => intervals(idx._1._2)).map(_._2))
+
+
+      val header = inflowData.keys.toVector.sorted
+
+      (intervals +: header.flatMap(k => Vector(inflowData(k).map(_._1), inflowData(k).map(_._2.toDouble), inflowData(k).map(_._3.toDouble))))
+        .writeToCSV(config.getString("output.output_prefix") + "_demand_per_zone_intervals_mean_lq_uq.csv", columnNames=Some("time" +: header.flatMap(h => Vector(h + "_m", h + "_lq", h + "_uq"))), rowNames = None)
 
     }
     /*Vector("t", "inflow_m", "inflow_lq", "inflow_uq", "tt_m", "tt_lq", "tt_uq")*/
@@ -503,7 +569,14 @@ object RunSimulation extends App with StrictLogging {
         .flatMap(v => v.amwData.get.map(vv => (v.id, vv)))
         .map(w => ((w._1 + "_" + w._2.name + "_t", w._2.appliedPolicy.map(_._1), w._1 + "_" + w._2.name + "_s", w._2.appliedPolicy.map(_._2))))
 
-      appliedSpeeds.flatMap(d => Vector(d._2, d._4)).writeToCSV(config.getString("output.output_prefix") + "_applied_amw_speeds.csv", rowNames=None, columnNames = Some(appliedSpeeds.flatMap(d => Vector(d._1, d._3))))
+      appliedSpeeds
+        .flatMap(d => Vector(d._2, d._4))
+        .writeToCSV(config.getString("output.output_prefix") + "_applied_amw_speeds.csv", rowNames=None, columnNames = Some(appliedSpeeds.flatMap(d => Vector(d._1, d._3))))
+
+      appliedSpeeds
+        .map(d => (d._1.split("_")(1), d._2, d._3, d._4))
+        .groupBy(_._1)
+        .foreach(g => g._2.flatMap(d => Vector(d._2, d._4)).writeToCSV(config.getString("output.output_prefix") + "_" + g._1 + "_applied_amw_speeds.csv", rowNames=None, columnNames = Some(g._2.flatMap(d => Vector(d._1 + "_t", d._3)))))
 
       val averageAMWSpeeds: Vector[(String, Vector[(Double, Double, Double, Double)])] = resultsJson
         .filter(_.amwData.isDefined)
