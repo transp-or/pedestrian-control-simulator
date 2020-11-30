@@ -1876,7 +1876,7 @@
       "connected_to": [
         "DRGCrZDCmn",
         "wZJYfPMMrC",
-        "nMnzCSiprN",
+        "YIaceeSmRl",
         "plat-1-top-corr-top"
       ]
     },
@@ -1960,7 +1960,9 @@
         "qosVximywY",
         "YIaceeSmRl",
         "IpzwrYgLDR",
-        "vISAZVYJTe"
+        "vISAZVYJTe",
+        "gIuOIzfuCn",
+        "nMnzCSiprN"
       ]
     },
     {
@@ -1969,7 +1971,9 @@
         "tLpkyYGApr",
         "fGAcIkaSUf",
         "FsXkzkmeaL",
-        "AccfCUaOLZ"
+        "AccfCUaOLZ",
+        "xLcFGmvpOC",
+        "DAfYXGkUbY"
       ]
     },
     {
@@ -2014,7 +2018,7 @@
       "connected_to": [
         "DRGCrZDCmn",
         "plat-1-center",
-        "gIuOIzfuCn",
+        "YIaceeSmRl",
         "wZJYfPMMrC"
       ]
     },
@@ -2162,7 +2166,9 @@
         "YIaceeSmRl",
         "wZJYfPMMrC",
         "IKePOMJZZs",
-        "NAsmytEDoM"
+        "NAsmytEDoM",
+        "gIuOIzfuCn",
+        "nMnzCSiprN"
       ]
     },
     {
@@ -2251,8 +2257,8 @@
       "node": "gIuOIzfuCn",
       "connected_to": [
         "YIaceeSmRl",
-        "NAsmytEDoM",
-        "vISAZVYJTe",
+        "DRGCrZDCmn",
+        "GoGOPhHckp",
         "plat-2-top-corr-top"
       ]
     },
@@ -2370,7 +2376,9 @@
         "fGAcIkaSUf",
         "XDXWiPxhdz",
         "ghNOFYgEWK",
-        "vsFIuprjqg"
+        "vsFIuprjqg",
+        "xLcFGmvpOC",
+        "DAfYXGkUbY"
       ]
     },
     {
@@ -2406,7 +2414,7 @@
       "node": "vsFIuprjqg",
       "connected_to": [
         "GrpKHXdGlS",
-        "xLcFGmvpOC",
+        "fGAcIkaSUf",
         "XDXWiPxhdz",
         "plat-3-bottom-corr-bottom"
       ]
@@ -2430,8 +2438,8 @@
       "node": "DAfYXGkUbY",
       "connected_to": [
         "fGAcIkaSUf",
-        "ghNOFYgEWK",
-        "FsXkzkmeaL",
+        "GrpKHXdGlS",
+        "ipXoqMkQgs",
         "plat-2-bottom-corr-bottom"
       ]
     },
@@ -2583,7 +2591,7 @@
       "node": "IpzwrYgLDR",
       "connected_to": [
         "GoGOPhHckp",
-        "nMnzCSiprN",
+        "YIaceeSmRl",
         "qosVximywY",
         "plat-3-top-corr-top"
       ]
@@ -2623,7 +2631,7 @@
       "connected_to": [
         "plat-1-center",
         "ipXoqMkQgs",
-        "DAfYXGkUbY",
+        "fGAcIkaSUf",
         "tLpkyYGApr"
       ]
     },
@@ -2639,7 +2647,7 @@
       "node": "vISAZVYJTe",
       "connected_to": [
         "GoGOPhHckp",
-        "gIuOIzfuCn",
+        "YIaceeSmRl",
         "qosVximywY",
         "plat-3-center"
       ]
@@ -2697,7 +2705,6 @@
         "IKePOMJZZs",
         "NAsmytEDoM",
         "entrance-top-corr-left",
-        "tLpkyYGApr",
         "HIJdqjkLeF"
       ]
     },
@@ -2714,7 +2721,7 @@
         "plat-3-center",
         "GrpKHXdGlS",
         "XDXWiPxhdz",
-        "DAfYXGkUbY"
+        "fGAcIkaSUf"
       ]
     },
     {
@@ -2722,8 +2729,8 @@
       "connected_to": [
         "plat-2-center",
         "fGAcIkaSUf",
-        "AccfCUaOLZ",
-        "vsFIuprjqg"
+        "ipXoqMkQgs",
+        "GrpKHXdGlS"
       ]
     },
     {
@@ -2763,7 +2770,11 @@
         "GoGOPhHckp",
         "DRGCrZDCmn",
         "gIuOIzfuCn",
-        "nMnzCSiprN"
+        "nMnzCSiprN",
+        "IKePOMJZZs",
+        "NAsmytEDoM",
+        "IpzwrYgLDR",
+        "vISAZVYJTe"
       ]
     },
     {
@@ -2779,8 +2790,8 @@
       "connected_to": [
         "YIaceeSmRl",
         "plat-2-center",
-        "IpzwrYgLDR",
-        "IKePOMJZZs"
+        "GoGOPhHckp",
+        "DRGCrZDCmn"
       ]
     },
     {
@@ -2788,7 +2799,7 @@
       "connected_to": [
         "ipXoqMkQgs",
         "tLpkyYGApr",
-        "xLcFGmvpOC",
+        "fGAcIkaSUf",
         "plat-1-bottom-corr-bottom"
       ]
     },
@@ -2820,7 +2831,11 @@
         "ipXoqMkQgs",
         "GrpKHXdGlS",
         "xLcFGmvpOC",
-        "DAfYXGkUbY"
+        "DAfYXGkUbY",
+        "FsXkzkmeaL",
+        "AccfCUaOLZ",
+        "ghNOFYgEWK",
+        "vsFIuprjqg"
       ]
     }
   ],

@@ -40,7 +40,7 @@ abstract class GraphContainer(protected val flowGates: Iterable[FlowGate],
 
   def updateGraphCosts(): Unit
 
-  private val destination2EquivalentDestinations: Map[String, Vector[String]] = (destinationGroups.filter(_._3).map(kv => kv._1 -> kv._2) ++ destinationGroups.filterNot(_._3).flatMap(kv =>  kv._2.map(r => r -> kv._2))).toMap
+  private val destination2EquivalentDestinations: Map[String, Vector[String]] = Map()//(destinationGroups.filter(_._3).map(kv => kv._1 -> kv._2) ++ destinationGroups.filterNot(_._3).flatMap(kv =>  kv._2.map(r => r -> kv._2))).toMap
   def destination2EquivalentDestinationsFunc(zone: Vertex): Vector[Vertex] = destination2EquivalentDestinations.getOrElse(zone.name, Vector(zone.name)).map(zID => this.vertexMapNew(zID))
   def destination2EquivalentDestinationsFunc(zone: String): Vector[Vertex] = destination2EquivalentDestinations.getOrElse(zone, Vector(zone)).map(zID => this.vertexMapNew(zID))
 

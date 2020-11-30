@@ -630,15 +630,30 @@ object RunSimulation extends App with StrictLogging {
     // ******************************************************************************************
 
     if (config.getBoolean("output.flows")) {
-      val interval: Int = 10
-      val intervals: Vector[Time] = 27600.to(27900).by(interval).map(v => Time(v.toDouble)).toVector
-      //val zoneProcessor: ZoneProcessingNew = new ZoneProcessingNew("E:\\PhD\\hub-simulator\\piw-corridor\\graph.json")
+      val interval: Double = 10.0
+      val intervals: Vector[Time] = (simulationStartTime.value to simulationEndTime.value by interval).map(v => Time(v.toDouble)).toVector
+
+      // PIW data
+      /*
       val amw1Routes = Vector(Vector("bc1","c1","dc1"), Vector("bc2","c2","dc2"), Vector("amw11","amw12"))/*.map(r => r.map(zoneProcessor.vertices))*/
       val amw2Routes = Vector(Vector("amw21", "amw22"), Vector("d15","e15"), Vector("d15","e2"), Vector("d2","e2"), Vector("d2","e15"))/*.map(r => r.map(zoneProcessor.vertices))*/
-
       //val amwRoutes: Map[String, Vector[Vector[String]]] =  Map("amw1p" -> amw1Routes, "amw2p" -> amw2Routes, "amw1n" -> amw1Routes.map(_.reverse), "amw2n" -> amw2Routes.map(_.reverse))
       //val amwRoutes: Map[String, Vector[Vector[String]]] =  Map("j1" -> Vector(Vector("11a","11b"), Vector("12a", "12b"), Vector("14","14a"), Vector("13","13a")), "j34" -> Vector(Vector("9a", "9b"), Vector("10a", "10b")), "j56" -> Vector(Vector("8a", "8b"), Vector("7a", "7b")), "j78" -> Vector(Vector("6a", "6b"), Vector("5a", "5b"), Vector("a", "b1"), Vector("a", "b15"), Vector("a", "b2")))
       val amwRoutes: Map[String, Vector[Vector[String]]] =  Map("amw1p" -> Vector(Vector("b", "c", "d")), "amw1n" -> Vector(Vector("d", "c", "b")), "amw2p" -> Vector(Vector("d", "e")), "amw2n" -> Vector(Vector("e", "d")))
+      */
+
+      // THREE-PLATFORMS data
+      val amwRoutes: Map[String, Vector[Vector[String]]] =  Map(
+        "amw1p" -> Vector(Vector("wZJYfPMMrC", "DRGCrZDCmn", "YIaceeSmRl"), Vector("wZJYfPMMrC", "IKePOMJZZs", "YIaceeSmRl"), Vector("wZJYfPMMrC", "NAsmytEDoM", "YIaceeSmRl"), Vector("wZJYfPMMrC", "DRGCrZDCmn", "gIuOIzfuCn"), Vector("wZJYfPMMrC", "DRGCrZDCmn", "nMnzCSiprN")),
+        "amw1n" -> Vector(Vector("wZJYfPMMrC", "DRGCrZDCmn", "YIaceeSmRl"), Vector("wZJYfPMMrC", "IKePOMJZZs", "YIaceeSmRl"), Vector("wZJYfPMMrC", "NAsmytEDoM", "YIaceeSmRl"), Vector("wZJYfPMMrC", "DRGCrZDCmn", "gIuOIzfuCn"), Vector("wZJYfPMMrC", "DRGCrZDCmn", "nMnzCSiprN")).map(v => v.reverse),
+        "amw2p" -> Vector(Vector("tLpkyYGApr", "ipXoqMkQgs", "fGAcIkaSUf"), Vector("tLpkyYGApr", "FsXkzkmeaL", "fGAcIkaSUf"), Vector("tLpkyYGApr", "AccfCUaOLZ", "fGAcIkaSUf"), Vector("tLpkyYGApr", "ipXoqMkQgs", "xLcFGmvpOC"), Vector("tLpkyYGApr", "ipXoqMkQgs", "DAfYXGkUbY")),
+        "amw2n" -> Vector(Vector("tLpkyYGApr", "ipXoqMkQgs", "fGAcIkaSUf"), Vector("tLpkyYGApr", "FsXkzkmeaL", "fGAcIkaSUf"), Vector("tLpkyYGApr", "AccfCUaOLZ", "fGAcIkaSUf"), Vector("tLpkyYGApr", "ipXoqMkQgs", "xLcFGmvpOC"), Vector("tLpkyYGApr", "ipXoqMkQgs", "DAfYXGkUbY")).map(v => v.reverse),
+        "amw3p" -> Vector(Vector("fGAcIkaSUf", "GrpKHXdGlS", "XDXWiPxhdz"), Vector("fGAcIkaSUf", "ghNOFYgEWK", "XDXWiPxhdz"), Vector("fGAcIkaSUf", "vsFIuprjqg", "XDXWiPxhdz"), Vector("xLcFGmvpOC", "GrpKHXdGlS", "XDXWiPxhdz"), Vector("DAfYXGkUbY", "GrpKHXdGlS", "XDXWiPxhdz")),
+        "amw3n" -> Vector(Vector("fGAcIkaSUf", "GrpKHXdGlS", "XDXWiPxhdz"), Vector("fGAcIkaSUf", "ghNOFYgEWK", "XDXWiPxhdz"), Vector("fGAcIkaSUf", "vsFIuprjqg", "XDXWiPxhdz"), Vector("xLcFGmvpOC", "GrpKHXdGlS", "XDXWiPxhdz"), Vector("DAfYXGkUbY", "GrpKHXdGlS", "XDXWiPxhdz")).map(v => v.reverse),
+        "amw4p" -> Vector(Vector("YIaceeSmRl", "GoGOPhHckp", "qosVximywY"), Vector("YIaceeSmRl", "IpzwrYgLDR", "qosVximywY"), Vector("YIaceeSmRl", "vISAZVYJTe", "qosVximywY"), Vector("gIuOIzfuCn", "GoGOPhHckp", "qosVximywY"), Vector("nMnzCSiprN", "GoGOPhHckp", "qosVximywY")),
+        "amw4n" -> Vector(Vector("YIaceeSmRl", "GoGOPhHckp", "qosVximywY"), Vector("YIaceeSmRl", "IpzwrYgLDR", "qosVximywY"), Vector("YIaceeSmRl", "vISAZVYJTe", "qosVximywY"), Vector("gIuOIzfuCn", "GoGOPhHckp", "qosVximywY"), Vector("nMnzCSiprN", "GoGOPhHckp", "qosVximywY")).map(v => v.reverse)
+      )
+
 
       val amwFlows: Vector[((String, String), Vector[(Time, Int)])] = resultsJson.flatMap(r => {
      r.tt.flatMap(p => {
