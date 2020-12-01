@@ -74,7 +74,7 @@ class MovingWalkwayWithDensityMeasurement[T <: Density, U <: MovingWalkwaySpeed]
         val ekm1: Double = this.criticalAreaEnd.head.targetDensity - computeQuantile(this.criticalAreaEnd.flatMap(_.paxIndividualDensityHistory.dropRight(1).last._2).toVector)
         val s = this._nextSpeed + (PIGains._1 + PIGains._2) * ek  - PIGains._1 * ekm1
         //println(t, direction, s, ek, ekm1)
-        math.round(4.0*math.max(0.0,math.min(s, 3.0)))/4.0
+        math.round(1.0*math.max(0.0,math.min(s, 3.0)))/1.0
       }
     } else if (direction == -1) {
       if (this.criticalAreaStart.forall(a => a.paxIndividualDensityHistory.size < 2)) {
@@ -86,7 +86,7 @@ class MovingWalkwayWithDensityMeasurement[T <: Density, U <: MovingWalkwaySpeed]
         val ekm1: Double = this.criticalAreaStart.head.targetDensity - computeQuantile(this.criticalAreaStart.flatMap(_.paxIndividualDensityHistory.dropRight(1).last._2).toVector)
         val s = math.min(0.0, this._nextSpeed) - ((PIGains._1 + PIGains._2) * ek  - PIGains._1 * ekm1)
         //println(t, direction, s, ek, ekm1)
-        math.round(4.0*math.min(0.0,math.max(s, -3.0)))/4.0
+        math.round(1.0*math.min(0.0,math.max(s, -3.0)))/1.0
       }
     } else {
       0.0
