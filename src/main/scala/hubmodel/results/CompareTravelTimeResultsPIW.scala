@@ -236,10 +236,10 @@ object CompareTravelTimeResultsPIW extends App {
   avergaeDensityResultsByZoneOther.flatMap(v => Vector(v._2.map(_._1.value.toDouble), v._2.map(_._2))).writeToCSV("average-density-over-time-" + config.getString("files_2.output_prefix") +".csv", columnNames = Some(headersDensityAverage), rowNames = None)
 */
 
-  def WelchTTest(m1: Double, sd1:Double, size1: Int, m2: Double, sd2:Double, size2: Int): (Double, Double) = {
-    val nu = math.pow(sd1*sd1/size1 + sd2*sd2/size2, 2) / (math.pow(sd1, 4) / (size1*size1*(size1-1.0)) + math.pow(sd2, 4) / (size2*size2*(size2-1.0)))
-    val t = (m1 - m2)/math.sqrt(sd1*sd1/size1 + sd2*sd2 / size2)
-    (t,nu)
+  def WelchTTest(m1: BigDecimal, sd1:BigDecimal, size1: BigDecimal, m2: BigDecimal, sd2:BigDecimal, size2: BigDecimal): (Double, Double) = {
+    val nu = (sd1*sd1/size1 + sd2*sd2/size2).pow(2) / (sd1.pow(4) / (size1*size1*(size1-1.0)) + sd2.pow(4) / (size2*size2*(size2-1.0)))
+    val t = (m1 - m2) / math.sqrt((sd1*sd1/size1 + sd2*sd2 / size2).toDouble)
+    (t.toDouble, nu.toDouble)
   }
 
   def labelling(pValue: Double, countRef: Int, countOther: Int): String = {
@@ -303,8 +303,10 @@ object CompareTravelTimeResultsPIW extends App {
   })*/
 
   // walking time distribution comparison
-  resultsTTCompared.flatMap(rr => rr._2.map(rrr => (rr._1, rrr._1, rrr._2, rrr._3, {
+  resultsTTCompared.flatMap(rr => rr._2.filter(v => v._4.isFinite && v._5.isFinite).map(rrr => (rr._1, rrr._1, rrr._2, rrr._3, {
+    println(rrr._2, rrr._4, rrr._10, rrr._3, rrr._5, rrr._11)
     val (t, nu) = WelchTTest(rrr._2, rrr._4, rrr._10, rrr._3, rrr._5, rrr._11)
+    println(t, nu)
     new TDistribution(nu).density(t)
   }, rrr._6, rrr._7, rrr._8, rrr._9, rrr._10, rrr._11))).toVector
     .filterNot(v => (v._3.isNaN || v._4.isNaN))

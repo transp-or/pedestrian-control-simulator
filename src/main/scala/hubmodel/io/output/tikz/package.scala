@@ -38,9 +38,31 @@ package object tikz {
       "%\\input{/home/nicholas/TexConfig/Tikz.tex}\n\n" +
       "\\begin{document}\n\n" +
       "% -------------------------- Styles -----------------------------\n" +
-      "\\tikzset{edge/.style={line width=1pt, draw=black,decoration={markings,mark=at position 0.4 with {\\arrow[scale=3]{stealth}}}}}\n" +
-      "\\tikzset{levelchange/.style={line width=1pt, dash pattern={on 1pt off 10pt}, draw=black,decoration={markings,mark=at position 0.4 with {\\arrow[scale=3]{stealth}}}}}\n" +
-      "\\begin{tikzpicture}")
+      "\\tikzset{edge/.style={line width=0.5pt, draw=black,decoration={markings,mark=at position 0.4 with {\\arrow[scale=0.85]{stealth}}}}}\n" +
+      "\\tikzset{levelchange/.style={line width=0.5pt, dash pattern={on 1pt off 10pt}, draw=black,decoration={markings,mark=at position 0.4 with {\\arrow[scale=0.85]{stealth}}}}}\n" +
+      "\\tikzset{walls/.style={line width=1pt, cap=rect}}\n" +
+      "%See https://tex.stackexchange.com/a/29367/1952\n" +
+      "\\makeatletter\n" +
+      "\\tikzset{% customization of pattern\n" +
+      "\thatch distance/.store in=\\hatchdistance,\n" +
+      "\thatch distance=5pt,\n" +
+      "\thatch thickness/.store in=\\hatchthickness,\n" +
+      "\thatch thickness=5pt\n" +
+      "}\n" +
+      "\\pgfdeclarepatternformonly[\\hatchdistance,\\hatchthickness]{vertical hatch}% name\n" +
+      "{\\pgfqpoint{-1pt}{-1pt}}% below left\n" +
+      "{\\pgfqpoint{\\hatchdistance}{\\hatchdistance}}% above right\n" +
+      "{\\pgfpoint{\\hatchdistance-1pt}{\\hatchdistance-1pt}}%\n" +
+      "{\n" +
+      "\t\\pgfsetcolor{\\tikz@pattern@color}\n" +
+      "\t\\pgfsetlinewidth{\\hatchthickness}\n" +
+      "\t\\pgfpathmoveto{\\pgfqpoint{0pt}{0pt}}\n" +
+      "\t\\pgfpathlineto{\\pgfqpoint{0pt}{\\hatchdistance}}\n" +
+      "\t\\pgfusepath{stroke}\n" +
+      "}\n" +
+      "\\makeatother" +
+      "\\begin{tikzpicture}[scale=0.11]\n"
+    )
 
 
     // writes vertices to tikz
@@ -52,7 +74,7 @@ package object tikz {
     }
 
     // writes walls to tikz
-    walls.foreach(w =>  writer.write(s"\\draw[line width=0.35cm, cap=rect] (${w.startPoint.X},${w.startPoint.Y}) -- (${w.endPoint.X},${w.endPoint.Y});\n"))
+    walls.foreach(w =>  writer.write(s"\\draw[walls] (${w.startPoint.X},${w.startPoint.Y}) -- (${w.endPoint.X},${w.endPoint.Y});\n"))
 
     // write the edges as tikz lines
     edges.collect{
@@ -61,8 +83,8 @@ package object tikz {
     }
 
     devices.amws.foreach(amw => {
-      writer.write(s"\\draw[pattern=vertical lines, pattern color=black] (${amw.walls.head.startPoint.X},${amw.walls.head.startPoint.Y}) rectangle (${amw.walls.last.endPoint.X},${amw.walls.last.endPoint.Y});\n")
-      amw.walls.foreach(w => writer.write(s"\\draw[line width=0.35cm, cap=rect] (${w.startPoint.X},${w.startPoint.Y}) -- (${w.endPoint.X},${w.endPoint.Y});\n"))
+      writer.write(s"\\pattern[pattern=vertical hatch, hatch distance=0.75mm, hatch thickness=.25pt] (${amw.walls.head.startPoint.X},${amw.walls.head.startPoint.Y}) rectangle (${amw.walls.last.endPoint.X},${amw.walls.last.endPoint.Y});\n")
+      amw.walls.foreach(w => writer.write(s"\\draw[walls] (${w.startPoint.X},${w.startPoint.Y}) -- (${w.endPoint.X},${w.endPoint.Y});\n"))
     })
 
     // writes tex closing
