@@ -488,9 +488,10 @@ object RunSimulation extends App with StrictLogging {
 
       val intervals: Vector[Double] = (simulationStartTime.value to simulationEndTime.value by intervalLength).map(_.toDouble).toVector
       def findTimeInterval(v: Double): (Int, Double) = findInterval(intervals)(v)
+
       val data: Vector[Vector[(Double, Int, Double)]] = resultsJson.map(r => {
         val demand = r.tt.groupBy(v => findTimeInterval(v.entry)._1).view.mapValues(_.size).toVector.toMap
-        val tt = r.tt.filter(_.exit.isDefined).groupBy(v => findTimeInterval(v.entry)._1).view.mapValues(g => g.map(d => d.td/d.tt).sum/g.size).toVector.toMap
+        val tt = r.tt.filter(_.exit.isDefined).groupBy(v => findTimeInterval(v.exit.get)._1).view.mapValues(g => g.map(d => d.td/d.tt).sum/g.size).toVector.toMap
         intervals.sliding(2).map(v => (v(0) + v(1))/2).zipWithIndex.map(i => (i._1, demand.getOrElse(i._2,0), tt.getOrElse(i._2,0.0))).toVector
       })
 
@@ -635,7 +636,7 @@ object RunSimulation extends App with StrictLogging {
     // ******************************************************************************************
 
     if (config.getBoolean("output.flows")) {
-      val interval: Double = 10.0
+      val interval: Double = 15.0
       val intervals: Vector[Time] = (simulationStartTime.value to simulationEndTime.value by interval).map(v => Time(v.toDouble)).toVector
 
       // PIW data
@@ -647,7 +648,7 @@ object RunSimulation extends App with StrictLogging {
       val amwRoutes: Map[String, Vector[Vector[String]]] =  Map("amw1p" -> Vector(Vector("b", "c", "d")), "amw1n" -> Vector(Vector("d", "c", "b")), "amw2p" -> Vector(Vector("d", "e")), "amw2n" -> Vector(Vector("e", "d")))
       */
 
-      // THREE-PLATFORMS data
+      // THREE-PLATFORMS data for AMW parallel flows
       val amwRoutes: Map[String, Vector[Vector[String]]] =  Map(
         "amw1p" -> Vector(Vector("wZJYfPMMrC", "DRGCrZDCmn", "YIaceeSmRl"), Vector("wZJYfPMMrC", "IKePOMJZZs", "YIaceeSmRl"), Vector("wZJYfPMMrC", "NAsmytEDoM", "YIaceeSmRl"), Vector("wZJYfPMMrC", "DRGCrZDCmn", "gIuOIzfuCn"), Vector("wZJYfPMMrC", "DRGCrZDCmn", "nMnzCSiprN")),
         "amw1n" -> Vector(Vector("wZJYfPMMrC", "DRGCrZDCmn", "YIaceeSmRl"), Vector("wZJYfPMMrC", "IKePOMJZZs", "YIaceeSmRl"), Vector("wZJYfPMMrC", "NAsmytEDoM", "YIaceeSmRl"), Vector("wZJYfPMMrC", "DRGCrZDCmn", "gIuOIzfuCn"), Vector("wZJYfPMMrC", "DRGCrZDCmn", "nMnzCSiprN")).map(v => v.reverse),
@@ -658,6 +659,21 @@ object RunSimulation extends App with StrictLogging {
         "amw4p" -> Vector(Vector("YIaceeSmRl", "GoGOPhHckp", "qosVximywY"), Vector("YIaceeSmRl", "IpzwrYgLDR", "qosVximywY"), Vector("YIaceeSmRl", "vISAZVYJTe", "qosVximywY"), Vector("gIuOIzfuCn", "GoGOPhHckp", "qosVximywY"), Vector("nMnzCSiprN", "GoGOPhHckp", "qosVximywY")),
         "amw4n" -> Vector(Vector("YIaceeSmRl", "GoGOPhHckp", "qosVximywY"), Vector("YIaceeSmRl", "IpzwrYgLDR", "qosVximywY"), Vector("YIaceeSmRl", "vISAZVYJTe", "qosVximywY"), Vector("gIuOIzfuCn", "GoGOPhHckp", "qosVximywY"), Vector("nMnzCSiprN", "GoGOPhHckp", "qosVximywY")).map(v => v.reverse)
       )
+
+
+      // THREE-PLATFORMS DATA FOR ENTRANCE INTO JUNCTIONS
+      /*val amwRoutes: Map[String, Vector[Vector[String]]] =  Map(
+        "1" -> Vector(Vector("entrance-top-corr-left", "wZJYfPMMrC"), Vector("HIJdqjkLeF", "wZJYfPMMrC")),
+        "2" -> Vector(Vector("IKePOMJZZs", "wZJYfPMMrC"), Vector("IKePOMJZZs", "DRGCrZDCmn"), Vector("IKePOMJZZs", "YIaceeSmRl"), Vector("NAsmytEDoM", "wZJYfPMMrC"), Vector("NAsmytEDoM", "DRGCrZDCmn"), Vector("NAsmytEDoM", "YIaceeSmRl")),
+        "3" -> Vector(Vector("gIuOIzfuCn", "DRGCrZDCmn"), Vector("gIuOIzfuCn", "YIaceeSmRl"), Vector("gIuOIzfuCn", "GoGOPhHckp"), Vector("nMnzCSiprN", "DRGCrZDCmn"), Vector("nMnzCSiprN", "YIaceeSmRl"), Vector("nMnzCSiprN", "GoGOPhHckp")),
+        "4" -> Vector(Vector("IpzwrYgLDR", "YIaceeSmRl"), Vector("IpzwrYgLDR", "GoGOPhHckp"), Vector("IpzwrYgLDR", "qosVximywY"), Vector("vISAZVYJTe", "YIaceeSmRl"), Vector("vISAZVYJTe", "GoGOPhHckp"), Vector("vISAZVYJTe", "qosVximywY")),
+        "5" -> Vector(Vector("entrance-top-corr-right", "qosVximywY"), Vector("jbDyANtZZi", "qosVximywY")),
+        "6" -> Vector(Vector("entrance-bottom-corr-left", "tLpkyYGApr"), Vector("HIJdqjkLeF", "tLpkyYGApr")),
+        "7" -> Vector(Vector("FsXkzkmeaL", "tLpkyYGApr"), Vector("FsXkzkmeaL", "ipXoqMkQgs"), Vector("FsXkzkmeaL", "fGAcIkaSUf"), Vector("AccfCUaOLZ", "tLpkyYGApr"), Vector("AccfCUaOLZ", "ipXoqMkQgs"), Vector("AccfCUaOLZ", "fGAcIkaSUf")),
+        "8" -> Vector(Vector("xLcFGmvpOC", "ipXoqMkQgs"), Vector("xLcFGmvpOC", "fGAcIkaSUf"), Vector("xLcFGmvpOC", "GrpKHXdGlS"), Vector("DAfYXGkUbY", "ipXoqMkQgs"), Vector("DAfYXGkUbY", "fGAcIkaSUf"), Vector("DAfYXGkUbY", "GrpKHXdGlS")),
+        "9" -> Vector(Vector("ghNOFYgEWK", "fGAcIkaSUf"), Vector("ghNOFYgEWK", "GrpKHXdGlS"), Vector("ghNOFYgEWK", "XDXWiPxhdz"), Vector("vsFIuprjqg", "fGAcIkaSUf"), Vector("vsFIuprjqg", "GrpKHXdGlS"), Vector("vsFIuprjqg", "XDXWiPxhdz")),
+        "10" -> Vector(Vector("entrance-bottom-corr-right", "XDXWiPxhdz"), Vector("jbDyANtZZi", "XDXWiPxhdz"))
+      )*/
 
 
       val amwFlows: Vector[((String, String), Vector[(Time, Int)])] = resultsJson.flatMap(r => {
