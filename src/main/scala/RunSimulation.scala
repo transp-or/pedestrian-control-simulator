@@ -288,6 +288,9 @@ object RunSimulation extends App with StrictLogging {
         .filter(_.monitoredAreaDensity.isDefined)
         .map(d => d.monitoredAreaDensity.get.map(d => d._2.integratedIndividualDensity).sum)
 
+      densityIntegrals.writeToCSV(config.getString("output.output_prefix") +"_mean-density-individual-75-integral.csv")
+
+
       Vector(computeBoxPlotData(densityIntegrals).toCSV)
         .writeToCSV(config.getString("output.output_prefix") +"_mean-density-individual-75-integral-boxplot.csv")
 
@@ -481,7 +484,9 @@ object RunSimulation extends App with StrictLogging {
 
     if (config.getBoolean("output.travel-time.mean-by-intervals")) {
 
-      val intervals: Vector[Double] = (simulationStartTime.value to simulationEndTime.value by 15.0).map(_.toDouble).toVector
+      val intervalLength: Double = 15
+
+      val intervals: Vector[Double] = (simulationStartTime.value to simulationEndTime.value by intervalLength).map(_.toDouble).toVector
       def findTimeInterval(v: Double): (Int, Double) = findInterval(intervals)(v)
       val data: Vector[Vector[(Double, Int, Double)]] = resultsJson.map(r => {
         val demand = r.tt.groupBy(v => findTimeInterval(v.entry)._1).view.mapValues(_.size).toVector.toMap
@@ -497,9 +502,9 @@ object RunSimulation extends App with StrictLogging {
         .flatten
         .groupBy(_._1)
         .toVector
-        .map(data => (data._1, data._2.map(_._2).sum / data._2.size.toDouble, computeQuantile(25)(data._2.map(_._2)).value, computeQuantile(75)(data._2.map(_._2)).value, data._2.map(_._3.toDouble).toVector.sum / data._2.size.toDouble, computeQuantile(25)(data._2.map(_._3)).value, computeQuantile(75)(data._2.map(_._3)).value))
+        .map(data => (data._1, data._2.map(_._2/intervalLength).sum/ data._2.size.toDouble, computeQuantile(25)(data._2.map(_._2/intervalLength)).value, computeQuantile(75)(data._2.map(_._2/intervalLength)).value, data._2.map(_._3.toDouble).toVector.sum / data._2.size.toDouble, computeQuantile(25)(data._2.map(_._3)).value, computeQuantile(75)(data._2.map(_._3)).value))
         .sortBy(_._1)
-        .writeToCSV(config.getString("output.output_prefix") + "_demand_mean_tt_intervals_mean_lq_uq.csv", columnNames=Some(Vector("t", "inflow_m", "inflow_lq", "inflow_uq", "tt_m", "tt_lq", "tt_uq")), rowNames = None)
+        .writeToCSV(config.getString("output.output_prefix") + "_demand_mean_speed_intervals_mean_lq_uq.csv", columnNames=Some(Vector("t", "inflow_m", "inflow_lq", "inflow_uq", "speed_m", "speed_lq", "speed_uq")), rowNames = None)
 
       val inflowZones: Vector[String] = resultsJson.flatMap(r => r.tt.map(p => zoneSimplificationMapping(p.o))).distinct
       val inflowData: Map[String, Vector[(Double, Int, Int)]] = resultsJson.flatMap(r => {
