@@ -1,7 +1,8 @@
 {
   "amws_mode": "reactive",
-  "location": "lausanne",
-  "sublocation": "test",
+  "location": "three-platforms",
+  "sublocation": "3P",
+  "setup": "reference",
   "nodes": [
     {
       "name": "plat-3-center",

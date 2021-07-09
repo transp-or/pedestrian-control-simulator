@@ -63,6 +63,7 @@ package object results {
     if (!Files.exists(Paths.get(dir))) {
       Files.createDirectories(Paths.get(dir))
     }
+
     /* else {
           Files.newDirectoryStream(Paths.get(dir)).toVector.foreach(f => Files.delete(f))
         }*/
@@ -202,8 +203,8 @@ package object results {
 
     if (writeTrajectoriesJSON) {
       println("Writing Trajectories as JSON to file for viz")
-      writePopulationTrajectoriesJSON(simulator.populationCompleted ++ simulator.population, prefix + "_simulation_trajectories_" + simulator.ID + ".json", (simulator.startTime.value) to (simulator.finalTime.value) by (simulator.motionModelUpdateInterval.value))
-      writeODJSON(simulator.populationCompleted ++ simulator.population, simulator.ODZones.map(_.name), prefix + "_ped_IDS_per_OD_" + simulator.ID + ".json")
+      writePopulationTrajectoriesJSON(simulator.location, simulator.setup, simulator.populationCompleted ++ simulator.population, prefix + "simulation_trajectories_" + simulator.ID + ".json", (simulator.startTime.value) to (simulator.finalTime.value) by (simulator.motionModelUpdateInterval.value))
+      writeODJSON(simulator.populationCompleted ++ simulator.population, simulator.ODZones.map(_.name), prefix + "ped_IDS_per_OD_" + simulator.ID + ".json")
     }
   }
 

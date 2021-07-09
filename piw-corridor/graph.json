@@ -1,6 +1,7 @@
 {
+  "location": "lausanne",
+  "setup": "PIW",
   "amws_mode": "reactive",
-  "sublocation": "test",
   "nodes": [
     {
       "name": "14",

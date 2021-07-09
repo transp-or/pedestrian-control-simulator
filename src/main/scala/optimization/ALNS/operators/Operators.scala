@@ -401,7 +401,7 @@ object DownstreamDensityUpdate extends OperatorGenerator with RandomChange {
 }
 
   /** Randomly set constant speed of moving walkways.
-    * For each moving walkway in the infrastructure, there is a 50% chance of ŝelecting it for changing the speed.
+    * For each moving walkway in the infrastructure, there is a 50% chance of selecting it for changing the speed.
     * For each moving walkway which has been selected for a speed change, a speed is sampled uniformly from the
     * set of possible speeds. The other speeds are lesft unchanged.
     */

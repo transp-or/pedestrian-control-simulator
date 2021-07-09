@@ -7,7 +7,7 @@ import hubmodel.supply.Infrastructure
   * elements are used. The combination of multiple control strategies is possible.
   *
   * @param amwsMode            geographical location
-  * @param subLocation         sublocation within the hub
+  * @param setup         sublocation within the hub
   * @param nodes               list of nodes
   * @param standardConnections connectivity
   * @param flowGates           collection of flow gates
@@ -17,7 +17,8 @@ import hubmodel.supply.Infrastructure
   * @param flowSeparators      collection of flow separators
   */
 case class InfraGraphParser(amwsMode: String,
-                            subLocation: String,
+                            location: String,
+                            setup: String,
                             nodes: Vector[Vertex_JSON],
                             standardConnections: Vector[Connectivity_JSON],
                             levelChanges: Vector[Connectivity_JSON],

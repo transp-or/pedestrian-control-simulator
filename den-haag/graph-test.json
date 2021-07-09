@@ -1,6 +1,7 @@
 {
-  "location": "lausanne",
-  "sublocation": "test",
+  "location": "den-haag",
+  "setup": "test",
+  "amws_mode": "reactive",
   "nodes": [
     {
       "name": "nhmoKqcNkm",
@@ -6796,5 +6797,6 @@
       ]
     }
   ],
-  "destination_groups":  []
+  "destination_groups":  [],
+  "flow_lines": []
 }

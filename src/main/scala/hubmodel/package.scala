@@ -3,6 +3,7 @@ import java.lang.Error
 import java.nio.file.{Files, Paths}
 import java.util.concurrent.ThreadLocalRandom
 
+import breeze.linalg
 import com.typesafe.config.{Config, ConfigFactory, ConfigValueFactory}
 import hubmodel.DES.{NOMADGraphSimulator, _}
 import hubmodel.control.ControlDevices
@@ -23,6 +24,7 @@ import org.apache.commons.lang3.RandomStringUtils
 import tools.Time
 
 import scala.annotation.tailrec
+import scala.collection.SortedMap
 import scala.collection.immutable.NumericRange
 import scala.util.{Failure, Success, Try}
 
@@ -177,34 +179,164 @@ package object hubmodel {
     * @param file
     * @param times
     */
-  def writePopulationTrajectoriesJSON(pop: Iterable[PedestrianSim], file: String, times: NumericRange[BigDecimal]): Unit = {
+  def writePopulationTrajectoriesJSON(location: String, setup: String, pop: Vector[PedestrianSim], file: String, times: NumericRange[BigDecimal]): Unit = {
 
     // collects the traj data
-    val infotrajDataByTime1 = pop.flatMap(p => p.getHistoryPosition.map(r => (r._1, r._2, p.ID)))
-    val trajDataByTime2 = pop.flatMap(p => p.getHistoryPosition.map(r => (r._1, r._2, p.ID))).groupBy(_._1)
+    //val infotrajDataByTime1 = pop.flatMap(p => p.getHistoryPosition.map(r => (r._1, r._2, p.ID)))
+    //val trajDataByTime2 = pop.flatMap(p => p.getHistoryPosition.map(r => (r._1, r._2, p.ID))).groupBy(_._1)
+
+
+
+    @tailrec def groupUntilSizePed(sizes: Map[String, Int], res: Map[Int, Vector[String]] = Map(), currentSize: Int = 0, currentGroup: Int = 0): Map[Int, Vector[String]] = {
+      if (sizes.isEmpty) {res}
+      else if (currentSize < 25000){
+        groupUntilSizePed(sizes.tail, res + (currentGroup -> res.getOrElse(currentGroup, Vector()).appended(sizes.head._1)), currentSize + sizes.head._2, currentGroup)
+      } else {
+        groupUntilSizePed(sizes.tail, res + (currentGroup + 1 -> Vector(sizes.head._1)), sizes.head._2, currentGroup + 1)
+      }
+    }
+
+    //val pedGroupsSize: Map[Int, Vector[String]] = groupUntilSizePed(pop.map(ped => ped.ID -> ped.getHistoryPosition.size).toMap)
+
+    //val filesTrajectoryByID = pedGroupsSize.map(g => {
+      val fileName: String = file.replace(".json", s"-trajectories-by-id.json")
+      val f = new File(fileName)
+      val bw = new BufferedWriter(new FileWriter(f))
+
+      val firstPed  = pop.head
+
+      bw.write("{\"location\":\"" + location + "\",")
+      bw.write("\"setup\":\"" + setup + "\",")
+
+      bw.write("\"trajectoryDataByID\": [")
+      // write first value separately to deal with commas separating
+      bw.write("{\"id\":\"" + firstPed.ID + "\",")
+      bw.write("\"o\":\"" + firstPed.origin.name + "\",")
+      bw.write("\"d\":\"" + firstPed.finalDestination.name + "\",")
+      bw.write("\"tt\":" + firstPed.travelTime + ",")
+      bw.write("\"td\":" + firstPed.travelDistance + ",")
+      bw.write("\"min_time\":" + firstPed.entryTime + ",")
+      bw.write("\"max_time\":" + firstPed.exitTime + ",")
+      bw.write("\"data\":[" + firstPed.getHistoryPosition.map(d => "{\"t\":" + d._1 + "," + d._2.toJSON + "}").mkString(","))
+      bw.write("]}\n")
+      for (ped <- pop.tail) {
+        //val ped = pop.find(ped => ped.ID == id).get
+        bw.write(",{\"id\":\"" + ped.ID + "\",")
+        bw.write("\"o\":\"" + ped.origin.name + "\",")
+        bw.write("\"d\":\"" + ped.finalDestination.name + "\",")
+        bw.write("\"tt\":" + ped.travelTime + ",")
+        bw.write("\"td\":" + ped.travelDistance + ",")
+        bw.write("\"min_time\":" + ped.entryTime + ",")
+        bw.write("\"max_time\":" + ped.exitTime + ",")
+        bw.write("\"data\":[")
+        bw.write(ped.getHistoryPosition.map(d => "{\"t\":" + d._1 + " ," + d._2.toJSON + "}").mkString(","))
+        bw.write("]}\n")
+      }
+
+      bw.write("]}")
+      bw.close()
+
+    //  fileName
+    //})
+
+    zip(file.replace(".json", "-trajectories-by-id.zip"), Vector(fileName))
+
 
     val trajDataByTime: Map[Time, Iterable[(Time, HistoryContainer, String)]] = pop.flatMap(p => p.getHistoryPosition.map(r => (r._1, r._2, p.ID))).groupBy(_._1).filter(t => times.contains(t._1.value))
 
-    val sortedKeys: Vector[Time] = trajDataByTime.keys.toVector.sorted
+    val sizes: SortedMap[Time, Int] = SortedMap[Time, Int]() ++ trajDataByTime.map(kv => kv._1 -> kv._2.size)
 
+    @tailrec def groupUntilSizeTrajByTime(sizes: SortedMap[Time, Int], res: Map[Int, Vector[Time]] = Map(), currentSize: Int = 0, currentGroup: Int = 0): Map[Int, Vector[Time]] = {
+      if (sizes.isEmpty) {res}
+      else if (currentSize < 25000){
+        groupUntilSizeTrajByTime(sizes.tail, res + (currentGroup -> res.getOrElse(currentGroup, Vector()).appended(sizes.head._1)), currentSize + sizes.head._2, currentGroup)
+      } else {
+        groupUntilSizeTrajByTime(sizes.tail, res + (currentGroup + 1 -> Vector(sizes.head._1)), sizes.head._2, currentGroup + 1)
+      }
+    }
+
+    val groups: Map[Int, Vector[Time]] = groupUntilSizeTrajByTime(sizes)
+
+    //val groups = sortedKeys.grouped(150).zipWithIndex
+
+    val filesTrajectoryByTime: Vector[String] = groups.map(g => {
+      val fileName: String = file.replace(".json", s".json.part_${g._1}")
+      val f = new File(fileName)
+      val bw = new BufferedWriter(new FileWriter(f))
+
+      bw.write("{\"location\":\"" + location + "\",")
+      bw.write("\"setup\":\"" + setup + "\",")
+
+      bw.write("\"trajectoryDataByTime\": [")
+      // write first value separately to deal with commas seperating
+      bw.write("{\"time\":" + g._2.head.toString + ",")
+      bw.write("\"data\":[" + trajDataByTime(g._2.head).map(d => "{\"id\":\"" + d._3 + "\"," + d._2.toJSON + "}").mkString(","))
+      bw.write("]}\n")
+      for (t <- g._2.tail) {
+        bw.write(",{\"time\":" + t.toString + ",")
+        bw.write("\"data\":[")
+        bw.write(trajDataByTime(t).map(d => "{\"id\":\"" + d._3 + "\" ," + d._2.toJSON + "}").mkString(","))
+        bw.write("]}\n")
+      }
+
+      bw.write("]}")
+      bw.close()
+
+      fileName
+    }).toVector
+
+    zip(file.replace(".json", ".zip"), filesTrajectoryByTime)
+  }
+
+    /** https://stackoverflow.com/questions/9985684/how-do-i-archive-multiple-files-into-a-zip-file-using-scala
+      *
+      * @param out
+      * @param files
+      */
+    def zip(out: String, files: Iterable[String]): Unit = {
+      import java.io.{ BufferedInputStream, FileInputStream, FileOutputStream }
+      import java.util.zip.{ ZipEntry, ZipOutputStream }
+
+      val zip = new ZipOutputStream(new FileOutputStream(out))
+
+      files.foreach { name =>
+        zip.putNextEntry(new ZipEntry(name))
+        val in = new BufferedInputStream(new FileInputStream(name))
+        var b = in.read()
+        while (b > -1) {
+          zip.write(b)
+          b = in.read()
+        }
+        in.close()
+        zip.closeEntry()
+      }
+      zip.close()
+    }
+
+    /*
     // opens the file for writing
     val f = new File(file)
     val bw = new BufferedWriter(new FileWriter(f))
-    bw.write("[")
+
+    bw.write("{\"location\":\"" + location + "\",")
+    bw.write("\"setup\":\"" + setup + "\",")
+
+    bw.write("\"trajectoryDataByTime\": [")
     // write first value separately to deal with commas seperating
     bw.write("{\"time\":" + sortedKeys.head.toString + ",")
-    bw.write("\"data\":[" + trajDataByTime(sortedKeys.head).map(d => "{\"id\":\"" + d._3 + "," + d._2.toJSON + "}").mkString(","))
-    bw.write("]}")
+    bw.write("\"data\":[" + trajDataByTime(sortedKeys.head).map(d => "{\"id\":\"" + d._3 + "\"," + d._2.toJSON + "}").mkString(","))
+    bw.write("]}\n")
     for (t <- sortedKeys.tail) {
       bw.write(",{\"time\":" + t.toString + ",")
       bw.write("\"data\":[")
-      bw.write(trajDataByTime(t).map(d => "{\"id\":\"" + d._3 + "," + d._2.toJSON + "}").mkString(","))
-      bw.write("]}")
+      bw.write(trajDataByTime(t).map(d => "{\"id\":\"" + d._3 + "\" ," + d._2.toJSON + "}").mkString(","))
+      bw.write("]}\n")
     }
 
-    bw.write("]")
+    bw.write("]}")
     bw.close()
-  }
+
+     */
 
   def writeODJSON(pop: Iterable[PedestrianSim], ODZones: Iterable[String], file: String): Unit = {
     def buildStringFromIDs(IDs: Iterable[String]): String = {
@@ -304,10 +436,10 @@ package object hubmodel {
     )
 
 
-    if (config.getBoolean("output.write_trajectories_as_JSON")) {
+    /*if (config.getBoolean("output.write_trajectories_as_JSON")) {
       println("Writing trajectory data as JSON...")
       writePopulationTrajectoriesJSON(sim.populationCompleted ++ sim.population, config.getString("output.output_prefix") + "_simulation_trajectories_" + sim.ID + ".json", (sim.startTime.value) to (sim.finalTime.value) by (sim.motionModelUpdateInterval.value))
-    }
+    }*/
 
     println("Making video of simulation, this can take some time...")
 

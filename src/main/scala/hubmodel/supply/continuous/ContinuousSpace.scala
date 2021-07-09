@@ -10,7 +10,7 @@ import hubmodel.supply.Infrastructure
   */
 class ContinuousSpace(val walls: Vector[Wall]) extends Infrastructure with BuildClosedPolygon {
   override val amwsMode: String = "unused"
-  override val subLocation: String = "unused"
+  override val setup: String = "unused"
 
   override lazy val shellCollection: List[Shell] = buildShells(walls)
   val isInsideWalkableArea: Position => Boolean = pos => super.isInsideWalkableSpace(pos)

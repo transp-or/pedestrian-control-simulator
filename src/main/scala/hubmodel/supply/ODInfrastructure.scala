@@ -90,7 +90,7 @@ class ODInfrastructureParser(nameMapFile: String) {
   * @param nodeToPlatformInput mapping from nodes to platforms. Answers the question on which platform is a given node located
   */
 case class InfraODParser(amwsMode: String,
-                         subLocation: String,
+                         setup: String,
                          connectionMatrix: Vector[ODPairWithoutCapacity],
                          nodeThroughput: Vector[NodeThroughput],
                          nodeToPlatformInput: Vector[Node2PlatMapping],
@@ -113,7 +113,7 @@ case class InfraODParser(amwsMode: String,
   */
 class InfraODModel(infraRaw: InfraODParser, val nameMappings: NameConversions) extends Infrastructure {
   val amwsMode: String = infraRaw.amwsMode
-  val subLocation: String = infraRaw.subLocation
+  val setup: String = infraRaw.setup
   val network: Map[Tuple2[NodeIDOld, NodeIDOld], Double] = {
     val tmpNetwork: Map[Tuple2[NodeIDOld, NodeIDOld], Double] = infraRaw.connectionMatrix.map(od => (od.O, od.D) -> od.distance).toMap
     val complementOfTmpNetwork: Map[Tuple2[NodeIDOld, NodeIDOld], Double] = for (pairs <- tmpNetwork if !tmpNetwork.keySet.contains(pairs._1.swap)) yield {

@@ -108,7 +108,7 @@ package hubmodel {
       */
     trait Infrastructure {
       val amwsMode: String
-      val subLocation: String
+      val setup: String
     }
 
     /* ----------------------------------------------------------------------------------
@@ -153,7 +153,7 @@ package hubmodel {
     // reads the InfraOD object from JSON. This is the full network as an OD matrix
     implicit val InfraODReads: Reads[InfraODParser] = (
       (JsPath \ "location").read[String](minLength[String](2)) and
-        (JsPath \ "sublocation").read[String](minLength[String](2)) and
+        (JsPath \ "setup").read[String](minLength[String](2)) and
         (JsPath \ "od").read[Vector[ODPairWithoutCapacity]] and
         (JsPath \ "nodethroughput").read[Vector[NodeThroughput]] and
         (JsPath \ "nodeplatform").read[Vector[Node2PlatMapping]] and

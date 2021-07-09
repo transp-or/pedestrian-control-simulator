@@ -107,7 +107,7 @@ package object DES {
 
     // Builds the graph used for route choice. This Graph is composed of multiple different link types.
     println(" * Reading and creating graph and control devices")
-    val (routeGraph, controlDevices) = readGraph(
+    val (routeGraph, controlDevices, location, setup) = readGraph(
       config.getString("files.graph"),
       config.getBoolean("sim.use_flow_gates"),
       config.getBoolean("sim.use_binary_gates"),
@@ -162,17 +162,7 @@ package object DES {
       if (config.getIsNull("sim.prediction.pred-sf-dt")) {None} else {Some(Time(config.getDouble("sim.prediction.pred-sf-dt")))},
     )
 
-    val simulationParameters: SimulationInputParameters = new SimulationInputParameters(
-      simulationStartTime,
-      simulationEndTime,
-      socialForceInterval,
-      routeUpdateInterval,
-      infraSF.continuousSpace.addWalls(controlDevices.amws.flatMap(_.walls)),
-      routeGraph,
-      stop2Vertex,
-      controlDevices,
-      predictionParams
-    )
+    val simulationParameters: SimulationInputParameters = new SimulationInputParameters(simulationStartTime, simulationEndTime, socialForceInterval, routeUpdateInterval, infraSF.continuousSpace.addWalls(controlDevices.amws.flatMap(_.walls)), routeGraph, stop2Vertex, controlDevices, predictionParams, location, setup)
 
     simulationParameters.rebuildTreeInterval = Some(rebuildTreeInterval)
     simulationParameters.logFullPedestrianHistory = config.getBoolean("output.write_trajectories_as_VS") || config.getBoolean("output.write_trajectories_as_JSON") || config.getBoolean("output.make_video")

@@ -33,7 +33,7 @@ package object graph {
                 measureDensity: Boolean,
                 useAlternatGraphs: Boolean,
                 amwsMode: (String, String),
-               routeChoiceBetas: (Double, Double)): (GraphContainer, ControlDevices) = {
+               routeChoiceBetas: (Double, Double)): (GraphContainer, ControlDevices, String, String) = {
 
 
     val source: BufferedSource = scala.io.Source.fromFile(graphSpecificationFile)
@@ -317,7 +317,9 @@ package object graph {
             }
           }
           ,
-          new ControlDevices(monitoredAreas, mv, amwsMode, fg, bg, flowSeparators, fixedFlowSep, flowLines.values.toVector, Some(flowSepParameters))
+          new ControlDevices(monitoredAreas, mv, amwsMode, fg, bg, flowSeparators, fixedFlowSep, flowLines.values.toVector, Some(flowSepParameters)),
+          s.get.location,
+          s.get.setup
         )
       }
       case e: JsError => throw new Error("Error while parsing graph specification file: " + JsError.toJson(e).toString())
