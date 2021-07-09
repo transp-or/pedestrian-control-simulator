@@ -105,6 +105,9 @@ class ALNSPareto(f: StatePrediction,
         operatorWeights.update(op, math.max(weightMin, math.min(weightMax, operatorWeights(op) * lambda + (1.0 - lambda) * score)))
 
         if (scoreText == "accepted") {
+          if (op == "ExploreBestSolution") {
+              println("stop")
+            }
           val solutionReplications: Int = this.paretoSet(xNew._1)._3.size
           stochasticReduction(this.paretoSet(xNew._1)._2).map(kv => kv._1 + ": " + kv._2.toString).mkString(", ")
           println(s" * accepted: repl.: $solutionReplications, operator score: $scoreText, objectives: " + stochasticReduction(this.paretoSet(xNew._1)._2).map(kv => kv._1 + ": " + kv._2.toString).mkString(", "))
