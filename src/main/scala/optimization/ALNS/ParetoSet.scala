@@ -14,7 +14,7 @@ import scala.util.Random
   */
 class Policy(val x: Vector[ControlDevicePolicy]) {
 
-  private def stringify: String = this.x.sortBy(p => (p.name, p.start)).map(dv => dv.nameToString + (10.0 * dv.decisionVariable).round.toInt.toString).mkString("-")
+  private def stringify: String = this.x.sortBy(p => (p.name, p.start)).map(dv => dv.nameToString + "=" +  (10.0 * dv.decisionVariable).round.toInt.toString).mkString("-")
 
 
   /** Checks whether another object equals this one
@@ -175,7 +175,9 @@ trait ParetoSet {
     * @return
     */
   private def thisDominatesThat(thisSol: FunctionEvaluationReduced, thatSol: FunctionEvaluationReduced): Boolean = {
-    !thisSol.exists(thisOF => thisOF._2 > thatSol(thisOF._1))
+    //!thisSol.exists(thisOF => thisOF._2 > thatSol(thisOF._1))
+
+    thisSol.forall(thisOF => thisOF._2 <= thatSol(thisOF._1)) && thisSol.exists(thisOF => thisOF._2 < thatSol(thisOF._1))
   }
 
 }

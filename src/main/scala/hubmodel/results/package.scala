@@ -366,6 +366,7 @@ package object results {
         }
       }
 
+
       lazy val densities: Option[Vector[DensityData_JSON]] = {
         if (str._2.keySet.contains("density") && densityFlag) {
           val source: BufferedSource = scala.io.Source.fromFile(str._2("density"))

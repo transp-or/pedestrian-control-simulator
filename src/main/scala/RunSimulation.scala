@@ -288,6 +288,8 @@ object RunSimulation extends App with StrictLogging {
         .filter(_.monitoredAreaDensity.isDefined)
         .map(d => d.monitoredAreaDensity.get.map(d => d._2.integratedIndividualDensity).sum)
 
+      densityIntegrals.writeToCSV(config.getString("output.output_prefix") +"_density-individual-75-integral-per-simulation.csv")
+
       Vector(computeBoxPlotData(densityIntegrals).toCSV)
         .writeToCSV(config.getString("output.output_prefix") +"_mean-density-individual-75-integral-boxplot.csv")
 
