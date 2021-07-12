@@ -88,9 +88,9 @@ class ALNSPareto(f: StatePrediction,
       val xNew: Solution = (applyConstraints(this.constraints, xNewRaw._1), xNewRaw._2)
 
       println(" * current solution:")
-      println(this.currentx.x.map(_.decisionVariable))
+      println(this.currentx.x.sortBy(p => (p.name, p.start)).map(_.decisionVariable))
       println(s" * new solution after operator: $op with fraction: $fraction")
-      println(xNew._1.x.map(_.decisionVariable))
+      println(xNew._1.x.sortBy(p => (p.name, p.start)).map(_.decisionVariable))
 
       function.predict(xNew._1.x, xNew._2)
 
@@ -105,7 +105,11 @@ class ALNSPareto(f: StatePrediction,
         operatorWeights.update(op, math.max(weightMin, math.min(weightMax, operatorWeights(op) * lambda + (1.0 - lambda) * score)))
 
         if (scoreText == "accepted") {
+
           val solutionReplications: Int = this.paretoSet(xNew._1)._3.size
+          if (solutionReplications > 4) {
+            println("stop")
+          }
           stochasticReduction(this.paretoSet(xNew._1)._2).map(kv => kv._1 + ": " + kv._2.toString).mkString(", ")
           println(s" * accepted: repl.: $solutionReplications, operator score: $scoreText, objectives: " + stochasticReduction(this.paretoSet(xNew._1)._2).map(kv => kv._1 + ": " + kv._2.toString).mkString(", "))
         } else {

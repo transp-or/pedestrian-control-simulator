@@ -264,7 +264,8 @@ class RouteGraph(protected val baseVertices: Iterable[Vertex],
       this.edgeCollectionWithoutAMW
         .find(e => e.startVertex == p.accomplishedRoute.dropRight(1).last._2 && e.endVertex == p.accomplishedRoute.last._2)
         .foreach(e => {
-          e.updateCost(t, (p.accomplishedRoute.last._1 - p.accomplishedRoute.dropRight(1).last._1).value.toDouble)
+          // upper bound on the travel time for each edge. To prevent weird routes.
+          e.updateCost(t, math.max(e.length/0.5, (p.accomplishedRoute.last._1 - p.accomplishedRoute.dropRight(1).last._1).value.toDouble))
         })
     }
 

@@ -290,7 +290,6 @@ object RunSimulation extends App with StrictLogging {
 
       densityIntegrals.writeToCSV(config.getString("output.output_prefix") +"_mean-density-individual-75-integral.csv")
 
-
       Vector(computeBoxPlotData(densityIntegrals).toCSV)
         .writeToCSV(config.getString("output.output_prefix") +"_mean-density-individual-75-integral-boxplot.csv")
 
