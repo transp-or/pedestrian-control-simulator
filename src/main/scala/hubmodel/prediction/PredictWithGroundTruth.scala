@@ -30,6 +30,8 @@ import scala.util.{Failure, Success, Try}
   */
 class PredictWithGroundTruth(private val sim: PedestrianSimulation) extends StatePrediction {
 
+  val taskSupport = new ForkJoinTaskSupport(new java.util.concurrent.ForkJoinPool(math.min(sim.predictionInputParameters.replications, sim.predictionInputParameters.threads)))
+
 
   val predictionStartTime: Time = this.sim.currentTime
   val predictionEndTime: Time = this.sim.currentTime + this.sim.predictionInputParameters.horizon
@@ -79,7 +81,7 @@ class PredictWithGroundTruth(private val sim: PedestrianSimulation) extends Stat
 
     if (sim.predictionInputParameters.threads > 1) {
       val parallelRuns: ParVector[Int] = Vector.range(0, sim.predictionInputParameters.replications).par
-      parallelRuns.tasksupport = new ForkJoinTaskSupport(new java.util.concurrent.ForkJoinPool(math.min(sim.predictionInputParameters.replications, sim.predictionInputParameters.threads)))
+      parallelRuns.tasksupport = this.taskSupport//new ForkJoinTaskSupport(new java.util.concurrent.ForkJoinPool(math.min(sim.predictionInputParameters.replications, sim.predictionInputParameters.threads)))
 
       parallelRuns.map(i => {
 

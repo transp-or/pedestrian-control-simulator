@@ -120,8 +120,8 @@ trait ParetoSet {
                         stateData: Vector[StateGroundTruthPredicted]): (Vector[Policy], Vector[Policy], Vector[ControlDeviceData], FunctionEvaluation, Vector[StateGroundTruthPredicted]) = {
       if (solutions.isEmpty) { // if the set of pareto solution is empty, then return the dominated and dominating sets
         (dominatedBy, dominating, controlData, ofs, stateData)
-      } else if (paretoSet.contains(x)) { // if the solution to insert is the same as an already existing solution, then update it.
-        paretoSet.update(
+      } else if (this.paretoSet.contains(x)) { // if the solution to insert is the same as an already existing solution, then update it.
+        this.paretoSet.update(
           x,
           (controlData,
             (this.paretoSet.getOrElse(x, (controlData, Map(), Vector()))._2.toVector ++ ofs.toVector).groupBy(_._1).view.mapValues(v => v.flatMap(_._2)).toMap,
