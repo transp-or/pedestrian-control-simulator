@@ -68,23 +68,25 @@ package object tikz {
     // writes vertices to tikz
     // TODO fix this problem for creating tikz data
 
+    val scaleFactor: Double = 25.0
+
     vertices.collect{
-      case r: Rectangle => writer.write(s"\\fill[black!10!white] (${r.xMin}, ${r.yMin}) rectangle (${r.xMax}, ${r.yMax});\n")
-      case c: Circle => writer.write(s"\\fill[black!10!white] ${c.center} circle (${c.radius});\n")
+      case r: Rectangle => writer.write(s"\\fill[black!10!white] (${r.xMin/scaleFactor}, ${r.yMin/scaleFactor}) rectangle (${r.xMax/scaleFactor}, ${r.yMax/scaleFactor});\n")
+      case c: Circle => writer.write(s"\\fill[black!10!white] ${c.center/scaleFactor} circle (${c.radius/scaleFactor});\n")
     }
 
     // writes walls to tikz
-    walls.foreach(w =>  writer.write(s"\\draw[walls] (${w.startPoint.X},${w.startPoint.Y}) -- (${w.endPoint.X},${w.endPoint.Y});\n"))
+    walls.foreach(w =>  writer.write(s"\\draw[walls] (${w.startPoint.X/scaleFactor},${w.startPoint.Y/scaleFactor}) -- (${w.endPoint.X/scaleFactor},${w.endPoint.Y/scaleFactor});\n"))
 
     // write the edges as tikz lines
     edges.collect{
-      case e: MyEdgeLevelChange => writer.write(s"\\draw[-, levelchange, postaction={decorate}] (${e.startVertex.center.X},${e.startVertex.center.Y}) -- (${e.endVertex.center.X},${e.endVertex.center.Y});\n")
-      case e: MyEdge => writer.write(s"\\draw[-, edge, postaction={decorate}] (${e.startVertex.center.X},${e.startVertex.center.Y}) -- (${e.endVertex.center.X},${e.endVertex.center.Y});\n")
+      case e: MyEdgeLevelChange => writer.write(s"\\draw[-, levelchange, postaction={decorate}] (${e.startVertex.center.X/scaleFactor},${e.startVertex.center.Y/scaleFactor}) -- (${e.endVertex.center.X/scaleFactor},${e.endVertex.center.Y/scaleFactor});\n")
+      case e: MyEdge => writer.write(s"\\draw[-, edge, postaction={decorate}] (${e.startVertex.center.X/scaleFactor},${e.startVertex.center.Y/scaleFactor}) -- (${e.endVertex.center.X/scaleFactor},${e.endVertex.center.Y/scaleFactor});\n")
     }
 
     devices.amws.foreach(amw => {
-      writer.write(s"\\pattern[pattern=vertical hatch, hatch distance=0.75mm, hatch thickness=.25pt] (${amw.walls.head.startPoint.X},${amw.walls.head.startPoint.Y}) rectangle (${amw.walls.last.endPoint.X},${amw.walls.last.endPoint.Y});\n")
-      amw.walls.foreach(w => writer.write(s"\\draw[walls] (${w.startPoint.X},${w.startPoint.Y}) -- (${w.endPoint.X},${w.endPoint.Y});\n"))
+      writer.write(s"\\pattern[pattern=vertical hatch, hatch distance=0.75mm, hatch thickness=.25pt] (${amw.walls.head.startPoint.X/scaleFactor},${amw.walls.head.startPoint.Y/scaleFactor}) rectangle (${amw.walls.last.endPoint.X/scaleFactor},${amw.walls.last.endPoint.Y/scaleFactor});\n")
+      amw.walls.foreach(w => writer.write(s"\\draw[walls] (${w.startPoint.X/scaleFactor},${w.startPoint.Y/scaleFactor}) -- (${w.endPoint.X/scaleFactor},${w.endPoint.Y/scaleFactor});\n"))
     })
 
     // writes tex closing

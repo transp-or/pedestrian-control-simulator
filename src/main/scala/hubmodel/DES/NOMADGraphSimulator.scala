@@ -32,6 +32,10 @@ abstract class NOMADGraphSimulator(params: SimulationInputParameters) extends Pe
   val resetFlowCountersInterval: Option[Time] = params.resetFlowCountersInterval
   val predictionInputParameters: PredictionInputParameters = params.predictionParameters
 
+  val location = params.location
+  val setup = params.setup
+
+
   val isPrediction: Boolean
 
   /*protected val inputParameters: SimulationInputParameters = {
@@ -344,7 +348,7 @@ abstract class NOMADGraphSimulator(params: SimulationInputParameters) extends Pe
   def getSetupArgumentsNew: SimulationInputParameters = {
     {
       val inputParameters: SimulationInputParameters = {
-        new SimulationInputParameters(startTime, finalTime, motionModelUpdateInterval, updateRoutesInterval, spaceMicro, graph, stop2Vertex, controlDevices, params.predictionParameters)
+        new SimulationInputParameters(startTime, finalTime, motionModelUpdateInterval, updateRoutesInterval, spaceMicro, graph, stop2Vertex, controlDevices, params.predictionParameters, "", "")
       }
 
       inputParameters.resetFlowCountersInterval = resetFlowCountersInterval

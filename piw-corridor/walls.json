@@ -1,6 +1,6 @@
 {
   "location": "lausanne",
-  "sublocation": "PIW",
+  "setup": "PIW",
   "walls": [
     {
       "comment": "pl56-W",

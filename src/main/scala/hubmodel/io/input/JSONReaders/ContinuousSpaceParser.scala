@@ -5,9 +5,9 @@ import hubmodel.supply.Infrastructure
 /** For reading JSON files storing the specs
   *
   * @param amwsMode    main location
-  * @param subLocation subarea
+  * @param setup subarea
   * @param walls       vector storing the walls
   */
 case class ContinuousSpaceParser(amwsMode: String,
-                                 subLocation: String,
+                                 setup: String,
                                  walls: Vector[Wall_JSON]) extends Infrastructure

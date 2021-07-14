@@ -500,7 +500,8 @@ package object JSONReaders {
     */
   implicit val InfraGraphParserReads: Reads[InfraGraphParser] = (
     (JsPath \ "amws_mode").read[String](minLength[String](2)) and
-      (JsPath \ "sublocation").read[String](minLength[String](2)) and
+      (JsPath \ "location").read[String](minLength[String](2)) and
+      (JsPath \ "setup").read[String](minLength[String](2)) and
       (JsPath \ "nodes").read[Vector[Vertex_JSON]] and
       (JsPath \ "connectivity").read[Vector[Connectivity_JSON]] and
       (JsPath \ "connectivity_level_change").read[Vector[Connectivity_JSON]] and
@@ -523,7 +524,7 @@ package object JSONReaders {
     */
   implicit val InfraSFParserReads: Reads[ContinuousSpaceParser] = (
     (JsPath \ "location").read[String](minLength[String](2)) and
-      (JsPath \ "sublocation").read[String](minLength[String](2)) and
+      (JsPath \ "setup").read[String](minLength[String](2)) and
       (JsPath \ "walls").read[Vector[Wall_JSON]]
     ) (ContinuousSpaceParser.apply _)
 
@@ -536,7 +537,7 @@ package object JSONReaders {
     */
   implicit val InfraSFParserWithDoorReads: Reads[ContinuousSpaceParserWithDoors] = (
     (JsPath \ "location").read[String](minLength[String](2)) and
-      (JsPath \ "sublocation").read[String](minLength[String](2)) and
+      (JsPath \ "setup").read[String](minLength[String](2)) and
       (JsPath \ "walls").read[Vector[Wall_JSON]] and
       (JsPath \ "doorways").read[Vector[Doorway_JSON]]
     ) (ContinuousSpaceParserWithDoors.apply _)
