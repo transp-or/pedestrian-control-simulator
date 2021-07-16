@@ -1,6 +1,6 @@
 package hubmodel.prediction
 
-import hubmodel.DES.{PedestrianPrediction, PedestrianSimulation, SimulationInputParameters}
+import hubmodel.DES.{PedestrianPrediction, PedestrianSimulation, PredictionDemandError, SimulationInputParameters}
 import hubmodel.control.{ControlDeviceData, ControlDevicePolicy}
 import hubmodel.control.amw.{AMWPolicy, MovingWalkway, MovingWalkwayControlEvents}
 import hubmodel.io.output.video.MovingPedestriansWithDensityWithWallVideo
@@ -20,7 +20,8 @@ import myscala.math.stats.{ComputeQuantiles, ComputeStats, computeQuantile}
 import tools.cells.Vertex
 import tools.math.integration.rectangleIntegration
 
-import scala.util.{Failure, Success, Try}
+import java.util.concurrent.ThreadLocalRandom
+import scala.util.{Failure, Random, Success, Try}
 
 
 /** Prediction using the ground truth simulator. This class makes a copy of the state of the simulation and then
@@ -47,7 +48,7 @@ class PredictWithGroundTruth(private val sim: PedestrianSimulation) extends Stat
       Vector
         .range(0, sim.predictionInputParameters.replications)
         .map(i => {
-          val stateData: StateGroundTruth = this.getActualStateData
+          val stateData: StateGroundTruth = this.getActualStateDataWithDemandErrors
 
           val graph: GraphContainer = sim.graph.deepCopy(stateData.controlDevices)
 
@@ -85,7 +86,7 @@ class PredictWithGroundTruth(private val sim: PedestrianSimulation) extends Stat
 
       parallelRuns.map(i => {
 
-        val stateData: StateGroundTruth = this.getActualStateData
+        val stateData: StateGroundTruth = this.getActualStateDataWithDemandErrors
 
         val graph: GraphContainer = sim.graph.deepCopy(stateData.controlDevices)
 
@@ -134,8 +135,24 @@ class PredictWithGroundTruth(private val sim: PedestrianSimulation) extends Stat
     */
   @deprecated
   protected def getActualStateDataWithDemandErrors: StateGroundTruth = {
-    val ODZones: Vector[Vertex] = sim.population.flatMap(p => Vector(p.origin, p.finalDestination)).toVector.distinct
-    val pop: Vector[(PedestrianNOMAD, Vector[(Time, String, Position)])] = sim.population.map(p => p.copyStateWithODErrors(sim.currentTime, true, ODZones)).toVector
+
+    val demandError: Option[PredictionDemandError] = this.sim.insertErrors.collectFirst({
+      case demand: PredictionDemandError => {demand}
+    })
+
+    val pop: Vector[(PedestrianNOMAD, Vector[(Time, String, Position)])] = sim.population.map(p => {
+      val (newOrigin, newDesintaion) = demandError match {
+        case Some(demand) => {
+          (
+            if (ThreadLocalRandom.current().nextDouble() > 1.0 - demand.uniformSampleError) {Random.shuffle(demand.ODZones).head} else {p.origin},
+            if (ThreadLocalRandom.current().nextDouble() > 1.0 - demand.uniformSampleError) {Random.shuffle(demand.ODZones).head} else {p.finalDestination},
+          )
+        }
+        case None => {(p.origin, p.finalDestination) }
+        }
+      p.copyStateWithODErrors(sim.currentTime, true, newOrigin, newDesintaion)
+      }).toVector
+
     val newDevices = sim.controlDevices.deepCopyWithState(sim.currentTime, pop.map(_._1))
     pop.foreach(p => p._1.updateBaseVelocity(newDevices.amws.toVector))
     new StateGroundTruth(pop, newDevices)
