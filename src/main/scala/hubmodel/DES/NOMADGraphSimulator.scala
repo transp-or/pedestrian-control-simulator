@@ -16,7 +16,12 @@ import tools.cells.{DensityMeasuredArea, Vertex, isInVertex}
 import tools.exceptions.ControlDevicesException
 import tools.TimeNumeric.mkOrderingOps
 
+abstract class SimulationErrors
+case class PredictionDemandError(uniformSampleError: Double, ODZones: Vector[Vertex]) extends SimulationErrors
+
 abstract class NOMADGraphSimulator(params: SimulationInputParameters) extends PedestrianDES(params.startTime, params.endTime) {
+
+  val insertErrors: Vector[SimulationErrors]
 
   val motionModelUpdateInterval: Time = params.motionModelUpdateInterval
   val updateRoutesInterval: Time = params.updateRoutesInterval

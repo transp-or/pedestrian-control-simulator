@@ -9,6 +9,8 @@ import tools.Time
 
 class PedestrianSimulation(params: SimulationInputParameters) extends NOMADGraphSimulator(params) with IsMainSimulation {
 
+  val insertErrors: Vector[SimulationErrors] = Vector()
+
   val isPrediction: Boolean = false
 
   override val simulationType: String = "main simulation"

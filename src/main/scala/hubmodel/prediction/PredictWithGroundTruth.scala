@@ -125,6 +125,22 @@ class PredictWithGroundTruth(private val sim: PedestrianSimulation) extends Stat
     new StateGroundTruth(pop, newDevices)
   }
 
+
+  /** Collects the data from the reference simulator but adds errors into the demand data used for the prediction.
+    *
+    * DO NOT USE THIS SINCE IT DOES NOT CHANGE ANYTHING
+    *
+    * @return
+    */
+  @deprecated
+  protected def getActualStateDataWithDemandErrors: StateGroundTruth = {
+    val ODZones: Vector[Vertex] = sim.population.flatMap(p => Vector(p.origin, p.finalDestination)).toVector.distinct
+    val pop: Vector[(PedestrianNOMAD, Vector[(Time, String, Position)])] = sim.population.map(p => p.copyStateWithODErrors(sim.currentTime, true, ODZones)).toVector
+    val newDevices = sim.controlDevices.deepCopyWithState(sim.currentTime, pop.map(_._1))
+    pop.foreach(p => p._1.updateBaseVelocity(newDevices.amws.toVector))
+    new StateGroundTruth(pop, newDevices)
+  }
+
   /** Performs the prediction by running the simulator.
     *
     */

@@ -6,6 +6,9 @@ import myscala.math.vector.{Vector2D, ZeroVector2D}
 import tools.Time
 import tools.cells.Vertex
 
+import java.util.concurrent.ThreadLocalRandom
+import scala.util.Random
+
 class PedestrianNOMAD(oZone: Vertex, dZone: Vertex, entryTime: Time, posO: Position, logFullHistory: Boolean, isTransfer: Boolean) extends PedestrianSim(oZone, dZone, entryTime, posO, logFullHistory, isTransfer) with WithGraphID {
 
   // List of pedestrians in the vicinity of this pedestrian
@@ -182,6 +185,30 @@ class PedestrianNOMAD(oZone: Vertex, dZone: Vertex, entryTime: Time, posO: Posit
       logFullHistory,
       this.isTransfer,
       (this.isolationTypePed, this.isolationTimePed, this.isolationTypeObs, this.isolationTimeObs))
+
+    newPed.baseVelocity = this.baseVelocity
+    newPed.isInsideAMW = this.isInsideAMW
+    newPed.currentDestination = this.currentDestination
+    (newPed, this.accomplishedRoute.map(x => (x._1, x._2.name, x._3)))
+  }
+
+  @deprecated
+  def copyStateWithODErrors(currentTime: => Time, logFullHistory: Boolean, ODZones: Vector[Vertex]): (PedestrianNOMAD, Vector[(Time, String, Position)]) = {
+    val newPed: PedestrianNOMAD = new PedestrianNOMAD(
+      /*this.ID,*/
+      if (ThreadLocalRandom.current().nextDouble() > 0.9) {Random.shuffle(ODZones).head} else {this.origin},
+      this.previousZone,
+      this.nextZone,
+      this.route,
+      if (ThreadLocalRandom.current().nextDouble() > 0.9) {Random.shuffle(ODZones).head} else {this.finalDestination},
+      currentTime,
+      this.currentPosition,
+      this.currentVelocity,
+      logFullHistory,
+      this.isTransfer,
+      (this.isolationTypePed, this.isolationTimePed, this.isolationTypeObs, this.isolationTimeObs))
+
+
 
     newPed.baseVelocity = this.baseVelocity
     newPed.isInsideAMW = this.isInsideAMW
