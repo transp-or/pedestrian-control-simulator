@@ -59,16 +59,7 @@ class CreatePedestrian(o: Vertex, d: Vertex, val isTransfer: Boolean, sim: NOMAD
   type B = NOMADGraphSimulator
 
 override def deepCopy(simulator: PedestrianPrediction): Option[A] = {
-  this.sim.insertErrors.collectFirst({
-    case demand: PredictionDemandError => {
-      (
-        if (ThreadLocalRandom.current().nextDouble() > demand.uniformSampleError) {Random.shuffle(demand.ODZones).head} else {this.o},
-        if (ThreadLocalRandom.current().nextDouble() > demand.uniformSampleError) {Random.shuffle(demand.ODZones).head} else {this.d},
-      )
-    }}) match {
-    case Some(od) => Some(new CreatePedestrian(od._1, od._2, this.isTransfer, simulator))
-    case None => Some(new CreatePedestrian(this.o, this.d, this.isTransfer, simulator))
-  }
+  Some(new CreatePedestrian(this.o, this.d, this.isTransfer, simulator))
 }
 
 }

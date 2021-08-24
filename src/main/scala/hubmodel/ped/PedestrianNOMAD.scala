@@ -193,14 +193,14 @@ class PedestrianNOMAD(oZone: Vertex, dZone: Vertex, entryTime: Time, posO: Posit
   }
 
   @deprecated
-  def copyStateWithODErrors(currentTime: => Time, logFullHistory: Boolean, ODZones: Vector[Vertex]): (PedestrianNOMAD, Vector[(Time, String, Position)]) = {
+  def copyStateWithODErrors(currentTime: => Time, logFullHistory: Boolean, newOrigin: Vertex, newDestination: Vertex): (PedestrianNOMAD, Vector[(Time, String, Position)]) = {
     val newPed: PedestrianNOMAD = new PedestrianNOMAD(
       /*this.ID,*/
-      if (ThreadLocalRandom.current().nextDouble() > 0.9) {Random.shuffle(ODZones).head} else {this.origin},
+      newOrigin,
       this.previousZone,
       this.nextZone,
       this.route,
-      if (ThreadLocalRandom.current().nextDouble() > 0.9) {Random.shuffle(ODZones).head} else {this.finalDestination},
+      newDestination,
       currentTime,
       this.currentPosition,
       this.currentVelocity,
