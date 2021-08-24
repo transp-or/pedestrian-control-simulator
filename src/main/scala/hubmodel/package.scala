@@ -63,7 +63,7 @@ package object hubmodel {
   // AMW acceleration amplitude.
   val AMW_ACCELERATION_AMPLITUDE: Double = 0.25
 
-  val SPEED_INCREMENT: Double = 1.0
+  val SPEED_INCREMENT: Double = 0.75
 
   val MINIMUM_SPEED: Double = -3.0
   val MAXIMUM_SPEED: Double = 3.0

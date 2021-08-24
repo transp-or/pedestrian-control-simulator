@@ -1,6 +1,6 @@
 package hubmodel.demand
 
-import hubmodel.DES.{Action, NOMADGraphSimulator, PedestrianPrediction, PredictionDemandError}
+import hubmodel.DES.{Action, NOMADGraphSimulator, PedestrianPrediction, PredictionDemandRandomError}
 import hubmodel._
 import hubmodel.ped.PedestrianNOMAD
 import tools.cells.Vertex

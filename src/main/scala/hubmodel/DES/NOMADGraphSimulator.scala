@@ -23,7 +23,10 @@ abstract class SimulationErrors
   * @param uniformSampleError fraction of ODs to change
   * @param ODZones collection of OD zones to sample from
   */
-case class PredictionDemandError(uniformSampleError: Double, ODZones: Vector[Vertex]) extends SimulationErrors
+case class PredictionDemandRandomError(uniformSampleError: Double, ODZones: Vector[Vertex]) extends SimulationErrors
+
+case class PredictionDemandScaleError(fraction: Double) extends SimulationErrors
+
 
 abstract class NOMADGraphSimulator(params: SimulationInputParameters) extends PedestrianDES(params.startTime, params.endTime) {
 

@@ -4,7 +4,7 @@ import hubmodel.supply.graph.MyEdge
 
 class PedestrianPrediction(params: SimulationInputParameters) extends NOMADGraphSimulator(params) with IsPrediction {
 
-  val insertErrors: Vector[SimulationErrors] = Vector(PredictionDemandError(0.5, this.ODZones.toVector))
+  val insertErrors: Vector[SimulationErrors] = Vector(PredictionDemandRandomError(0.5, this.ODZones.toVector))
 
   val isPrediction: Boolean = true
 

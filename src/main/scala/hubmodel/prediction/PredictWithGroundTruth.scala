@@ -1,6 +1,6 @@
 package hubmodel.prediction
 
-import hubmodel.DES.{PedestrianPrediction, PedestrianSimulation, PredictionDemandError, SimulationInputParameters}
+import hubmodel.DES.{PedestrianPrediction, PedestrianSimulation, PredictionDemandRandomError, PredictionDemandScaleError, SimulationInputParameters}
 import hubmodel.control.{ControlDeviceData, ControlDevicePolicy}
 import hubmodel.control.amw.{AMWPolicy, MovingWalkway, MovingWalkwayControlEvents}
 import hubmodel.io.output.video.MovingPedestriansWithDensityWithWallVideo
@@ -136,8 +136,14 @@ class PredictWithGroundTruth(private val sim: PedestrianSimulation) extends Stat
   @deprecated
   protected def getActualStateDataWithDemandErrors: StateGroundTruth = {
 
-    val demandError: Option[PredictionDemandError] = this.sim.insertErrors.collectFirst({
-      case demand: PredictionDemandError => {demand}
+    this.sim.insertErrors.collectFirst({
+      case demandErrors: PredictionDemandRandomError => {demandErrors}
+      case demandScale: PredictionDemandScaleError => {demandScale}
+    })
+
+
+    val demandError: Option[PredictionDemandRandomError] = this.sim.insertErrors.collectFirst({
+      case demand: PredictionDemandRandomError => {demand}
     })
 
     val pop: Vector[(PedestrianNOMAD, Vector[(Time, String, Position)])] = sim.population.map(p => {
