@@ -78,7 +78,7 @@ trait IsMainSimulation {
       val previousIntervalStart: Time = Time(math.max(sim.startTime.value.toDouble, (sim.currentTime - this.sim.predictionInputParameters.horizon).value.toDouble))
 
       println("writing main simulation from " + previousIntervalStart + " to " + sim.currentTime)
-      new MovingPedestriansWithDensityWithWallVideo(
+      /*new MovingPedestriansWithDensityWithWallVideo(
         sim.ID + "_" + previousIntervalStart.value.toString() + "_" + sim.currentTime +  ".mp4",
         sim.walls.filterNot(_.isInstanceOf[MovableWall]),
         math.max((1.0 / 0.1).toInt, 1),
@@ -89,7 +89,7 @@ trait IsMainSimulation {
         scala.collection.mutable.ArrayBuffer(),
         (previousIntervalStart.value to sim.currentTime.value by 0.1).map(new Time(_)),
         Vector()
-      )
+      )*/
 
       val timeIntervals: Vector[Time] = sim.currentTime.value.until((sim.currentTime + this.sim.predictionInputParameters.horizon).value).by(this.sim.predictionInputParameters.decisionVariableLength.value).toVector.map(v => Time(v.toDouble))
 
@@ -115,9 +115,9 @@ trait IsMainSimulation {
         sim.predictionInputParameters.ALNSParameters
       )
 
-      horizonOptimization.optimize(sim.ID + "_" + sim.currentTime + "_" + (sim.currentTime + this.sim.predictionInputParameters.horizon) + "_" + this.sim.predictionInputParameters.decisionVariableLength)
+      horizonOptimization.optimize(sim.ID + "_" + sim.currentTime + "_" + (sim.currentTime + this.sim.predictionInputParameters.horizon) + "_" + this.sim.predictionInputParameters.decisionVariableLength, sim.outputDir)
 
-      horizonOptimization.writeIterationsToCSV("a_posteriori_points_" + sim.ID + "_" + sim.currentTime + "_" + (sim.currentTime + this.sim.predictionInputParameters.horizon) + "_" + this.sim.predictionInputParameters.decisionVariableLength + ".csv")
+      horizonOptimization.writeIterationsToCSV(sim.outputDir + "a_posteriori_points_" + sim.ID + "_" + sim.currentTime + "_" + (sim.currentTime + this.sim.predictionInputParameters.horizon) + "_" + this.sim.predictionInputParameters.decisionVariableLength + ".csv")
 
      /* (for (a <- horizonOptimization.getPoints; b <- horizonOptimization.getPoints if a._1 != b._1) yield {
         (

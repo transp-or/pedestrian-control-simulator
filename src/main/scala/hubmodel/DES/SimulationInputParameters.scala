@@ -17,17 +17,7 @@ import tools.Time
   * @param stop2Vertex mapping between stops and vertices
   * @param controlDevices collection of control devices used in the simulation
   */
-class SimulationInputParameters(var startTime: Time,
-                                var endTime: Time,
-                                val motionModelUpdateInterval: Time,
-                                val updateRoutesInterval: Time,
-                                val spaceMicro: ContinuousSpace,
-                                val graph: GraphContainer,
-                                val stop2Vertex: Stop2Vertex,
-                                val controlDevices: ControlDevices,
-                                val predictionParameters: PredictionInputParameters,
-                                val location: String,
-                                val setup: String) {
+class SimulationInputParameters(var startTime: Time, var endTime: Time, val motionModelUpdateInterval: Time, val updateRoutesInterval: Time, val spaceMicro: ContinuousSpace, val graph: GraphContainer, val stop2Vertex: Stop2Vertex, val controlDevices: ControlDevices, val predictionParameters: PredictionInputParameters, val location: String, val setup: String, val dir: String = "") {
 
   // Interval at which the density inside the monitored areas is computed
   var trackDensityInterval: Option[Time] = None
@@ -56,7 +46,7 @@ class SimulationInputParameters(var startTime: Time,
     * @return
     */
   def deepCopy(g: GraphContainer, devices: ControlDevices, motionUpdate: Option[Time]): SimulationInputParameters = {
-    val params: SimulationInputParameters = new SimulationInputParameters(this.startTime, this.endTime, motionUpdate.getOrElse(this.motionModelUpdateInterval), this.updateRoutesInterval, this.spaceMicro, g, this.stop2Vertex, devices, predictionParameters, "", "")
+    val params: SimulationInputParameters = new SimulationInputParameters(this.startTime, this.endTime, motionUpdate.getOrElse(this.motionModelUpdateInterval), this.updateRoutesInterval, this.spaceMicro, g, this.stop2Vertex, devices, predictionParameters, this.location, this.setup, this.dir)
 
     params.resetFlowCountersInterval = this.resetFlowCountersInterval
     params.trackDensityInterval = this.trackDensityInterval
@@ -70,7 +60,7 @@ class SimulationInputParameters(var startTime: Time,
 
 
   def changePIGains(P: Double, I: Double): SimulationInputParameters = {
-    val params: SimulationInputParameters = new SimulationInputParameters(this.startTime, this.endTime, this.motionModelUpdateInterval, this.updateRoutesInterval, this.spaceMicro, this.graph, this.stop2Vertex, this.controlDevices.deepCopyModifyMovingWalkways(P, I, this.graph, this.controlDevices.flowLines, this.controlDevices.monitoredAreas.toVector), this.predictionParameters, "", "")
+    val params: SimulationInputParameters = new SimulationInputParameters(this.startTime, this.endTime, this.motionModelUpdateInterval, this.updateRoutesInterval, this.spaceMicro, this.graph, this.stop2Vertex, this.controlDevices.deepCopyModifyMovingWalkways(P, I, this.graph, this.controlDevices.flowLines, this.controlDevices.monitoredAreas.toVector), this.predictionParameters, this.location, this.setup, this.dir)
 
     params.resetFlowCountersInterval = this.resetFlowCountersInterval
     params.trackDensityInterval = this.trackDensityInterval

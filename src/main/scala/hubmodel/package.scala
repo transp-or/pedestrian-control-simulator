@@ -411,17 +411,17 @@ package object hubmodel {
     val sim = createSimulation(config, singleDemandSet)
 
     // Creates images representing the walls, route graph and both overlaid.
-    new DrawWalls(sim.walls, config.getString("output.output_prefix") + "_wallsWithNames.png", showNames = true)
+    new DrawWalls(sim.walls, config.getString("output.dir") + config.getString("output.output_prefix") + "_wallsWithNames.png", showNames = true)
     sim.graph match {
       case rm: MultipleGraph => {
-        rm.getGraphs.foreach(g => new DrawGraph(g._2._2.edgeCollection.map(e => (e.startVertex, e.endVertex)).toVector, config.getString("output.output_prefix") + "_graph_" + g._1 + ".png"))
+        rm.getGraphs.foreach(g => new DrawGraph(g._2._2.edgeCollection.map(e => (e.startVertex, e.endVertex)).toVector, config.getString("output.dir") + config.getString("output.output_prefix") + "_graph_" + g._1 + ".png"))
       }
       case rs: SingleGraph => {
-        new DrawGraph(sim.graph.edges.map(e => (e.startVertex, e.endVertex)).toVector, config.getString("output.output_prefix") + "_graph.png")
+        new DrawGraph(sim.graph.edges.map(e => (e.startVertex, e.endVertex)).toVector, config.getString("output.dir") + config.getString("output.output_prefix") + "_graph.png")
       }
     }
-    new DrawWallsAndGraph(sim.walls, sim.graph.edges.map(e => (e.startVertex, e.endVertex)).toVector, config.getString("output.output_prefix") + "_wallsAndGraph.png", false)
-    new DrawControlDevicesAndWalls(config.getString("output.output_prefix") + "_wallsWithDevices.png", sim.walls, sim.controlDevices)
+    new DrawWallsAndGraph(sim.walls, sim.graph.edges.map(e => (e.startVertex, e.endVertex)).toVector, config.getString("output.dir") + config.getString("output.output_prefix") + "_wallsAndGraph.png", false)
+    new DrawControlDevicesAndWalls(config.getString("output.dir") + config.getString("output.output_prefix") + "_wallsWithDevices.png", sim.walls, sim.controlDevices)
 
     println("Running simulation for video...")
 
@@ -446,7 +446,7 @@ package object hubmodel {
     val gates: List[BinaryGate] = List()
 
     new MovingPedestriansWithDensityWithWallVideo(
-      config.getString("output.output_prefix") + "_moving_pedestrians_walls.mp4",
+      config.getString("output.dir") + config.getString("output.output_prefix") + "_moving_pedestrians_walls.mp4",
       sim.walls.filterNot(_.isInstanceOf[MovableWall]),
       math.max((1.0 / config.getDouble("output.video_dt")).toInt, 1),
       sim.populationCompleted ++ sim.population,
