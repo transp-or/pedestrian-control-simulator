@@ -50,6 +50,7 @@ abstract class NOMADGraphSimulator(params: SimulationInputParameters) extends Pe
 
   val location = params.location
   val setup = params.setup
+  val outputDir: String = params.dir
 
 
   val isPrediction: Boolean
@@ -366,7 +367,7 @@ abstract class NOMADGraphSimulator(params: SimulationInputParameters) extends Pe
   def getSetupArgumentsNew: SimulationInputParameters = {
     {
       val inputParameters: SimulationInputParameters = {
-        new SimulationInputParameters(startTime, finalTime, motionModelUpdateInterval, updateRoutesInterval, spaceMicro, graph, stop2Vertex, controlDevices, params.predictionParameters, "", "")
+        new SimulationInputParameters(startTime, finalTime, motionModelUpdateInterval, updateRoutesInterval, spaceMicro, graph, stop2Vertex, controlDevices, params.predictionParameters, "", "", outputDir)
       }
 
       inputParameters.resetFlowCountersInterval = resetFlowCountersInterval

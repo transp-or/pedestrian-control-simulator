@@ -65,7 +65,7 @@ package object results {
     }
 
     /* else {
-          Files.newDirectoryStream(Paths.get(dir)).toVector.foreach(f => Files.delete(f))
+          Files.newDirectoryStream(Paths.get(dir)).toVectoir.foreach(f => Files.delete(f))
         }*/
     val path: String = dir /* match {
       case Some(str) => str
@@ -198,13 +198,13 @@ package object results {
 
     if (writeTrajectoriesVS) {
       println("Writing trajectories as VS to file")
-      writePopulationTrajectories(simulator.populationCompleted ++ simulator.population, prefix + "_simulation_trajectories_VS_" + simulator.ID + ".csv")
+      writePopulationTrajectories(simulator.populationCompleted ++ simulator.population, path + prefix + "_simulation_trajectories_VS_" + simulator.ID + ".csv")
     }
 
     if (writeTrajectoriesJSON) {
       println("Writing Trajectories as JSON to file for viz")
-      writePopulationTrajectoriesJSON(simulator.location, simulator.setup, simulator.populationCompleted ++ simulator.population, prefix + "simulation_trajectories_" + simulator.ID + ".json", (simulator.startTime.value) to (simulator.finalTime.value) by (simulator.motionModelUpdateInterval.value))
-      writeODJSON(simulator.populationCompleted ++ simulator.population, simulator.ODZones.map(_.name), prefix + "ped_IDS_per_OD_" + simulator.ID + ".json")
+      writePopulationTrajectoriesJSON(simulator.location, simulator.setup, simulator.populationCompleted ++ simulator.population, path + prefix + "simulation_trajectories_" + simulator.ID + ".json", (simulator.startTime.value) to (simulator.finalTime.value) by (simulator.motionModelUpdateInterval.value))
+      writeODJSON(simulator.populationCompleted ++ simulator.population, simulator.ODZones.map(_.name), path + prefix + "ped_IDS_per_OD_" + simulator.ID + ".json")
     }
   }
 

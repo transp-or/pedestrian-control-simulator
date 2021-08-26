@@ -72,8 +72,8 @@ class ALNSPareto(f: StatePrediction,
     val bw = new BufferedWriter(new FileWriter(file))
     bw.write(iterationsHeader + "\n")
 
-    val fileDistancePlot = new File(path + "euclidean-distance-policy-OF" + filePrefix + ".csv")
-    val fdp = new BufferedWriter(new FileWriter(fileDistancePlot))
+    //val fileDistancePlot = new File(path + "euclidean-distance-policy-OF" + filePrefix + ".csv")
+    //val fdp = new BufferedWriter(new FileWriter(fileDistancePlot))
 
     var it: Int = 1
     while (it <= maxIterations) {
@@ -121,7 +121,7 @@ class ALNSPareto(f: StatePrediction,
         bw.write((Vector(it, op, scoreText) ++ xNew._1.x.sorted.map(_.decisionVariable) ++ objectiveHeader.map(stochasticReduction(function.computeObjectives)) ++ weightHeader.map(operatorWeights)).mkString(", ") + "\n")
         bw.flush()
 
-        (for (other <- this.iterations.dropRight(1)) yield {
+        /*(for (other <- this.iterations.dropRight(1)) yield {
           (
             math.pow(this.iterations.last._2.x.sorted.zip(other._2.x.sorted).map(t => math.pow(t._2.decisionVariable - t._1.decisionVariable, 2)).sum, 0.5),
             // math.abs(this.iterations.last._6("density") - other._6("density")),
@@ -129,7 +129,7 @@ class ALNSPareto(f: StatePrediction,
           )
         }).foreach(row => fdp.write(row._1 + ", " + row._2 + "\n"))
 
-        fdp.flush()
+        fdp.flush()*/
 
 
         this.updateBestX(Random.shuffle(this.paretoSet.keys.toVector).head)
