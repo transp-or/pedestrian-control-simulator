@@ -50,9 +50,9 @@ class ALNSPareto(f: StatePrediction,
     val weightHeader: Vector[String] = this.iterations.head._7.keys.toVector
 
     this.iterations.toVector
-      .map(v => Vector(v._1, v._4, v._3, this.paretoSet.keySet.contains(v._2)) ++ v._2.x.sorted.map(_.decisionVariable) ++ objectiveHeader.map(v._6) ++ weightHeader.map(v._7) )
+      .map(v => Vector(v._1, v._4, v._3, this.paretoSet.keySet.contains(v._2)) ++ v._2.x.sorted.map(_.decisionVariable) ++ objectiveHeader.map(v._6) ++ weightHeader.map(v._7) ++ Vector(v._5))
       .transpose
-      .writeToCSV(file, rowNames = None, columnNames = Some(Vector("it", "operator", "accepted", "pareto") ++ headerDV ++ objectiveHeader ++ weightHeader.map(_ ++ "_weight")))
+      .writeToCSV(file, rowNames = None, columnNames = Some(Vector("it", "operator", "accepted", "pareto") ++ headerDV ++ objectiveHeader ++ weightHeader.map(_ ++ "_weight") ++ Vector("replications")))
   }
 
 
@@ -104,19 +104,20 @@ class ALNSPareto(f: StatePrediction,
 
         operatorWeights.update(op, math.max(weightMin, math.min(weightMax, operatorWeights(op) * lambda + (1.0 - lambda) * score)))
 
-        if (scoreText == "accepted") {
 
-          val solutionReplications: Int = this.paretoSet(xNew._1)._3.size
-          if (solutionReplications > 4) {
-            println("stop")
+
+        val solutionReplications: Int = {
+          if (scoreText == "accepted") {
+            stochasticReduction(this.paretoSet(xNew._1)._2).map(kv => kv._1 + ": " + kv._2.toString).mkString(", ")
+            println(s" * accepted: repl.: ${this.paretoSet(xNew._1)._3.size}, operator score: $scoreText, objectives: " + stochasticReduction(this.paretoSet(xNew._1)._2).map(kv => kv._1 + ": " + kv._2.toString).mkString(", "))
+            this.paretoSet(xNew._1)._3.size
+          } else {
+            println(s" * rejected: operator score: $scoreText, objectives: " + stochasticReduction(function.computeObjectives).map(kv => kv._1 + ": " + kv._2.toString).mkString(", "))
+            -1
           }
-          stochasticReduction(this.paretoSet(xNew._1)._2).map(kv => kv._1 + ": " + kv._2.toString).mkString(", ")
-          println(s" * accepted: repl.: $solutionReplications, operator score: $scoreText, objectives: " + stochasticReduction(this.paretoSet(xNew._1)._2).map(kv => kv._1 + ": " + kv._2.toString).mkString(", "))
-        } else {
-          println(s" * rejected: operator score: $scoreText, objectives: " + stochasticReduction(function.computeObjectives).map(kv => kv._1 + ": " + kv._2.toString).mkString(", "))
         }
 
-        this.iterations.append((it, xNew._1, scoreText, op, Double.NaN, stochasticReduction(function.computeObjectives), operatorWeights.toMap))
+        this.iterations.append((it, xNew._1, scoreText, op, solutionReplications, stochasticReduction(function.computeObjectives), operatorWeights.toMap))
         bw.write((Vector(it, op, scoreText) ++ xNew._1.x.sorted.map(_.decisionVariable) ++ objectiveHeader.map(stochasticReduction(function.computeObjectives)) ++ weightHeader.map(operatorWeights)).mkString(", ") + "\n")
         bw.flush()
 

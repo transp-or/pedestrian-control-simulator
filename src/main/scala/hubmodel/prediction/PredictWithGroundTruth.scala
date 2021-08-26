@@ -1,6 +1,6 @@
 package hubmodel.prediction
 
-import hubmodel.DES.{PedestrianPrediction, PedestrianSimulation, PredictionDemandError, SimulationInputParameters}
+import hubmodel.DES.{PedestrianPrediction, PedestrianSimulation, PredictionDemandRandomError, PredictionDemandScaleError, SimulationInputParameters}
 import hubmodel.control.{ControlDeviceData, ControlDevicePolicy}
 import hubmodel.control.amw.{AMWPolicy, MovingWalkway, MovingWalkwayControlEvents}
 import hubmodel.io.output.video.MovingPedestriansWithDensityWithWallVideo
@@ -48,7 +48,7 @@ class PredictWithGroundTruth(private val sim: PedestrianSimulation) extends Stat
       Vector
         .range(0, sim.predictionInputParameters.replications)
         .map(i => {
-          val stateData: StateGroundTruth = this.getActualStateDataWithDemandErrors
+          val stateData: StateGroundTruth = this.getActualStateData
 
           val graph: GraphContainer = sim.graph.deepCopy(stateData.controlDevices)
 
@@ -86,7 +86,7 @@ class PredictWithGroundTruth(private val sim: PedestrianSimulation) extends Stat
 
       parallelRuns.map(i => {
 
-        val stateData: StateGroundTruth = this.getActualStateDataWithDemandErrors
+        val stateData: StateGroundTruth = this.getActualStateData
 
         val graph: GraphContainer = sim.graph.deepCopy(stateData.controlDevices)
 
@@ -106,6 +106,7 @@ class PredictWithGroundTruth(private val sim: PedestrianSimulation) extends Stat
             simulator.insertInPopulation(p._1)
           })
         // clone the event list into the new simulator
+
         sim.cloneEventQueueInto(simulator)
 
         simulator
@@ -136,8 +137,29 @@ class PredictWithGroundTruth(private val sim: PedestrianSimulation) extends Stat
   @deprecated
   protected def getActualStateDataWithDemandErrors: StateGroundTruth = {
 
-    val demandError: Option[PredictionDemandError] = this.sim.insertErrors.collectFirst({
-      case demand: PredictionDemandError => {demand}
+    /*this.sim.insertErrors.collectFirst({
+      case demandErrors: PredictionDemandRandomError => {demandErrors}
+      case demandScale: PredictionDemandScaleError => {demandScale}
+    })
+
+    def changeOD(pedestrian: PedestrianNOMAD)(fraction: Double, ODZones: Vector[Vertex]): (PedestrianNOMAD, Vector[(Time, String, Position)]) = {
+      val (newOrigin, newDestination) = (
+        if (ThreadLocalRandom.current().nextDouble() > 1.0 - fraction) {Random.shuffle(ODZones).head} else {pedestrian.origin},
+        if (ThreadLocalRandom.current().nextDouble() > 1.0 - fraction) {Random.shuffle(ODZones).head} else {pedestrian.finalDestination},
+      )
+      pedestrian.copyStateWithODErrors(sim.currentTime, true, newOrigin, newDestination)
+    }
+
+    def resamplePedestrian(pedestrian: PedestrianNOMAD)(probability: Double): Vector[PedestrianNOMAD] = {
+
+      def sample(prob: Double, p: PedestrianNOMAD): Option[PedestrianNOMAD] = {
+        if (ThreadLocalRandom.current().nextDouble() > 1.0 - prob) {p.copyState()}
+      }
+
+    }*/
+
+    val demandError: Option[PredictionDemandRandomError] = this.sim.insertErrors.collectFirst({
+      case demand: PredictionDemandRandomError => {demand}
     })
 
     val pop: Vector[(PedestrianNOMAD, Vector[(Time, String, Position)])] = sim.population.map(p => {
