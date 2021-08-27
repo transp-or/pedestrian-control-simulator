@@ -15,7 +15,7 @@ import scala.util.Random
 
 class PedestrianPrediction(params: SimulationInputParameters) extends NOMADGraphSimulator(params) with IsPrediction {
 
-  val insertErrors: Vector[SimulationErrors] = Vector(PredictionDemandRandomError(0.2, this.ODZones.toVector))//, PredictionDemandScaleError(0.3))
+  val insertErrors: Vector[SimulationErrors] = Vector(PredictionDemandRandomError(1.0, this.ODZones.toVector))//, PredictionDemandScaleError(0.3))
 
   val isPrediction: Boolean = true
 

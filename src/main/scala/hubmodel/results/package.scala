@@ -346,7 +346,7 @@ package object results {
           case c if c.contains("_individual_densities_") => "individual_densities"
           case amw if amw.contains("_amws_") => "amw"
           case edge if edge.contains("_edges_") => "edge"
-          case other => throw new IllegalArgumentException("File should not be present: " + other)
+          case other => {"ignore"}//throw new IllegalArgumentException("File should not be present: " + other)
         }
       } -> f
       ).toMap

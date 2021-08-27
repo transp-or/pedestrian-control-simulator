@@ -99,9 +99,9 @@ object RunSimulation extends App with StrictLogging {
   }*/
 
   val resultsJson: Vector[ResultsContainerReadNew] = if (demandSets.isDefined) {
-    readResultsJson(config.getString("output.dir") + demandSets.get.head.dir.getFileName + "/", config.getString("output.dir") + config.getString("output.output_prefix"), demandSets.get.map(_.flowFile.getFileName.toString.replace(".json", "") + "/")).toVector
+    readResultsJson(config.getString("output.dir") + demandSets.get.head.dir.getFileName + "/", config.getString("output.output_prefix"), demandSets.get.map(_.flowFile.getFileName.toString.replace(".json", "") + "/")).toVector
   } else {
-    readResultsJson(config.getString("output.dir"), config.getString("output.dir") + config.getString("output.output_prefix")).toVector
+    readResultsJson(config.getString("output.dir"), config.getString("output.output_prefix")).toVector
   }
 
 
