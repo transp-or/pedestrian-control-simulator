@@ -94,6 +94,8 @@ class ALNSPareto(f: StatePrediction,
 
       function.predict(xNew._1.x, xNew._2)
 
+      function.getPredictedStateData
+
       if (function.computeObjectives.nonEmpty) {
 
 

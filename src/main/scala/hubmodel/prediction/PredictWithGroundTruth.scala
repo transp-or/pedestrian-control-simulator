@@ -315,6 +315,13 @@ class PredictWithGroundTruth(private val sim: PedestrianSimulation) extends Stat
         val amwFlows = new AMWFlowsFromGroundTruthProcessor(s.controlDevices.amws.toVector, intervals).aggregateFlowsByAMW(pop)
         val densitiesInsideAreas: CongestionDataFromGroundTruth = new CongestionDataFromGroundTruth(s.criticalAreas, s.controlDevices.amws.collect{case w: MovingWalkway => w}.toVector, intervals)
 
+        val ODData = pop
+          .map(p => (p.origin, p.currentDestination))
+          .groupBy(od => od)
+          .map(group => group._2.size)
+
+        println(ODData)
+
         new StateGroundTruthPredicted(
           intervals,
           amwFlows,
