@@ -1,10 +1,10 @@
 package optimization.ALNS
 
 import java.io.{BufferedWriter, File, FileWriter}
-
 import hubmodel.control.{ControlDeviceData, ControlDevicePolicy}
 import hubmodel.prediction.StatePrediction
 import hubmodel.prediction.state.StateGroundTruthPredicted
+import myscala.output.SeqTuplesExtensions.SeqTuplesWriter
 import myscala.output.SeqOfSeqExtensions.SeqOfSeqWriter
 import optimization.ALNS.constraints.Constraint
 import optimization.ALNS.operators.{OperatorGenerator, RandomChange}
@@ -95,6 +95,11 @@ class ALNSPareto(f: StatePrediction,
       function.predict(xNew._1.x, xNew._2)
 
       function.getPredictedStateData
+        .flatMap(r => r.odData.toVector)
+        .groupBy(_._1)
+        .map(g => (g._1._1.name, g._1._2.name, g._2.map(_._2).sum/g._2.size))
+        .toVector
+        .writeToCSV(filePrefix + s"average-od-matrix-it-$it.csv")
 
       if (function.computeObjectives.nonEmpty) {
 

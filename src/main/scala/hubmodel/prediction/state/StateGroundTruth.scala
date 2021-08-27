@@ -7,7 +7,7 @@ import hubmodel.ped.PedestrianNOMAD
 import hubmodel.prediction.{AMWFlowsFromGroundTruth, CongestionDataFromGroundTruth}
 import tools.Time
 import tools.TimeNumeric.mkOrderingOps
-import tools.cells.DensityMeasuredArea
+import tools.cells.{DensityMeasuredArea, Vertex}
 import myscala.math.stats.computeQuantile
 
 class StateGroundTruth(_population: Vector[(PedestrianNOMAD, Iterable[(Time, String, Position)])],
@@ -21,6 +21,7 @@ class StateGroundTruth(_population: Vector[(PedestrianNOMAD, Iterable[(Time, Str
 class StateGroundTruthPredicted(val intervals: Vector[Time],
                                 val amwFlows: AMWFlowsFromGroundTruth,
                                 val densitiesInsideAreas: CongestionDataFromGroundTruth,
-                                val indicators: Map[String, Double])
+                                val indicators: Map[String, Double],
+                                val odData: Map[(Vertex, Vertex), Int])
 
 
