@@ -4,14 +4,16 @@ package hubmodel.DES
   * Created by nicholas on 5/12/17.
   */
 
-import java.util.concurrent.ThreadLocalRandom
+import hubmodel.demand.CreatePedestrian
 
+import java.util.concurrent.ThreadLocalRandom
 import hubmodel.ped.PedestrianNOMAD
 import hubmodel.{Position, StrictLogging, distance}
 import myscala.math.algo.MTree
 import myscala.math.vector.{Vector2D, norm}
 import tools.Time
 import tools.TimeNumeric.mkOrderingOps
+import tools.cells.Vertex
 
 import scala.collection.immutable.HashMap
 import scala.util.{Random, Try}
@@ -30,6 +32,9 @@ import scala.util.{Random, Try}
   */
 abstract class PedestrianDES(val startTime: Time,
                              val finalTime: Time) extends StrictLogging {
+
+  val insertErrors: Vector[SimulationErrors]
+
 
   ///////////////////////////////////////////////////////////////////////////////////////////////////
   ////////////////////////////// General parameters /////////////////////////////////////////////////
@@ -137,14 +142,85 @@ abstract class PedestrianDES(val startTime: Time,
 
   def cloneEventQueueInto(simulator: PedestrianPrediction): Unit = {
 
+
+    def randomlyChangePedestrian(fraction: Double, zones: Vector[Vertex]): (CreatePedestrian, Time) => (CreatePedestrian, Time) = {
+      (ped: CreatePedestrian, entryTime: Time) => {
+        val (newOrigin, newDestination) = {
+          (
+            if (ThreadLocalRandom.current().nextDouble() > 1.0 - fraction) {
+              Random.shuffle(zones).head
+            } else {
+              ped.o
+            },
+            if (ThreadLocalRandom.current().nextDouble() > 1.0 - fraction) {
+              Random.shuffle(zones).head
+            } else {
+              ped.d
+            },
+          )
+        }
+
+        val timeErrorWidth: Time = (this.finalTime - this.startTime) * fraction
+        val newEntryTime: Time = entryTime + Time(ThreadLocalRandom.current().nextDouble(-0.5 * timeErrorWidth.value.toDouble, 0.5 * timeErrorWidth.value.toDouble))
+
+        (new CreatePedestrian(newOrigin, newDestination, isTransfer = false, simulator), newEntryTime)
+      }
+    }
+
+    def randomChangePed: (CreatePedestrian, Time) => (CreatePedestrian, Time) = {
+
+      val demandRandomError: Option[PredictionDemandRandomError] = simulator.insertErrors.collectFirst({
+        case demandError: PredictionDemandRandomError => demandError
+      })
+
+      demandRandomError match {
+        case Some(demandError) => {
+          randomlyChangePedestrian(demandError.uniformSampleError, demandError.ODZones)
+        }
+        case None => { (create: CreatePedestrian, time: Time) => (create, time) }
+      }
+    }
+
     this.eventList.collect {
       case e if e.action.deepCopy(simulator).isDefined && e.t < simulator.finalTime => {
-        simulator.eventList.enqueue(new MyEvent(e.t, e.action.deepCopy(simulator).get))
+
+        // resamples pedestrians for the demand errors
+        if (simulator.insertErrors.nonEmpty && e.action.isInstanceOf[CreatePedestrian]) {
+
+          val demandScaleError: Option[PredictionDemandScaleError] = simulator.insertErrors.collectFirst({
+            case demandScale: PredictionDemandScaleError => demandScale
+          })
+
+          demandScaleError match {
+            case Some(demandScale) if demandScale.fraction < 0.0 => { // demand decrease
+              if (ThreadLocalRandom.current().nextDouble() < 1.0 + demandScale.fraction) { // resample pedestrian according to demand increase
+                val (creation, time) = randomChangePed(e.action.deepCopy(simulator).get.asInstanceOf[CreatePedestrian], e.t)
+                simulator.eventList.enqueue(new MyEvent(time, creation))
+              }
+            }
+            case Some(demandScale) if demandScale.fraction >= 0.0 => { // demand increase
+              // inserts event into the new prediction simulator
+              val (creation, time) = randomChangePed(e.action.deepCopy(simulator).get.asInstanceOf[CreatePedestrian], e.t)
+              simulator.eventList.enqueue(new MyEvent(time, creation))
+
+              if (ThreadLocalRandom.current().nextDouble() < demandScale.fraction) { // resample pedestrian according to demand increase
+                val (creation, time) = randomChangePed(e.action.deepCopy(simulator).get.asInstanceOf[CreatePedestrian], e.t + Time(ThreadLocalRandom.current().nextDouble(-5.0, 5.0)))
+                simulator.eventList.enqueue(new MyEvent(time, creation))
+              }
+            }
+            case None => {
+              val (creation, time) = randomChangePed(e.action.deepCopy(simulator).get.asInstanceOf[CreatePedestrian], e.t)
+              simulator.eventList.enqueue(new MyEvent(time, creation))
+            }
+          }
+
+        } else {
+          // inserts event into the new prediction simulator
+          simulator.eventList.enqueue(new MyEvent(e.t, e.action.deepCopy(simulator).get))
+        }
       }
     }
   }
-
-
 
   ///////////////////////////////////////////////////////////////////////////////////////////////////
   ////////////////////////////// Population definition and manipulation /////////////////////////////

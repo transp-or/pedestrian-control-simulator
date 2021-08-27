@@ -1,9 +1,12 @@
 package hubmodel.DES
 
+import java.util.concurrent.ThreadLocalRandom
+import scala.util.Random
+
 import hubmodel._
 import hubmodel.control.amw.{AMWPolicy, StaticEngineeringSolution}
 import hubmodel.control.{ComputePedestrianDensity, ControlDevices, EvaluateState, ReinitializeFlowCounters, UpdateDensityReactiveAMWs}
-import hubmodel.demand.{PTInducedQueue, PublicTransportSchedule}
+import hubmodel.demand.{CreatePedestrian, PTInducedQueue, PublicTransportSchedule}
 import hubmodel.mvmtmodels.NOMAD.NOMADIntegrated
 import hubmodel.mvmtmodels.{RebuildPopulationTree, UpdateClosestWall}
 import hubmodel.ped.{PedestrianNOMAD, PedestrianSim}
@@ -30,7 +33,6 @@ case class PredictionDemandScaleError(fraction: Double) extends SimulationErrors
 
 abstract class NOMADGraphSimulator(params: SimulationInputParameters) extends PedestrianDES(params.startTime, params.endTime) {
 
-  val insertErrors: Vector[SimulationErrors]
 
   val motionModelUpdateInterval: Time = params.motionModelUpdateInterval
   val updateRoutesInterval: Time = params.updateRoutesInterval
@@ -52,6 +54,8 @@ abstract class NOMADGraphSimulator(params: SimulationInputParameters) extends Pe
 
 
   val isPrediction: Boolean
+
+
 
   /*protected val inputParameters: SimulationInputParameters = {
     new SimulationInputParameters(st, et, motionModelUpdateInterval, updateRoutesInterval, spaceMicro, graph, stop2Vertex, controlDevices)
