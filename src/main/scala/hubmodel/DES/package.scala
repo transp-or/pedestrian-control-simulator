@@ -160,6 +160,8 @@ package object DES {
       config.getInt("sim.prediction.threads"),
       ALNSParameters,
       if (config.getIsNull("sim.prediction.pred-sf-dt")) {None} else {Some(Time(config.getDouble("sim.prediction.pred-sf-dt")))},
+      if (config.getIsNull("sim.prediction.errors.random")) {None} else {Some(config.getDouble("sim.prediction.errors.random"))},
+      if (config.getIsNull("sim.prediction.errors.scale")) {None} else {Some(config.getDouble("sim.prediction.errors.scale"))},
     )
 
     val simulationParameters: SimulationInputParameters = new SimulationInputParameters(simulationStartTime, simulationEndTime, socialForceInterval, routeUpdateInterval, infraSF.continuousSpace.addWalls(controlDevices.amws.flatMap(_.walls)), routeGraph, stop2Vertex, controlDevices, predictionParams, location, setup, config.getString("output.dir"))

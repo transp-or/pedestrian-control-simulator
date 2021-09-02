@@ -18,5 +18,7 @@ class PredictionInputParameters(val horizon: Time,
                                 val replications: Int,
                                 val threads: Int,
                                 val ALNSParameters: ALNSParameters,
-                                val sfUpdate: Option[Time]
+                                val sfUpdate: Option[Time],
+                                val predictionRandomError: Option[Double],
+                                val predictionScaleError: Option[Double]
 )
