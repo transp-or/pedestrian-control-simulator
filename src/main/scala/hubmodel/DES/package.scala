@@ -1,8 +1,8 @@
 package hubmodel
 
 import java.util.concurrent.ThreadLocalRandom
-
 import com.typesafe.config.{Config, ConfigFactory}
+import hubmodel.control.{DensityRandomMeasurementError, FlowLineRandomMeasurementError, MeasurementError}
 import hubmodel.demand.flows.{ProcessDisaggregatePedestrianFlows, ProcessDisaggregatePedestrianFlowsWithoutTimeTable, ProcessPedestrianFlows}
 import hubmodel.demand.transit.Vehicle
 import hubmodel.demand.{AggregateFlows, DemandData, DemandSet, PedestrianFlowFunction_New, PedestrianFlowPT_New, PedestrianFlow_New, ProcessTimeTable, PublicTransportSchedule, TRANSFORMDemandSet, readDisaggDemand, readDisaggDemandTF, readPedestrianFlows, readSchedule, readScheduleTF}
@@ -107,6 +107,12 @@ package object DES {
 
     // Builds the graph used for route choice. This Graph is composed of multiple different link types.
     println(" * Reading and creating graph and control devices")
+
+    val measurementErrors: Vector[MeasurementError] = Vector (
+      if (config.getIsNull("sim.measurement-errors.flow.white-noise")) {None} else {Some(FlowLineRandomMeasurementError(config.getInt("sim.measurement-errors.flow.white-noise")))},
+      if (config.getIsNull("sim.measurement-errors.density.white-noise")) {None} else {Some(DensityRandomMeasurementError(config.getDouble("sim.measurement-errors.density.white-noise")))}
+    ).flatten
+
     val (routeGraph, controlDevices, location, setup) = readGraph(
       config.getString("files.graph"),
       config.getBoolean("sim.use_flow_gates"),
@@ -120,7 +126,8 @@ package object DES {
         config.getString("sim.amws_mode"),
         config.getString("sim.amws_reactive_mode")
       ),
-      (config.getDouble("sim.route_choice_TD_beta"), config.getDouble("sim.route_choice_PSC_beta"))
+      (config.getDouble("sim.route_choice_TD_beta"), config.getDouble("sim.route_choice_PSC_beta")),
+      measurementErrors
     )
 
     // Reads the pedestrian flows which are modelled as flows (i.e. aggregate)
@@ -164,7 +171,20 @@ package object DES {
       if (config.getIsNull("sim.prediction.errors.scale")) {None} else {Some(config.getDouble("sim.prediction.errors.scale"))},
     )
 
-    val simulationParameters: SimulationInputParameters = new SimulationInputParameters(simulationStartTime, simulationEndTime, socialForceInterval, routeUpdateInterval, infraSF.continuousSpace.addWalls(controlDevices.amws.flatMap(_.walls)), routeGraph, stop2Vertex, controlDevices, predictionParams, location, setup, config.getString("output.dir"))
+    val simulationParameters: SimulationInputParameters = new SimulationInputParameters(
+      simulationStartTime,
+      simulationEndTime,
+      socialForceInterval,
+      routeUpdateInterval,
+      infraSF.continuousSpace.addWalls(controlDevices.amws.flatMap(_.walls)),
+      routeGraph,
+      stop2Vertex,
+      controlDevices,
+      predictionParams,
+      location,
+      setup,
+      config.getString("output.dir"),
+      measurementErrors = measurementErrors)
 
     simulationParameters.rebuildTreeInterval = Some(rebuildTreeInterval)
     simulationParameters.logFullPedestrianHistory = config.getBoolean("output.write_trajectories_as_VS") || config.getBoolean("output.write_trajectories_as_JSON") || config.getBoolean("output.make_video")

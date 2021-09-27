@@ -2,10 +2,9 @@ package hubmodel.DES
 
 import java.util.concurrent.ThreadLocalRandom
 import scala.util.Random
-
 import hubmodel._
 import hubmodel.control.amw.{AMWPolicy, StaticEngineeringSolution}
-import hubmodel.control.{ComputePedestrianDensity, ControlDevices, EvaluateState, ReinitializeFlowCounters, UpdateDensityReactiveAMWs}
+import hubmodel.control.{ComputePedestrianDensity, ControlDevices, DensityRandomMeasurementError, EvaluateState, ReinitializeFlowCounters, UpdateDensityReactiveAMWs}
 import hubmodel.demand.{CreatePedestrian, PTInducedQueue, PublicTransportSchedule}
 import hubmodel.mvmtmodels.NOMAD.NOMADIntegrated
 import hubmodel.mvmtmodels.{RebuildPopulationTree, UpdateClosestWall}
@@ -51,6 +50,9 @@ abstract class NOMADGraphSimulator(params: SimulationInputParameters) extends Pe
   val trackDensityInterval: Option[Time] = params.trackDensityInterval
   val resetFlowCountersInterval: Option[Time] = params.resetFlowCountersInterval
   val predictionInputParameters: PredictionInputParameters = params.predictionParameters
+  val densityMeasurementError: Option[DensityRandomMeasurementError] = params.measurementErrors.collectFirst({
+    case error: DensityRandomMeasurementError => error
+  })
 
   val location = params.location
   val setup = params.setup

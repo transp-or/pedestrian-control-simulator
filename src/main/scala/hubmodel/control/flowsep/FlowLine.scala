@@ -1,11 +1,13 @@
 package hubmodel.control.flowsep
 
-import hubmodel.control.ControlDeviceComponent
+import hubmodel.control.{ControlDeviceComponent, FlowLineRandomMeasurementError, MeasurementDevice, MeasurementError}
 import hubmodel.ped.{PedestrianTrait, Population}
 import hubmodel.{FLOW_LINE_REGION_EXTENSION, Position, generateUUID}
 import tools.cells.Rectangle
 
-class FlowLine(val name: String, val start: Position, val end: Position, private val controlled: Int = 0) extends ControlDeviceComponent {
+import java.util.concurrent.ThreadLocalRandom
+
+class FlowLine(val name: String, val start: Position, val end: Position, private val controlled: Int = 0, private val error: Option[FlowLineRandomMeasurementError] = None) extends MeasurementDevice(error) {
 
   // Unique identifier of the object.
   val ID: String = generateUUID
@@ -56,7 +58,12 @@ class FlowLine(val name: String, val start: Position, val end: Position, private
     *
     * @return number of peds
     */
-  def getPedestrianFlow: Int = this.pedsCrossedInInterval.size
+  def getPedestrianFlow: Int = {
+    this.error match {
+      case Some(e) => { this.pedsCrossedInInterval.size + ThreadLocalRandom.current().nextInt(-(e.varianceInterger-1)/2, (e.varianceInterger-1)/2) }
+      case None => { this.pedsCrossedInInterval.size }
+    }
+  }
 
   /**
     * Clears the collection of pedestrians stored in [[pedsCrossedInInterval]].

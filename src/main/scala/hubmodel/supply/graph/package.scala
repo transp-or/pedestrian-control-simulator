@@ -33,11 +33,16 @@ package object graph {
                 measureDensity: Boolean,
                 useAlternatGraphs: Boolean,
                 amwsMode: (String, String),
-               routeChoiceBetas: (Double, Double)): (GraphContainer, ControlDevices, String, String) = {
+                routeChoiceBetas: (Double, Double),
+                measurementErrors: Vector[MeasurementError] = Vector()): (GraphContainer, ControlDevices, String, String) = {
 
 
     val source: BufferedSource = scala.io.Source.fromFile(graphSpecificationFile)
     val input: JsValue = Json.parse(try source.mkString finally source.close)
+
+    val whiteNoiseError: Option[FlowLineRandomMeasurementError] = measurementErrors.collectFirst({
+      case error: FlowLineRandomMeasurementError => error
+    })
 
     input.validate[InfraGraphParser] match {
       case s: JsSuccess[InfraGraphParser] => {
@@ -76,7 +81,7 @@ package object graph {
 
         // reads flow lines if they are needed
         val flowLines: Map[String, FlowLine] = {
-            s.get.flowLines.map(fl => fl.name -> new FlowLine(fl.name, Vector2D(fl.x1, fl.y1), Vector2D(fl.x2, fl.y2))).toMap
+            s.get.flowLines.map(fl => fl.name -> new FlowLine(fl.name, Vector2D(fl.x1, fl.y1), Vector2D(fl.x2, fl.y2), error = whiteNoiseError)).toMap
         }
 
         val mv: Iterable[MovingWalkwayAbstract] = if (useAMWs) {
@@ -218,8 +223,8 @@ package object graph {
               Vector2D(fs.x1b, fs.y1b),
               Vector2D(fs.x2a, fs.y2a),
               Vector2D(fs.x2b, fs.y2b),
-              fs.inf_1.map(il => new FlowLine(il.name, Vector2D(il.x1, il.y1), Vector2D(il.x2, il.y2))),
-              fs.inf_2.map(il => new FlowLine(il.name, Vector2D(il.x1, il.y1), Vector2D(il.x2, il.y2))),
+              fs.inf_1.map(il => new FlowLine(il.name, Vector2D(il.x1, il.y1), Vector2D(il.x2, il.y2), error = whiteNoiseError)),
+              fs.inf_2.map(il => new FlowLine(il.name, Vector2D(il.x1, il.y1), Vector2D(il.x2, il.y2), error = whiteNoiseError)),
               oz_1,
               oz_2,
               fs.overConn.collect({ case c if vertexMapReader.contains(c.node) => c.conn.collect({ case neigh if vertexMapReader.contains(neigh) => new MyEdge(vertexMapReader(c.node), vertexMapReader(neigh)) }) }).flatten,

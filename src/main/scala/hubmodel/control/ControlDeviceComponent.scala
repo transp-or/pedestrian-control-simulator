@@ -18,8 +18,20 @@ trait ControlDeviceComponent {
   def deepCopy: ControlDeviceComponent
 }
 
+abstract class MeasurementError
+case class FlowLineRandomMeasurementError(varianceInterger: Int) extends MeasurementError {
+  require(varianceInterger > 0 && varianceInterger % 2 == 1)
+
+}
+case class DensityRandomMeasurementError(varianceFraction: Double) extends MeasurementError {
+  require(varianceFraction > 0.0 && varianceFraction <= 1.0)
+
+}
+
+abstract class MeasurementDevice(val measurementError: Option[MeasurementError]) extends ControlDeviceComponent
+
 /** Parent to all control policies. This is used when the policy is fixed from outside the device itself. The main
-  * usage of this class is for the optimization procedure when the contro policy is computed by the optimization
+  * usage of this class is for the optimization procedure when the control policy is computed by the optimization
   * framework.
   *
   * @param start start of the control policy

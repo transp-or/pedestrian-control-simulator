@@ -8,6 +8,7 @@ import kn.uni.voronoitreemap.j2d.{PolygonSimple, Site}
 import myscala.math.vector.Vector2D
 import tools.cells.isInVertex
 
+import java.util.concurrent.ThreadLocalRandom
 import scala.jdk.CollectionConverters._
 
 /**
@@ -40,12 +41,36 @@ abstract class EvaluateState(sim: NOMADGraphSimulator) {
           zone.corners.foreach(corner => box.add(corner.X, corner.Y))
           voronoi.setClipPoly(box)
           val voronoiTessellations: Vector[Site] = voronoi.computeDiagram().asScala.toVector
-          zone.densityHistory.append(
-            (sim.currentTime, voronoiTessellations.filter(s => isInVertex(zone)(Vector2D(s.x, s.y))).foldLeft(0.0)((acc: Double, n: Site) => acc + 1.0 / (nbrPaxInZone * n.getPolygon.getArea)))
-          )
-          zone.paxIndividualDensityHistory.append(
-            (sim.currentTime, voronoiTessellations.filter(s => isInVertex(zone)(Vector2D(s.x, s.y))).map(1.0 / _.getPolygon.getArea))
-          )
+
+          sim.densityMeasurementError match {
+            case Some(e) => { // if a measurement error must be applied, compute the density values with the error
+              val densityValues: Vector[Double] = voronoiTessellations
+                .filter(s => isInVertex(zone)(Vector2D(s.x, s.y)))
+                .map(p => 1.0 / p.getPolygon.getArea)
+                .map(d => {
+                  var relError: Double = e.varianceFraction * ThreadLocalRandom.current().nextGaussian()
+                  while (relError <= 0.0) {
+                    relError = e.varianceFraction * ThreadLocalRandom.current().nextGaussian()
+                  }
+                  d + d * relError
+                })
+
+              zone.densityHistory.append(
+                (sim.currentTime, densityValues.foldLeft(0.0)((acc: Double, p: Double) => acc + (p / nbrPaxInZone)))
+              )
+              zone.paxIndividualDensityHistory.append(
+                (sim.currentTime, densityValues)
+              )
+            }
+            case None => { // no density measurement errors
+              zone.densityHistory.append(
+                (sim.currentTime, voronoiTessellations.filter(s => isInVertex(zone)(Vector2D(s.x, s.y))).foldLeft(0.0)((acc: Double, n: Site) => acc + 1.0 / (nbrPaxInZone * n.getPolygon.getArea)))
+              )
+              zone.paxIndividualDensityHistory.append(
+                (sim.currentTime, voronoiTessellations.filter(s => isInVertex(zone)(Vector2D(s.x, s.y))).map(1.0 / _.getPolygon.getArea))
+              )
+            }
+          }
         } catch {
           case e: Exception => {
             //sim.errorLogger.warn("sim-time=" + sim.currentTime + "exception when computing voronoi diagram, using standard density! " + sim.population.size + " people in sim and " + sim.population.count(p => isInVertex(zone)(p.currentPosition)) + " in box")

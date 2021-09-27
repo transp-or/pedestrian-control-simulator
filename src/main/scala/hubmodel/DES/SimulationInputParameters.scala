@@ -1,6 +1,6 @@
 package hubmodel.DES
 
-import hubmodel.control.ControlDevices
+import hubmodel.control.{ControlDevices, MeasurementError}
 import hubmodel.demand.PublicTransportSchedule
 import hubmodel.supply.continuous.ContinuousSpace
 import hubmodel.supply.graph.{GraphContainer, Stop2Vertex}
@@ -17,7 +17,7 @@ import tools.Time
   * @param stop2Vertex mapping between stops and vertices
   * @param controlDevices collection of control devices used in the simulation
   */
-class SimulationInputParameters(var startTime: Time, var endTime: Time, val motionModelUpdateInterval: Time, val updateRoutesInterval: Time, val spaceMicro: ContinuousSpace, val graph: GraphContainer, val stop2Vertex: Stop2Vertex, val controlDevices: ControlDevices, val predictionParameters: PredictionInputParameters, val location: String, val setup: String, val dir: String = "") {
+class SimulationInputParameters(var startTime: Time, var endTime: Time, val motionModelUpdateInterval: Time, val updateRoutesInterval: Time, val spaceMicro: ContinuousSpace, val graph: GraphContainer, val stop2Vertex: Stop2Vertex, val controlDevices: ControlDevices, val predictionParameters: PredictionInputParameters, val location: String, val setup: String, val dir: String = "", val measurementErrors: Vector[MeasurementError] = Vector()) {
 
   // Interval at which the density inside the monitored areas is computed
   var trackDensityInterval: Option[Time] = None
