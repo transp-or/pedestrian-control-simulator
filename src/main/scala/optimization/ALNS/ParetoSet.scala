@@ -172,7 +172,7 @@ trait ParetoSet {
     * @param thatSol that other solution
     * @return
     */
-  private def thisDominatesThat(thisSol: FunctionEvaluationReduced, thatSol: FunctionEvaluationReduced): Boolean = {
+  protected def thisDominatesThat(thisSol: FunctionEvaluationReduced, thatSol: FunctionEvaluationReduced): Boolean = {
     //!thisSol.exists(thisOF => thisOF._2 > thatSol(thisOF._1))
 
     thisSol.forall(thisOF => thisOF._2 <= thatSol(thisOF._1)) && thisSol.exists(thisOF => thisOF._2 < thatSol(thisOF._1))

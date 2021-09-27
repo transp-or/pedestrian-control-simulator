@@ -119,6 +119,8 @@ trait IsMainSimulation {
 
       horizonOptimization.writeIterationsToCSV(sim.outputDir + "a_posteriori_points_" + sim.ID + "_" + sim.currentTime + "_" + (sim.currentTime + this.sim.predictionInputParameters.horizon) + "_" + this.sim.predictionInputParameters.decisionVariableLength + ".csv")
 
+
+
      /* (for (a <- horizonOptimization.getPoints; b <- horizonOptimization.getPoints if a._1 != b._1) yield {
         (
           math.pow(a._2.x.zip(b._2.x).map(t => math.pow((t._2.decisionVariable - t._1.decisionVariable), 2)).sum, 0.5),
