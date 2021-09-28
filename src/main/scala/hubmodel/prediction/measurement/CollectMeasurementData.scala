@@ -19,7 +19,7 @@ import scala.jdk.CollectionConverters._
   *
   * @param sim simulation containing the data
   */
-class CollectMeasurementData(sim: NOMADGraphSimulator) extends Action {
+@deprecated class CollectMeasurementData(sim: NOMADGraphSimulator) extends Action {
 
   def computeDensityAtCurrentTime(): Unit = {
 
