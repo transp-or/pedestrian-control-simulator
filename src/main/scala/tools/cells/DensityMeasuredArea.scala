@@ -22,8 +22,12 @@ class DensityMeasuredArea(name: String, A: Position, B: Position, C: Position, D
   // pedestrian density.
   val densityHistory: collection.mutable.ArrayBuffer[(Time, Double)] = collection.mutable.ArrayBuffer()
 
+  val densityHistoryCorrect: collection.mutable.ArrayBuffer[(Time, Double)] = collection.mutable.ArrayBuffer()
+
   // density per pedestrian computed using voronoi tessellations.
   val paxIndividualDensityHistory: collection.mutable.ArrayBuffer[(Time, Vector[Double])] = collection.mutable.ArrayBuffer()
+
+  val paxIndividualDensityHistoryCorrect: collection.mutable.ArrayBuffer[(Time, Vector[Double])] = collection.mutable.ArrayBuffer()
 
   // inflow into the controlled area.
   val inflowHistory: collection.mutable.ArrayBuffer[(Time, Double)] = collection.mutable.ArrayBuffer()
@@ -36,8 +40,10 @@ class DensityMeasuredArea(name: String, A: Position, B: Position, C: Position, D
     */
   def initializeContainers(startTime: Time): Unit = {
     densityHistory.append((startTime, 0.0))
+    densityHistoryCorrect.append((startTime, 0.0))
     inflowHistory.append((startTime, 0.0))
     paxIndividualDensityHistory.append((startTime, Vector()))
+    paxIndividualDensityHistoryCorrect.append((startTime, Vector()))
   }
 
   def integratedIndividualDensity: Option[Double] = {
@@ -77,8 +83,8 @@ class DensityMeasuredArea(name: String, A: Position, B: Position, C: Position, D
       "\"name\":\"" + this.name + "\"," +
       "\"ID\":\"" + this.ID + "\"," +
       "\"target-density\":" + this.targetDensity + "," +
-      "\"density-measurements\":[" + this.densityHistory.map(dp => "[" + dp._1.toString + "," + dp._2 + "]").mkString(",\n") +
-    "],\n\"density-individual-measurements\":[" + this.paxIndividualDensityHistory.map(d => "[" + d._1 + ",[" + d._2.mkString(",") + "]]").mkString(",\n") +
+      "\"density-measurements\":[" + this.densityHistoryCorrect.map(dp => "[" + dp._1.toString + "," + dp._2 + "]").mkString(",\n") +
+    "],\n\"density-individual-measurements\":[" + this.paxIndividualDensityHistoryCorrect.map(d => "[" + d._1 + ",[" + d._2.mkString(",") + "]]").mkString(",\n") +
     "]"+
       "}"
   }

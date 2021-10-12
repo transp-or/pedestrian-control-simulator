@@ -44,29 +44,47 @@ abstract class EvaluateState(sim: NOMADGraphSimulator) {
 
           sim.densityMeasurementError match {
             case Some(e) => { // if a measurement error must be applied, compute the density values with the error
-              val densityValues: Vector[Double] = voronoiTessellations
+              val densityValues: Vector[(Double, Double)] = voronoiTessellations
                 .filter(s => isInVertex(zone)(Vector2D(s.x, s.y)))
                 .map(p => 1.0 / p.getPolygon.getArea)
                 .map(d => {
-                  var relError: Double = e.varianceFraction * ThreadLocalRandom.current().nextGaussian()
-                  while (relError <= 0.0) {
-                    relError = e.varianceFraction * ThreadLocalRandom.current().nextGaussian()
+                  var erroredDensity: Double = d + (d * e.varianceFraction * ThreadLocalRandom.current().nextGaussian())
+                  while (erroredDensity <= 0.0) {
+                    erroredDensity = d + (d * e.varianceFraction * ThreadLocalRandom.current().nextGaussian())
                   }
-                  d + d * relError
+                  (d, erroredDensity)
                 })
 
-              zone.densityHistory.append(
-                (sim.currentTime, densityValues.foldLeft(0.0)((acc: Double, p: Double) => acc + (p / nbrPaxInZone)))
+              zone.densityHistoryCorrect.append(
+                (sim.currentTime, densityValues.foldLeft(0.0)((acc: Double, p: (Double, Double)) => acc + (p._1 / nbrPaxInZone)))
               )
+
+              zone.densityHistory.append(
+                (sim.currentTime, densityValues.foldLeft(0.0)((acc: Double, p: (Double, Double)) => acc + (p._2 / nbrPaxInZone)))
+              )
+
               zone.paxIndividualDensityHistory.append(
-                (sim.currentTime, densityValues)
+                (sim.currentTime, densityValues.map(_._2))
+              )
+
+              zone.paxIndividualDensityHistoryCorrect.append(
+                (sim.currentTime, densityValues.map(_._1))
               )
             }
             case None => { // no density measurement errors
               zone.densityHistory.append(
                 (sim.currentTime, voronoiTessellations.filter(s => isInVertex(zone)(Vector2D(s.x, s.y))).foldLeft(0.0)((acc: Double, n: Site) => acc + 1.0 / (nbrPaxInZone * n.getPolygon.getArea)))
               )
+
+              zone.densityHistoryCorrect.append(
+                (sim.currentTime, voronoiTessellations.filter(s => isInVertex(zone)(Vector2D(s.x, s.y))).foldLeft(0.0)((acc: Double, n: Site) => acc + 1.0 / (nbrPaxInZone * n.getPolygon.getArea)))
+              )
+
               zone.paxIndividualDensityHistory.append(
+                (sim.currentTime, voronoiTessellations.filter(s => isInVertex(zone)(Vector2D(s.x, s.y))).map(1.0 / _.getPolygon.getArea))
+              )
+
+              zone.paxIndividualDensityHistoryCorrect.append(
                 (sim.currentTime, voronoiTessellations.filter(s => isInVertex(zone)(Vector2D(s.x, s.y))).map(1.0 / _.getPolygon.getArea))
               )
             }
