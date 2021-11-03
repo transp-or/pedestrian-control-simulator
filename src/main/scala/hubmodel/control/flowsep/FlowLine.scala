@@ -59,8 +59,9 @@ class FlowLine(val name: String, val start: Position, val end: Position, private
     * @return number of peds
     */
   def getPedestrianFlow: Int = {
+    println(this.pedsCrossedInInterval.size)
     this.error match {
-      case Some(e) => { this.pedsCrossedInInterval.size + ThreadLocalRandom.current().nextInt(-(e.varianceInterger-1)/2, (e.varianceInterger-1)/2) }
+      case Some(e) => { math.max(0,this.pedsCrossedInInterval.size + ThreadLocalRandom.current().nextInt(-(e.varianceInterger-1)/2, (e.varianceInterger-1)/2)) }
       case None => { this.pedsCrossedInInterval.size }
     }
   }
@@ -69,7 +70,7 @@ class FlowLine(val name: String, val start: Position, val end: Position, private
     * Clears the collection of pedestrians stored in [[pedsCrossedInInterval]].
     * This should be called at the start of each new time interval of the state evaluation.
     */
-  def reinitialize(): Unit = this.pedsCrossedInInterval.clear()
+  def reinitialize(): Unit = {this.pedsCrossedInInterval.clear()}
 
   /**
     * New instance of this [[FlowLine]]

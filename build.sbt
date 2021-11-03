@@ -23,7 +23,6 @@ libraryDependencies ++= Seq(
   "org.scala-lang.modules" %% "scala-parser-combinators" % "1.1.2",
   "org.apache.commons" % "commons-lang3" % "3.8",
   "org.apache.commons" % "commons-math3" % "3.6",
-  //"org.scala-lang.modules" %% "scala-parallel-collections" % "0.2.0",
   "org.scalanlp" %% "breeze" % "1.0",
   "org.scalanlp" %% "breeze-natives" % "1.0",
   "com.github.fommil.netlib" % "all" % "1.1.2" pomOnly()

@@ -181,7 +181,7 @@ class ReinitializeFlowCounters(sim: NOMADGraphSimulator) extends  Action {
   override val priority: Int = 110
 
   override def execute(): Any = {
-
+    println(sim.currentTime)
     sim.eventLogger.trace("sim-time=" + sim.currentTime + ": reinitialize flow counters")
 
     // reinitialize the flow counters for the next interval

@@ -1,35 +1,36 @@
 # Introduction #
-Welcome to the hub-model simulator ! This project is conducted within the scope of the TRANS-FORM project and a PhD
-thesis. The specification of the input formats for running the simulation and information on how to run the simulation
-can be found below. At this stage, a very brief summray of the key steps is provided:
+Welcome to the intra-hub pedestrian motion and pedestrian flow control simulator ! This is the research code used during a PhD thesis completed at EPFL. The manuscript is available here:
+http://infoscience.epfl.ch/record/288393. This code was also used in the context of the European project entitled "TRANS-FORM".
+The various steps required to run this code are detailed below. If you use this research code, we kindly ask you to cite the following reference:
+
+Molyneaux, N. A. (2021). Dynamic control strategies for managing pedestrian flows (No. 8200). EPFL.
+
+### TLTR ###
+If you are confortable with Scala and SBT, then this should suffice to get the simulation tool to run. 
 
 1. install scala and sbt
-2. download and publish locally the dxf-parser and the power-voronoi packages from https://github.com/NicholasMolyneaux/tools
-3. get and install the NOMAD pedestrian model (not openly available, please contact me)
-4. download and compile this project
-5. write the configuration file
-6. create the input files (infrastructure and demand)
-7. run the simulation
+2. download and publish locally with sbt the dxf-parser and the power-voronoi packages from https://github.com/transp-or/pedestrian-control-tools
+3. download this repository
+4. launch sbt in the root directory (i.e. where build.sbt is)
+5. run the toy example with "run --conf toy-example.conf"
 
 ## Dependencies ##
 The code depends on multiple libraries, most of which can be automatically downloaded from maven thanks to sbt. There
 are a few libraries which have been developped/adapetd in-house and have not be uploaded to maven. 
-Most of these libraries are available on github (https://github.com/NicholasMolyneaux/tools). They can be compiled and packaged
-locally thanks to sbt as well (see their READMEs). There is one package which is not open-source. This is the NOMAD pedestrian simulator.
-Please contact me directly (nicolas.molyneaux@gmail.com) to discuss possible solutions. 
+Most of these libraries are available on github (https://github.com/transp-or/pedestrian-control-tools). They can be compiled and packaged
+locally thanks to sbt as well (see their READMEs). 
 
-The full liss of dependencies can be found in the *build.sbt* file. The three dependencies which must be installed manually are listed below: 
+The full list of dependencies can be found in the *build.sbt* file. The three dependencies which must be installed manually are listed below: 
 ```sbtshell
 libraryDependencies ++= Seq(
   "transpor.tools" % "power-voronoi" % "1.0",
-  "transpor.tools" % "dxf-parser" % "1.0",
-  "nl.tudelft.pedestrians" % "nomad" % "1.0"
-)
+  "transpor.tools" % "dxf-parser" % "1.0"
+  )
 ```
-Once these packages are installed, the hub-simulator can be compiled. This can be done bm simply calling **compile** from sbt. 
+Once these packages are installed, the hub-simulator can be compiled. This can be done bm simply running **compile** from sbt. 
 
 # Input data #
-The input data is composed of two categories of files: the infrastructure specification and the deman specification.
+The input data is composed of two categories of files: the infrastructure specification and the demand specification.
 Detailed descriptions and examples of all of these files can be found in the following subsections.
 
 ## Infrastructure specification ##
@@ -54,7 +55,7 @@ mainly for readibility reasons. Below is a full example:
 ```json
 {
   "location": "lausanne",
-  "sublocation": "PIW",
+  "setup": "PIW",
   "walls": [
     {
       "comment": "pl56-W",
@@ -83,8 +84,8 @@ mainly for readibility reasons. Below is a full example:
 ```
 
 ### Graph specification file ###
-The graph is composed of two collections. The first is the collection of zones, and the second is the collection
-of connections between the zones. Alongside the graph specification, the possible management strategies are also
+The graph is composed of many collections. The structure is similar to the previous example for the physical walls
+defining the infrastructure. Alongside the graph specification, the possible management strategies are also
 defined. These can be empty if no management strategy is passed. The zones are defined as follows:
  
 * name: unique name of the zone
@@ -110,13 +111,13 @@ The connections are directed, hence there must be as many connection objects as 
 "node" and "zone" can be used in an interchangable manner.
 
 **Example**
-As for the walls file the ''location'' and and ''sublocation'' fields must exist. They are not used by the
-simulation but must still be present.
+As for the walls file the ''location'' and  ''setup'' fields must exist.
 ```json
 {
-  "location": "lausanne",
-  "sublocation": "test",
-  "nodes": [
+ "location": "lausanne",
+ "setup": "test",
+ "amws_mode": "reactive",
+ "nodes": [
     {
       "name": "a",
       "x": 0.0,
@@ -170,7 +171,12 @@ simulation but must still be present.
   "flow_gates": [],
   "controlled_areas": [],
   "binary_gates": [],
-  "flow_separators": []
+  "flow_lines": [],
+  "moving_walkways": [],
+  "flow_separators": [],
+  "connectivity_level_change": [],
+  "alternate_graphs": [],
+  "destination_groups": []
 }
 ```
 
