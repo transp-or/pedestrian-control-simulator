@@ -6,7 +6,7 @@ The various steps required to run this code are detailed below. If you use this 
 Molyneaux, N. A. (2021). Dynamic control strategies for managing pedestrian flows (No. 8200). EPFL.
 
 ### TLTR ###
-If you are confortable with Scala and SBT, then this should suffice to get the simulation tool to run. 
+If you are comfortable with Scala and SBT, then this should suffice to get the simulation tool to run. 
 
 1. install scala and sbt
 2. download and publish locally with sbt the dxf-parser and the power-voronoi packages from https://github.com/transp-or/pedestrian-control-tools
@@ -16,8 +16,8 @@ If you are confortable with Scala and SBT, then this should suffice to get the s
 
 ## Dependencies ##
 The code depends on multiple libraries, most of which can be automatically downloaded from maven thanks to sbt. There
-are a few libraries which have been developped/adapetd in-house and have not be uploaded to maven. 
-Most of these libraries are available on github (https://github.com/transp-or/pedestrian-control-tools). They can be compiled and packaged
+are a few libraries which have been developped/adapted in-house and have not been uploaded to maven. 
+These libraries are available on github (https://github.com/transp-or/pedestrian-control-tools). They can be compiled and packaged
 locally thanks to sbt as well (see their READMEs). 
 
 The full list of dependencies can be found in the *build.sbt* file. The three dependencies which must be installed manually are listed below: 
@@ -322,24 +322,25 @@ for running the simulations.
 ]
 ```
 # Running the simulation #
-The hub simulator is coded in Scala (https://www.scala-lang.org/) and the compilation/execution is managed by
+The pedestrian simulator is coded in Scala (https://www.scala-lang.org/) and the compilation/execution is managed by
 sbt (https://www.scala-sbt.org/). This combination makes the sharing of the code convient and the integration of packages
 simple thanks to the large database available at Maven (https://mvnrepository.com/). Therefore to be able to compile the
-hub-model one needs to install **scala** and **sbt**. 
+hub-model one needs to install **scala** and **sbt**.
+
+One command line argument is required. This is the configuration file. 
 ## Configuration file ##
 In order to configure the simulations, a config file is used. This means the code doesn't have to be re-compiled for
 different scenarios. The library used for parsing the config file can be found here (https://github.com/lightbend/config).
 It is automatically included thanks to the build file used by sbt. The syntax is that of "HOCON" 
 (https://github.com/lightbend/config/blob/master/HOCON.md), a cleaned version of JSON. This configuration file must be
- passed as a command line argument to the program. There are five main categories, each of which have multiple parameters: 
+ passed as a command line argument to the program. There are four main categories, each of which have multiple parameters: 
 
 * files: location of input files
 * sim: simulation parameters
 * output: selection of outputs to create
 * execution: parameters regarding the parallel execution
-* results-analysis: processing of the results
 
-The configuration file must be located in the following folder so that sbt can find it.
+The configuration files are located in the following folder:
 ```
 src/main/resources/
 ```
